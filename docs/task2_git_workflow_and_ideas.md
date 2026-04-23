@@ -191,7 +191,7 @@ GitHub Desktop 左上角显示仓库名称，去文件资源管理器打开你�
 Commit 完成后，GitHub Desktop 右上角会出现一个蓝色按钮 **"Publish branch"**（如果是已经 Publish 过的分支，会是 "Push origin"）。
 
 点它。几秒钟后你的分支就上传到 GitHub 服务器了。
-
+![[Pasted image 20260423192909.png]]
 
 
 ---
@@ -211,8 +211,7 @@ Commit 完成后，GitHub Desktop 右上角会出现一个蓝色按钮 **"Publis
 5. Description（正文）可以留空，或写一行"最想做第 3 个想法，见文件"这种提示
 6. 点绿色按钮 **"Create pull request"**
 
-> 📸 **【截图位 #6】GitHub 网页 PR 创建界面**  
-> _（队长会补这里的截图）_
+
 
 ---
 
