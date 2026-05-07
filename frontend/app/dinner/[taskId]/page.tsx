@@ -7,9 +7,9 @@ import { InfoRow } from "@/components/InfoRow";
 import { Shell } from "@/components/Shell";
 import { StatusBadge } from "@/components/StatusBadge";
 import { demoTaskId } from "@/lib/mockData";
-import { detectMockConflicts } from "@/lib/mockFunctions";
-import { getParticipantsForBoard, getRecommendationState, getStoredTask, saveRecommendationState } from "@/lib/storage";
-import type { Conflict, DinnerTask, Participant, RestaurantCandidate, TaskStatus } from "@/lib/types";
+import { detectConflicts, extractConstraints, generateMockRecommendation } from "@/lib/mockFunctions";
+import { getParticipantsForBoard, getRecommendationState, getStoredTask, resetDemoStorage, saveRecommendationState } from "@/lib/storage";
+import type { Conflict, DinnerTask, Participant, RecommendationResult, RestaurantCandidate, TaskStatus } from "@/lib/types";
 
 const auditLabels: Record<string, string> = {
   budget_check: "预算检查",
@@ -60,6 +60,20 @@ const statusText: Record<TaskStatus, string> = {
   done: "已生成",
   failed: "生成失败"
 };
+
+function loadBoardData() {
+  const task = getStoredTask();
+  const participants = extractConstraints(getParticipantsForBoard());
+  const conflicts = detectConflicts(participants, task.global_constraints.budget_max);
+  const recommendation = generateMockRecommendation(task, participants);
+
+  return {
+    task,
+    participants,
+    conflicts,
+    recommendation
+  };
+}
 
 function AuditList({ checks }: { checks: RestaurantCandidate["audit"]["hard_rules"] }) {
   return (
@@ -144,11 +158,10 @@ function ConstraintList({
 
 export default function DinnerBoardPage() {
   const timerRef = useRef<number | null>(null);
-  const [task, setTask] = useState<DinnerTask>(() => getStoredTask());
-  const [participants, setParticipants] = useState<Participant[]>(() => getParticipantsForBoard());
-  const [conflicts, setConflicts] = useState<Conflict[]>(() =>
-    detectMockConflicts(getParticipantsForBoard(), getStoredTask().global_constraints.budget_max)
-  );
+  const [task, setTask] = useState<DinnerTask>(() => loadBoardData().task);
+  const [participants, setParticipants] = useState<Participant[]>(() => loadBoardData().participants);
+  const [conflicts, setConflicts] = useState<Conflict[]>(() => loadBoardData().conflicts);
+  const [recommendation, setRecommendation] = useState<RecommendationResult>(() => loadBoardData().recommendation);
   const [status, setStatus] = useState<TaskStatus>("ready_to_recommend");
   const [showResults, setShowResults] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
@@ -163,13 +176,13 @@ export default function DinnerBoardPage() {
   }, []);
 
   useEffect(() => {
-    const loadedTask = getStoredTask();
-    const loadedParticipants = getParticipantsForBoard();
+    const loaded = loadBoardData();
     const recommendationState = getRecommendationState();
 
-    setTask(loadedTask);
-    setParticipants(loadedParticipants);
-    setConflicts(detectMockConflicts(loadedParticipants, loadedTask.global_constraints.budget_max));
+    setTask(loaded.task);
+    setParticipants(loaded.participants);
+    setConflicts(loaded.conflicts);
+    setRecommendation(loaded.recommendation);
     setStatus(recommendationState.status);
     setShowResults(recommendationState.hasGenerated && recommendationState.status === "done");
 
@@ -190,15 +203,25 @@ export default function DinnerBoardPage() {
     saveRecommendationState({ status: "recommending", hasGenerated: false });
 
     timerRef.current = window.setTimeout(() => {
+      const latest = loadBoardData();
+      setTask(latest.task);
+      setParticipants(latest.participants);
+      setConflicts(latest.conflicts);
+      setRecommendation(latest.recommendation);
       setStatus("done");
       setShowResults(true);
       saveRecommendationState({ status: "done", hasGenerated: true });
     }, 950);
   }
 
+  function handleResetDemo() {
+    resetDemoStorage();
+    window.location.reload();
+  }
+
   async function copyGroupMessage() {
     if (navigator.clipboard) {
-      await navigator.clipboard.writeText(task.group_message);
+      await navigator.clipboard.writeText(recommendation.group_message);
       setGroupCopied(true);
       window.setTimeout(() => setGroupCopied(false), 1600);
     }
@@ -224,6 +247,9 @@ export default function DinnerBoardPage() {
             <StatusBadge tone={statusTone[status]}>{statusText[status]}</StatusBadge>
             <StatusBadge tone="yellow">{task.dinner_time}</StatusBadge>
           </div>
+          <div className="mb-3 rounded-lg bg-stone-50 px-3 py-2 text-xs font-medium leading-5 text-stone-600">
+            当前为前端 mock 规则引擎生成，未接真实后端 / OpenClaw / 外部 API。
+          </div>
           <div className="space-y-1">
             <InfoRow label="标题" value={task.title} />
             <InfoRow label="需求" value={task.raw_request} />
@@ -245,6 +271,13 @@ export default function DinnerBoardPage() {
               去填写页
             </Link>
           </div>
+          <button
+            className="mt-3 w-full rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-sm font-bold text-red-700 active:scale-[0.99]"
+            type="button"
+            onClick={handleResetDemo}
+          >
+            重置 demo 数据
+          </button>
         </Card>
 
         <Card title="成员偏好">
@@ -312,7 +345,7 @@ export default function DinnerBoardPage() {
           <>
             <Card title="候选餐厅">
               <div className="space-y-3">
-                {task.candidates.map((candidate) => (
+                {recommendation.candidates.map((candidate) => (
                   <CandidateCard candidate={candidate} key={candidate.restaurant_id} />
                 ))}
               </div>
@@ -320,7 +353,7 @@ export default function DinnerBoardPage() {
 
             <Card title="自检结果">
               <div className="space-y-4">
-                {task.candidates.map((candidate) => (
+                {recommendation.candidates.map((candidate) => (
                   <div className="rounded-lg border border-stone-100 p-3" key={candidate.restaurant_id}>
                     <div className="mb-3 flex items-start justify-between gap-3">
                       <h3 className="font-bold leading-6 text-ink">{candidate.name}</h3>
@@ -331,15 +364,18 @@ export default function DinnerBoardPage() {
 
                     <div className="grid gap-3">
                       <div className="rounded-lg bg-stone-50 p-3">
-                        <p className="mb-2 text-sm font-bold text-ink">硬规则检查</p>
+                        <p className="mb-1 text-sm font-bold text-ink">硬规则检查</p>
+                        <p className="mb-2 text-xs text-stone-500">硬规则：代码判断</p>
                         <AuditList checks={candidate.audit.hard_rules} />
                       </div>
                       <div className="rounded-lg bg-stone-50 p-3">
-                        <p className="mb-2 text-sm font-bold text-ink">软检查</p>
+                        <p className="mb-1 text-sm font-bold text-ink">软检查</p>
+                        <p className="mb-2 text-xs text-stone-500">软检查：mock 规则</p>
                         <AuditList checks={candidate.audit.soft_checks} />
                       </div>
                       <div className="rounded-lg bg-yellow-50 p-3">
                         <p className="mb-1 text-sm font-bold text-yellow-900">LLM 解释</p>
+                        <p className="mb-2 text-xs text-yellow-800">模板生成，未调用真实 LLM</p>
                         <p className="text-sm leading-6 text-yellow-950">{candidate.audit.llm_explanation}</p>
                       </div>
                     </div>
@@ -350,21 +386,21 @@ export default function DinnerBoardPage() {
 
             <Card title="最终推荐">
               <div className="rounded-lg bg-emerald-50 p-3">
-                <p className="text-xl font-bold leading-7 text-emerald-800">{task.final_choice.name}</p>
-                <p className="mt-2 text-sm leading-6 text-emerald-950">{task.final_choice.reason}</p>
+                <p className="text-xl font-bold leading-7 text-emerald-800">{recommendation.final_choice.name}</p>
+                <p className="mt-2 text-sm leading-6 text-emerald-950">{recommendation.final_choice.reason}</p>
               </div>
               <div className="mt-3 space-y-2">
-                {task.final_choice.risks.map((risk) => (
+                {recommendation.final_choice.risks.map((risk) => (
                   <p className="rounded-lg bg-yellow-50 px-3 py-2 text-sm leading-6 text-yellow-900" key={risk}>
                     {risk}
                   </p>
                 ))}
               </div>
-              <p className="mt-3 text-sm text-stone-600">备选：{task.final_choice.backup}</p>
+              <p className="mt-3 text-sm text-stone-600">备选：{recommendation.final_choice.backup}</p>
             </Card>
 
             <Card title="群聊邀约文案">
-              <p className="rounded-lg bg-stone-50 p-3 text-sm leading-6 text-stone-700">{task.group_message}</p>
+              <p className="rounded-lg bg-stone-50 p-3 text-sm leading-6 text-stone-700">{recommendation.group_message}</p>
               <button
                 className="mt-4 w-full rounded-lg bg-brand px-4 py-3 text-base font-bold text-ink active:scale-[0.99]"
                 type="button"
@@ -378,12 +414,12 @@ export default function DinnerBoardPage() {
               <div className="grid gap-3">
                 <div className="rounded-lg border border-red-100 bg-red-50 p-3">
                   <p className="mb-2 text-sm font-bold text-red-700">普通 AI 可能会推荐</p>
-                  <p className="text-sm leading-6 text-red-950">{task.normal_ai_message}</p>
+                  <p className="text-sm leading-6 text-red-950">{recommendation.normal_ai_message}</p>
                 </div>
                 <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-3">
                   <p className="mb-2 text-sm font-bold text-emerald-700">我们的 Agent 推荐</p>
                   <p className="text-sm leading-6 text-emerald-950">
-                    {task.final_choice.name}：硬规则和软检查分层展示，先保护不可违反约束，再做满意度和公平性排序。
+                    {recommendation.final_choice.name}：硬规则和软检查分层展示，先保护不可违反约束，再做满意度和公平性排序。
                   </p>
                 </div>
               </div>

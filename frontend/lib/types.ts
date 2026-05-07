@@ -57,6 +57,21 @@ export type RestaurantCandidate = {
   tags: string[];
 };
 
+export type MockRestaurant = Omit<RestaurantCandidate, "member_scores" | "score" | "audit" | "reason">;
+
+export type RecommendationResult = {
+  candidates: RestaurantCandidate[];
+  final_choice: {
+    restaurant_id: string;
+    name: string;
+    reason: string;
+    risks: string[];
+    backup: string;
+  };
+  group_message: string;
+  normal_ai_message: string;
+};
+
 export type DinnerTask = {
   task_id: string;
   title: string;

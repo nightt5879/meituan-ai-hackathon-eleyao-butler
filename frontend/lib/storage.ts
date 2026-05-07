@@ -131,6 +131,14 @@ export function saveRecommendationState(input: Partial<Pick<RecommendationState,
   return next;
 }
 
+export function resetDemoStorage() {
+  if (!canUseStorage()) {
+    return;
+  }
+
+  Object.values(storageKeys).forEach((key) => window.localStorage.removeItem(key));
+}
+
 export function getStatusTone(status: TaskStatus) {
   if (status === "done") {
     return "green";
