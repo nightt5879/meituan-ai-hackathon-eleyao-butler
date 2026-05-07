@@ -10,7 +10,7 @@ export const demoTask: DinnerTask = {
   location_text: "学校附近",
   expected_people_count: 3,
   dinner_time: "明晚 18:30",
-  status: "done",
+  status: "ready_to_recommend",
   share_url: "/dinner/demo-dinner-001/fill",
   global_constraints: {
     budget_max: 100,

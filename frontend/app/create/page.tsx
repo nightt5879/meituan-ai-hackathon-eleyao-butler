@@ -1,11 +1,12 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/Card";
 import { InfoRow } from "@/components/InfoRow";
 import { Shell } from "@/components/Shell";
 import { demoTaskId } from "@/lib/mockData";
+import { getStoredTask, saveStoredTask } from "@/lib/storage";
 
 export default function CreatePage() {
   const router = useRouter();
@@ -14,7 +15,7 @@ export default function CreatePage() {
   const [locationText, setLocationText] = useState("学校附近");
   const [peopleCount, setPeopleCount] = useState(3);
   const [dinnerTime, setDinnerTime] = useState("明晚 18:30");
-  const [created, setCreated] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const sharePath = `/dinner/${demoTaskId}/fill`;
   const boardPath = `/dinner/${demoTaskId}`;
@@ -26,22 +27,40 @@ export default function CreatePage() {
     return `${window.location.origin}${sharePath}`;
   }, [sharePath]);
 
+  useEffect(() => {
+    const task = getStoredTask();
+    setCreatorName(task.creator_name);
+    setRawRequest(task.raw_request);
+    setLocationText(task.location_text);
+    setPeopleCount(task.expected_people_count);
+    setDinnerTime(task.dinner_time);
+  }, []);
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setCreated(true);
+    saveStoredTask({
+      creator_name: creatorName,
+      raw_request: rawRequest,
+      location_text: locationText,
+      expected_people_count: peopleCount,
+      dinner_time: dinnerTime
+    });
+    router.push(boardPath);
   }
 
   async function copyShareLink() {
     if (navigator.clipboard) {
       await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
     }
   }
 
   return (
     <Shell
-      eyebrow="D0-D3 mock demo"
+      eyebrow="frontend mock loop"
       title="创建多人约饭任务"
-      subtitle="先用固定 demo task 跑通创建、分享、填写、看板和推荐展示。"
+      subtitle="填写后会保存到本机 localStorage，并进入固定 demo 看板。"
     >
       <form className="space-y-4" onSubmit={handleSubmit}>
         <Card>
@@ -67,7 +86,7 @@ export default function CreatePage() {
               />
             </label>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2">
               <label className="block">
                 <span className="mb-1 block text-sm font-semibold text-ink">地点</span>
                 <input
@@ -105,34 +124,19 @@ export default function CreatePage() {
         </Card>
       </form>
 
-      {created ? (
-        <Card className="mt-4" eyebrow="创建成功" title="明晚三人学校附近约饭">
-          <div className="space-y-1">
-            <InfoRow label="任务 ID" value={demoTaskId} />
-            <InfoRow label="发起人" value={creatorName || "我"} />
-            <InfoRow label="地点" value={locationText || "学校附近"} />
-            <InfoRow label="人数" value={`${peopleCount || 3} 人`} />
-            <InfoRow label="分享链接" value={<span className="break-all">{shareUrl}</span>} />
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <button
-              className="rounded-lg border border-line bg-white px-3 py-3 text-sm font-bold text-ink active:scale-[0.99]"
-              type="button"
-              onClick={copyShareLink}
-            >
-              复制链接
-            </button>
-            <button
-              className="rounded-lg bg-brand px-3 py-3 text-sm font-bold text-ink active:scale-[0.99]"
-              type="button"
-              onClick={() => router.push(boardPath)}
-            >
-              进入看板
-            </button>
-          </div>
-        </Card>
-      ) : null}
+      <Card className="mt-4" eyebrow="固定 demo 链接" title="分享给成员填写">
+        <div className="space-y-1">
+          <InfoRow label="任务 ID" value={demoTaskId} />
+          <InfoRow label="填写链接" value={<span className="break-all">{shareUrl}</span>} />
+        </div>
+        <button
+          className="mt-4 w-full rounded-lg border border-line bg-white px-4 py-3 text-base font-bold text-ink active:scale-[0.99]"
+          type="button"
+          onClick={copyShareLink}
+        >
+          {copied ? "已复制" : "复制分享链接"}
+        </button>
+      </Card>
     </Shell>
   );
 }

@@ -1,21 +1,40 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/Card";
 import { Shell } from "@/components/Shell";
-import { demoTask, demoTaskId } from "@/lib/mockData";
+import { demoTaskId } from "@/lib/mockData";
+import { getParticipantsForBoard, getStoredTask, saveStoredParticipant } from "@/lib/storage";
+import type { DinnerTask, Participant } from "@/lib/types";
 
 export default function FillPage() {
+  const [task, setTask] = useState<DinnerTask>(() => getStoredTask());
+  const [participants, setParticipants] = useState<Participant[]>([]);
   const [nickname, setNickname] = useState("我");
   const [preference, setPreference] = useState("我完全不吃辣，预算 80 内。");
   const [budgetMax, setBudgetMax] = useState("80");
-  const [spicyPreference, setSpicyPreference] = useState("no_spicy");
+  const [spicyPreference, setSpicyPreference] = useState<"spicy" | "no_spicy" | "any">("no_spicy");
   const [leaveBefore, setLeaveBefore] = useState("20:30");
   const [submitted, setSubmitted] = useState(false);
 
+  useEffect(() => {
+    setTask(getStoredTask());
+    setParticipants(getParticipantsForBoard());
+  }, []);
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const nextParticipants = saveStoredParticipant({
+      nickname,
+      raw_preference: preference,
+      manual_fields: {
+        budget_max: budgetMax ? Number(budgetMax) : undefined,
+        spicy_preference: spicyPreference,
+        leave_before: leaveBefore || undefined
+      }
+    });
+    setParticipants(nextParticipants);
     setSubmitted(true);
   }
 
@@ -23,12 +42,12 @@ export default function FillPage() {
     <Shell
       eyebrow={demoTaskId}
       title="填写我的约饭偏好"
-      subtitle="自然语言和快捷字段都会保留，方便后续从 mock 版升级到规则抽取。"
+      subtitle="提交后会写入 localStorage，看板页会立即读取新增或更新后的成员偏好。"
     >
-      <Card title={demoTask.title}>
-        <p className="text-sm leading-6 text-stone-600">{demoTask.raw_request}</p>
+      <Card title={task.title}>
+        <p className="text-sm leading-6 text-stone-600">{task.raw_request}</p>
         <div className="mt-3 rounded-lg bg-yellow-50 px-3 py-2 text-sm font-medium text-yellow-900">
-          已收集 {demoTask.participants.length} / {demoTask.expected_people_count} 人
+          已收集 {participants.length || task.participants.length} / {task.expected_people_count} 人
         </div>
       </Card>
 
@@ -55,7 +74,7 @@ export default function FillPage() {
               />
             </label>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2">
               <label className="block">
                 <span className="mb-1 block text-sm font-semibold text-ink">预算上限</span>
                 <input
@@ -83,7 +102,7 @@ export default function FillPage() {
               <select
                 className="w-full rounded-lg border border-line bg-white px-3 py-3 text-base outline-none focus:border-yellow-400"
                 value={spicyPreference}
-                onChange={(event) => setSpicyPreference(event.target.value)}
+                onChange={(event) => setSpicyPreference(event.target.value as "spicy" | "no_spicy" | "any")}
               >
                 <option value="spicy">能吃辣</option>
                 <option value="no_spicy">不吃辣</option>
@@ -102,9 +121,9 @@ export default function FillPage() {
         <Card className="mt-4" eyebrow="已提交" title={`${nickname || "我"} 的偏好已记录`}>
           <p className="text-sm leading-6 text-stone-600">{preference}</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {[...demoTask.participants.map((participant) => participant.nickname), nickname || "我"].map((name) => (
-              <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-700" key={name}>
-                {name}
+            {participants.map((participant) => (
+              <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-700" key={participant.participant_id}>
+                {participant.nickname}
               </span>
             ))}
           </div>

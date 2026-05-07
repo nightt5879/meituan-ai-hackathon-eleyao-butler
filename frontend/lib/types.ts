@@ -87,3 +87,24 @@ export type DinnerTask = {
   group_message: string;
   normal_ai_message: string;
 };
+
+export type StoredTaskFields = {
+  creator_name: string;
+  raw_request: string;
+  location_text: string;
+  expected_people_count: number;
+  dinner_time: string;
+  title?: string;
+};
+
+export type ParticipantInput = {
+  nickname: string;
+  raw_preference: string;
+  manual_fields: ManualFields;
+};
+
+export type RecommendationState = {
+  status: TaskStatus;
+  hasGenerated: boolean;
+  updated_at: string;
+};
