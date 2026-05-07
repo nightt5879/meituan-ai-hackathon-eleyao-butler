@@ -8,8 +8,15 @@ import { Shell } from "@/components/Shell";
 import { StatusBadge } from "@/components/StatusBadge";
 import { demoTaskId } from "@/lib/mockData";
 import { detectConflicts, extractConstraints, generateMockRecommendation } from "@/lib/mockFunctions";
-import { getParticipantsForBoard, getRecommendationState, getStoredTask, resetDemoStorage, saveRecommendationState } from "@/lib/storage";
-import type { Conflict, DinnerTask, Participant, RecommendationResult, RestaurantCandidate, TaskStatus } from "@/lib/types";
+import {
+  deleteStoredParticipant,
+  getParticipantsForBoard,
+  getRecommendationState,
+  getStoredTask,
+  resetDemoStorage,
+  saveRecommendationState
+} from "@/lib/storage";
+import type { Conflict, DinnerTask, Participant, RecommendationResult, RestaurantCandidate, RecommendationState, TaskStatus } from "@/lib/types";
 
 const auditLabels: Record<string, string> = {
   budget_check: "预算检查",
@@ -111,7 +118,7 @@ function CandidateCard({ candidate }: { candidate: RestaurantCandidate }) {
 
       <div className="mt-3">
         <p className="mb-2 text-sm font-semibold text-ink">成员满意度</p>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2 min-[420px]:grid-cols-3">
           {Object.entries(candidate.member_scores).map(([name, score]) => (
             <div className="rounded-lg bg-stone-50 px-2 py-2 text-center" key={name}>
               <p className="text-xs text-stone-500">{name}</p>
@@ -164,6 +171,7 @@ export default function DinnerBoardPage() {
   const [recommendation, setRecommendation] = useState<RecommendationResult>(() => loadBoardData().recommendation);
   const [status, setStatus] = useState<TaskStatus>("ready_to_recommend");
   const [showResults, setShowResults] = useState(false);
+  const [dirtyReason, setDirtyReason] = useState<RecommendationState["dirty_reason"]>();
   const [shareCopied, setShareCopied] = useState(false);
   const [groupCopied, setGroupCopied] = useState(false);
 
@@ -185,6 +193,7 @@ export default function DinnerBoardPage() {
     setRecommendation(loaded.recommendation);
     setStatus(recommendationState.status);
     setShowResults(recommendationState.hasGenerated && recommendationState.status === "done");
+    setDirtyReason(recommendationState.hasGenerated ? undefined : recommendationState.dirty_reason);
 
     return () => {
       if (timerRef.current) {
@@ -200,7 +209,8 @@ export default function DinnerBoardPage() {
 
     setStatus("recommending");
     setShowResults(false);
-    saveRecommendationState({ status: "recommending", hasGenerated: false });
+    setDirtyReason(undefined);
+    saveRecommendationState({ status: "recommending", hasGenerated: false, dirty_reason: null });
 
     timerRef.current = window.setTimeout(() => {
       const latest = loadBoardData();
@@ -210,8 +220,32 @@ export default function DinnerBoardPage() {
       setRecommendation(latest.recommendation);
       setStatus("done");
       setShowResults(true);
-      saveRecommendationState({ status: "done", hasGenerated: true });
+      setDirtyReason(undefined);
+      saveRecommendationState({ status: "done", hasGenerated: true, dirty_reason: null });
     }, 950);
+  }
+
+  function refreshBoardAfterParticipantChange(nextParticipants?: Participant[]) {
+    const latestTask = getStoredTask();
+    const latestParticipants = extractConstraints(nextParticipants ?? getParticipantsForBoard());
+    const latestConflicts = detectConflicts(latestParticipants, latestTask.global_constraints.budget_max);
+
+    setTask(latestTask);
+    setParticipants(latestParticipants);
+    setConflicts(latestConflicts);
+    setRecommendation(generateMockRecommendation(latestTask, latestParticipants));
+    setStatus("ready_to_recommend");
+    setShowResults(false);
+    setDirtyReason("participants_changed");
+  }
+
+  function handleDeleteParticipant(participantId: string) {
+    if (timerRef.current) {
+      window.clearTimeout(timerRef.current);
+    }
+
+    const nextParticipants = deleteStoredParticipant(participantId);
+    refreshBoardAfterParticipantChange(nextParticipants);
   }
 
   function handleResetDemo() {
@@ -281,15 +315,40 @@ export default function DinnerBoardPage() {
         </Card>
 
         <Card title="成员偏好">
-          <div className="space-y-3">
-            {participants.map((participant) => (
-              <div className="rounded-lg border border-stone-100 bg-stone-50 p-3" key={participant.participant_id}>
-                <p className="font-bold text-ink">{participant.nickname}</p>
-                <p className="mt-1 text-sm leading-6 text-stone-600">{participant.raw_preference}</p>
-              </div>
-            ))}
-          </div>
+          {participants.length > 0 ? (
+            <div className="space-y-3">
+              {participants.map((participant) => (
+                <div className="rounded-lg border border-stone-100 bg-stone-50 p-3" key={participant.participant_id}>
+                  <div className="flex flex-col gap-2 min-[380px]:flex-row min-[380px]:items-start min-[380px]:justify-between">
+                    <div className="min-w-0">
+                      <p className="font-bold text-ink">{participant.nickname}</p>
+                      <p className="mt-1 text-sm leading-6 text-stone-600">{participant.raw_preference}</p>
+                    </div>
+                    <button
+                      className="w-full shrink-0 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-bold text-red-700 active:scale-[0.99] min-[380px]:w-auto"
+                      type="button"
+                      onClick={() => handleDeleteParticipant(participant.participant_id)}
+                    >
+                      删除
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-lg border border-dashed border-stone-300 bg-stone-50 p-4 text-sm leading-6 text-stone-600">
+              暂无成员偏好。可以点击“去填写页”添加成员，或点击“重置 demo 数据”恢复默认三人演示数据。
+            </div>
+          )}
         </Card>
+
+        {dirtyReason ? (
+          <Card>
+            <div className="rounded-lg bg-yellow-50 p-3 text-sm font-semibold leading-6 text-yellow-900">
+              {dirtyReason === "participants_changed" ? "成员偏好已变化，请重新生成推荐方案。" : "任务信息已变化，请重新生成推荐方案。"}
+            </div>
+          </Card>
+        ) : null}
 
         <Card title="硬约束 / 软偏好">
           <div className="space-y-3">
@@ -327,10 +386,10 @@ export default function DinnerBoardPage() {
         <button
           className="w-full rounded-lg bg-ink px-4 py-3 text-base font-bold text-white active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-400"
           type="button"
-          disabled={status === "recommending"}
+          disabled={status === "recommending" || participants.length === 0}
           onClick={handleGenerate}
         >
-          {status === "recommending" ? "生成中..." : showResults ? "重新生成推荐方案" : "生成推荐方案"}
+          {participants.length === 0 ? "请先添加成员偏好" : status === "recommending" ? "生成中..." : showResults ? "重新生成推荐方案" : "生成推荐方案"}
         </button>
 
         {status === "recommending" ? (
@@ -344,6 +403,9 @@ export default function DinnerBoardPage() {
         {showResults ? (
           <>
             <Card title="候选餐厅">
+              <div className="mb-3 rounded-lg bg-stone-50 px-3 py-2 text-sm font-medium leading-6 text-stone-700">
+                本次参与计算的成员数：{participants.length} 人
+              </div>
               <div className="space-y-3">
                 {recommendation.candidates.map((candidate) => (
                   <CandidateCard candidate={candidate} key={candidate.restaurant_id} />

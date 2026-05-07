@@ -122,4 +122,5 @@ export type RecommendationState = {
   status: TaskStatus;
   hasGenerated: boolean;
   updated_at: string;
+  dirty_reason?: "task_changed" | "participants_changed";
 };

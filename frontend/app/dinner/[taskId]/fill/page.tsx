@@ -47,7 +47,7 @@ export default function FillPage() {
       <Card title={task.title}>
         <p className="text-sm leading-6 text-stone-600">{task.raw_request}</p>
         <div className="mt-3 rounded-lg bg-yellow-50 px-3 py-2 text-sm font-medium text-yellow-900">
-          已收集 {participants.length || task.participants.length} / {task.expected_people_count} 人
+          已收集 {participants.length} / {task.expected_people_count} 人
         </div>
       </Card>
 

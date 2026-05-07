@@ -147,6 +147,18 @@ export function extractConstraints(participants: Participant[]) {
 
 export function detectConflicts(participants: Participant[], budgetMax: number): Conflict[] {
   const conflicts: Conflict[] = [];
+
+  if (participants.length === 0) {
+    return [
+      {
+        type: "atmosphere",
+        severity: "low",
+        description: "当前还没有成员偏好，暂时无法识别多人冲突。",
+        resolution_strategy: "请先让成员填写偏好，再生成推荐方案。"
+      }
+    ];
+  }
+
   const spicyNames = participants.filter(wantsSpicy).map((participant) => participant.nickname);
   const noSpicyNames = participants.filter(hasNoSpicyHard).map((participant) => participant.nickname);
   const lowerBudgetParticipants = participants.filter((participant) => {
@@ -263,7 +275,8 @@ export function auditPlan(restaurant: MockRestaurant, participants: Participant[
   const personalBudget = lowestPersonalBudget(participants, budgetMax);
   const hasNoSpicy = participants.some(hasNoSpicyHard);
   const hasDeadline = participants.some((participant) => participant.manual_fields.leave_before);
-  const minScore = Math.min(...Object.values(memberScores));
+  const scoreValues = Object.values(memberScores);
+  const minScore = scoreValues.length > 0 ? Math.min(...scoreValues) : 50;
   const hardRules: RestaurantCandidate["audit"]["hard_rules"] = {
     budget_check: restaurant.avg_price > budgetMax ? "fail" : restaurant.avg_price > personalBudget ? "risk" : "pass",
     diet_check: hasNoSpicy && !restaurant.supports_non_spicy ? "fail" : "pass",

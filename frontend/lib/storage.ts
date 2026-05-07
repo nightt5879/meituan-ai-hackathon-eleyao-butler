@@ -78,7 +78,7 @@ export function getStoredTask(): DinnerTask {
 export function saveStoredTask(input: StoredTaskFields) {
   const task = normalizeTask(input);
   writeJson(storageKeys.task, task);
-  saveRecommendationState({ status: "ready_to_recommend", hasGenerated: false });
+  saveRecommendationState({ status: "ready_to_recommend", hasGenerated: false, dirty_reason: "task_changed" });
 
   return composeTask(task);
 }
@@ -90,7 +90,7 @@ export function getStoredParticipants(): Participant[] | null {
 export function getParticipantsForBoard(): Participant[] {
   const stored = getStoredParticipants();
 
-  return stored && stored.length > 0 ? stored : demoTask.participants;
+  return stored ?? demoTask.participants;
 }
 
 export function saveStoredParticipant(input: ParticipantInput) {
@@ -103,7 +103,17 @@ export function saveStoredParticipant(input: ParticipantInput) {
     : [...current, nextParticipant];
 
   writeJson(storageKeys.participants, nextParticipants);
-  saveRecommendationState({ status: "ready_to_recommend", hasGenerated: false });
+  saveRecommendationState({ status: "ready_to_recommend", hasGenerated: false, dirty_reason: "participants_changed" });
+
+  return nextParticipants;
+}
+
+export function deleteStoredParticipant(participantId: string) {
+  const current = getStoredParticipants() ?? demoTask.participants;
+  const nextParticipants = current.filter((participant) => participant.participant_id !== participantId);
+
+  writeJson(storageKeys.participants, nextParticipants);
+  saveRecommendationState({ status: "ready_to_recommend", hasGenerated: false, dirty_reason: "participants_changed" });
 
   return nextParticipants;
 }
@@ -118,12 +128,17 @@ export function getRecommendationState(): RecommendationState {
   );
 }
 
-export function saveRecommendationState(input: Partial<Pick<RecommendationState, "status" | "hasGenerated">>) {
+export function saveRecommendationState(
+  input: Partial<Pick<RecommendationState, "status" | "hasGenerated">> & {
+    dirty_reason?: RecommendationState["dirty_reason"] | null;
+  }
+) {
   const previous = getRecommendationState();
   const next: RecommendationState = {
     status: input.status ?? previous.status,
     hasGenerated: input.hasGenerated ?? previous.hasGenerated,
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
+    dirty_reason: input.dirty_reason === null ? undefined : input.dirty_reason ?? previous.dirty_reason
   };
 
   writeJson(storageKeys.recommendationState, next);
