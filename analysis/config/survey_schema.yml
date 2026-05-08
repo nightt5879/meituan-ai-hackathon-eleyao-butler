@@ -1,0 +1,236 @@
+input_encoding: gb18030
+age_order:
+  - "18-22 岁"
+  - "23-26 岁"
+  - "27-30 岁"
+  - "30 岁以上"
+
+columns:
+  answer_id: "作答ID"
+  user_id: "用户ID"
+  start_time: "开始时间"
+  end_time: "结束时间"
+  duration_sec: "作答总时长(秒)"
+  channel: "作答渠道"
+  province: "省份"
+  city: "城市"
+  longitude: "经度"
+  latitude: "纬度"
+  device: "设备类型"
+  os: "操作系统类型"
+  browser: "浏览器类型"
+  quality_result: "质检结果"
+  identity_ambiguous: "你的身份是？"
+  age: "请选择你的年龄段"
+  ai_usage: "你使用 AI 工具(ChatGPT、Claude、豆包、Kimi、DeepSeek 等)的情况是?"
+  local_app_frequency: "你平时使用本地生活类 App 的频率如何？例如美团、大众点评、高德、小红书等。"
+  most_tangled_scene: "你在哪类本地生活选择中最容易纠结？"
+  tangled_state: "在这类最容易纠结的选择中，你通常的状态更接近哪一种？"
+  ai_butler_reaction: "如果有一个 AI 本地生活管家(能帮你做吃饭、出行、约饭、周末等本地生活决策),最接近你的真实反应是?"
+  proactive_mode: "你更希望 AI 管家以哪种方式工作？"
+  group_outing_frequency: "你平均多久会和朋友 / 同学 / 同事进行一次线下约饭、聚会或一起出行？"
+  group_dining_difficulty: "你是否经常遇到“和朋友约饭 / 聚会很难定下来”的情况？"
+  group_conflict_action: "如果下次约饭遇到分歧,你最可能怎么做?"
+  group_recommendation_style: "在多人决策中，你更希望 AI 怎么推荐？"
+  explanation_preference: "AI 生成多人方案后，你是否希望它说明“照顾了谁的偏好、牺牲了什么”？"
+  unrealistic_recommendation: "你是否遇到过 AI 或攻略推荐“看起来很好，但实际执行不了”的情况？"
+  self_check_most: "如果AI 在推荐前自动检查以下内容，你觉得最看重/最不看重哪一项？-最看重"
+  self_check_least: "如果AI 在推荐前自动检查以下内容，你觉得最看重/最不看重哪一项？-最不看重"
+  fallback_preference: "如果 AI 发现推荐方案不满足你的条件，你希望它优先怎么做？"
+  attention_check: "为保证问卷质量，本题请选择特定选项"
+  long_term_memory: "你是否希望 AI 管家记住你的个人长期偏好？例如不吃辣、预算、人均消费、常去区域等"
+  group_memory: "关于 AI 记录朋友 / 同事 / 小团体偏好，你更能接受哪种方式？"
+  open_text: "请你回想最近一次\"做本地生活决策很累\"的经历,可能是吃饭、约人、规划周末或别的事。请用 1-2 句话描述这件事"
+
+school_work_status:
+  status_column: "school_work_status"
+  rule_column: "school_work_rule"
+  labels:
+    school: "在校"
+    work: "已工作"
+    excluded: "边界模糊-剔除"
+    unclassified: "未分类"
+  classifiable_statuses:
+    - "在校"
+    - "已工作"
+  summary_order:
+    - "在校"
+    - "已工作"
+    - "边界模糊-剔除"
+    - "未分类"
+  note: "该派生字段只用于在校/已工作对比；年龄段和总体统计仍使用全样本。"
+  rules:
+    - status: "在校"
+      rule: "18-22 岁 + 专科/本科生"
+      ages: ["18-22 岁"]
+      identity_codes: ["A", "B"]
+    - status: "在校"
+      rule: "23-26 岁 + 研究生/博士生"
+      ages: ["23-26 岁"]
+      identity_codes: ["C", "D"]
+    - status: "在校"
+      rule: "27-30 岁 + 博士生"
+      ages: ["27-30 岁"]
+      identity_codes: ["D"]
+    - status: "已工作"
+      rule: "明确选择已工作 1-3 年/3 年以上"
+      ages: ["18-22 岁", "23-26 岁", "27-30 岁", "30 岁以上"]
+      identity_codes: ["E", "F"]
+    - status: "已工作"
+      rule: "27-30 岁/30 岁以上 + 专科/本科生/研究生，按学历回答推断为已工作"
+      ages: ["27-30 岁", "30 岁以上"]
+      identity_codes: ["A", "B", "C"]
+    - status: "边界模糊-剔除"
+      rule: "23-26 岁 + 专科/本科生"
+      ages: ["23-26 岁"]
+      identity_codes: ["A", "B"]
+    - status: "边界模糊-剔除"
+      rule: "30 岁以上 + 博士生"
+      ages: ["30 岁以上"]
+      identity_codes: ["D"]
+
+single_choice:
+  ai_usage:
+    title: "AI 工具使用频率"
+    column: "ai_usage"
+  local_app_frequency:
+    title: "本地生活 App 使用频率"
+    column: "local_app_frequency"
+  most_tangled_scene:
+    title: "最容易纠结的本地生活场景"
+    column: "most_tangled_scene"
+  tangled_state:
+    title: "本地生活决策状态"
+    column: "tangled_state"
+  ai_butler_reaction:
+    title: "AI 管家尝试意愿"
+    column: "ai_butler_reaction"
+  proactive_mode:
+    title: "主动提醒接受边界"
+    column: "proactive_mode"
+  group_outing_frequency:
+    title: "线下约饭/聚会频率"
+    column: "group_outing_frequency"
+  group_dining_difficulty:
+    title: "多人约饭难定程度"
+    column: "group_dining_difficulty"
+  group_conflict_action:
+    title: "约饭分歧下的 AI 折中意愿"
+    column: "group_conflict_action"
+  group_recommendation_style:
+    title: "多人决策推荐方式偏好"
+    column: "group_recommendation_style"
+  explanation_preference:
+    title: "是否需要解释照顾/牺牲的偏好"
+    column: "explanation_preference"
+  unrealistic_recommendation:
+    title: "是否遇到推荐看似好但执行不了"
+    column: "unrealistic_recommendation"
+  fallback_preference:
+    title: "方案不满足条件时的处理偏好"
+    column: "fallback_preference"
+  long_term_memory:
+    title: "长期偏好记忆接受度"
+    column: "long_term_memory"
+  group_memory:
+    title: "朋友/小团体偏好记录接受方式"
+    column: "group_memory"
+
+multi_select:
+  current_app_usage:
+    title: "最常使用本地生活 App 做什么"
+    prefix: "你最常使用本地生活类 App 做什么？-"
+  decision_pain_points:
+    title: "本地生活决策痛点"
+    prefix: "你在做本地生活决策时，通常会遇到哪些问题？-"
+  desired_ai_tasks:
+    title: "最希望 AI 管家帮忙做什么"
+    prefix: "如果有一个 AI 本地生活管家，你最希望它帮你做什么？-"
+  reminder_moments:
+    title: "希望 AI 主动提醒的时刻"
+    prefix: "如果AI管家具有提醒功能，你最希望 AI 管家在以下哪些时间主动提醒？-"
+  group_conflict_types:
+    title: "多人约饭/聚会常见冲突"
+    prefix: "多人约饭 / 聚会时，最常见的问题是什么？-"
+  memory_items:
+    title: "可接受 AI 记住的信息"
+    prefix: "你能接受 AI 记住哪些信息？-"
+  concerns:
+    title: "对 AI 管家的最大顾虑"
+    prefix: "你对 AI 管家最大的顾虑是什么？-"
+
+ranking:
+  priority_scenarios:
+    title: "AI 管家优先场景排序"
+    prefix: "你最希望 AI 管家优先做好哪些场景？请按重要程度排序-"
+
+open_text_themes:
+  "不知道吃什么/选店困难":
+    - "吃什么"
+    - "不知道吃"
+    - "选店"
+    - "餐厅"
+    - "外卖"
+    - "午饭"
+    - "晚饭"
+    - "吃饭"
+  "多人约饭/意见冲突":
+    - "朋友"
+    - "室友"
+    - "同学"
+    - "约饭"
+    - "聚餐"
+    - "聚会"
+    - "口味"
+    - "忌口"
+    - "意见"
+    - "分歧"
+    - "协调"
+    - "大家"
+  "信息过载/多 App 切换":
+    - "app"
+    - "APP"
+    - "软件"
+    - "平台"
+    - "评论"
+    - "攻略"
+    - "搜索"
+    - "对比"
+    - "来回"
+    - "切换"
+    - "小红书"
+    - "美团"
+    - "大众点评"
+  "路线/距离/时间安排":
+    - "路线"
+    - "距离"
+    - "远"
+    - "交通"
+    - "规划"
+    - "安排"
+    - "时间"
+    - "返程"
+    - "酒店"
+    - "出行"
+    - "游玩"
+    - "周末"
+    - "景点"
+    - "旅游"
+  "执行不确定/约束检查":
+    - "排队"
+    - "营业"
+    - "预算"
+    - "价格"
+    - "贵"
+    - "便宜"
+    - "允许"
+    - "关门"
+    - "不允许"
+  "突发/兜底需求":
+    - "生病"
+    - "胃痛"
+    - "药"
+    - "医院"
+    - "钥匙"
+    - "突发"
+    - "深夜"
