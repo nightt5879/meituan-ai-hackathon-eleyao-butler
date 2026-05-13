@@ -1,0 +1,127 @@
+{
+  "sample_size": 104,
+  "column_count": 202,
+  "age_counts": [
+    {
+      "option": "30 岁以上",
+      "count": 32,
+      "pct": 30.8
+    },
+    {
+      "option": "18-22 岁",
+      "count": 29,
+      "pct": 27.9
+    },
+    {
+      "option": "23-26 岁",
+      "count": 26,
+      "pct": 25.0
+    },
+    {
+      "option": "27-30 岁",
+      "count": 17,
+      "pct": 16.3
+    }
+  ],
+  "school_work_status": [
+    {
+      "option": "已工作",
+      "count": 53,
+      "pct": 51.0
+    },
+    {
+      "option": "在校",
+      "count": 33,
+      "pct": 31.7
+    },
+    {
+      "option": "边界模糊-剔除",
+      "count": 18,
+      "pct": 17.3
+    }
+  ],
+  "duration": {
+    "min": 113.0,
+    "median": 347.0,
+    "mean": 384.00961538461536,
+    "max": 1223.0
+  },
+  "quality_result": [
+    {
+      "option": "正常",
+      "count": 80,
+      "pct": 76.9
+    },
+    {
+      "option": "未检测",
+      "count": 24,
+      "pct": 23.1
+    }
+  ],
+  "attention_check": [
+    {
+      "option": "满意",
+      "count": 104,
+      "pct": 100.0
+    }
+  ],
+  "figures": {
+    "age_distribution": "outputs/2026-05-08/figures/fig_age_distribution.png",
+    "duration": "outputs/2026-05-08/figures/fig_duration_hist.png",
+    "ai_usage": "outputs/2026-05-08/figures/fig_ai_usage_by_age.png",
+    "local_app_frequency": "outputs/2026-05-08/figures/fig_local_app_frequency_by_age.png",
+    "most_tangled_scene": "outputs/2026-05-08/figures/fig_most_tangled_scene_by_age.png",
+    "ai_butler_reaction": "outputs/2026-05-08/figures/fig_ai_butler_reaction_by_age.png",
+    "proactive_mode": "outputs/2026-05-08/figures/fig_proactive_mode_by_age.png",
+    "explanation_preference": "outputs/2026-05-08/figures/fig_explanation_preference_by_age.png",
+    "fallback_preference": "outputs/2026-05-08/figures/fig_fallback_preference_by_age.png",
+    "decision_pain_points": "outputs/2026-05-08/figures/fig_decision_pain_points_by_age.png",
+    "desired_ai_tasks": "outputs/2026-05-08/figures/fig_desired_ai_tasks_by_age.png",
+    "reminder_moments": "outputs/2026-05-08/figures/fig_reminder_moments_by_age.png",
+    "group_conflict_types": "outputs/2026-05-08/figures/fig_group_conflict_types_by_age.png",
+    "memory_items": "outputs/2026-05-08/figures/fig_memory_items_by_age.png",
+    "concerns": "outputs/2026-05-08/figures/fig_concerns_by_age.png",
+    "self_check": "outputs/2026-05-08/figures/fig_self_check_importance.png",
+    "priority_ranking": "outputs/2026-05-08/figures/fig_priority_ranking_heatmap.png",
+    "group_dining_funnel": "outputs/2026-05-08/figures/fig_group_dining_funnel.png",
+    "open_text_themes": "outputs/2026-05-08/figures/fig_open_text_themes.png"
+  },
+  "open_text_top_themes": [
+    {
+      "theme": "不知道吃什么/选店困难",
+      "count": 52,
+      "pct_of_responses": 50.0,
+      "example": "饭点吃什么，看什么动漫"
+    },
+    {
+      "theme": "多人约饭/意见冲突",
+      "count": 46,
+      "pct_of_responses": 44.2,
+      "example": "有一次我想去约我的室友去吃饭，距离用餐的地点大约约5公里左右，但是他们都不想去那么远的地方，定找别的餐厅聚餐，那个地方其实我看博主推荐想去好久了，结果因为距离原因，最后没有去成。"
+    },
+    {
+      "theme": "路线/距离/时间安排",
+      "count": 42,
+      "pct_of_responses": 40.4,
+      "example": "周末和老婆规划附近游玩，并且有美食挑选"
+    },
+    {
+      "theme": "信息过载/多 App 切换",
+      "count": 23,
+      "pct_of_responses": 22.1,
+      "example": "吃的晚饭的时候不知道吃什么现在各个软件之间来回切换寻找，很浪费时间"
+    },
+    {
+      "theme": "未填写",
+      "count": 17,
+      "pct_of_responses": 16.3,
+      "example": ""
+    },
+    {
+      "theme": "执行不确定/约束检查",
+      "count": 9,
+      "pct_of_responses": 8.7,
+      "example": "有一次中午下班后不想一个人做饭，就想点份外卖。但翻过来翻过去感觉不是口味不合适就是价格太贵，一直纠结了半个多小时后才定下来"
+    }
+  ]
+}
