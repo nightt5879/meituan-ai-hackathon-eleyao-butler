@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  background: #fffdf8;
+  color: #1f2937;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: #fffdf8;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 209, 0, 0.16), rgba(255, 253, 248, 0) 220px),
+    #fffdf8;
+  color: #1f2937;
+  font-family:
+    Arial,
+    "Microsoft YaHei",
+    "PingFang SC",
+    sans-serif;
+  overflow-x: hidden;
+}
+
+p,
+li,
+h1,
+h2,
+h3,
+span,
+button {
+  overflow-wrap: anywhere;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+textarea {
+  resize: vertical;
+}

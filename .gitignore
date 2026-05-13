@@ -1,3 +1,13 @@
 /docs/.obsidian
 __pycache__/
 *.pyc
+
+# Frontend dependencies and build output
+frontend/node_modules/
+frontend/.next/
+frontend/.npm-cache/
+frontend/out/
+frontend/.vercel/
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
