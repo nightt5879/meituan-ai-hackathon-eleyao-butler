@@ -1,22 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { Card } from "@/components/Card";
 import { InfoRow } from "@/components/InfoRow";
 import { Shell } from "@/components/Shell";
 import { StatusBadge } from "@/components/StatusBadge";
-import { demoTaskId } from "@/lib/mockData";
-import { detectConflicts, extractConstraints, generateMockRecommendation } from "@/lib/mockFunctions";
 import {
-  deleteStoredParticipant,
-  getParticipantsForBoard,
-  getRecommendationState,
-  getStoredTask,
-  resetDemoStorage,
-  saveRecommendationState
-} from "@/lib/storage";
-import type { Conflict, DinnerTask, Participant, RecommendationResult, RestaurantCandidate, RecommendationState, TaskStatus } from "@/lib/types";
+  deleteParticipant as deleteParticipantFromApi,
+  generateRecommendation,
+  getTask,
+  resetDemoTask,
+  type TaskApiResponse
+} from "@/lib/apiClient";
+import type { Conflict, DinnerTask, Participant, RecommendationResult, RecommendationState, RestaurantCandidate, TaskStatus } from "@/lib/types";
 
 const auditLabels: Record<string, string> = {
   budget_check: "预算检查",
@@ -67,20 +65,6 @@ const statusText: Record<TaskStatus, string> = {
   done: "已生成",
   failed: "生成失败"
 };
-
-function loadBoardData() {
-  const task = getStoredTask();
-  const participants = extractConstraints(getParticipantsForBoard());
-  const conflicts = detectConflicts(participants, task.global_constraints.budget_max);
-  const recommendation = generateMockRecommendation(task, participants);
-
-  return {
-    task,
-    participants,
-    conflicts,
-    recommendation
-  };
-}
 
 function AuditList({ checks }: { checks: RestaurantCandidate["audit"]["hard_rules"] }) {
   return (
@@ -164,97 +148,130 @@ function ConstraintList({
 }
 
 export default function DinnerBoardPage() {
-  const timerRef = useRef<number | null>(null);
-  const [task, setTask] = useState<DinnerTask>(() => loadBoardData().task);
-  const [participants, setParticipants] = useState<Participant[]>(() => loadBoardData().participants);
-  const [conflicts, setConflicts] = useState<Conflict[]>(() => loadBoardData().conflicts);
-  const [recommendation, setRecommendation] = useState<RecommendationResult>(() => loadBoardData().recommendation);
-  const [status, setStatus] = useState<TaskStatus>("ready_to_recommend");
-  const [showResults, setShowResults] = useState(false);
+  const params = useParams<{ taskId: string }>();
+  const taskId = params.taskId;
+  const [task, setTask] = useState<DinnerTask | null>(null);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [conflicts, setConflicts] = useState<Conflict[]>([]);
+  const [recommendation, setRecommendation] = useState<RecommendationResult | null>(null);
+  const [status, setStatus] = useState<TaskStatus>("waiting_preferences");
   const [dirtyReason, setDirtyReason] = useState<RecommendationState["dirty_reason"]>();
   const [shareCopied, setShareCopied] = useState(false);
   const [groupCopied, setGroupCopied] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [actionPending, setActionPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const shareUrl = useMemo(() => {
     if (typeof window === "undefined") {
-      return `/dinner/${demoTaskId}/fill`;
+      return `/dinner/${taskId}/fill`;
     }
 
-    return `${window.location.origin}/dinner/${demoTaskId}/fill`;
-  }, []);
+    return `${window.location.origin}/dinner/${taskId}/fill`;
+  }, [taskId]);
+
+  const showResults = status === "done" && recommendation !== null;
+
+  function applyPayload(payload: TaskApiResponse) {
+    setTask(payload.task);
+    setParticipants(payload.participants);
+    setConflicts(payload.conflicts);
+    setRecommendation(payload.recommendation_result);
+    setStatus(payload.recommendation_state.status);
+    setDirtyReason(payload.recommendation_state.hasGenerated ? undefined : payload.recommendation_state.dirty_reason);
+  }
 
   useEffect(() => {
-    const loaded = loadBoardData();
-    const recommendationState = getRecommendationState();
+    let active = true;
 
-    setTask(loaded.task);
-    setParticipants(loaded.participants);
-    setConflicts(loaded.conflicts);
-    setRecommendation(loaded.recommendation);
-    setStatus(recommendationState.status);
-    setShowResults(recommendationState.hasGenerated && recommendationState.status === "done");
-    setDirtyReason(recommendationState.hasGenerated ? undefined : recommendationState.dirty_reason);
+    async function loadTask() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const payload = await getTask(taskId);
+
+        if (active) {
+          applyPayload(payload);
+        }
+      } catch (requestError) {
+        if (active) {
+          setError(requestError instanceof Error ? requestError.message : "读取任务失败，请稍后再试。");
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadTask();
 
     return () => {
-      if (timerRef.current) {
-        window.clearTimeout(timerRef.current);
-      }
+      active = false;
     };
-  }, []);
+  }, [taskId]);
 
-  function handleGenerate() {
-    if (timerRef.current) {
-      window.clearTimeout(timerRef.current);
+  async function handleGenerate() {
+    if (participants.length === 0 || actionPending) {
+      return;
     }
 
+    setActionPending(true);
     setStatus("recommending");
-    setShowResults(false);
     setDirtyReason(undefined);
-    saveRecommendationState({ status: "recommending", hasGenerated: false, dirty_reason: null });
+    setRecommendation(null);
+    setError(null);
 
-    timerRef.current = window.setTimeout(() => {
-      const latest = loadBoardData();
-      setTask(latest.task);
-      setParticipants(latest.participants);
-      setConflicts(latest.conflicts);
-      setRecommendation(latest.recommendation);
-      setStatus("done");
-      setShowResults(true);
-      setDirtyReason(undefined);
-      saveRecommendationState({ status: "done", hasGenerated: true, dirty_reason: null });
-    }, 950);
+    try {
+      const payload = await generateRecommendation(taskId);
+      applyPayload(payload);
+    } catch (requestError) {
+      setStatus("failed");
+      setError(requestError instanceof Error ? requestError.message : "生成推荐失败，请稍后再试。");
+    } finally {
+      setActionPending(false);
+    }
   }
 
-  function refreshBoardAfterParticipantChange(nextParticipants?: Participant[]) {
-    const latestTask = getStoredTask();
-    const latestParticipants = extractConstraints(nextParticipants ?? getParticipantsForBoard());
-    const latestConflicts = detectConflicts(latestParticipants, latestTask.global_constraints.budget_max);
-
-    setTask(latestTask);
-    setParticipants(latestParticipants);
-    setConflicts(latestConflicts);
-    setRecommendation(generateMockRecommendation(latestTask, latestParticipants));
-    setStatus("ready_to_recommend");
-    setShowResults(false);
-    setDirtyReason("participants_changed");
-  }
-
-  function handleDeleteParticipant(participantId: string) {
-    if (timerRef.current) {
-      window.clearTimeout(timerRef.current);
+  async function handleDeleteParticipant(participantId: string) {
+    if (actionPending) {
+      return;
     }
 
-    const nextParticipants = deleteStoredParticipant(participantId);
-    refreshBoardAfterParticipantChange(nextParticipants);
+    setActionPending(true);
+    setError(null);
+
+    try {
+      const payload = await deleteParticipantFromApi(taskId, participantId);
+      applyPayload(payload);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "删除成员失败，请稍后再试。");
+    } finally {
+      setActionPending(false);
+    }
   }
 
-  function handleResetDemo() {
-    resetDemoStorage();
-    window.location.reload();
+  async function handleResetDemo() {
+    if (actionPending) {
+      return;
+    }
+
+    setActionPending(true);
+    setError(null);
+
+    try {
+      const payload = await resetDemoTask(taskId);
+      applyPayload(payload);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "重置 demo 数据失败，请稍后再试。");
+    } finally {
+      setActionPending(false);
+    }
   }
 
   async function copyGroupMessage() {
-    if (navigator.clipboard) {
+    if (navigator.clipboard && recommendation) {
       await navigator.clipboard.writeText(recommendation.group_message);
       setGroupCopied(true);
       window.setTimeout(() => setGroupCopied(false), 1600);
@@ -271,25 +288,26 @@ export default function DinnerBoardPage() {
 
   return (
     <Shell
-      eyebrow={task.task_id}
+      eyebrow={task?.task_id ?? taskId}
       title="任务看板与推荐结果"
-      subtitle="本页只运行前端 mock functions：先收集偏好，再点击生成推荐方案。"
+      subtitle="本页读取服务端共享状态，仍使用 mock 餐厅数据和规则版 mock Agent。"
     >
       <div className="space-y-4">
         <Card title="任务信息">
           <div className="mb-3 flex flex-wrap gap-2">
-            <StatusBadge tone={statusTone[status]}>{statusText[status]}</StatusBadge>
-            <StatusBadge tone="yellow">{task.dinner_time}</StatusBadge>
+            <StatusBadge tone={statusTone[status]}>{loading ? "读取中" : statusText[status]}</StatusBadge>
+            <StatusBadge tone="yellow">{task?.dinner_time ?? "待加载"}</StatusBadge>
           </div>
           <div className="mb-3 rounded-lg bg-stone-50 px-3 py-2 text-xs font-medium leading-5 text-stone-600">
-            当前为前端 mock 规则引擎生成，未接真实后端 / OpenClaw / 外部 API。
+            当前为 Next.js API routes + JSON 文件共享状态，未接真实 OpenClaw / 美团 / 大众点评 / 地图 API。
           </div>
           <div className="space-y-1">
-            <InfoRow label="标题" value={task.title} />
-            <InfoRow label="需求" value={task.raw_request} />
-            <InfoRow label="地点" value={task.location_text} />
-            <InfoRow label="人数" value={`${participants.length} / ${task.expected_people_count}`} />
+            <InfoRow label="标题" value={task?.title ?? "正在加载"} />
+            <InfoRow label="需求" value={task?.raw_request ?? "正在读取共享任务..."} />
+            <InfoRow label="地点" value={task?.location_text ?? "-"} />
+            <InfoRow label="人数" value={`${participants.length} / ${task?.expected_people_count ?? "-"}`} />
           </div>
+          {error ? <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">{error}</p> : null}
           <div className="mt-4 grid grid-cols-1 gap-3 min-[380px]:grid-cols-2">
             <button
               className="rounded-lg border border-line bg-white px-3 py-3 text-sm font-bold text-ink active:scale-[0.99]"
@@ -300,15 +318,16 @@ export default function DinnerBoardPage() {
             </button>
             <Link
               className="rounded-lg bg-brand px-3 py-3 text-center text-sm font-bold text-ink active:scale-[0.99]"
-              href={`/dinner/${demoTaskId}/fill`}
+              href={`/dinner/${taskId}/fill`}
             >
               去填写页
             </Link>
           </div>
           <button
-            className="mt-3 w-full rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-sm font-bold text-red-700 active:scale-[0.99]"
+            className="mt-3 w-full rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-sm font-bold text-red-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400"
             type="button"
             onClick={handleResetDemo}
+            disabled={actionPending}
           >
             重置 demo 数据
           </button>
@@ -325,9 +344,10 @@ export default function DinnerBoardPage() {
                       <p className="mt-1 text-sm leading-6 text-stone-600">{participant.raw_preference}</p>
                     </div>
                     <button
-                      className="w-full shrink-0 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-bold text-red-700 active:scale-[0.99] min-[380px]:w-auto"
+                      className="w-full shrink-0 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-bold text-red-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400 min-[380px]:w-auto"
                       type="button"
                       onClick={() => handleDeleteParticipant(participant.participant_id)}
+                      disabled={actionPending}
                     >
                       删除
                     </button>
@@ -361,7 +381,7 @@ export default function DinnerBoardPage() {
               <p className="mb-2 text-sm font-bold text-emerald-700">软偏好</p>
               <ConstraintList kind="soft_preferences" participants={participants} />
               <ul className="mt-2 space-y-1 text-sm leading-6">
-                {task.global_constraints.atmosphere.map((item) => (
+                {(task?.global_constraints.atmosphere ?? []).map((item) => (
                   <li key={item}>全局：{item}</li>
                 ))}
               </ul>
@@ -386,7 +406,7 @@ export default function DinnerBoardPage() {
         <button
           className="w-full rounded-lg bg-ink px-4 py-3 text-base font-bold text-white active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-400"
           type="button"
-          disabled={status === "recommending" || participants.length === 0}
+          disabled={status === "recommending" || actionPending || participants.length === 0 || !task}
           onClick={handleGenerate}
         >
           {participants.length === 0 ? "请先添加成员偏好" : status === "recommending" ? "生成中..." : showResults ? "重新生成推荐方案" : "生成推荐方案"}
