@@ -1,56 +1,50 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/Card";
 import { InfoRow } from "@/components/InfoRow";
 import { Shell } from "@/components/Shell";
-import { demoTaskId } from "@/lib/mockData";
-import { getStoredTask, saveStoredTask } from "@/lib/storage";
+import { createTask, type CreateTaskResponse } from "@/lib/apiClient";
+import { demoTask } from "@/lib/mockData";
 
 export default function CreatePage() {
   const router = useRouter();
-  const [creatorName, setCreatorName] = useState("小林");
-  const [rawRequest, setRawRequest] = useState("明晚三个人想在学校附近吃饭，人均 100 以内，适合聊天，别太吵。");
-  const [locationText, setLocationText] = useState("学校附近");
-  const [peopleCount, setPeopleCount] = useState(3);
-  const [dinnerTime, setDinnerTime] = useState("明晚 18:30");
+  const [creatorName, setCreatorName] = useState(demoTask.creator_name);
+  const [rawRequest, setRawRequest] = useState(demoTask.raw_request);
+  const [locationText, setLocationText] = useState(demoTask.location_text);
+  const [peopleCount, setPeopleCount] = useState(demoTask.expected_people_count);
+  const [dinnerTime, setDinnerTime] = useState(demoTask.dinner_time);
+  const [createdTask, setCreatedTask] = useState<CreateTaskResponse | null>(null);
   const [copied, setCopied] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const sharePath = `/dinner/${demoTaskId}/fill`;
-  const boardPath = `/dinner/${demoTaskId}`;
-  const shareUrl = useMemo(() => {
-    if (typeof window === "undefined") {
-      return sharePath;
-    }
-
-    return `${window.location.origin}${sharePath}`;
-  }, [sharePath]);
-
-  useEffect(() => {
-    const task = getStoredTask();
-    setCreatorName(task.creator_name);
-    setRawRequest(task.raw_request);
-    setLocationText(task.location_text);
-    setPeopleCount(task.expected_people_count);
-    setDinnerTime(task.dinner_time);
-  }, []);
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    saveStoredTask({
-      creator_name: creatorName,
-      raw_request: rawRequest,
-      location_text: locationText,
-      expected_people_count: peopleCount,
-      dinner_time: dinnerTime
-    });
-    router.push(boardPath);
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const result = await createTask({
+        creator_name: creatorName,
+        raw_request: rawRequest,
+        location_text: locationText,
+        expected_people_count: peopleCount,
+        dinner_time: dinnerTime
+      });
+      setCreatedTask(result);
+      router.push(`/dinner/${result.task_id}`);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "创建任务失败，请稍后再试。");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function copyShareLink() {
-    if (navigator.clipboard) {
-      await navigator.clipboard.writeText(shareUrl);
+    if (navigator.clipboard && createdTask) {
+      await navigator.clipboard.writeText(createdTask.fill_url);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1600);
     }
@@ -58,9 +52,9 @@ export default function CreatePage() {
 
   return (
     <Shell
-      eyebrow="frontend mock loop"
+      eyebrow="shared backend mock loop"
       title="创建多人约饭任务"
-      subtitle="填写后会保存到本机 localStorage，并进入固定 demo 看板。"
+      subtitle="填写后会保存到服务端共享状态，并进入对应任务看板。"
     >
       <form className="space-y-4" onSubmit={handleSubmit}>
         <Card>
@@ -117,22 +111,33 @@ export default function CreatePage() {
               />
             </label>
 
-            <button className="w-full rounded-lg bg-ink px-4 py-3 text-base font-bold text-white active:scale-[0.99]" type="submit">
-              创建 demo 任务
+            {error ? <p className="rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">{error}</p> : null}
+
+            <button
+              className="w-full rounded-lg bg-ink px-4 py-3 text-base font-bold text-white active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-400"
+              type="submit"
+              disabled={submitting}
+            >
+              {submitting ? "创建中..." : "创建 demo 任务"}
             </button>
           </div>
         </Card>
       </form>
 
-      <Card className="mt-4" eyebrow="固定 demo 链接" title="分享给成员填写">
-        <div className="space-y-1">
-          <InfoRow label="任务 ID" value={demoTaskId} />
-          <InfoRow label="填写链接" value={<span className="break-all">{shareUrl}</span>} />
-        </div>
+      <Card className="mt-4" eyebrow="共享任务链接" title="分享给成员填写">
+        {createdTask ? (
+          <div className="space-y-1">
+            <InfoRow label="任务 ID" value={createdTask.task_id} />
+            <InfoRow label="填写链接" value={<span className="break-all">{createdTask.fill_url}</span>} />
+          </div>
+        ) : (
+          <p className="text-sm leading-6 text-stone-600">创建成功后会进入看板，看板里可以复制当前任务的填写链接。</p>
+        )}
         <button
-          className="mt-4 w-full rounded-lg border border-line bg-white px-4 py-3 text-base font-bold text-ink active:scale-[0.99]"
+          className="mt-4 w-full rounded-lg border border-line bg-white px-4 py-3 text-base font-bold text-ink active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-400"
           type="button"
           onClick={copyShareLink}
+          disabled={!createdTask}
         >
           {copied ? "已复制" : "复制分享链接"}
         </button>

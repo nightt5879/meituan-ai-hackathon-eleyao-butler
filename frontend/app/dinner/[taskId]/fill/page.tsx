@@ -2,14 +2,16 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { Card } from "@/components/Card";
 import { Shell } from "@/components/Shell";
-import { demoTaskId } from "@/lib/mockData";
-import { getParticipantsForBoard, getStoredTask, saveStoredParticipant } from "@/lib/storage";
+import { getTask, submitParticipant } from "@/lib/apiClient";
 import type { DinnerTask, Participant } from "@/lib/types";
 
 export default function FillPage() {
-  const [task, setTask] = useState<DinnerTask>(() => getStoredTask());
+  const params = useParams<{ taskId: string }>();
+  const taskId = params.taskId;
+  const [task, setTask] = useState<DinnerTask | null>(null);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [nickname, setNickname] = useState("我");
   const [preference, setPreference] = useState("我完全不吃辣，预算 80 内。");
@@ -17,39 +19,84 @@ export default function FillPage() {
   const [spicyPreference, setSpicyPreference] = useState<"spicy" | "no_spicy" | "any">("no_spicy");
   const [leaveBefore, setLeaveBefore] = useState("20:30");
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setTask(getStoredTask());
-    setParticipants(getParticipantsForBoard());
-  }, []);
+    let active = true;
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const nextParticipants = saveStoredParticipant({
-      nickname,
-      raw_preference: preference,
-      manual_fields: {
-        budget_max: budgetMax ? Number(budgetMax) : undefined,
-        spicy_preference: spicyPreference,
-        leave_before: leaveBefore || undefined
+    async function loadTask() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const payload = await getTask(taskId);
+
+        if (!active) {
+          return;
+        }
+
+        setTask(payload.task);
+        setParticipants(payload.participants);
+      } catch (requestError) {
+        if (active) {
+          setError(requestError instanceof Error ? requestError.message : "读取任务失败，请稍后再试。");
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
       }
-    });
-    setParticipants(nextParticipants);
-    setSubmitted(true);
+    }
+
+    loadTask();
+
+    return () => {
+      active = false;
+    };
+  }, [taskId]);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const payload = await submitParticipant(taskId, {
+        nickname,
+        raw_preference: preference,
+        manual_fields: {
+          budget_max: budgetMax ? Number(budgetMax) : undefined,
+          spicy_preference: spicyPreference,
+          leave_before: leaveBefore || undefined
+        }
+      });
+
+      setTask(payload.task);
+      setParticipants(payload.participants);
+      setSubmitted(true);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "提交偏好失败，请稍后再试。");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
     <Shell
-      eyebrow={demoTaskId}
+      eyebrow={taskId}
       title="填写我的约饭偏好"
-      subtitle="提交后会写入 localStorage，看板页会立即读取新增或更新后的成员偏好。"
+      subtitle="提交后会写入服务端共享状态，看板页刷新后会读取新增或更新后的成员偏好。"
     >
-      <Card title={task.title}>
-        <p className="text-sm leading-6 text-stone-600">{task.raw_request}</p>
+      <Card title={task?.title ?? "正在加载任务"}>
+        <p className="text-sm leading-6 text-stone-600">{loading ? "正在读取共享任务..." : task?.raw_request ?? "没有找到这个任务。"}</p>
         <div className="mt-3 rounded-lg bg-yellow-50 px-3 py-2 text-sm font-medium text-yellow-900">
-          已收集 {participants.length} / {task.expected_people_count} 人
+          已收集 {participants.length} / {task?.expected_people_count ?? "-"} 人
         </div>
       </Card>
+
+      {error ? <Card className="mt-4"><p className="text-sm font-semibold leading-6 text-red-700">{error}</p></Card> : null}
 
       <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
         <Card>
@@ -110,8 +157,12 @@ export default function FillPage() {
               </select>
             </label>
 
-            <button className="w-full rounded-lg bg-ink px-4 py-3 text-base font-bold text-white active:scale-[0.99]" type="submit">
-              提交偏好
+            <button
+              className="w-full rounded-lg bg-ink px-4 py-3 text-base font-bold text-white active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-stone-400"
+              type="submit"
+              disabled={submitting || loading || !task}
+            >
+              {submitting ? "提交中..." : "提交偏好"}
             </button>
           </div>
         </Card>
@@ -129,7 +180,7 @@ export default function FillPage() {
           </div>
           <Link
             className="mt-4 block rounded-lg bg-brand px-4 py-3 text-center text-base font-bold text-ink active:scale-[0.99]"
-            href={`/dinner/${demoTaskId}`}
+            href={`/dinner/${taskId}`}
           >
             查看任务看板
           </Link>
