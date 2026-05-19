@@ -1,0 +1,93 @@
+page {
+  min-height: 100vh;
+  background: #FFF8EF;
+  color: #3A2A1A;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.page {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 48rpx 32rpx;
+  background: var(--theme-bg, #FFF8EF);
+  color: var(--theme-text, #3A2A1A);
+}
+
+.theme-warm {
+  --theme-bg: #FFF8EF;
+  --theme-primary: #FF8A3D;
+  --theme-secondary: #FFB36A;
+  --theme-card: #FFFDF8;
+  --theme-text: #3A2A1A;
+  --theme-muted: #8A6A4F;
+  --theme-border: #F3DDC7;
+  --theme-soft: #FFF1E3;
+  --theme-chip-bg: #ffffff;
+  --theme-on-primary: #ffffff;
+  --theme-risk-bg: #FFF1E3;
+  --theme-risk-text: #6D4B32;
+}
+
+.theme-blue {
+  --theme-bg: #F2F8FF;
+  --theme-primary: #4A90E2;
+  --theme-secondary: #A7D3FF;
+  --theme-card: #FFFFFF;
+  --theme-text: #1F2D3D;
+  --theme-muted: #58708A;
+  --theme-border: #CFE4FA;
+  --theme-soft: #EAF5FF;
+  --theme-chip-bg: #ffffff;
+  --theme-on-primary: #ffffff;
+  --theme-risk-bg: #EAF5FF;
+  --theme-risk-text: #2B587A;
+}
+
+.theme-pink {
+  --theme-bg: #FFF3F7;
+  --theme-primary: #FF7AA2;
+  --theme-secondary: #FFC1D6;
+  --theme-card: #FFFFFF;
+  --theme-text: #3A2630;
+  --theme-muted: #8A5F70;
+  --theme-border: #F6CDDA;
+  --theme-soft: #FFE7F0;
+  --theme-chip-bg: #ffffff;
+  --theme-on-primary: #ffffff;
+  --theme-risk-bg: #FFE7F0;
+  --theme-risk-text: #743F55;
+}
+
+.theme-dark {
+  --theme-bg: #121212;
+  --theme-primary: #FF9F43;
+  --theme-secondary: #2A2A2A;
+  --theme-card: #1F1F1F;
+  --theme-text: #F5F5F5;
+  --theme-muted: #B8B8B8;
+  --theme-border: #353535;
+  --theme-soft: #2A2A2A;
+  --theme-chip-bg: #242424;
+  --theme-on-primary: #1A1208;
+  --theme-risk-bg: #2A241E;
+  --theme-risk-text: #FFD6A3;
+}
+
+.section-title {
+  margin: 0 0 16rpx;
+  color: var(--theme-text, #3A2A1A);
+  font-size: 44rpx;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.section-desc {
+  margin: 0;
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 28rpx;
+  line-height: 1.6;
+}
+
+button {
+  border-radius: 16rpx;
+}

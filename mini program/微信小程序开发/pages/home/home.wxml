@@ -1,0 +1,44 @@
+<view class="page home-page theme-{{currentTheme}}">
+  <view class="hero">
+    <view class="hero-decor">
+      <view class="blob blob-a"></view>
+      <view class="blob blob-b"></view>
+      <view class="blob blob-c"></view>
+    </view>
+
+    <view class="hero-copy">
+      <view class="section-title">
+        <view class="title-highlight">
+          <text class="title-text">今天吃什么？</text>
+          <view class="title-underline"></view>
+        </view>
+      </view>
+      <view class="section-desc">告诉我场景和偏好，我帮你挑 2-3 个可执行方案</view>
+    </view>
+
+    <view class="home-actions">
+      <button class="theme-button" bindtap="showThemePicker">主题</button>
+      <button class="memory-button" bindtap="showPreferenceRecord">偏好记录</button>
+    </view>
+  </view>
+
+  <view class="entry-list">
+    <view class="entry-card primary" bindtap="goToFood">
+      <text class="entry-icon">🍜</text>
+      <view class="entry-title">今天吃什么</view>
+      <view class="entry-desc">进入偏好问答，获取 mock 店铺推荐</view>
+    </view>
+
+    <view class="entry-card" bindtap="showComingSoon">
+      <text class="entry-icon">👥</text>
+      <view class="entry-title">发起约饭</view>
+      <view class="entry-desc">多人约饭流程暂时占位</view>
+    </view>
+
+    <view class="entry-card" bindtap="showComingSoon">
+      <text class="entry-icon">🌿</text>
+      <view class="entry-title">周末规划</view>
+      <view class="entry-desc">周末活动规划暂时占位</view>
+    </view>
+  </view>
+</view>

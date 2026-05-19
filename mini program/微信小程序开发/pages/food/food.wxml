@@ -1,0 +1,183 @@
+<view class="page food-page theme-{{currentTheme}}">
+  <view class="butler-status-bar">
+    <view class="status-avatar">AI</view>
+    <view class="status-copy">
+      <view class="status-title">AI智能管家</view>
+      <view class="status-line">
+        <view class="online-dot"></view>
+        <text>在线 · 正在帮你挑选</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="chat-body">
+    <view wx:if="{{!isFinished && currentQuestion}}" class="progress-strip">
+      <text>第 {{session.questionIndex + 1}}{{session.totalQuestions ? ' / ' + session.totalQuestions : ''}} 题</text>
+      <text wx:if="{{currentQuestion.optional}}" class="optional-hint">可跳过</text>
+    </view>
+
+    <view class="chat-thread">
+      <view
+        wx:for="{{chatMessages}}"
+        wx:key="id"
+        class="chat-message {{item.messageClass}}"
+      >
+        <view wx:if="{{item.showAvatar}}" class="message-avatar">{{item.avatarText}}</view>
+        <view class="message-content {{item.contentClass}}">
+          <view class="chat-bubble {{item.bubbleClass}}">
+            {{item.text}}
+          </view>
+
+          <view wx:if="{{item.showQuickReplies && !isFinished}}" class="inline-replies">
+            <view wx:if="{{isTagQuestion}}" class="quick-groups">
+              <view class="tag-group" wx:for="{{tagGroups}}" wx:key="type">
+                <view class="tag-group-title">{{item.title}}</view>
+                <view class="quick-list">
+                  <view
+                    wx:for="{{item.tags}}"
+                    wx:for-item="tag"
+                    wx:key="id"
+                    class="quick-chip tag-chip {{tag.isSelected ? 'selected' : ''}}"
+                    data-id="{{tag.id}}"
+                    data-type="{{tag.type}}"
+                    data-mode="{{item.mode}}"
+                    bindtap="handleTagTap"
+                  >
+                    {{tag.label}}
+                  </view>
+                </view>
+              </view>
+            </view>
+
+            <view wx:else class="quick-list">
+              <view
+                wx:for="{{currentOptions}}"
+                wx:key="value"
+                class="quick-chip option-button {{item.isSelected ? 'selected' : ''}}"
+                data-value="{{item.value}}"
+                bindtap="handleOptionTap"
+              >
+                {{item.value}}
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <block wx:if="{{isFinished}}">
+        <view class="chat-message butler-message">
+          <view class="message-avatar">AI</view>
+          <view class="chat-bubble butler-bubble">
+            我明白啦，会结合你的场景、预算、距离和偏好，给你 2-3 个可执行方案。
+          </view>
+        </view>
+
+        <view class="recommendation-list">
+          <view class="shop-card" wx:for="{{recommendations}}" wx:key="id">
+            <view class="shop-header">
+              <view class="shop-name">{{item.name}}</view>
+              <view class="shop-type">{{item.type}}</view>
+            </view>
+            <view class="shop-meta">
+              <view>人均 {{item.perCapita}}</view>
+              <view>{{item.distance}}</view>
+              <view>评分 {{item.rating}}</view>
+            </view>
+            <view class="matched-tags">
+              <text wx:for="{{item.matchedTags}}" wx:for-item="tag" wx:key="*this" class="matched-tag">{{tag}}</text>
+              <text wx:if="{{!item.matchedTags.length}}" class="matched-tag muted">默认推荐</text>
+            </view>
+            <view class="shop-reason">{{item.reason}}</view>
+            <view class="shop-risk">风险提示：{{item.riskTip}}</view>
+          </view>
+        </view>
+
+        <view wx:if="{{recommendationNotice}}" class="recommendation-notice">
+          {{recommendationNotice}}
+        </view>
+
+        <view wx:if="{{showAdjustmentOptions}}" class="chat-message butler-message adjustment-message">
+          <view class="message-avatar">AI</view>
+          <view class="message-content butler-content">
+            <view class="chat-bubble butler-bubble">
+              哪里不满意呀？我可以按这些方向帮你调整：
+            </view>
+            <view class="adjustment-options">
+              <view
+                wx:for="{{adjustmentOptions}}"
+                wx:key="action"
+                class="adjustment-chip"
+                data-action="{{item.action}}"
+                data-label="{{item.label}}"
+                bindtap="handleAdjustmentOptionTap"
+              >
+                {{item.label}}
+              </view>
+            </view>
+          </view>
+        </view>
+      </block>
+    </view>
+
+  </view>
+
+  <view wx:if="{{!isFinished && currentQuestion}}" class="reply-dock">
+    <view wx:if="{{session.questionIndex > 0}}" class="reply-top-row">
+      <button wx:if="{{session.questionIndex > 0}}" class="back-button" bindtap="handleGoBack">上一题</button>
+    </view>
+
+    <view class="slot-summary-card">
+      <view class="slot-summary-bar">
+        <view class="slot-summary-text">{{slotSummaryText}}</view>
+        <button class="slot-summary-toggle" bindtap="toggleSlotSummary">
+          {{showSlotSummaryDetail ? '收起' : '查看'}}
+        </button>
+      </view>
+
+      <view wx:if="{{showSlotSummaryDetail}}" class="slots-panel">
+        <view class="slots-title">完整需求状态</view>
+        <view
+          class="slot-row {{item.rowClass}}"
+          wx:for="{{summaryFields}}"
+          wx:key="questionId"
+          data-question-id="{{item.questionId}}"
+          data-available="{{item.isAvailable}}"
+          bindtap="handleSummaryFieldTap"
+        >
+          <view class="slot-label">{{item.label}}</view>
+          <view class="slot-value">{{item.value}}</view>
+        </view>
+      </view>
+
+      <view class="summary-field-list">
+        <view
+          wx:for="{{summaryFields}}"
+          wx:key="questionId"
+          class="summary-field-chip {{item.fieldClass}}"
+          data-question-id="{{item.questionId}}"
+          data-available="{{item.isAvailable}}"
+          bindtap="handleSummaryFieldTap"
+        >
+          <text class="summary-field-label">{{item.label}}</text>
+          <text class="summary-field-value">{{item.value}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="input-bar">
+      <input
+        class="manual-input chat-input"
+        value="{{manualAnswer}}"
+        placeholder="也可以直接告诉我你的想法"
+        placeholder-class="manual-placeholder"
+        bindinput="handleManualInput"
+      />
+      <button class="send-button" bindtap="handleConfirm">发送</button>
+    </view>
+  </view>
+
+  <view wx:else class="result-actions">
+    <button class="secondary-action-button" bindtap="handleRefreshRecommendations">换一批</button>
+    <button class="restart-button" bindtap="handleStartAdjustment">重新回答</button>
+  </view>
+</view>

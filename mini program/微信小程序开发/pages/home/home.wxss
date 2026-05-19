@@ -1,0 +1,208 @@
+.home-page {
+  padding-top: 64rpx;
+}
+
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 22rpx;
+  margin-bottom: 40rpx;
+  overflow: hidden;
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 620rpx;
+}
+
+/* Decorative soft blobs sit behind the hero copy. Pointer events disabled
+   so taps on buttons and text pass through. Clipped by .hero overflow:hidden. */
+.hero-decor {
+  position: absolute;
+  top: -40rpx;
+  left: -40rpx;
+  right: -40rpx;
+  bottom: -20rpx;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.blob-a {
+  top: -10rpx;
+  right: 20rpx;
+  width: 240rpx;
+  height: 240rpx;
+  background: radial-gradient(circle at center, var(--theme-primary, #FF8A3D) 0%, transparent 70%);
+  opacity: 0.16;
+}
+
+.blob-b {
+  bottom: -10rpx;
+  left: 40rpx;
+  width: 180rpx;
+  height: 180rpx;
+  background: radial-gradient(circle at center, var(--theme-secondary, #FFB36A) 0%, transparent 70%);
+  opacity: 0.2;
+}
+
+.blob-c {
+  top: 60rpx;
+  left: 48%;
+  width: 96rpx;
+  height: 96rpx;
+  background: radial-gradient(circle at center, var(--theme-soft, #FFF1E3) 0%, transparent 75%);
+  opacity: 0.55;
+}
+
+/* Dark theme dims blob-a further so the bright amber does not dominate;
+   other blobs use --theme-secondary / --theme-soft which are already dark grey. */
+.theme-dark .blob-a {
+  opacity: 0.12;
+}
+
+.theme-dark .blob-c {
+  opacity: 0.35;
+}
+
+/* Title accent — uses a real view, not ::before, for WeChat compatibility. */
+.title-highlight {
+  position: relative;
+  display: inline-block;
+}
+
+.title-text {
+  position: relative;
+  z-index: 1;
+}
+
+.title-underline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8rpx;
+  height: 14rpx;
+  border-radius: 999rpx;
+  background: var(--theme-primary, #FF8A3D);
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.home-page .section-title {
+  margin-bottom: 14rpx;
+  white-space: normal;
+  word-break: keep-all;
+}
+
+.home-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.theme-button,
+.memory-button {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0 22rpx;
+  border-radius: 999rpx;
+  background: var(--theme-soft, #FFF1E3);
+  color: var(--theme-primary, #FF8A3D);
+  font-size: 24rpx;
+  font-weight: 700;
+  line-height: 54rpx;
+}
+
+.theme-button::after,
+.memory-button::after {
+  border: 0;
+}
+
+.entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.entry-card {
+  position: relative;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 34rpx 96rpx 34rpx 32rpx;
+  border: 1rpx solid var(--theme-border, #F3DDC7);
+  border-radius: 20rpx;
+  background: var(--theme-card, #FFFDF8);
+  color: var(--theme-text, #3A2A1A);
+  line-height: 1.4;
+  text-align: left;
+  box-shadow: 0 14rpx 36rpx rgba(255, 138, 61, 0.08);
+}
+
+.entry-icon {
+  position: absolute;
+  top: 26rpx;
+  right: 28rpx;
+  font-size: 48rpx;
+  line-height: 1;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.entry-card::after {
+  border: 0;
+}
+
+.entry-card:active {
+  opacity: 0.82;
+}
+
+.entry-card.primary {
+  background: var(--theme-soft, #FFF1E3);
+  border-color: var(--theme-secondary, #FFB36A);
+  border-left: 6rpx solid var(--theme-primary, #FF8A3D);
+  padding-top: 40rpx;
+  padding-bottom: 40rpx;
+}
+
+.entry-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: var(--theme-text, #3A2A1A);
+}
+
+.entry-desc {
+  margin-top: 10rpx;
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 26rpx;
+}
+
+/* Per-theme tinted glow for the primary entry card so it feels more prominent
+   than the placeholder cards. Each theme uses its own primary colour at low
+   opacity to stay subtle. */
+.theme-warm .entry-card.primary {
+  box-shadow: 0 18rpx 48rpx rgba(255, 138, 61, 0.22);
+}
+
+.theme-blue .entry-card.primary {
+  box-shadow: 0 18rpx 48rpx rgba(74, 144, 226, 0.20);
+}
+
+.theme-pink .entry-card.primary {
+  box-shadow: 0 18rpx 48rpx rgba(255, 122, 162, 0.22);
+}
+
+.theme-dark .entry-card.primary {
+  box-shadow: 0 18rpx 40rpx rgba(255, 159, 67, 0.14);
+}

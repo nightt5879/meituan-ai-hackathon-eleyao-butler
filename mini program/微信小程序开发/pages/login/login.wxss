@@ -1,0 +1,26 @@
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-panel {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 56rpx 40rpx;
+  border-radius: 24rpx;
+  background: #ffffff;
+  box-shadow: 0 24rpx 60rpx rgba(16, 24, 40, 0.08);
+}
+
+.brand {
+  margin-bottom: 28rpx;
+  color: #16a34a;
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.login-button {
+  margin-top: 56rpx;
+  background: #16a34a;
+}
