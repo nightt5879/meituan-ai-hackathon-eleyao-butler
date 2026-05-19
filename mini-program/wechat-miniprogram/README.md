@@ -76,11 +76,11 @@
 
 2\. 选择「导入项目」。
 
-3\. 项目目录选择当前仓库根目录：
+3\. 项目目录选择当前仓库下的小程序目录：
 
 
 
 ```text
 
-D:\\Desktop\\问卷设计\\微信小程序开发
+<repo-root>\mini-program\wechat-miniprogram
 
