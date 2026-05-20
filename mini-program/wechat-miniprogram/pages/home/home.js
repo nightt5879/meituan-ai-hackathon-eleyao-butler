@@ -1,37 +1,37 @@
 const userMemoryAdapter = require('../../services/userMemoryAdapter');
-
-const themeOptions = [
-  { key: 'warm', name: '温暖橙' },
-  { key: 'blue', name: '清爽蓝' },
-  { key: 'pink', name: '樱花粉' },
-  { key: 'dark', name: '夜间黑' }
-];
-
-function getSavedTheme() {
-  const savedTheme = wx.getStorageSync('pageTheme');
-  return themeOptions.some(function (theme) {
-    return theme.key === savedTheme;
-  }) ? savedTheme : 'warm';
-}
+const themeAdapter = require('../../services/themeAdapter');
 
 Page({
   data: {
-    currentTheme: 'warm'
+    currentTheme: 'warm',
+    themeCards: [],
+    showThemePanel: false,
+    showHistoryPanel: false,
+    historyRecords: [],
+    hasHistoryRecords: false,
+    recentRecordTitle: '还没有推荐记录',
+    recentRecordSummary: '完成一次「今天吃什么」后，我会把偏好和推荐帮你记下来。',
+    recentRecordTime: '等待体验',
+    recentRecordNames: '暂无'
   },
 
   onLoad() {
     this.syncTheme();
+    this.refreshPreferenceRecords();
     this.ensureLoggedIn();
   },
 
   onShow() {
     this.syncTheme();
+    this.refreshPreferenceRecords();
     this.ensureLoggedIn();
   },
 
   syncTheme() {
+    const currentTheme = themeAdapter.getCurrentThemeKey();
     this.setData({
-      currentTheme: getSavedTheme()
+      currentTheme,
+      themeCards: this.buildThemeCards(currentTheme)
     });
   },
 
@@ -41,6 +41,39 @@ Page({
         url: '/pages/login/login'
       });
     }
+  },
+
+  buildThemeCards(currentTheme) {
+    return themeAdapter.themes.map(function (theme) {
+      return Object.assign({}, theme, {
+        isActive: theme.key === currentTheme,
+        cardClass: theme.key === currentTheme ? 'active' : ''
+      });
+    });
+  },
+
+  refreshPreferenceRecords() {
+    const records = userMemoryAdapter.getPreferenceRecords();
+    const visibleRecords = records.slice(0, 5).map(function (record, index) {
+      const recommendationNames = formatRecommendationNames(record.recommendations);
+      return {
+        id: record.id || ('record_' + index),
+        time: formatRecordTime(record.createdAt),
+        summary: record.summaryText || buildFallbackSummary(record),
+        names: recommendationNames,
+        indexText: index + 1
+      };
+    });
+    const firstRecord = visibleRecords[0];
+
+    this.setData({
+      historyRecords: visibleRecords,
+      hasHistoryRecords: visibleRecords.length > 0,
+      recentRecordTitle: firstRecord ? firstRecord.names : '还没有推荐记录',
+      recentRecordSummary: firstRecord ? firstRecord.summary : '完成一次「今天吃什么」后，我会把偏好和推荐帮你记下来。',
+      recentRecordTime: firstRecord ? firstRecord.time : '等待体验',
+      recentRecordNames: firstRecord ? firstRecord.names : '暂无'
+    });
   },
 
   goToFood() {
@@ -56,101 +89,76 @@ Page({
     });
   },
 
-  showThemePicker() {
-    const self = this;
-
-    wx.showActionSheet({
-      itemList: themeOptions.map(function (theme) {
-        return theme.name;
-      }),
-      success: function (res) {
-        const theme = themeOptions[res.tapIndex] || themeOptions[0];
-        wx.setStorageSync('pageTheme', theme.key);
-        self.setData({ currentTheme: theme.key });
-        wx.showToast({
-          title: '已切换为' + theme.name,
-          icon: 'none'
-        });
-      },
-      fail: function () {
-        wx.showToast({
-          title: '主题面板打开失败',
-          icon: 'none'
-        });
-      }
+  goToGroupDining() {
+    wx.navigateTo({
+      url: '/pages/group/create/create'
     });
   },
 
-  showPreferenceRecord() {
-    const records = userMemoryAdapter.getPreferenceRecords();
-
-    if (!records.length) {
-      wx.showToast({
-        title: '还没有偏好记录，完成一次推荐后我会帮你记下来',
-        icon: 'none'
-      });
-      return;
-    }
-
-    wx.showModal({
-      title: '偏好记录',
-      content: this.formatPreferenceRecords(records),
-      showCancel: false,
-      confirmText: '知道了'
+  goToWeekend() {
+    wx.navigateTo({
+      url: '/pages/weekend/weekend'
     });
   },
 
-  formatPreferenceRecords(records) {
-    const visibleRecords = records.slice(0, 5);
-    const lines = visibleRecords.map(function (record, index) {
-      const recommendationNames = (record.recommendations || []).length
-        ? record.recommendations.map(function (item) {
-          return item.name;
-        }).join('、')
-        : '暂无';
+  openThemePanel() {
+    this.syncTheme();
+    this.setData({ showThemePanel: true });
+  },
 
-      return [
-        (index + 1) + '. ' + formatRecordTime(record.createdAt),
-        truncateText(record.summaryText || '一次吃饭偏好', 42),
-        '推荐：' + truncateText(recommendationNames, 46)
-      ].join('\n');
+  closeThemePanel() {
+    this.setData({ showThemePanel: false });
+  },
+
+  selectTheme(event) {
+    const themeKey = event.currentTarget.dataset.key;
+    const nextTheme = themeAdapter.saveTheme(themeKey);
+    const theme = themeAdapter.getThemeByKey(nextTheme);
+
+    this.setData({
+      currentTheme: nextTheme,
+      themeCards: this.buildThemeCards(nextTheme),
+      showThemePanel: false
     });
 
-    if (records.length > 5) {
-      lines.push('仅展示最近 5 条记录');
-    }
-
-    return lines.join('\n\n');
-  },
-
-  formatMemoryContent(memory) {
-    const recentNames = memory.recentRecommendations.length
-      ? memory.recentRecommendations.map(function (item) {
-        return item.name;
-      }).join('、')
-      : '暂无';
-    const preferences = memory.preferences || {};
-
-    return [
-      '场景：' + (memory.lastSlots.mealPurpose || '暂无'),
-      '偏好：' + (memory.lastSlots.branchPreference || '暂无'),
-      '口味：' + ((preferences.tasteTags || []).join('、') || '暂无'),
-      '感觉：' + ((preferences.needTags || []).join('、') || '暂无'),
-      '忌口：' + ((preferences.avoidTags || []).join('、') || '暂无'),
-      '辣度：' + (preferences.spicyLevel || '暂无'),
-      '预算：' + (memory.commonBudget || '暂无'),
-      '距离：' + (memory.commonDistance || '暂无'),
-      '最近推荐：' + recentNames
-    ].join('\n');
-  },
-
-  showComingSoon() {
     wx.showToast({
-      title: '该功能正在完善中',
+      title: '已切换为' + theme.name,
       icon: 'none'
     });
-  }
+  },
+
+  openHistoryPanel() {
+    this.refreshPreferenceRecords();
+    this.setData({ showHistoryPanel: true });
+  },
+
+  closeHistoryPanel() {
+    this.setData({ showHistoryPanel: false });
+  },
+
+  noop() {}
 });
+
+function formatRecommendationNames(recommendations) {
+  const names = (recommendations || []).map(function (item) {
+    return item.name;
+  }).filter(function (name) {
+    return !!name;
+  });
+
+  return names.length ? names.join('、') : '暂无推荐';
+}
+
+function buildFallbackSummary(record) {
+  return [
+    record.mealPurpose,
+    record.branchPreference,
+    record.budget,
+    record.distance
+  ].filter(function (item) {
+    return !!item;
+  }).join(' · ') || '一次吃饭偏好';
+}
 
 function formatRecordTime(createdAt) {
   if (!createdAt) {
@@ -173,14 +181,4 @@ function formatRecordTime(createdAt) {
 
 function padNumber(value) {
   return value < 10 ? '0' + value : String(value);
-}
-
-function truncateText(text, maxLength) {
-  const safeText = String(text || '');
-
-  if (safeText.length <= maxLength) {
-    return safeText;
-  }
-
-  return safeText.slice(0, maxLength - 1) + '…';
 }

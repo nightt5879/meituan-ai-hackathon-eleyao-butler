@@ -1,11 +1,26 @@
-<view class="page login-page">
-  <view class="login-panel">
-    <view class="brand">饿了幺</view>
-    <view class="section-title">先登录一下</view>
-    <view class="section-desc">第一阶段使用本地 mock 登录，用来跑通入口和后续问答链路。</view>
+<view class="page login-page theme-{{currentTheme}}">
+  <view class="login-content">
+    <view class="brand-block">
+      <view class="brand-mark ai-mark">幺</view>
+      <view class="brand-name">饿了幺</view>
+      <view class="brand-subtitle">藏在小程序里的 AI 本地生活管家</view>
+    </view>
 
-    <button class="login-button" type="primary" loading="{{isLoading}}" bindtap="handleLogin">
+    <view class="login-copy">
+      <view class="login-title">先登录一下</view>
+      <view class="login-desc">
+        第一阶段使用本地 mock 登录，用来跑通入口和后续问答链路。不会真的访问你的微信资料。
+      </view>
+    </view>
+
+    <view class="mvp-note">
+      <view class="note-icon">i</view>
+      <view class="note-text">当前为 MVP 演示版本，登录后可体验「今天吃什么」前端闭环。下一阶段会接入 OpenClaw Agent。</view>
+    </view>
+
+    <button class="login-button" loading="{{isLoading}}" bindtap="handleLogin">
       微信授权登录
     </button>
+    <view class="login-policy">登录即代表同意《用户协议》与《隐私政策》</view>
   </view>
 </view>

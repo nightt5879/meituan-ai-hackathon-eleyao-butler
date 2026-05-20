@@ -1,19 +1,26 @@
 <view class="page food-page theme-{{currentTheme}}">
   <view class="butler-status-bar">
-    <view class="status-avatar">AI</view>
+    <button class="chat-back-button" bindtap="handleBackToHome">‹</button>
+    <view class="status-avatar ai-mark">幺</view>
     <view class="status-copy">
-      <view class="status-title">AI智能管家</view>
+      <view class="status-title">AI 智能管家</view>
       <view class="status-line">
         <view class="online-dot"></view>
         <text>在线 · 正在帮你挑选</text>
       </view>
     </view>
+    <view class="status-pill">MVP</view>
   </view>
 
   <view class="chat-body">
     <view wx:if="{{!isFinished && currentQuestion}}" class="progress-strip">
-      <text>第 {{session.questionIndex + 1}}{{session.totalQuestions ? ' / ' + session.totalQuestions : ''}} 题</text>
-      <text wx:if="{{currentQuestion.optional}}" class="optional-hint">可跳过</text>
+      <view class="progress-copy">
+        <text>第 {{session.questionIndex + 1}}{{session.totalQuestions ? ' / ' + session.totalQuestions : ''}} 题</text>
+        <text wx:if="{{currentQuestion.optional}}" class="optional-hint">可跳过</text>
+      </view>
+      <view class="progress-track">
+        <view class="progress-fill" style="width: {{progressPercent}}%;"></view>
+      </view>
     </view>
 
     <view class="chat-thread">
@@ -66,16 +73,19 @@
 
       <block wx:if="{{isFinished}}">
         <view class="chat-message butler-message">
-          <view class="message-avatar">AI</view>
+          <view class="message-avatar ai-mark">幺</view>
           <view class="chat-bubble butler-bubble">
             我明白啦，会结合你的场景、预算、距离和偏好，给你 2-3 个可执行方案。
           </view>
         </view>
 
         <view class="recommendation-list">
-          <view class="shop-card" wx:for="{{recommendations}}" wx:key="id">
+          <view class="shop-card {{index === 0 ? 'featured' : ''}}" wx:for="{{recommendations}}" wx:key="id">
             <view class="shop-header">
-              <view class="shop-name">{{item.name}}</view>
+              <view class="shop-title-wrap">
+                <view wx:if="{{index === 0}}" class="shop-rank">首推</view>
+                <view class="shop-name">{{item.name}}</view>
+              </view>
               <view class="shop-type">{{item.type}}</view>
             </view>
             <view class="shop-meta">
@@ -97,7 +107,7 @@
         </view>
 
         <view wx:if="{{showAdjustmentOptions}}" class="chat-message butler-message adjustment-message">
-          <view class="message-avatar">AI</view>
+          <view class="message-avatar ai-mark">幺</view>
           <view class="message-content butler-content">
             <view class="chat-bubble butler-bubble">
               哪里不满意呀？我可以按这些方向帮你调整：

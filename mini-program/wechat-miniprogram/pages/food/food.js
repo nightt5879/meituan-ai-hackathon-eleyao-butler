@@ -47,7 +47,8 @@ Page({
     showAdjustmentOptions: false,
     adjustmentOptions,
     currentTheme: 'warm',
-    hasSavedCurrentRecord: false
+    hasSavedCurrentRecord: false,
+    progressPercent: 0
   },
 
   onLoad() {
@@ -80,6 +81,16 @@ Page({
       hasSavedCurrentRecord: false
     });
     this.updateQuestionState(session);
+  },
+
+  handleBackToHome() {
+    wx.navigateBack({
+      fail: function () {
+        wx.reLaunch({
+          url: '/pages/home/home'
+        });
+      }
+    });
   },
 
   handleOptionTap(event) {
@@ -463,6 +474,7 @@ Page({
       summaryFields: this.buildSummaryFields(session),
       slotItems: this.formatSlotItems(session.slots, session.preferences),
       recommendations,
+      progressPercent: this.buildProgressPercent(session, currentQuestion),
       recommendationBatchIndex: 0,
       recommendationNotice: '',
       showAdjustmentOptions: false,
@@ -510,6 +522,17 @@ Page({
     }
 
     return messages;
+  },
+
+  buildProgressPercent(session, currentQuestion) {
+    if (!currentQuestion) {
+      return 100;
+    }
+
+    const totalQuestions = session.totalQuestions || this.getQuestionList(session).length || 1;
+    const currentIndex = session.questionIndex || 0;
+
+    return Math.max(8, Math.min(100, Math.round(((currentIndex + 1) / totalQuestions) * 100)));
   },
 
   getQuestionBubbleText(question, session) {

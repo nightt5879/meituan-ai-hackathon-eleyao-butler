@@ -1,0 +1,71 @@
+<view class="page scaffold-page theme-{{currentTheme}}">
+  <view class="page-bar">
+    <button class="page-back" bindtap="handleBack">‹</button>
+    <view class="page-heading">
+      <view class="page-title">填一下你的偏好</view>
+      <view class="page-subtitle">这一页后续会由分享链接打开，当前先保留表单和提交结构。</view>
+    </view>
+  </view>
+
+  <view class="task-brief">
+    <view class="task-eyebrow">小幺 邀请你 · 多人约饭</view>
+    <view class="task-title">周末晚上 5 人聚餐，预算控制在人均 80 以内</view>
+    <view class="task-meta">
+      <text>周六 18:30</text>
+      <text>5 人</text>
+      <text>待生成链接</text>
+    </view>
+  </view>
+
+  <view class="panel-card">
+    <view class="field">
+      <view class="field-label">你的昵称</view>
+      <input class="field-input" value="{{form.nickname}}" placeholder="例如：阿酒" data-field="nickname" bindinput="handleInput" />
+    </view>
+
+    <view class="field">
+      <view class="field-label">想吃什么 / 不想吃什么</view>
+      <textarea
+        class="field-textarea"
+        value="{{form.rawPreference}}"
+        placeholder="例如：最近想吃点辣的，川菜湘菜都行，别太贵就好。"
+        data-field="rawPreference"
+        bindinput="handleInput"
+      ></textarea>
+      <view class="field-hint">自然语言会作为 Agent 抽取的主输入；快捷字段用于兜底。</view>
+    </view>
+
+    <view class="field">
+      <view class="field-label">辣度</view>
+      <view class="option-grid">
+        <view
+          wx:for="{{spicyOptions}}"
+          wx:key="label"
+          class="option-cell {{item.active ? 'active' : ''}}"
+          data-label="{{item.label}}"
+          bindtap="selectSpicy"
+        >
+          {{item.label}}
+        </view>
+      </view>
+    </view>
+
+    <view class="split-grid">
+      <view class="field last">
+        <view class="field-label">预算上限</view>
+        <input class="field-input" value="{{form.budget}}" placeholder="80 元" data-field="budget" bindinput="handleInput" />
+      </view>
+      <view class="field last">
+        <view class="field-label">最晚离开</view>
+        <input class="field-input" value="{{form.leaveBefore}}" placeholder="22:00" data-field="leaveBefore" bindinput="handleInput" />
+      </view>
+    </view>
+  </view>
+
+  <view class="empty-panel">
+    <view class="empty-title">偏好提交接口待接入</view>
+    <view class="empty-desc">当前提交按钮只进入任务看板 UI。后续会写入 participant 记录，再触发约束抽取和冲突识别。</view>
+  </view>
+
+  <button class="primary-button submit-button" bindtap="handleSubmitPreference">提交我的偏好</button>
+</view>

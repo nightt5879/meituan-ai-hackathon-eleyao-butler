@@ -1,14 +1,28 @@
+const themeAdapter = require('../../services/themeAdapter');
+
 Page({
   data: {
-    isLoading: false
+    isLoading: false,
+    currentTheme: 'warm'
   },
 
   onLoad() {
+    this.syncTheme();
     if (wx.getStorageSync('isLoggedIn')) {
       wx.reLaunch({
         url: '/pages/home/home'
       });
     }
+  },
+
+  onShow() {
+    this.syncTheme();
+  },
+
+  syncTheme() {
+    this.setData({
+      currentTheme: themeAdapter.getCurrentThemeKey()
+    });
   },
 
   handleLogin() {

@@ -2,7 +2,11 @@
   "pages": [
     "pages/login/login",
     "pages/home/home",
-    "pages/food/food"
+    "pages/food/food",
+    "pages/group/create/create",
+    "pages/group/fill/fill",
+    "pages/group/board/board",
+    "pages/weekend/weekend"
   ],
   "window": {
     "navigationBarTitleText": "饿了幺",
