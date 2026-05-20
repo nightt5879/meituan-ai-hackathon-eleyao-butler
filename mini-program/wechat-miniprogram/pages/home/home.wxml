@@ -47,6 +47,15 @@
     </view>
   </view>
 
+  <view class="memory-entry" bindtap="goToMemory">
+    <view class="memory-icon ai-mark">♡</view>
+    <view class="memory-copy">
+      <view class="memory-title">管家记忆</view>
+      <view class="memory-desc">忌口、辣度与偏好授权</view>
+    </view>
+    <view class="memory-arrow">›</view>
+  </view>
+
   <view class="recent-block">
     <view class="recent-head">
       <text>最近一次推荐</text>

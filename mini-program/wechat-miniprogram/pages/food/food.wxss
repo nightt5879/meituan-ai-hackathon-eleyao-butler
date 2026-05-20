@@ -6,33 +6,72 @@
   background: var(--theme-bg, #FFF8EF);
 }
 
-.butler-status-bar {
+.custom-food-header {
   position: sticky;
   top: 0;
   z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-  padding: 24rpx 28rpx 22rpx;
+  box-sizing: border-box;
+  min-height: 168rpx;
+  padding-top: calc(92rpx + env(safe-area-inset-top));
+  padding-left: 32rpx;
+  padding-right: 180rpx;
+  padding-bottom: 32rpx;
   border-bottom: 1rpx solid var(--theme-border, #F3DDC7);
   background: var(--theme-card, #FFFDF8);
 }
 
-.chat-back-button {
-  flex-shrink: 0;
-  width: 60rpx;
-  height: 60rpx;
-  margin: 0 2rpx 0 0;
+.header-back-button {
+  position: absolute;
+  left: 32rpx;
+  top: calc(92rpx + env(safe-area-inset-top));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72rpx;
+  height: 72rpx;
+  margin: 0;
   padding: 0;
-  border-radius: 18rpx;
-  background: transparent;
-  color: var(--theme-muted, #6B6157);
-  font-size: 56rpx;
-  font-weight: 300;
-  line-height: 52rpx;
+  border: none;
+  border-radius: 50%;
+  background: var(--theme-card, #ffffff);
+  box-shadow: 0 8rpx 24rpx rgba(16, 24, 40, 0.08);
+  color: var(--theme-text, #1F2937);
+  font-size: 52rpx;
+  font-weight: 500;
+  line-height: 72rpx;
+  z-index: 2;
 }
 
-.status-avatar,
+.header-online-status {
+  position: absolute;
+  left: 50%;
+  top: calc(110rpx + env(safe-area-inset-top));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  max-width: 360rpx;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.header-online-dot {
+  flex-shrink: 0;
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: #22C55E;
+  box-shadow: 0 0 0 6rpx rgba(34, 197, 94, 0.12);
+}
+
+.header-online-text {
+  color: var(--theme-muted, #64748B);
+  font-size: 26rpx;
+  line-height: 34rpx;
+  white-space: nowrap;
+}
+
 .message-avatar {
   flex-shrink: 0;
   display: flex;
@@ -41,53 +80,6 @@
   background: var(--theme-primary, #FF8A3D);
   color: var(--theme-on-primary, #ffffff);
   font-weight: 700;
-}
-
-.status-avatar {
-  width: 68rpx;
-  height: 68rpx;
-  border-radius: 22rpx;
-  font-size: 34rpx;
-}
-
-.status-copy {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-}
-
-.status-title {
-  color: var(--theme-text, #3A2A1A);
-  font-size: 34rpx;
-  font-weight: 700;
-}
-
-.status-line {
-  display: flex;
-  align-items: center;
-  gap: 10rpx;
-  color: var(--theme-muted, #8A6A4F);
-  font-size: 24rpx;
-}
-
-.status-pill {
-  flex-shrink: 0;
-  padding: 6rpx 14rpx;
-  border: 1rpx solid var(--theme-border, rgba(45, 30, 15, 0.08));
-  border-radius: 999rpx;
-  color: var(--theme-subtle, #9A8F83);
-  font-size: 20rpx;
-  font-weight: 800;
-}
-
-.online-dot {
-  width: 14rpx;
-  height: 14rpx;
-  border-radius: 50%;
-  background: #20C768;
-  box-shadow: 0 0 0 6rpx rgba(32, 199, 104, 0.12);
 }
 
 .chat-body {
@@ -253,19 +245,29 @@
 
 /* .tag-chip is applied alongside .quick-chip on tag-type inline chips.
    Both selectors share the same visual rules so .tag-chip works as a
-   standalone alias if the two classes are ever used separately. */
+   standalone alias if the two classes are ever used separately.
+   Glassmorphism style with explicit rendering resets so Chinese glyphs
+   stay sharp: no transform, no animation, no filter, no backdrop-filter,
+   no text-shadow. Press feedback uses colour/shadow only. */
 .quick-chip,
 .tag-chip {
   box-sizing: border-box;
   min-height: 52rpx;
   padding: 10rpx 18rpx;
-  border: 2rpx solid var(--theme-border, #F3DDC7);
+  border: 1rpx solid rgba(255, 255, 255, 0.86);
   border-radius: 999rpx;
-  background: var(--theme-chip-bg, #ffffff);
+  background: rgba(255, 255, 255, 0.72);
   color: var(--theme-chip-text, #3A2A1A);
   font-size: 23rpx;
   line-height: 1.35;
   text-align: center;
+  box-shadow: 0 6rpx 18rpx rgba(15, 23, 42, 0.06), inset 0 1rpx 0 rgba(255, 255, 255, 0.72);
+  transform: none;
+  animation: none;
+  filter: none;
+  backdrop-filter: none;
+  text-shadow: none;
+  -webkit-font-smoothing: antialiased;
 }
 
 .quick-chip.selected,
@@ -274,6 +276,9 @@
   background: var(--theme-primary-soft, #FFF1E3);
   color: var(--theme-primary-deep, #FF8A3D);
   font-weight: 700;
+  box-shadow: 0 8rpx 22rpx rgba(255, 138, 61, 0.14), inset 0 1rpx 0 rgba(255, 255, 255, 0.78);
+  transform: none;
+  animation: none;
 }
 
 .input-bar {
@@ -347,6 +352,11 @@
   border-radius: 26rpx;
   background: var(--theme-card, #FFFDF8);
   box-shadow: 0 10rpx 26rpx rgba(232, 116, 58, 0.07);
+  transform: none;
+  filter: none;
+  backdrop-filter: none;
+  text-shadow: none;
+  -webkit-font-smoothing: antialiased;
 }
 
 .shop-card.featured {
@@ -450,6 +460,11 @@
   color: var(--theme-muted, #8A6A4F);
   font-size: 24rpx;
   line-height: 1.5;
+  transform: none;
+  filter: none;
+  backdrop-filter: none;
+  text-shadow: none;
+  -webkit-font-smoothing: antialiased;
 }
 
 .adjustment-message {
@@ -470,16 +485,61 @@
 
 .adjustment-chip {
   padding: 10rpx 18rpx;
-  border: 2rpx solid var(--theme-border, #F3DDC7);
+  border: 1rpx solid rgba(255, 255, 255, 0.86);
   border-radius: 999rpx;
-  background: var(--theme-chip-bg, #ffffff);
+  background: rgba(255, 255, 255, 0.72);
   color: var(--theme-text, #3A2A1A);
   font-size: 23rpx;
   line-height: 1.35;
+  box-shadow: 0 6rpx 18rpx rgba(15, 23, 42, 0.06), inset 0 1rpx 0 rgba(255, 255, 255, 0.72);
+  transform: none;
+  animation: none;
+  filter: none;
+  backdrop-filter: none;
+  text-shadow: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.adjustment-input-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  width: 100%;
+  max-width: 590rpx;
+  margin-top: 12rpx;
+}
+
+.adjustment-input {
+  box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
+  height: 64rpx;
+  padding: 0 20rpx;
+  border: 2rpx solid var(--theme-border, #F3DDC7);
+  border-radius: 999rpx;
+  background: var(--theme-bg, #FFF8EF);
+  color: var(--theme-text, #3A2A1A);
+  font-size: 24rpx;
+}
+
+.adjustment-submit {
+  flex-shrink: 0;
+  width: 104rpx;
+  margin: 0;
+  padding: 0;
+  border-radius: 999rpx;
+  background: var(--theme-primary, #FF8A3D);
+  color: var(--theme-on-primary, #ffffff);
+  font-size: 24rpx;
+  line-height: 64rpx;
+}
+
+.adjustment-submit::after {
+  border: 0;
 }
 
 .slot-summary-card {
-  margin-bottom: 16rpx;
+  margin-bottom: 12rpx;
 }
 
 .slot-summary-bar {
@@ -519,49 +579,6 @@
 
 .slot-summary-toggle::after {
   border: 0;
-}
-
-.summary-field-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10rpx;
-  margin-top: 12rpx;
-}
-
-.summary-field-chip {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-  max-width: 100%;
-  padding: 8rpx 14rpx;
-  border: 1rpx solid var(--theme-border, #F3DDC7);
-  border-radius: 999rpx;
-  background: var(--theme-chip-bg, #ffffff);
-  color: var(--theme-muted, #8A6A4F);
-  font-size: 22rpx;
-  line-height: 1.35;
-}
-
-.summary-field-chip.collected {
-  border-color: var(--theme-secondary, #FFB36A);
-  background: var(--theme-soft, #FFF8EF);
-  color: var(--theme-text, #3A2A1A);
-}
-
-.summary-field-chip.disabled {
-  opacity: 0.48;
-}
-
-.summary-field-label {
-  flex-shrink: 0;
-  font-weight: 700;
-}
-
-.summary-field-value {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .slots-panel {
@@ -638,4 +655,327 @@
 .secondary-action-button::after,
 .restart-button::after {
   border: 0;
+}
+
+/* ─── Lightweight entrance and press animations ─────────────────────────
+   Scope: chat messages, quick reply chips, recommendation cards,
+   refresh notice, and the send button.
+   The custom header, online status block, input bar, and chat input are
+   intentionally NOT animated to preserve current layout stability.
+   Press feedback for chips and the send button uses background / border /
+   box-shadow / opacity — never transform: scale — so Chinese text stays
+   crisp in WeChat DevTools and on device. */
+
+@keyframes messageFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Opacity-only entrance for recommendation cards and the refresh notice.
+   Translate-based entrance was removed because the transform animation,
+   combined with animation-fill-mode: both, kept the elements on a
+   compositor layer and softened the Chinese glyphs inside. */
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes noticeFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.chat-message {
+  animation: messageFadeUp 320ms ease-out both;
+}
+
+/* No animation on chips — running an entrance animation forces the
+   compositor to rasterise the chip, which can soften Chinese glyphs.
+   Chips are styled statically; only the press state transitions. */
+.quick-chip,
+.tag-chip,
+.adjustment-chip {
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease;
+}
+
+/* Glass press feedback: surface becomes more opaque, border picks up a
+   soft primary tint, shadow tightens. Transform explicitly nulled so
+   no scale/translate can sneak in via inheritance or future edits. */
+.quick-chip:active,
+.tag-chip:active,
+.adjustment-chip:active {
+  background: rgba(255, 255, 255, 0.90);
+  border-color: rgba(255, 138, 61, 0.42);
+  box-shadow: 0 4rpx 12rpx rgba(15, 23, 42, 0.08), inset 0 1rpx 0 rgba(255, 255, 255, 0.82);
+  transform: none;
+  animation: none;
+}
+
+/* Dark theme: dark frosted glass instead of bright white panels. */
+.theme-dark .quick-chip,
+.theme-dark .tag-chip,
+.theme-dark .adjustment-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 6rpx 18rpx rgba(0, 0, 0, 0.22), inset 0 1rpx 0 rgba(255, 255, 255, 0.08);
+}
+
+.theme-dark .quick-chip.selected,
+.theme-dark .tag-chip.selected {
+  background: rgba(255, 159, 67, 0.18);
+  border-color: var(--theme-primary, #FF9F43);
+  color: var(--theme-primary, #FF9F43);
+  box-shadow: 0 8rpx 22rpx rgba(0, 0, 0, 0.28), inset 0 1rpx 0 rgba(255, 255, 255, 0.10);
+}
+
+.theme-dark .quick-chip:active,
+.theme-dark .tag-chip:active,
+.theme-dark .adjustment-chip:active {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 159, 67, 0.44);
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.24), inset 0 1rpx 0 rgba(255, 255, 255, 0.10);
+}
+
+/* Opacity-only fade — no fill-mode: both — so no layer state is held
+   after the animation completes. Text inside shop cards stays sharp. */
+.shop-card {
+  animation: cardFadeIn 220ms ease-out;
+}
+
+.recommendation-notice {
+  animation: noticeFadeIn 220ms ease-out;
+}
+
+.send-button {
+  transition: opacity 160ms ease, box-shadow 160ms ease;
+}
+
+/* Send button press feedback: opacity dip + softer shadow. No scale. */
+.send-button:active {
+  opacity: 0.85;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.12);
+}
+
+/* ─── Result-page additions ─────────────────────────────────────────────
+   Card section labels, slot-summary disclaimer, third result action,
+   and the explicit memory-choice block. No transform anywhere. */
+
+.shop-section-label {
+  display: inline-block;
+  margin-right: 8rpx;
+  padding: 2rpx 10rpx;
+  border-radius: 999rpx;
+  background: var(--theme-soft, #FFF1E3);
+  color: var(--theme-primary-deep, #FF8A3D);
+  font-size: 20rpx;
+  font-weight: 700;
+  letter-spacing: 1rpx;
+  -webkit-font-smoothing: antialiased;
+}
+
+.matched-tags-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 16rpx;
+}
+
+.matched-tags-row .matched-tags {
+  margin-top: 0;
+}
+
+.slot-summary-hint {
+  margin-top: 8rpx;
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 22rpx;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.result-actions-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+  padding: 0 24rpx calc(28rpx + env(safe-area-inset-bottom));
+  background: var(--theme-bg, #FFF8EF);
+}
+
+.result-actions-wrap .result-actions {
+  padding: 0;
+  background: transparent;
+}
+
+.tertiary-action-button {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  border-radius: 999rpx;
+  border: 1rpx solid var(--theme-border, #F3DDC7);
+  background: var(--theme-card, #FFFDF8);
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 26rpx;
+  line-height: 74rpx;
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tertiary-action-button::after {
+  border: 0;
+}
+
+.tertiary-action-button:active {
+  background: var(--theme-soft, #FFF1E3);
+  color: var(--theme-text, #3A2A1A);
+}
+
+.memory-actions {
+  padding: 20rpx 22rpx 22rpx;
+  border: 1rpx solid var(--theme-border, #F3DDC7);
+  border-radius: 22rpx;
+  background: var(--theme-card, #FFFDF8);
+  box-shadow: 0 8rpx 22rpx rgba(15, 23, 42, 0.06);
+}
+
+.memory-actions-hint {
+  margin-bottom: 14rpx;
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 24rpx;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.memory-actions-row {
+  display: flex;
+  gap: 14rpx;
+}
+
+.memory-keep-button,
+.memory-once-button {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  border-radius: 999rpx;
+  font-size: 25rpx;
+  line-height: 70rpx;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+.memory-keep-button::after,
+.memory-once-button::after {
+  border: 0;
+}
+
+.memory-keep-button {
+  background: var(--theme-primary, #FF8A3D);
+  color: var(--theme-on-primary, #ffffff);
+  box-shadow: 0 8rpx 20rpx rgba(255, 138, 61, 0.20);
+}
+
+.memory-keep-button:active {
+  opacity: 0.88;
+  box-shadow: 0 4rpx 12rpx rgba(255, 138, 61, 0.16);
+}
+
+.memory-once-button {
+  background: var(--theme-card, #FFFDF8);
+  border: 1rpx solid var(--theme-border, #F3DDC7);
+  color: var(--theme-muted, #8A6A4F);
+}
+
+.memory-once-button:active {
+  background: var(--theme-soft, #FFF1E3);
+  color: var(--theme-text, #3A2A1A);
+}
+
+.memory-decision-note {
+  padding: 12rpx 18rpx;
+  border-radius: 16rpx;
+  background: var(--theme-soft, #FFF1E3);
+  color: var(--theme-primary-deep, #FF8A3D);
+  font-size: 23rpx;
+  line-height: 1.5;
+  text-align: center;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Dark-theme variants for the new components */
+.theme-dark .shop-section-label {
+  background: rgba(255, 159, 67, 0.18);
+  color: var(--theme-primary, #FF9F43);
+}
+
+.theme-dark .tertiary-action-button {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--theme-muted, #B8B8B8);
+}
+
+.theme-dark .tertiary-action-button:active {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--theme-text, #F5F5F5);
+}
+
+.theme-dark .memory-actions {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8rpx 22rpx rgba(0, 0, 0, 0.30);
+}
+
+.theme-dark .memory-once-button {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: var(--theme-muted, #B8B8B8);
+}
+
+.theme-dark .memory-once-button:active {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--theme-text, #F5F5F5);
+}
+
+.theme-dark .memory-decision-note {
+  background: rgba(255, 159, 67, 0.16);
+  color: var(--theme-primary, #FF9F43);
+}
+
+/* ─── Preference pre-check ──────────────────────────────────────────────
+   Chips inherit .quick-chip for glass style + crisp text (no transform).
+   The disclaimer bubble is a smaller secondary bubble below the summary. */
+
+.pref-check-message {
+  margin-bottom: 4rpx;
+}
+
+.pref-check-chip {
+  font-weight: 700;
+}
+
+.pref-check-disclaimer-bubble {
+  margin-top: 8rpx;
+  padding: 14rpx 18rpx;
+  background: var(--theme-soft, #FFF1E3);
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 22rpx;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.theme-dark .pref-check-disclaimer-bubble {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--theme-muted, #B8B8B8);
 }

@@ -101,6 +101,19 @@ Page({
     });
   },
 
+  goToMemory() {
+    wx.navigateTo({
+      url: '/pages/memory/memory',
+      fail: function (err) {
+        console.error('navigate to memory failed', err);
+        wx.showToast({
+          title: '打开管家记忆失败，请看 Console',
+          icon: 'none'
+        });
+      }
+    });
+  },
+
   openThemePanel() {
     this.syncTheme();
     this.setData({ showThemePanel: true });

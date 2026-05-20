@@ -10,6 +10,8 @@ const emptySelectedTags = {
   spicyLevel: []
 };
 
+// Adjustment chips — used inside the 调整一下 panel.
+// 重新开始 is now a top-level result action, not a chip in this list.
 const adjustmentOptions = [
   { label: '太贵了', action: 'budget' },
   { label: '太远了', action: 'distance' },
@@ -17,8 +19,7 @@ const adjustmentOptions = [
   { label: '想清淡一点', action: 'taste-light' },
   { label: '想重口一点', action: 'taste-heavy' },
   { label: '想换个品类', action: 'category' },
-  { label: '忌口没说清', action: 'avoid' },
-  { label: '重新开始', action: 'restart' }
+  { label: '忌口没说清', action: 'avoid' }
 ];
 
 Page({
@@ -45,10 +46,40 @@ Page({
     recommendationBatchIndex: 0,
     recommendationNotice: '',
     showAdjustmentOptions: false,
+    adjustmentManualInput: '',
+    adjustmentMessages: [],
     adjustmentOptions,
     currentTheme: 'warm',
     hasSavedCurrentRecord: false,
-    progressPercent: 0
+    memoryDecision: '',
+    progressPercent: 0,
+
+    // ─── Preference pre-check state ─────────────────────────────────────
+    // prefCheckActive   — true while the butler is asking "今天也按这个来吗？"
+    // prefCheckSummary  — the visible summary line, e.g. "我看到你最近常选：…"
+    // prefCheckDisclaimer — present only when the profile source is the V0 mock
+    // prefCheckOptions  — chip rows shown under the pre-check butler bubble
+    // pendingPrefill    — non-null after the user opts in; carries autoAnswerIds
+    //                     which questions should be auto-filled from the profile.
+    //                     mealPurpose / branch-specific questions are NEVER in it.
+    // autoAnsweredIndexes — answer-array indexes that were auto-filled (hidden
+    //                     from the chat thread).
+    // chatPreamble      — extra bubbles inserted ahead of session.answers,
+    //                     used for the "好，已应用：…" confirmation after
+    //                     the user picks a pre-check option.
+    prefCheckActive: false,
+    prefCheckSummary: '',
+    prefCheckDisclaimer: '',
+    prefCheckOptions: [
+      { label: '按这个来',     action: 'use-all' },
+      { label: '换口味',       action: 'change-taste' },
+      { label: '预算变了',     action: 'change-budget' },
+      { label: '想走远一点',   action: 'change-distance' },
+      { label: '不用历史偏好', action: 'skip' }
+    ],
+    pendingPrefill: null,
+    autoAnsweredIndexes: [],
+    chatPreamble: []
   },
 
   onLoad() {
@@ -77,8 +108,58 @@ Page({
   startSession() {
     const session = foodAiAdapter.createInitialSession();
     this.hasSavedCurrentRecordFlag = false;
+
+    // Read the effective preference profile. V0: mock fallback is on by
+    // default so the pre-check is testable on a fresh install. Disable with
+    // { useMock: false } when real data is wired up.
+    const profile = userMemoryAdapter.getEffectivePreferenceProfile();
+
+    if (userMemoryAdapter.hasUsefulPreferenceProfile(profile)) {
+      this._activeProfile = profile;
+      const isMock = profile.source === 'mock';
+      this.setData({
+        session,
+        hasSavedCurrentRecord: false,
+        prefCheckActive: true,
+        prefCheckSummary: this.buildPrefCheckSummary(profile),
+        prefCheckDisclaimer: isMock
+          ? '当前为模拟偏好，仅用于本次推荐；真实接入时需经用户授权。'
+          : '',
+        pendingPrefill: null,
+        autoAnsweredIndexes: [],
+        chatPreamble: [],
+        currentQuestion: null,
+        currentOptions: [],
+        tagGroups: [],
+        isTagQuestion: false,
+        showManualInput: false,
+        isFinished: false,
+        chatMessages: [],
+        slotSummaryText: '',
+        summaryFields: [],
+        slotItems: [],
+        recommendations: [],
+        progressPercent: 0,
+        memoryDecision: '',
+        recommendationBatchIndex: 0,
+        recommendationNotice: '',
+        showAdjustmentOptions: false,
+        adjustmentMessages: [],
+        adjustmentManualInput: ''
+      });
+      return;
+    }
+
+    // No usable profile → existing normal flow, untouched.
+    this._activeProfile = null;
     this.setData({
-      hasSavedCurrentRecord: false
+      hasSavedCurrentRecord: false,
+      prefCheckActive: false,
+      prefCheckSummary: '',
+      prefCheckDisclaimer: '',
+      pendingPrefill: null,
+      autoAnsweredIndexes: [],
+      chatPreamble: []
     });
     this.updateQuestionState(session);
   },
@@ -230,6 +311,7 @@ Page({
 
   restartSession() {
     this.hasSavedCurrentRecordFlag = false;
+    this._activeProfile = null;
     this.setData({
       manualInputs: {},
       selectionHistory: [],
@@ -238,9 +320,259 @@ Page({
       recommendationBatchIndex: 0,
       recommendationNotice: '',
       showAdjustmentOptions: false,
-      hasSavedCurrentRecord: false
+      adjustmentManualInput: '',
+      adjustmentMessages: [],
+      hasSavedCurrentRecord: false,
+      memoryDecision: '',
+      prefCheckActive: false,
+      prefCheckSummary: '',
+      prefCheckDisclaimer: '',
+      pendingPrefill: null,
+      autoAnsweredIndexes: [],
+      chatPreamble: []
     });
     this.startSession();
+  },
+
+  // Top-level result action — clear current flow and start over.
+  handleStartOver() {
+    this.restartSession();
+  },
+
+  // Top-level result action — explicitly write session slots + preferences
+  // into long-term memory. Preference history was already saved automatically
+  // when recommendations were generated, so we only update long-term memory
+  // here (no duplicate history record).
+  handleSavePreference() {
+    if (this.data.memoryDecision) {
+      return;
+    }
+    const session = this.data.session;
+    userMemoryAdapter.updateUserMemory({
+      slots: session.slots,
+      preferences: session.preferences
+    });
+    this.setData({ memoryDecision: 'kept' });
+    wx.showToast({
+      title: '已记住，下次会优先参考这些偏好',
+      icon: 'none'
+    });
+  },
+
+  // Top-level result action — explicit "this session only". Long-term memory
+  // is NOT touched. The lightweight history record auto-saved on flow
+  // completion remains, so the session still shows in 偏好记录.
+  handleSessionOnly() {
+    if (this.data.memoryDecision) {
+      return;
+    }
+    this.setData({ memoryDecision: 'session-only' });
+    wx.showToast({
+      title: '好的，本次条件不会额外记入长期偏好',
+      icon: 'none'
+    });
+  },
+
+  // ─── Preference pre-check helpers ───────────────────────────────────────
+
+  buildPrefCheckSummary(profile) {
+    const parts = [];
+    if (profile.taste) {
+      parts.push(profile.taste);
+    }
+    if (profile.budget) {
+      parts.push(String(profile.budget).replace(/\s+/g, ''));
+    }
+    if (profile.distance) {
+      parts.push(String(profile.distance).replace(/\s+/g, ''));
+    }
+    if (!parts.length) {
+      return '我看到你之前留过一些偏好。今天也按这个来吗？';
+    }
+    return '我看到你最近常选：' + parts.join(' / ') + '。今天也按这个来吗？';
+  },
+
+  // Tapped one of the pre-check chips. Decides which questions to auto-fill
+  // (if any) and hands control back to the normal question flow.
+  handlePrefCheckOptionTap(event) {
+    const action = event.currentTarget.dataset.action;
+    const label = event.currentTarget.dataset.label;
+    const profile = this._activeProfile || null;
+    let pendingPrefill = null;
+    let replyText = '';
+
+    if (action === 'use-all') {
+      pendingPrefill = { autoAnswerIds: ['tag-preferences', 'avoid-preferences', 'budget', 'distance'] };
+      replyText = this.buildPrefillReplyText(profile, pendingPrefill.autoAnswerIds);
+    } else if (action === 'change-taste') {
+      // Keep budget + distance; ask taste / category fresh.
+      pendingPrefill = { autoAnswerIds: ['budget', 'distance'] };
+      replyText = '好，预算和距离先按上次的，口味重新挑一下。';
+    } else if (action === 'change-budget') {
+      // Keep taste preferences + distance; ask budget fresh.
+      pendingPrefill = { autoAnswerIds: ['tag-preferences', 'avoid-preferences', 'distance'] };
+      replyText = '好，口味和距离先按上次的，预算我们再聊。';
+    } else if (action === 'change-distance') {
+      // Keep taste + budget; ask distance fresh.
+      pendingPrefill = { autoAnswerIds: ['tag-preferences', 'avoid-preferences', 'budget'] };
+      replyText = '好，口味和预算先按上次的，距离重新选一下。';
+    } else {
+      // skip — fully fresh flow.
+      pendingPrefill = null;
+      replyText = '好的，这次我们从头来一次。';
+      this._activeProfile = null;
+    }
+
+    const chatPreamble = [
+      {
+        id: 'prefcheck-user',
+        role: 'user',
+        messageClass: 'user-message',
+        bubbleClass: 'user-bubble',
+        contentClass: 'user-content',
+        showAvatar: false,
+        avatarText: '',
+        showQuickReplies: false,
+        text: label
+      },
+      {
+        id: 'prefcheck-butler',
+        role: 'butler',
+        messageClass: 'butler-message',
+        bubbleClass: 'butler-bubble',
+        contentClass: 'butler-content',
+        showAvatar: true,
+        avatarText: '幺',
+        showQuickReplies: false,
+        text: replyText
+      }
+    ];
+
+    this.setData({
+      prefCheckActive: false,
+      prefCheckSummary: '',
+      prefCheckDisclaimer: '',
+      pendingPrefill,
+      chatPreamble
+    });
+
+    // Render the first real question, then attempt prefill.
+    this.updateQuestionState(this.data.session);
+  },
+
+  buildPrefillReplyText(profile, autoAnswerIds) {
+    if (!profile) {
+      return '好，已使用上次的偏好。';
+    }
+    const tokens = [];
+    if (autoAnswerIds.indexOf('tag-preferences') >= 0 && profile.taste) {
+      tokens.push(profile.taste);
+    }
+    if (autoAnswerIds.indexOf('budget') >= 0 && profile.budget) {
+      tokens.push(String(profile.budget).replace(/\s+/g, ''));
+    }
+    if (autoAnswerIds.indexOf('distance') >= 0 && profile.distance) {
+      tokens.push(String(profile.distance).replace(/\s+/g, ''));
+    }
+    if (!tokens.length) {
+      return '好，已使用上次的偏好。';
+    }
+    return '好，已应用：' + tokens.join(' · ') + '。剩下的我们再聊一下。';
+  },
+
+  // After updateQuestionState renders a new currentQuestion, try to silently
+  // auto-answer it from the active profile. Removes the id from
+  // pendingPrefill.autoAnswerIds BEFORE submitAnswer so a single question is
+  // never auto-answered twice — that prevents any infinite recursion even if
+  // the adapter were to fail to advance.
+  applyPendingPrefill() {
+    const pendingPrefill = this.data.pendingPrefill;
+    const currentQuestion = this.data.currentQuestion;
+    const profile = this._activeProfile;
+
+    if (!pendingPrefill || !profile || !currentQuestion || this.data.isFinished) {
+      return;
+    }
+    const autoAnswerIds = pendingPrefill.autoAnswerIds || [];
+    if (autoAnswerIds.indexOf(currentQuestion.id) < 0) {
+      return;
+    }
+
+    const answer = this.synthesizePrefillAnswer(currentQuestion, profile);
+    const remainingIds = autoAnswerIds.filter(function (id) { return id !== currentQuestion.id; });
+    const nextPendingPrefill = remainingIds.length
+      ? Object.assign({}, pendingPrefill, { autoAnswerIds: remainingIds })
+      : null;
+
+    if (answer === null) {
+      // Validity check failed (e.g. stored budget string doesn't match this
+      // session's options). Leave the question for the user.
+      this.setData({ pendingPrefill: nextPendingPrefill });
+      return;
+    }
+
+    const autoAnsweredIndexes = (this.data.autoAnsweredIndexes || []).slice();
+    autoAnsweredIndexes.push(this.data.session.questionIndex);
+
+    this.setData({
+      pendingPrefill: nextPendingPrefill,
+      autoAnsweredIndexes
+    });
+
+    this.submitAnswer(answer);
+  },
+
+  // Build a payload for foodAiAdapter.answerQuestion from the profile.
+  // Returns null if the profile cannot answer this question safely.
+  // mealPurpose and branch-specific questions are never auto-answered.
+  synthesizePrefillAnswer(currentQuestion, profile) {
+    if (!profile || !currentQuestion) { return null; }
+
+    if (currentQuestion.id === 'tag-preferences') {
+      const tasteTags = (profile.tasteTags || []).slice();
+      const needTags = (profile.needTags || []).slice();
+      if (!tasteTags.length && !needTags.length) { return null; }
+      return {
+        preferences: {
+          tasteTags: tasteTags,
+          needTags: needTags,
+          avoidTags: [],
+          spicyLevel: ''
+        }
+      };
+    }
+
+    if (currentQuestion.id === 'avoid-preferences') {
+      const avoidTags = (profile.avoidTags || []).slice();
+      const spicyLevel = profile.spicyLevel || '';
+      if (!avoidTags.length && !spicyLevel) { return null; }
+      return {
+        preferences: {
+          tasteTags: [],
+          needTags: [],
+          avoidTags: avoidTags,
+          spicyLevel: spicyLevel
+        }
+      };
+    }
+
+    // Budget / distance — kind 'choice'. Only accept if the stored value
+    // EXACTLY matches one of the current question's options.
+    if (currentQuestion.id === 'budget' || currentQuestion.slot === 'budget') {
+      const value = String(profile.budget || '');
+      if (!value) { return null; }
+      if ((currentQuestion.options || []).indexOf(value) < 0) { return null; }
+      return value;
+    }
+
+    if (currentQuestion.id === 'distance' || currentQuestion.slot === 'distance') {
+      const value = String(profile.distance || '');
+      if (!value) { return null; }
+      if ((currentQuestion.options || []).indexOf(value) < 0) { return null; }
+      return value;
+    }
+
+    return null;
   },
 
   toggleSlotSummary() {
@@ -292,7 +624,8 @@ Page({
   handleStartAdjustment() {
     this.setData({
       showAdjustmentOptions: true,
-      recommendationNotice: ''
+      recommendationNotice: '',
+      adjustmentManualInput: ''
     });
   },
 
@@ -300,26 +633,118 @@ Page({
     const action = event.currentTarget.dataset.action;
     const label = event.currentTarget.dataset.label;
 
-    if (action === 'restart') {
-      this.restartSession();
+    if (action === 'avoid') {
+      this.appendAdjustmentMessages(label, '可以直接告诉我不吃什么，我会避开。');
+      wx.showToast({
+        title: '可以在输入框补充具体忌口',
+        icon: 'none'
+      });
       return;
     }
 
-    const targetQuestionId = this.getAdjustmentTargetQuestionId(action);
+    this.refreshRecommendationsWithAdjustment(this.buildAdjustmentFromAction(action, label));
+  },
 
-    if (!targetQuestionId) {
-      if (action === 'avoid') {
-        wx.showToast({
-          title: '这个场景暂时不单独追问忌口，你可以在输入框补充',
-          icon: 'none'
-        });
+  handleAdjustmentManualInput(event) {
+    this.setData({
+      adjustmentManualInput: event.detail.value
+    });
+  },
+
+  handleAdjustmentManualSubmit() {
+    const feedbackText = String(this.data.adjustmentManualInput || '').trim();
+
+    if (!feedbackText) {
+      wx.showToast({
+        title: '先告诉我哪里不满意',
+        icon: 'none'
+      });
+      return;
+    }
+
+    this.setData({
+      adjustmentManualInput: ''
+    });
+
+    this.refreshRecommendationsWithAdjustment(this.resolveAdjustmentFromText(feedbackText));
+  },
+
+  appendAdjustmentMessages(feedbackText, noticeText) {
+    this.setData({
+      adjustmentMessages: this.data.adjustmentMessages.concat(
+        this.buildAdjustmentMessagePair(feedbackText, noticeText)
+      )
+    });
+  },
+
+  buildAdjustmentMessagePair(feedbackText, noticeText) {
+    const baseId = 'adjustment-' + this.data.adjustmentMessages.length + '-' + Date.now();
+
+    return [
+      {
+        id: baseId + '-user',
+        role: 'user',
+        messageClass: 'user-message',
+        bubbleClass: 'user-bubble',
+        contentClass: 'user-content',
+        showAvatar: false,
+        avatarText: '',
+        showQuickReplies: false,
+        text: feedbackText
+      },
+      {
+        id: baseId + '-butler',
+        role: 'butler',
+        messageClass: 'butler-message',
+        bubbleClass: 'butler-bubble',
+        contentClass: 'butler-content',
+        showAvatar: true,
+        avatarText: '幺',
+        showQuickReplies: false,
+        text: noticeText
       }
-      return;
-    }
+    ];
+  },
 
-    this.jumpToQuestionById(targetQuestionId, {
-      feedbackText: label,
-      noticeText: this.getAdjustmentNoticeText(action)
+  refreshRecommendationsWithAdjustment(adjustment) {
+    const currentRecommendations = this.data.recommendations || [];
+    const currentIds = currentRecommendations.map(function (item) {
+      return item.id;
+    });
+    const nextBatchIndex = this.data.recommendationBatchIndex + 1;
+    const adjustedPreferences = this.buildAdjustedPreferences(adjustment);
+    const adapterOptions = {
+      excludeIds: currentIds,
+      batchIndex: nextBatchIndex,
+      adjustment: Object.assign({}, adjustment, {
+        avoidCategories: this.getCurrentRecommendationCategories()
+      })
+    };
+    const nextRecommendations = foodAiAdapter.generateRecommendations(
+      this.data.session.slots,
+      adjustedPreferences,
+      adapterOptions
+    );
+    const nextIds = nextRecommendations.map(function (item) {
+      return item.id;
+    });
+    const isSameBatch = areSameRecommendationIds(currentIds, nextIds);
+    const noticeText = isSameBatch
+      ? '符合条件的方案有限，我先帮你换了更接近的一批。'
+      : '已根据「' + adjustment.text + '」重新调整推荐';
+
+    this.setData({
+      recommendations: nextRecommendations,
+      recommendationBatchIndex: nextBatchIndex,
+      recommendationNotice: noticeText,
+      showAdjustmentOptions: false,
+      adjustmentManualInput: '',
+      adjustmentMessages: this.data.adjustmentMessages.concat(
+        this.buildAdjustmentMessagePair(
+          adjustment.text,
+          adjustment.replyText || '收到，我按这个方向帮你重新筛一批。'
+        )
+      )
     });
   },
 
@@ -427,10 +852,11 @@ Page({
     const shouldSavePreferenceRecord = !currentQuestion && !hasSavedCurrentRecord;
 
     if (!currentQuestion) {
-      userMemoryAdapter.updateUserMemory({
-        slots: session.slots,
-        preferences: session.preferences
-      });
+      // Auto-save: recommendation history (for the home "recent recs" chip) and a
+      // lightweight preference record (for the 偏好记录 history view). These are
+      // session/history records, not long-term memory.
+      // Long-term memory (userMemoryAdapter.updateUserMemory) is only written
+      // when the user explicitly taps 「记住这个偏好」 — see handleSavePreference.
       userMemoryAdapter.saveRecommendationHistory(recommendations);
 
       if (shouldSavePreferenceRecord) {
@@ -478,19 +904,35 @@ Page({
       recommendationBatchIndex: 0,
       recommendationNotice: '',
       showAdjustmentOptions: false,
+      adjustmentMessages: [],
+      memoryDecision: !currentQuestion ? '' : this.data.memoryDecision,
       hasSavedCurrentRecord: !currentQuestion
         ? (hasSavedCurrentRecord || shouldSavePreferenceRecord)
         : this.data.hasSavedCurrentRecord
     });
+
+    // After the new question state is in place, see if it can be filled
+    // silently from the pre-check profile. Safe to call unconditionally —
+    // applyPendingPrefill bails out when pendingPrefill is null.
+    this.applyPendingPrefill();
   },
 
   buildChatMessages(session, currentQuestion) {
-    const messages = [];
+    // Preamble carries the pre-check user choice + butler confirmation, so
+    // those bubbles appear at the top of the chat thread above the real
+    // question/answer log.
+    const messages = (this.data.chatPreamble || []).slice();
     const answers = session.answers || [];
     const questionList = this.getQuestionList(session);
     const manualInputs = this.data.manualInputs || {};
+    // Auto-answered question indexes are hidden so the chat doesn't show
+    // bubbles for things the user never actually answered.
+    const autoAnsweredIndexes = this.data.autoAnsweredIndexes || [];
 
     answers.forEach(function (answer, index) {
+      if (autoAnsweredIndexes.indexOf(index) >= 0) {
+        return;
+      }
       const question = questionList[index] || null;
       const manualText = question ? (manualInputs[question.id] || '') : '';
       const isTagAnswer = !!question && question.kind === 'tag';
@@ -515,7 +957,7 @@ Page({
         bubbleClass: 'butler-bubble',
         contentClass: 'butler-content',
         showAvatar: true,
-        avatarText: 'AI',
+        avatarText: '幺',
         showQuickReplies: true,
         text: this.getQuestionBubbleText(currentQuestion, session)
       });
@@ -636,6 +1078,7 @@ Page({
       recommendationBatchIndex: 0,
       recommendationNotice: '',
       showAdjustmentOptions: false,
+      adjustmentMessages: [],
       hasSavedCurrentRecord: false
     }, restoredState));
   },
@@ -666,7 +1109,7 @@ Page({
         bubbleClass: 'butler-bubble',
         contentClass: 'butler-content',
         showAvatar: true,
-        avatarText: 'AI',
+        avatarText: '幺',
         showQuickReplies: false,
         text: safeOptions.noticeText
       });
@@ -717,6 +1160,105 @@ Page({
     }
 
     return '好呀，我带你回到口味偏好这里调整一下～';
+  },
+
+  buildAdjustmentFromAction(action, label) {
+    const adjustment = {
+      action,
+      text: label,
+      types: ['general'],
+      avoidTags: []
+    };
+
+    if (action === 'budget') {
+      adjustment.types = ['cheaper'];
+    } else if (action === 'distance') {
+      adjustment.types = ['nearer'];
+    } else if (action === 'taste') {
+      adjustment.types = ['differentTaste'];
+    } else if (action === 'taste-light') {
+      adjustment.types = ['light'];
+    } else if (action === 'taste-heavy') {
+      adjustment.types = ['heavy'];
+    } else if (action === 'category') {
+      adjustment.types = ['category'];
+    }
+
+    return adjustment;
+  },
+
+  resolveAdjustmentFromText(text) {
+    const feedbackText = String(text || '');
+    const types = [];
+    const avoidTags = parseAvoidTagsFromText(feedbackText);
+
+    if (containsAnyKeyword(feedbackText, ['贵', '便宜', '预算', '价格'])) {
+      types.push('cheaper');
+    }
+
+    if (containsAnyKeyword(feedbackText, ['远', '近', '距离', '走路'])) {
+      types.push('nearer');
+    }
+
+    if (containsAnyKeyword(feedbackText, ['不吃', '忌口', '过敏', '香菜', '葱', '蒜'])) {
+      types.push('avoid');
+    }
+
+    if (containsAnyKeyword(feedbackText, ['清淡', '少油', '轻', '不油腻'])) {
+      types.push('light');
+    } else if (containsAnyKeyword(feedbackText, ['重口', '香辣', '麻辣', '浓郁'])) {
+      types.push('heavy');
+    } else if (containsAnyKeyword(feedbackText, ['辣', '油', '口味'])) {
+      types.push('differentTaste');
+    }
+
+    if (containsAnyKeyword(feedbackText, ['品类', '换个', '不想吃这个', '饭', '面', '粉', '火锅', '奶茶'])) {
+      types.push('category');
+    }
+
+    return {
+      action: 'manual',
+      text: feedbackText,
+      types: uniqueList(types.length ? types : ['general']),
+      avoidTags,
+      replyText: types.length
+        ? '收到，我按这个方向帮你重新筛一批。'
+        : '我先帮你换一批更接近这个方向的方案。'
+    };
+  },
+
+  buildAdjustedPreferences(adjustment) {
+    const preferences = clonePagePreferences(this.data.session.preferences);
+    const types = adjustment.types || [];
+
+    if (types.indexOf('light') >= 0) {
+      addUniqueItems(preferences.tasteTags, ['清淡', '爽口']);
+      addUniqueItems(preferences.needTags, ['不油腻', '轻负担']);
+    }
+
+    if (types.indexOf('heavy') >= 0) {
+      addUniqueItems(preferences.tasteTags, ['香辣', '麻辣', '浓郁']);
+      addUniqueItems(preferences.needTags, ['解馋', '下饭']);
+    }
+
+    if (types.indexOf('avoid') >= 0 && adjustment.avoidTags && adjustment.avoidTags.length) {
+      addUniqueItems(preferences.avoidTags, adjustment.avoidTags);
+      if (adjustment.avoidTags.indexOf('不吃辣') >= 0) {
+        preferences.spicyLevel = '不吃辣';
+      }
+    }
+
+    return preferences;
+  },
+
+  getCurrentRecommendationCategories() {
+    const categories = (this.data.recommendations || []).map(function (item) {
+      return item.category || item.type || '';
+    }).filter(function (item) {
+      return !!item;
+    });
+
+    return uniqueList(categories);
   },
 
   findQuestionIdById(questionId) {
@@ -1129,6 +1671,72 @@ function areSameRecommendationIds(prevIds, nextIds) {
   return prevIds.every(function (id, index) {
     return id === nextIds[index];
   });
+}
+
+function containsAnyKeyword(text, keywords) {
+  return keywords.some(function (keyword) {
+    return text.indexOf(keyword) >= 0;
+  });
+}
+
+function clonePagePreferences(preferences) {
+  const safePreferences = preferences || {};
+
+  return {
+    tasteTags: (safePreferences.tasteTags || []).slice(),
+    needTags: (safePreferences.needTags || []).slice(),
+    avoidTags: (safePreferences.avoidTags || []).slice(),
+    spicyLevel: safePreferences.spicyLevel || ''
+  };
+}
+
+function addUniqueItems(target, items) {
+  items.forEach(function (item) {
+    if (item && target.indexOf(item) < 0) {
+      target.push(item);
+    }
+  });
+}
+
+function uniqueList(items) {
+  const result = [];
+
+  (items || []).forEach(function (item) {
+    if (item && result.indexOf(item) < 0) {
+      result.push(item);
+    }
+  });
+
+  return result;
+}
+
+function parseAvoidTagsFromText(text) {
+  const feedbackText = String(text || '');
+  const avoidTags = [];
+
+  if (containsAnyKeyword(feedbackText, ['不吃辣', '不要辣', '不能吃辣', '忌辣'])) {
+    avoidTags.push('不吃辣');
+  }
+  if (feedbackText.indexOf('香菜') >= 0) {
+    avoidTags.push('不要香菜');
+  }
+  if (feedbackText.indexOf('葱') >= 0 || feedbackText.indexOf('蒜') >= 0) {
+    avoidTags.push('不要葱蒜');
+  }
+  if (feedbackText.indexOf('海鲜') >= 0) {
+    avoidTags.push('不吃海鲜');
+  }
+  if (feedbackText.indexOf('内脏') >= 0) {
+    avoidTags.push('不吃内脏');
+  }
+  if (feedbackText.indexOf('牛羊肉') >= 0 || feedbackText.indexOf('牛肉') >= 0 || feedbackText.indexOf('羊肉') >= 0) {
+    avoidTags.push('不吃牛羊肉');
+  }
+  if (feedbackText.indexOf('油炸') >= 0 || feedbackText.indexOf('炸') >= 0) {
+    avoidTags.push('不吃油炸');
+  }
+
+  return uniqueList(avoidTags);
 }
 
 // mealPurpose keyword → canonical option (must match one of mealPurposeQuestion.options

@@ -6,7 +6,8 @@
     "pages/group/create/create",
     "pages/group/fill/fill",
     "pages/group/board/board",
-    "pages/weekend/weekend"
+    "pages/weekend/weekend",
+    "pages/memory/memory"
   ],
   "window": {
     "navigationBarTitleText": "饿了幺",

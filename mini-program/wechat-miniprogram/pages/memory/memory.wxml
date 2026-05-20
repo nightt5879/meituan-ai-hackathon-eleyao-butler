@@ -1,0 +1,151 @@
+<view class="page memory-page theme-{{currentTheme}}">
+  <view class="memory-intro">
+    <view class="memory-page-title">管家记忆</view>
+    <view class="memory-page-subtitle">你可以在这里管理管家记住的饮食偏好</view>
+    <view class="memory-privacy">这些记忆只用于帮你推荐吃什么，你可以随时修改或清空。</view>
+  </view>
+
+  <!-- ────────── Section 1: 我主动告诉管家的 ────────── -->
+  <view class="memory-section-group">
+    <view class="memory-group-header">
+      <view class="memory-group-title">我主动告诉管家的</view>
+      <view class="memory-group-hint">保存后生效</view>
+    </view>
+
+    <view class="memory-section">
+      <view class="memory-section-title">忌口 / 过敏</view>
+      <view class="memory-section-desc">可多选。选「无」会清空其他选项。点「其他」后请在下方填写。</view>
+      <view class="memory-chip-list">
+        <view
+          wx:for="{{avoidOptions}}"
+          wx:key="value"
+          class="memory-chip {{item.isSelected ? 'selected' : ''}}"
+          data-value="{{item.value}}"
+          bindtap="handleAvoidTap"
+        >{{item.value}}</view>
+      </view>
+      <view class="memory-custom-input-row {{isNoneSelected ? 'dim' : ''}}">
+        <input
+          class="memory-custom-input"
+          value="{{customAvoidInput}}"
+          placeholder="也可以自己填写，例如：芒果、鸡蛋、菌菇"
+          placeholder-class="memory-custom-placeholder"
+          bindinput="handleCustomAvoidInput"
+        />
+      </view>
+    </view>
+
+    <view class="memory-section">
+      <view class="memory-section-title">辣度偏好</view>
+      <view class="memory-section-desc">单选。再点一下取消。</view>
+      <view class="memory-chip-list">
+        <view
+          wx:for="{{spicyOptions}}"
+          wx:key="value"
+          class="memory-chip {{item.isSelected ? 'selected' : ''}}"
+          data-value="{{item.value}}"
+          bindtap="handleSpicyTap"
+        >{{item.value}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ────────── Section 2: 允许管家记住 ────────── -->
+  <view class="memory-section-group">
+    <view class="memory-group-header">
+      <view class="memory-group-title">允许管家记住</view>
+      <view class="memory-group-hint">{{section2SaveHint}}</view>
+    </view>
+
+    <view class="memory-section memory-permissions">
+      <view class="permission-row permission-master">
+        <view class="permission-copy">
+          <view class="permission-title">允许管家从我的使用中学习偏好</view>
+          <view class="permission-desc">总开关。关闭后下方授权项不会被记录。</view>
+        </view>
+        <switch
+          checked="{{behaviorLearningEnabled}}"
+          color="#FF8A3D"
+          bindchange="handleMasterPermissionChange"
+        />
+      </view>
+
+      <view class="permission-divider"></view>
+
+      <view
+        wx:for="{{permissionRows}}"
+        wx:key="key"
+        class="permission-row {{!behaviorLearningEnabled ? 'dim' : ''}} {{item.disabled ? 'is-disabled' : ''}}"
+      >
+        <view class="permission-copy">
+          <view class="permission-title-row">
+            <text class="permission-title">{{item.title}}</text>
+            <text wx:if="{{item.disabled}}" class="permission-pill">稍后开放</text>
+          </view>
+          <view class="permission-desc">{{item.desc}}</view>
+        </view>
+        <switch
+          checked="{{item.checked}}"
+          color="#FF8A3D"
+          disabled="{{item.disabled}}"
+          data-key="{{item.key}}"
+          data-disabled="{{item.disabled}}"
+          bindchange="handlePermissionRowChange"
+        />
+      </view>
+    </view>
+  </view>
+
+  <!-- ────────── Section 3: 管家从使用中学到的 ────────── -->
+  <view class="memory-section-group">
+    <view class="memory-group-header">
+      <view class="memory-group-title">管家从使用中学到的</view>
+      <view class="memory-learning-pill">学习中</view>
+    </view>
+
+    <view class="memory-section memory-learned">
+      <view class="memory-learned-empty">{{learnedEmptyCopy}}</view>
+      <view class="memory-learned-list">
+        <view class="memory-learned-card" wx:for="{{learnedRows}}" wx:key="label">
+          <view class="memory-learned-copy">
+            <view class="memory-learned-label">{{item.label}}</view>
+            <view class="memory-learned-desc">{{item.desc}}</view>
+          </view>
+          <view class="memory-learned-status">{{item.value}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ────────── Section 4: 记忆控制 ────────── -->
+  <view class="memory-section-group">
+    <view class="memory-group-header">
+      <view class="memory-group-title">记忆控制</view>
+    </view>
+
+    <view class="memory-section memory-switch-section">
+      <view class="memory-switch-row">
+        <view class="memory-switch-copy">
+          <view class="memory-section-title">暂停管家记忆</view>
+          <view class="memory-section-desc">开关关闭后我不会读取这些记忆，已保存的内容仍会保留。</view>
+        </view>
+        <switch
+          checked="{{memoryEnabled}}"
+          color="#FF8A3D"
+          bindchange="handleToggleMemory"
+        />
+      </view>
+    </view>
+
+    <view class="memory-actions-row">
+      <button class="memory-save-button" bindtap="handleSaveMemory">保存记忆</button>
+      <button class="memory-clear-button" bindtap="handleClearMemory">清空主动填写记忆</button>
+    </view>
+
+    <view class="memory-actions-row memory-actions-row-compact">
+      <button class="memory-clear-button memory-clear-button-wide" bindtap="handleClearLearnedMemory">清空行为学习记忆</button>
+    </view>
+  </view>
+
+  <view class="memory-updated-at">{{updatedAtText}}</view>
+</view>

@@ -330,11 +330,12 @@ function generateRecommendations(slots, preferences, options) {
   const safePreferences = normalizePreferences(preferences);
   const safeOptions = options || {};
   const excludeIds = safeOptions.excludeIds || [];
+  const adjustment = normalizeAdjustmentOptions(safeOptions.adjustment, safeOptions.batchIndex);
   const eligibleShops = getEligibleShops(safePreferences);
   const scoredShops = eligibleShops
     .map(function (shop) {
       return Object.assign({}, shop, {
-        score: getShopScore(shop, safeSlots, safePreferences),
+        score: getShopScore(shop, safeSlots, safePreferences) + getAdjustmentScore(shop, safeSlots, adjustment),
         matchedTags: getMatchedTags(shop, safePreferences)
       });
     })
@@ -563,6 +564,81 @@ function getShopScore(shop, slots, preferences) {
   return score;
 }
 
+function getAdjustmentScore(shop, slots, adjustment) {
+  const types = adjustment.types || [];
+  let score = 0;
+
+  if (types.indexOf('cheaper') >= 0) {
+    score += getCheaperAdjustmentScore(shop, slots);
+  }
+
+  if (types.indexOf('nearer') >= 0) {
+    score += getNearerAdjustmentScore(shop);
+  }
+
+  if (types.indexOf('light') >= 0) {
+    score += getTagMatchScore(shop, ['清淡', '爽口', '不油腻', '轻负担', '少油少盐'], 14);
+    if (isHeavyTasteShop(shop)) { score -= 18; }
+  }
+
+  if (types.indexOf('heavy') >= 0) {
+    score += getTagMatchScore(shop, ['香辣', '麻辣', '酸辣', '浓郁', '解馋', '下饭'], 14);
+  }
+
+  if (types.indexOf('category') >= 0 || types.indexOf('differentTaste') >= 0) {
+    if (adjustment.avoidCategories.indexOf(shop.category) >= 0) {
+      score -= 35;
+    } else {
+      score += 10;
+    }
+  }
+
+  if (adjustment.batchIndex) {
+    score += getBatchRotationScore(shop, adjustment.batchIndex);
+  }
+
+  return score;
+}
+
+function getCheaperAdjustmentScore(shop, slots) {
+  const maxBudget = getBudgetLimit(slots.budget);
+
+  if (maxBudget) {
+    if (shop.price <= maxBudget * 0.7) { return 34; }
+    if (shop.price <= maxBudget) { return 18; }
+    return -18;
+  }
+
+  if (shop.price <= 30) { return 34; }
+  if (shop.price <= 45) { return 22; }
+  if (shop.price <= 60) { return 8; }
+  return -10;
+}
+
+function getNearerAdjustmentScore(shop) {
+  if (shop.distanceMeters <= 500) { return 34; }
+  if (shop.distanceMeters <= 800) { return 22; }
+  if (shop.distanceMeters <= 1200) { return 8; }
+  return -12;
+}
+
+function getTagMatchScore(shop, tags, unitScore) {
+  return tags.reduce(function (score, tag) {
+    return shop.tags.indexOf(tag) >= 0 ? score + unitScore : score;
+  }, 0);
+}
+
+function getBatchRotationScore(shop, batchIndex) {
+  const idText = String(shop.id || '');
+  let seed = 0;
+
+  for (let index = 0; index < idText.length; index += 1) {
+    seed += idText.charCodeAt(index);
+  }
+
+  return ((seed + batchIndex * 7) % 13) - 6;
+}
+
 function getMatchedTags(shop, preferences) {
   return intersect(shop.tags, preferences.tasteTags.concat(preferences.needTags));
 }
@@ -695,6 +771,17 @@ function normalizePreferences(preferences) {
   };
 }
 
+function normalizeAdjustmentOptions(adjustment, batchIndex) {
+  const safeAdjustment = adjustment || {};
+  const rawTypes = safeAdjustment.types || (safeAdjustment.type ? [safeAdjustment.type] : []);
+
+  return {
+    types: uniqueStrings(rawTypes),
+    avoidCategories: uniqueStrings(safeAdjustment.avoidCategories || []),
+    batchIndex: batchIndex || 0
+  };
+}
+
 function clonePreferences(preferences) {
   const safePreferences = normalizePreferences(preferences);
 
@@ -792,6 +879,18 @@ function intersect(source, selected) {
   return (selected || []).filter(function (tag) {
     return source.indexOf(tag) >= 0;
   });
+}
+
+function uniqueStrings(items) {
+  const result = [];
+
+  (items || []).forEach(function (item) {
+    if (item && result.indexOf(item) < 0) {
+      result.push(item);
+    }
+  });
+
+  return result;
 }
 
 function quoteTags(tags) {

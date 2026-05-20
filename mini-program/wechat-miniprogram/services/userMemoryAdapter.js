@@ -11,6 +11,61 @@
 const STORAGE_KEY = 'userMemory';
 const MAX_PREFERENCE_RECORDS = 20;
 
+// Stable long-term food preferences the user fills manually in the 管家记忆 page.
+// Only these two preference fields are stored as stable memory:
+//   - avoidTags  (忌口 / 过敏)
+//   - spicyLevel (辣度偏好)
+// Plus metadata: memoryEnabled (pause/resume), updatedAt, source.
+// Nothing else (age, identity, budget, distance, categories, areas,
+// chat raw text, precise location, real order history, etc.) is collected here.
+const defaultStableFoodPreferences = {
+  avoidTags: [],
+  spicyLevel: '',
+  memoryEnabled: true,
+  updatedAt: '',
+  source: 'user-settings'
+};
+
+// Permission switches the user toggles in the 管家记忆 page → Section 2.
+// In Step 1 these settings are STORED ONLY — no behavior-learning code
+// reads them yet. Future steps will gate learning on these flags.
+//
+// behaviorLearningEnabled is the master switch. The 7 default-true keys
+// are stable opt-ins. rememberFrequentArea / rememberGroupPreference are
+// future ("稍后开放") and default to false; the UI also marks them disabled.
+const defaultMemoryPermissions = {
+  behaviorLearningEnabled: true,
+  rememberTastePattern: true,
+  rememberBudgetByMeal: true,
+  rememberCommonCategories: true,
+  rememberDeliveryDineInPreference: true,
+  rememberDistancePreference: true,
+  rememberExplorationStyle: true,
+  rememberAdjustmentPatterns: true,
+  rememberDiningReport: true,
+  rememberFrequentArea: false,
+  rememberGroupPreference: false,
+  updatedAt: ''
+};
+
+// Placeholder shape for behavior-learned preferences. Step 1 does NOT
+// populate any field here. Provided so consumers (and Section 3 of the
+// memory page) can read a stable shape without null-checks.
+const defaultLearnedFoodPreferences = {
+  byMealPurpose: {
+    '早餐': { delivery: {}, dineIn: {} },
+    '午餐': { delivery: {}, dineIn: {} },
+    '晚餐': { delivery: {}, dineIn: {} },
+    '下午茶': { delivery: {}, dineIn: {} },
+    '夜宵': { delivery: {}, dineIn: {} }
+  },
+  deliveryPreference: {},
+  dineInPreference: {},
+  explorationStyle: {},
+  adjustmentPatterns: {},
+  updatedAt: ''
+};
+
 const defaultMemory = {
   preferredTaste: '',
   commonBudget: '',
@@ -32,6 +87,9 @@ const defaultMemory = {
   },
   recentRecommendations: [],
   preferenceRecords: [],
+  stableFoodPreferences: Object.assign({}, defaultStableFoodPreferences),
+  memoryPermissions: Object.assign({}, defaultMemoryPermissions),
+  learnedFoodPreferences: cloneLearnedFoodPreferences(defaultLearnedFoodPreferences),
   updatedAt: ''
 };
 
@@ -41,8 +99,84 @@ function getUserMemory() {
     preferences: Object.assign({}, defaultMemory.preferences, storedMemory.preferences || {}),
     lastSlots: Object.assign({}, defaultMemory.lastSlots, storedMemory.lastSlots || {}),
     recentRecommendations: Array.isArray(storedMemory.recentRecommendations) ? storedMemory.recentRecommendations : [],
-    preferenceRecords: Array.isArray(storedMemory.preferenceRecords) ? storedMemory.preferenceRecords : []
+    preferenceRecords: Array.isArray(storedMemory.preferenceRecords) ? storedMemory.preferenceRecords : [],
+    stableFoodPreferences: normalizeStableFoodPreferences(storedMemory.stableFoodPreferences),
+    memoryPermissions: normalizeMemoryPermissions(storedMemory.memoryPermissions),
+    learnedFoodPreferences: normalizeLearnedFoodPreferences(storedMemory.learnedFoodPreferences)
   });
+}
+
+function normalizeStableFoodPreferences(input) {
+  const safe = input || {};
+  return {
+    avoidTags: Array.isArray(safe.avoidTags) ? safe.avoidTags.slice() : [],
+    spicyLevel: typeof safe.spicyLevel === 'string' ? safe.spicyLevel : '',
+    memoryEnabled: safe.memoryEnabled === false ? false : true,
+    updatedAt: safe.updatedAt || '',
+    source: safe.source || 'user-settings'
+  };
+}
+
+function normalizeMemoryPermissions(input) {
+  const safe = input || {};
+  const out = {};
+  Object.keys(defaultMemoryPermissions).forEach(function (key) {
+    if (key === 'updatedAt') {
+      out.updatedAt = safe.updatedAt || '';
+      return;
+    }
+    if (typeof safe[key] === 'boolean') {
+      out[key] = safe[key];
+    } else {
+      out[key] = defaultMemoryPermissions[key];
+    }
+  });
+  return out;
+}
+
+function normalizeLearnedFoodPreferences(input) {
+  const safe = input && typeof input === 'object' ? input : {};
+  const out = cloneLearnedFoodPreferences(defaultLearnedFoodPreferences);
+  // byMealPurpose: preserve any existing keys, fall back to defaults.
+  if (safe.byMealPurpose && typeof safe.byMealPurpose === 'object') {
+    Object.keys(out.byMealPurpose).forEach(function (mealKey) {
+      if (safe.byMealPurpose[mealKey] && typeof safe.byMealPurpose[mealKey] === 'object') {
+        out.byMealPurpose[mealKey] = normalizeMealPurposeLearnedPreference(safe.byMealPurpose[mealKey]);
+      }
+    });
+  }
+  ['deliveryPreference', 'dineInPreference', 'explorationStyle', 'adjustmentPatterns'].forEach(function (key) {
+    if (safe[key] && typeof safe[key] === 'object') {
+      out[key] = Object.assign({}, safe[key]);
+    }
+  });
+  out.updatedAt = safe.updatedAt || '';
+  return out;
+}
+
+function normalizeMealPurposeLearnedPreference(input) {
+  const safe = input && typeof input === 'object' ? input : {};
+  return {
+    delivery: safe.delivery && typeof safe.delivery === 'object' ? Object.assign({}, safe.delivery) : {},
+    dineIn: safe.dineIn && typeof safe.dineIn === 'object' ? Object.assign({}, safe.dineIn) : {}
+  };
+}
+
+function cloneLearnedFoodPreferences(source) {
+  return {
+    byMealPurpose: {
+      '早餐': normalizeMealPurposeLearnedPreference(source.byMealPurpose['早餐']),
+      '午餐': normalizeMealPurposeLearnedPreference(source.byMealPurpose['午餐']),
+      '晚餐': normalizeMealPurposeLearnedPreference(source.byMealPurpose['晚餐']),
+      '下午茶': normalizeMealPurposeLearnedPreference(source.byMealPurpose['下午茶']),
+      '夜宵': normalizeMealPurposeLearnedPreference(source.byMealPurpose['夜宵'])
+    },
+    deliveryPreference: Object.assign({}, source.deliveryPreference),
+    dineInPreference: Object.assign({}, source.dineInPreference),
+    explorationStyle: Object.assign({}, source.explorationStyle),
+    adjustmentPatterns: Object.assign({}, source.adjustmentPatterns),
+    updatedAt: source.updatedAt || ''
+  };
 }
 
 // OPENCLAW INTEGRATION POINT:
@@ -217,6 +351,231 @@ function buildRecordSummaryText(record) {
   }).join(' · ') || '一次吃饭偏好';
 }
 
+// ─── V0 preference profile (for the food-flow preference pre-check) ───────
+//
+// This profile is what the butler reads when deciding whether to ask
+// "今天也按这个来吗？" at the start of the 今天吃什么 flow.
+//
+// Priority order inside getEffectivePreferenceProfile():
+//   1. Real long-term memory (only written when user taps "记住这个偏好")
+//   2. The most-recent preferenceRecord (auto-saved on every completed flow)
+//   3. The V0 mock profile below (so the feature is testable on a fresh install)
+//
+// IMPORTANT:
+// - The mock profile is V0/demo only. Real Meituan-style data integration
+//   would require explicit user authorisation. The food page surfaces a
+//   disclaimer in the butler bubble whenever this fallback is used.
+// - To disable the mock fallback (e.g. for production), call
+//   getEffectivePreferenceProfile({ useMock: false }).
+// - Choosing to reuse this profile for the current session NEVER writes
+//   anything to long-term memory. Long-term memory only changes when the
+//   user explicitly taps "记住这个偏好" after the recommendation step.
+const MOCK_PREFERENCE_PROFILE = {
+  taste: '清淡',
+  tasteTags: ['清淡'],
+  needTags: ['不油腻'],
+  avoidTags: [],
+  spicyLevel: '',
+  budget: '30-60 元',
+  distance: '1 公里以内',
+  source: 'mock'
+};
+
+function getEffectivePreferenceProfile(options) {
+  const opts = options || {};
+  const useMock = opts.useMock !== false;
+  const memory = getUserMemory();
+  const prefs = memory.preferences || {};
+  const slots = memory.lastSlots || {};
+
+  // 1) Explicit long-term memory.
+  if ((prefs.tasteTags || []).length || prefs.spicyLevel || slots.budget || slots.distance) {
+    return {
+      taste: (prefs.tasteTags || []).concat(prefs.needTags || []).join('、') || memory.preferredTaste || '',
+      tasteTags: (prefs.tasteTags || []).slice(),
+      needTags: (prefs.needTags || []).slice(),
+      avoidTags: (prefs.avoidTags || []).slice(),
+      spicyLevel: prefs.spicyLevel || '',
+      budget: slots.budget || memory.commonBudget || '',
+      distance: slots.distance || memory.commonDistance || '',
+      source: 'memory'
+    };
+  }
+
+  // 2) Most-recent completed session (auto-saved).
+  const records = Array.isArray(memory.preferenceRecords) ? memory.preferenceRecords : [];
+  if (records.length) {
+    const r = records[0];
+    return {
+      taste: (r.tasteTags || []).concat(r.needTags || []).join('、'),
+      tasteTags: (r.tasteTags || []).slice(),
+      needTags: (r.needTags || []).slice(),
+      avoidTags: (r.avoidTags || []).slice(),
+      spicyLevel: r.spicyLevel || '',
+      budget: r.budget || '',
+      distance: r.distance || '',
+      source: 'record'
+    };
+  }
+
+  // 3) V0 mock fallback (disable with { useMock: false }).
+  return useMock ? Object.assign({}, MOCK_PREFERENCE_PROFILE) : null;
+}
+
+function hasUsefulPreferenceProfile(profile) {
+  if (!profile) { return false; }
+  return !!(
+    profile.taste ||
+    profile.budget ||
+    profile.distance ||
+    (profile.tasteTags || []).length ||
+    (profile.needTags || []).length ||
+    profile.spicyLevel
+  );
+}
+
+// ─── Stable food preferences (管家记忆 page) ───────────────────────────────
+//
+// User-controlled long-term preference data, written ONLY by the
+// 管家记忆 page. Read-only consumers should call getStableFoodPreferences().
+// Step 1: storage layer only — not connected to the food flow yet.
+
+function getStableFoodPreferences() {
+  const memory = getUserMemory();
+  return normalizeStableFoodPreferences(memory.stableFoodPreferences);
+}
+
+function saveStableFoodPreferences(preferences) {
+  const incoming = preferences || {};
+  const currentMemory = getUserMemory();
+  const current = currentMemory.stableFoodPreferences || defaultStableFoodPreferences;
+  const next = normalizeStableFoodPreferences({
+    avoidTags: incoming.avoidTags !== undefined ? incoming.avoidTags : current.avoidTags,
+    spicyLevel: incoming.spicyLevel !== undefined ? incoming.spicyLevel : current.spicyLevel,
+    memoryEnabled: incoming.memoryEnabled !== undefined ? incoming.memoryEnabled : current.memoryEnabled,
+    source: incoming.source || current.source || 'user-settings',
+    updatedAt: new Date().toISOString()
+  });
+  const nextMemory = Object.assign({}, currentMemory, {
+    stableFoodPreferences: next,
+    updatedAt: next.updatedAt
+  });
+  wx.setStorageSync(STORAGE_KEY, nextMemory);
+  return next;
+}
+
+function clearStableFoodPreferences() {
+  const currentMemory = getUserMemory();
+  const current = currentMemory.stableFoodPreferences || defaultStableFoodPreferences;
+  // Clears the user-fillable fields only. memoryEnabled is preserved so a
+  // paused user who clears does NOT accidentally re-enable memory.
+  const next = normalizeStableFoodPreferences({
+    avoidTags: [],
+    spicyLevel: '',
+    memoryEnabled: current.memoryEnabled,
+    source: current.source || 'user-settings',
+    updatedAt: new Date().toISOString()
+  });
+  const nextMemory = Object.assign({}, currentMemory, {
+    stableFoodPreferences: next,
+    updatedAt: next.updatedAt
+  });
+  wx.setStorageSync(STORAGE_KEY, nextMemory);
+  return next;
+}
+
+function pauseStableFoodMemory() {
+  return setStableFoodMemoryEnabled(false);
+}
+
+function resumeStableFoodMemory() {
+  return setStableFoodMemoryEnabled(true);
+}
+
+function setStableFoodMemoryEnabled(enabled) {
+  const currentMemory = getUserMemory();
+  const current = currentMemory.stableFoodPreferences || defaultStableFoodPreferences;
+  const next = normalizeStableFoodPreferences(Object.assign({}, current, {
+    memoryEnabled: !!enabled,
+    updatedAt: new Date().toISOString()
+  }));
+  const nextMemory = Object.assign({}, currentMemory, {
+    stableFoodPreferences: next,
+    updatedAt: next.updatedAt
+  });
+  wx.setStorageSync(STORAGE_KEY, nextMemory);
+  return next;
+}
+
+// ─── Memory permissions (管家记忆 → Section 2: 允许管家记住) ───────────────
+//
+// Toggles that authorize what the butler is ALLOWED to learn from behavior.
+// Step 1: storage only. No learning code reads these yet.
+
+function getMemoryPermissions() {
+  const memory = getUserMemory();
+  return normalizeMemoryPermissions(memory.memoryPermissions);
+}
+
+function saveMemoryPermissions(permissions) {
+  const incoming = permissions || {};
+  const currentMemory = getUserMemory();
+  const current = currentMemory.memoryPermissions || defaultMemoryPermissions;
+  const merged = {};
+  Object.keys(defaultMemoryPermissions).forEach(function (key) {
+    if (key === 'updatedAt') { return; }
+    if (typeof incoming[key] === 'boolean') {
+      merged[key] = incoming[key];
+    } else {
+      merged[key] = current[key];
+    }
+  });
+  merged.updatedAt = new Date().toISOString();
+  const next = normalizeMemoryPermissions(merged);
+  const nextMemory = Object.assign({}, currentMemory, {
+    memoryPermissions: next,
+    updatedAt: next.updatedAt
+  });
+  wx.setStorageSync(STORAGE_KEY, nextMemory);
+  return next;
+}
+
+function resetMemoryPermissions() {
+  const currentMemory = getUserMemory();
+  const next = normalizeMemoryPermissions(Object.assign({}, defaultMemoryPermissions, {
+    updatedAt: new Date().toISOString()
+  }));
+  const nextMemory = Object.assign({}, currentMemory, {
+    memoryPermissions: next,
+    updatedAt: next.updatedAt
+  });
+  wx.setStorageSync(STORAGE_KEY, nextMemory);
+  return next;
+}
+
+// ─── Learned food preferences (管家记忆 → Section 3: 管家从使用中学到的) ───
+//
+// Reader returns the placeholder shape in Step 1 (no learning yet).
+// The clear method exists so users can wipe behavior-learned data on demand
+// — it is a no-op visually in Step 1 but the affordance is always present.
+
+function getLearnedFoodPreferences() {
+  const memory = getUserMemory();
+  return normalizeLearnedFoodPreferences(memory.learnedFoodPreferences);
+}
+
+function clearLearnedFoodPreferences() {
+  const currentMemory = getUserMemory();
+  const next = cloneLearnedFoodPreferences(defaultLearnedFoodPreferences);
+  next.updatedAt = new Date().toISOString();
+  const nextMemory = Object.assign({}, currentMemory, {
+    learnedFoodPreferences: next,
+    updatedAt: next.updatedAt
+  });
+  wx.setStorageSync(STORAGE_KEY, nextMemory);
+  return next;
+}
+
 module.exports = {
   STORAGE_KEY,
   getUserMemory,
@@ -226,5 +585,18 @@ module.exports = {
   getPreferenceRecords,
   clearPreferenceRecords,
   hasUserMemory,
-  getLastChoiceForSlot
+  getLastChoiceForSlot,
+  MOCK_PREFERENCE_PROFILE,
+  getEffectivePreferenceProfile,
+  hasUsefulPreferenceProfile,
+  getStableFoodPreferences,
+  saveStableFoodPreferences,
+  clearStableFoodPreferences,
+  pauseStableFoodMemory,
+  resumeStableFoodMemory,
+  getMemoryPermissions,
+  saveMemoryPermissions,
+  resetMemoryPermissions,
+  getLearnedFoodPreferences,
+  clearLearnedFoodPreferences
 };

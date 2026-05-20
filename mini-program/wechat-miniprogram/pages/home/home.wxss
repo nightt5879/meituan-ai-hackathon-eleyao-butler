@@ -494,3 +494,76 @@
   color: var(--theme-subtle, #9A8F83);
   font-size: 22rpx;
 }
+
+/* Compact home entry → 管家记忆 page (user-managed stable preferences). */
+.memory-entry {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  margin: 24rpx 0 28rpx;
+  padding: 22rpx 24rpx;
+  border: 1rpx solid var(--theme-border, #F3DDC7);
+  border-radius: 22rpx;
+  background: var(--theme-card, #FFFDF8);
+  box-shadow: 0 6rpx 18rpx rgba(15, 23, 42, 0.05);
+  transition: background-color 160ms ease, box-shadow 160ms ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+.memory-entry:active {
+  background: var(--theme-soft, #FFF1E3);
+  box-shadow: 0 4rpx 12rpx rgba(15, 23, 42, 0.04);
+}
+
+.memory-icon {
+  flex-shrink: 0;
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--theme-soft, #FFF1E3);
+  color: var(--theme-primary-deep, #FF8A3D);
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.memory-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.memory-title {
+  color: var(--theme-text, #3A2A1A);
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.memory-desc {
+  margin-top: 4rpx;
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 24rpx;
+}
+
+.memory-arrow {
+  flex-shrink: 0;
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.theme-dark .memory-entry {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 6rpx 18rpx rgba(0, 0, 0, 0.24);
+}
+
+.theme-dark .memory-entry:active {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.theme-dark .memory-icon {
+  background: rgba(255, 159, 67, 0.18);
+  color: var(--theme-primary, #FF9F43);
+}

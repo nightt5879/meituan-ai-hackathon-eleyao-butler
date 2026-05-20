@@ -1,0 +1,491 @@
+/* 管家记忆 page — Step 1: avoidTags + spicyLevel + memory switch.
+   Uses the same theme CSS variables as the rest of the app.
+   No transforms on chips, consistent with the established crisp-text rules. */
+
+.memory-page {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 48rpx 32rpx calc(64rpx + env(safe-area-inset-bottom));
+  background: var(--theme-bg, #FFF8EF);
+  color: var(--theme-text, #3A2A1A);
+  -webkit-font-smoothing: antialiased;
+}
+
+.memory-intro {
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: 36rpx;
+}
+
+.memory-page-title {
+  color: var(--theme-text, #3A2A1A);
+  font-size: 42rpx;
+  font-weight: 800;
+  line-height: 52rpx;
+}
+
+.memory-page-subtitle {
+  margin-top: 12rpx;
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 28rpx;
+  line-height: 38rpx;
+}
+
+.memory-privacy {
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 24rpx;
+  padding: 24rpx 28rpx;
+  border-radius: 20rpx;
+  background: var(--theme-soft, #FFF1E3);
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.memory-section {
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: 28rpx;
+  padding: 24rpx 24rpx 26rpx;
+  border: 1rpx solid var(--theme-border, #F3DDC7);
+  border-radius: 22rpx;
+  background: var(--theme-card, #FFFDF8);
+  box-shadow: 0 6rpx 18rpx rgba(15, 23, 42, 0.05);
+}
+
+.memory-section-title {
+  color: var(--theme-text, #3A2A1A);
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.memory-section-desc {
+  margin-top: 6rpx;
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 23rpx;
+  line-height: 1.5;
+}
+
+.memory-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 18rpx;
+}
+
+.memory-chip {
+  box-sizing: border-box;
+  min-height: 56rpx;
+  padding: 12rpx 22rpx;
+  border: 1rpx solid var(--theme-border, #F3DDC7);
+  border-radius: 999rpx;
+  background: var(--theme-card, #FFFDF8);
+  color: var(--theme-text, #3A2A1A);
+  font-size: 24rpx;
+  line-height: 1.35;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+.memory-chip:active {
+  background: var(--theme-soft, #FFF1E3);
+  border-color: rgba(255, 138, 61, 0.42);
+}
+
+.memory-chip.selected {
+  border-color: var(--theme-primary, #FF8A3D);
+  background: var(--theme-soft, #FFF1E3);
+  color: var(--theme-primary-deep, #FF8A3D);
+  font-weight: 700;
+  box-shadow: 0 6rpx 16rpx rgba(255, 138, 61, 0.14);
+}
+
+/* Custom avoid/allergy input — sits below the fixed chip row inside the
+   忌口 / 过敏 section. Saved together with selected fixed tags into
+   stableFoodPreferences.avoidTags. */
+.memory-custom-input-row {
+  margin-top: 18rpx;
+  padding: 14rpx 20rpx;
+  border: 1rpx solid var(--theme-border, #F3DDC7);
+  border-radius: 18rpx;
+  background: var(--theme-card, #FFFDF8);
+  transition: opacity 160ms ease, border-color 160ms ease, background-color 160ms ease;
+}
+
+.memory-custom-input-row.dim {
+  opacity: 0.5;
+}
+
+.memory-custom-input {
+  width: 100%;
+  height: 64rpx;
+  color: var(--theme-text, #3A2A1A);
+  font-size: 24rpx;
+  -webkit-font-smoothing: antialiased;
+}
+
+.memory-custom-placeholder {
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 24rpx;
+}
+
+.memory-switch-section {
+  padding: 24rpx 24rpx;
+}
+
+.memory-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.memory-switch-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.memory-actions-row {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 8rpx;
+}
+
+.memory-save-button,
+.memory-clear-button {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  border-radius: 999rpx;
+  font-size: 28rpx;
+  line-height: 86rpx;
+  transition: opacity 160ms ease, background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+.memory-save-button::after,
+.memory-clear-button::after {
+  border: 0;
+}
+
+.memory-save-button {
+  background: var(--theme-primary, #FF8A3D);
+  color: var(--theme-on-primary, #ffffff);
+  box-shadow: 0 8rpx 22rpx rgba(255, 138, 61, 0.20);
+}
+
+.memory-save-button:active {
+  opacity: 0.88;
+  box-shadow: 0 4rpx 12rpx rgba(255, 138, 61, 0.16);
+}
+
+.memory-clear-button {
+  border: 1rpx solid var(--theme-border, #F3DDC7);
+  background: var(--theme-card, #FFFDF8);
+  color: var(--theme-muted, #8A6A4F);
+}
+
+.memory-clear-button:active {
+  background: var(--theme-soft, #FFF1E3);
+  color: var(--theme-text, #3A2A1A);
+}
+
+.memory-updated-at {
+  margin-top: 24rpx;
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 22rpx;
+  text-align: center;
+}
+
+/* Section group — one block per "section" (1-4). */
+
+.memory-section-group {
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: 36rpx;
+}
+
+.memory-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24rpx;
+  margin: 0 0 20rpx;
+}
+
+.memory-group-title {
+  flex: 1;
+  min-width: 0;
+  color: var(--theme-text, #3A2A1A);
+  font-size: 34rpx;
+  font-weight: 800;
+  line-height: 44rpx;
+}
+
+.memory-group-hint {
+  flex-shrink: 0;
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 24rpx;
+  line-height: 34rpx;
+  text-align: right;
+  max-width: 260rpx;
+}
+
+/* Section 2 — permissions */
+
+.memory-permissions {
+  padding-top: 18rpx;
+  padding-bottom: 18rpx;
+}
+
+.permission-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  padding: 14rpx 0;
+  transition: opacity 160ms ease;
+}
+
+.permission-row.dim {
+  opacity: 0.45;
+}
+
+.permission-row.is-disabled {
+  opacity: 0.55;
+}
+
+.permission-master {
+  padding-top: 6rpx;
+  padding-bottom: 14rpx;
+}
+
+.permission-divider {
+  height: 1rpx;
+  margin: 6rpx 0 4rpx;
+  background: var(--theme-border, #F3DDC7);
+}
+
+.permission-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.permission-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  flex-wrap: wrap;
+}
+
+.permission-title {
+  color: var(--theme-text, #3A2A1A);
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.permission-desc {
+  margin-top: 4rpx;
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 22rpx;
+  line-height: 1.45;
+}
+
+.permission-pill {
+  flex-shrink: 0;
+  padding: 2rpx 12rpx;
+  border-radius: 999rpx;
+  background: var(--theme-soft, #FFF1E3);
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 20rpx;
+  font-weight: 700;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Section 3 — learned placeholder */
+
+.memory-learned-empty {
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.memory-learned-list {
+  margin-top: 18rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.memory-learning-pill {
+  flex-shrink: 0;
+  padding: 6rpx 16rpx;
+  border-radius: 999rpx;
+  background: var(--theme-soft, #FFF1E3);
+  color: var(--theme-primary-deep, #FF8A3D);
+  font-size: 21rpx;
+  font-weight: 700;
+  line-height: 1.35;
+  -webkit-font-smoothing: antialiased;
+}
+
+.memory-learned-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18rpx;
+  padding: 18rpx 18rpx;
+  border: 1rpx solid var(--theme-border, #F3DDC7);
+  border-radius: 18rpx;
+  background: var(--theme-card, #FFFDF8);
+}
+
+.memory-learned-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.memory-learned-label {
+  color: var(--theme-text, #3A2A1A);
+  font-size: 25rpx;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.memory-learned-desc {
+  margin-top: 6rpx;
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 22rpx;
+  line-height: 1.45;
+}
+
+.memory-learned-status {
+  flex-shrink: 0;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  background: var(--theme-soft, #FFF1E3);
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 21rpx;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+/* Section 4 — compact extra row for 清空行为学习记忆 */
+
+.memory-actions-row-compact {
+  margin-top: 14rpx;
+}
+
+.memory-clear-button-wide {
+  flex: 1;
+}
+
+/* Dark theme additions */
+
+.theme-dark .memory-group-title {
+  color: var(--theme-text, #F5F5F5);
+}
+
+.theme-dark .memory-group-hint {
+  color: var(--theme-muted, #B8B8B8);
+}
+
+.theme-dark .permission-divider {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.theme-dark .permission-title {
+  color: var(--theme-text, #F5F5F5);
+}
+
+.theme-dark .permission-desc {
+  color: var(--theme-muted, #B8B8B8);
+}
+
+.theme-dark .permission-pill {
+  background: rgba(255, 255, 255, 0.10);
+  color: var(--theme-muted, #B8B8B8);
+}
+
+.theme-dark .memory-learned-empty {
+  color: var(--theme-muted, #B8B8B8);
+}
+
+.theme-dark .memory-learning-pill {
+  background: rgba(255, 159, 67, 0.18);
+  color: var(--theme-primary, #FF9F43);
+}
+
+.theme-dark .memory-learned-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.theme-dark .memory-learned-label {
+  color: var(--theme-text, #F5F5F5);
+}
+
+.theme-dark .memory-learned-desc {
+  color: var(--theme-muted, #B8B8B8);
+}
+
+.theme-dark .memory-learned-status {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--theme-muted, #B8B8B8);
+}
+
+/* Dark theme variants */
+
+.theme-dark .memory-privacy {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--theme-muted, #B8B8B8);
+}
+
+.theme-dark .memory-section {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 6rpx 18rpx rgba(0, 0, 0, 0.24);
+}
+
+.theme-dark .memory-chip {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: var(--theme-text, #F5F5F5);
+}
+
+.theme-dark .memory-chip:active {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 159, 67, 0.42);
+}
+
+.theme-dark .memory-chip.selected {
+  background: rgba(255, 159, 67, 0.18);
+  border-color: var(--theme-primary, #FF9F43);
+  color: var(--theme-primary, #FF9F43);
+  box-shadow: 0 8rpx 22rpx rgba(0, 0, 0, 0.30);
+}
+
+.theme-dark .memory-clear-button {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: var(--theme-muted, #B8B8B8);
+}
+
+.theme-dark .memory-clear-button:active {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--theme-text, #F5F5F5);
+}
+
+.theme-dark .memory-custom-input-row {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.theme-dark .memory-custom-input {
+  color: var(--theme-text, #F5F5F5);
+}
+
+.theme-dark .memory-custom-placeholder {
+  color: var(--theme-muted, #B8B8B8);
+}

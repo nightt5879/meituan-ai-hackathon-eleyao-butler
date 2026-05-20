@@ -1,15 +1,10 @@
 <view class="page food-page theme-{{currentTheme}}">
-  <view class="butler-status-bar">
-    <button class="chat-back-button" bindtap="handleBackToHome">‹</button>
-    <view class="status-avatar ai-mark">幺</view>
-    <view class="status-copy">
-      <view class="status-title">AI 智能管家</view>
-      <view class="status-line">
-        <view class="online-dot"></view>
-        <text>在线 · 正在帮你挑选</text>
-      </view>
+  <view class="custom-food-header">
+    <view class="header-back-button" bindtap="handleBackToHome">‹</view>
+    <view class="header-online-status">
+      <view class="header-online-dot"></view>
+      <text class="header-online-text">在线 · 正在帮你挑选</text>
     </view>
-    <view class="status-pill">MVP</view>
   </view>
 
   <view class="chat-body">
@@ -24,6 +19,26 @@
     </view>
 
     <view class="chat-thread">
+      <view wx:if="{{prefCheckActive}}" class="chat-message butler-message pref-check-message">
+        <view class="message-avatar ai-mark">幺</view>
+        <view class="message-content butler-content">
+          <view class="chat-bubble butler-bubble">{{prefCheckSummary}}</view>
+          <view wx:if="{{prefCheckDisclaimer}}" class="chat-bubble butler-bubble pref-check-disclaimer-bubble">{{prefCheckDisclaimer}}</view>
+          <view class="inline-replies">
+            <view class="quick-list">
+              <view
+                wx:for="{{prefCheckOptions}}"
+                wx:key="action"
+                class="quick-chip pref-check-chip"
+                data-action="{{item.action}}"
+                data-label="{{item.label}}"
+                bindtap="handlePrefCheckOptionTap"
+              >{{item.label}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+
       <view
         wx:for="{{chatMessages}}"
         wx:key="id"
@@ -79,6 +94,23 @@
           </view>
         </view>
 
+        <view
+          wx:for="{{adjustmentMessages}}"
+          wx:key="id"
+          class="chat-message {{item.messageClass}}"
+        >
+          <view wx:if="{{item.showAvatar}}" class="message-avatar">{{item.avatarText}}</view>
+          <view class="message-content {{item.contentClass}}">
+            <view class="chat-bubble {{item.bubbleClass}}">
+              {{item.text}}
+            </view>
+          </view>
+        </view>
+
+        <view wx:if="{{recommendationNotice}}" class="recommendation-notice">
+          {{recommendationNotice}}
+        </view>
+
         <view class="recommendation-list">
           <view class="shop-card {{index === 0 ? 'featured' : ''}}" wx:for="{{recommendations}}" wx:key="id">
             <view class="shop-header">
@@ -93,17 +125,16 @@
               <view>{{item.distance}}</view>
               <view>评分 {{item.rating}}</view>
             </view>
-            <view class="matched-tags">
-              <text wx:for="{{item.matchedTags}}" wx:for-item="tag" wx:key="*this" class="matched-tag">{{tag}}</text>
-              <text wx:if="{{!item.matchedTags.length}}" class="matched-tag muted">默认推荐</text>
+            <view class="matched-tags-row">
+              <text class="shop-section-label">匹配点</text>
+              <view class="matched-tags">
+                <text wx:for="{{item.matchedTags}}" wx:for-item="tag" wx:key="*this" class="matched-tag">{{tag}}</text>
+                <text wx:if="{{!item.matchedTags.length}}" class="matched-tag muted">默认推荐</text>
+              </view>
             </view>
-            <view class="shop-reason">{{item.reason}}</view>
-            <view class="shop-risk">风险提示：{{item.riskTip}}</view>
+            <view class="shop-reason"><text class="shop-section-label">为什么推荐</text>{{item.reason}}</view>
+            <view class="shop-risk"><text class="shop-section-label">管家提醒</text>{{item.riskTip}}</view>
           </view>
-        </view>
-
-        <view wx:if="{{recommendationNotice}}" class="recommendation-notice">
-          {{recommendationNotice}}
         </view>
 
         <view wx:if="{{showAdjustmentOptions}}" class="chat-message butler-message adjustment-message">
@@ -124,6 +155,16 @@
                 {{item.label}}
               </view>
             </view>
+            <view class="adjustment-input-row">
+              <input
+                class="adjustment-input"
+                value="{{adjustmentManualInput}}"
+                placeholder="也可以直接告诉我哪里不满意"
+                placeholder-class="manual-placeholder"
+                bindinput="handleAdjustmentManualInput"
+              />
+              <button class="adjustment-submit" bindtap="handleAdjustmentManualSubmit">发送</button>
+            </view>
           </view>
         </view>
       </block>
@@ -143,6 +184,7 @@
           {{showSlotSummaryDetail ? '收起' : '查看'}}
         </button>
       </view>
+      <view class="slot-summary-hint">当前条件仅用于本次推荐，你可以在结果页选择是否长期记住</view>
 
       <view wx:if="{{showSlotSummaryDetail}}" class="slots-panel">
         <view class="slots-title">完整需求状态</view>
@@ -156,20 +198,6 @@
         >
           <view class="slot-label">{{item.label}}</view>
           <view class="slot-value">{{item.value}}</view>
-        </view>
-      </view>
-
-      <view class="summary-field-list">
-        <view
-          wx:for="{{summaryFields}}"
-          wx:key="questionId"
-          class="summary-field-chip {{item.fieldClass}}"
-          data-question-id="{{item.questionId}}"
-          data-available="{{item.isAvailable}}"
-          bindtap="handleSummaryFieldTap"
-        >
-          <text class="summary-field-label">{{item.label}}</text>
-          <text class="summary-field-value">{{item.value}}</text>
         </view>
       </view>
     </view>
@@ -186,8 +214,24 @@
     </view>
   </view>
 
-  <view wx:else class="result-actions">
-    <button class="secondary-action-button" bindtap="handleRefreshRecommendations">换一批</button>
-    <button class="restart-button" bindtap="handleStartAdjustment">重新回答</button>
+  <view wx:elif="{{isFinished}}" class="result-actions-wrap">
+    <view wx:if="{{isFinished && !memoryDecision}}" class="memory-actions">
+      <view class="memory-actions-hint">这次的偏好要不要长期记住？长期记忆完全由你决定。</view>
+      <view class="memory-actions-row">
+        <button class="memory-keep-button" bindtap="handleSavePreference">记住这个偏好</button>
+        <button class="memory-once-button" bindtap="handleSessionOnly">仅本次使用</button>
+      </view>
+    </view>
+
+    <view wx:if="{{isFinished && memoryDecision}}" class="memory-decision-note">
+      <text wx:if="{{memoryDecision === 'kept'}}">已加入长期偏好</text>
+      <text wx:if="{{memoryDecision === 'session-only'}}">本次条件不会写入长期偏好</text>
+    </view>
+
+    <view class="result-actions">
+      <button class="secondary-action-button" bindtap="handleRefreshRecommendations">换一批</button>
+      <button class="restart-button" bindtap="handleStartAdjustment">调整一下</button>
+      <button class="tertiary-action-button" bindtap="handleStartOver">重新开始</button>
+    </view>
   </view>
 </view>

@@ -1,3 +1,4 @@
 {
-  "navigationBarTitleText": "今天吃什么"
+  "navigationBarTitleText": "今天吃什么",
+  "navigationStyle": "custom"
 }
