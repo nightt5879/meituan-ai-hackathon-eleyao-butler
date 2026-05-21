@@ -13,6 +13,16 @@
 
 const tagConfig = require('../data/tasteTags');
 const mockShopData = require('../data/mockShops');
+const userMemoryAdapter = require('./userMemoryAdapter');
+
+const REMOTE_RECOMMEND_PATH = '/api/food/recommend';
+const REMOTE_RECOMMEND_TIMEOUT_MS = 15000;
+
+let lastRecommendationMeta = {
+  source: 'mock',
+  fallback: false,
+  message: ''
+};
 
 const defaultPreferences = {
   tasteTags: [],
@@ -325,7 +335,7 @@ function advanceSession(session, slots, preferences, answerRecord) {
 // Note: preferences is passed separately from slots because tag-based
 // preferences (taste, need, avoid, spicyLevel) are collected via a
 // dedicated tag UI step and are not stored as plain slot strings.
-function generateRecommendations(slots, preferences, options) {
+function generateLocalRecommendations(slots, preferences, options) {
   const safeSlots = slots || {};
   const safePreferences = normalizePreferences(preferences);
   const safeOptions = options || {};
@@ -348,6 +358,231 @@ function generateRecommendations(slots, preferences, options) {
   return picked.slice(0, 3).map(function (shop) {
     return formatRecommendation(shop, safeSlots, safePreferences);
   });
+}
+
+async function generateRecommendations(slots, preferences, options) {
+  const baseUrl = getFoodRecommendApiBaseUrl();
+
+  if (!baseUrl) {
+    const localRecommendations = generateLocalRecommendations(slots, preferences, options);
+    setLastRecommendationMeta({
+      source: 'mock',
+      fallback: false,
+      message: ''
+    });
+    return localRecommendations;
+  }
+
+  try {
+    const payload = buildRemoteRecommendationPayload(slots, preferences, options);
+    const response = await requestRemoteRecommendations(baseUrl, payload);
+    const recommendations = normalizeRemoteRecommendations(response);
+
+    setLastRecommendationMeta({
+      source: response.source || 'openclaw',
+      fallback: false,
+      message: ''
+    });
+    return recommendations;
+  } catch (error) {
+    const fallbackRecommendations = generateLocalRecommendations(slots, preferences, options);
+    setLastRecommendationMeta({
+      source: 'mock',
+      fallback: true,
+      message: '远端推荐暂不可用，已先用本地推荐。',
+      error: error && error.message ? error.message : String(error || '')
+    });
+    return fallbackRecommendations;
+  }
+}
+
+function getLastRecommendationMeta() {
+  return Object.assign({}, lastRecommendationMeta);
+}
+
+function setLastRecommendationMeta(meta) {
+  lastRecommendationMeta = Object.assign({
+    source: 'mock',
+    fallback: false,
+    message: ''
+  }, meta || {});
+}
+
+function getFoodRecommendApiBaseUrl() {
+  var app = typeof getApp === 'function' ? getApp({ allowDefault: true }) : null;
+  var globalBaseUrl = app && app.globalData ? app.globalData.foodRecommendApiBaseUrl : '';
+  var storedBaseUrl = '';
+
+  if (typeof wx !== 'undefined' && wx.getStorageSync) {
+    storedBaseUrl = wx.getStorageSync('MINIPROGRAM_API_BASE_URL') ||
+      wx.getStorageSync('foodRecommendApiBaseUrl') ||
+      '';
+  }
+
+  return normalizeBaseUrl(storedBaseUrl || globalBaseUrl || '');
+}
+
+function normalizeBaseUrl(baseUrl) {
+  return String(baseUrl || '').trim().replace(/\/+$/, '');
+}
+
+function buildRemoteRecommendationPayload(slots, preferences, options) {
+  const safeSlots = slots || {};
+  const safePreferences = normalizePreferences(preferences);
+  const safeOptions = options || {};
+  const permissions = userMemoryAdapter.getMemoryPermissions();
+  const behaviorEnabled = permissions.behaviorLearningEnabled !== false;
+  const canUseTaste = behaviorEnabled && permissions.rememberTastePattern !== false;
+  const canUseBudget = behaviorEnabled && permissions.rememberBudgetByMeal !== false;
+  const canUseCategory = behaviorEnabled && permissions.rememberCommonCategories !== false;
+  const canUseDistance = behaviorEnabled && permissions.rememberDistancePreference !== false;
+  const stablePreferences = userMemoryAdapter.getStableFoodPreferences();
+  const stableEnabled = stablePreferences.memoryEnabled !== false;
+  const requestSlots = {
+    mealPurpose: safeSlots.mealPurpose || ''
+  };
+  const requestPreferences = {
+    avoidTags: safePreferences.avoidTags.slice(),
+    spicyLevel: safePreferences.spicyLevel || ''
+  };
+
+  if (canUseCategory && safeSlots.branchPreference) {
+    requestSlots.branchPreference = safeSlots.branchPreference;
+  }
+
+  if (canUseBudget && safeSlots.budget) {
+    requestSlots.budget = safeSlots.budget;
+  }
+
+  if (canUseDistance && safeSlots.distance) {
+    requestSlots.distance = safeSlots.distance;
+  }
+
+  if (canUseTaste) {
+    requestPreferences.tasteTags = safePreferences.tasteTags.slice();
+    requestPreferences.needTags = safePreferences.needTags.slice();
+  }
+
+  const payload = {
+    slots: requestSlots,
+    preferences: requestPreferences,
+    memoryProfile: stableEnabled
+      ? {
+          enabled: true,
+          stableFoodPreferences: {
+            avoidTags: (stablePreferences.avoidTags || []).slice(),
+            spicyLevel: stablePreferences.spicyLevel || '',
+            source: stablePreferences.source || 'user-settings'
+          },
+          permissions: buildPermissionPayload(permissions)
+        }
+      : {
+          enabled: false,
+          permissions: buildPermissionPayload(permissions)
+        }
+  };
+  const requestContext = buildRemoteRequestContext(safeOptions);
+
+  if (Object.keys(requestContext).length) {
+    payload.requestContext = requestContext;
+  }
+
+  return payload;
+}
+
+function buildRemoteRequestContext(options) {
+  const context = {};
+  const excludeIds = uniqueStrings(options.excludeIds || []);
+  const batchIndex = Number(options.batchIndex || 0);
+  const adjustment = normalizeAdjustmentOptions(options.adjustment, batchIndex);
+
+  if (excludeIds.length) {
+    context.excludeIds = excludeIds;
+  }
+
+  if (batchIndex > 0) {
+    context.batchIndex = batchIndex;
+  }
+
+  if ((adjustment.types || []).length || (adjustment.avoidCategories || []).length) {
+    context.adjustment = {
+      types: adjustment.types || [],
+      avoidCategories: adjustment.avoidCategories || []
+    };
+  }
+
+  return context;
+}
+
+function buildPermissionPayload(permissions) {
+  const result = {};
+
+  Object.keys(permissions || {}).forEach(function (key) {
+    if (typeof permissions[key] === 'boolean') {
+      result[key] = permissions[key];
+    }
+  });
+
+  return result;
+}
+
+function requestRemoteRecommendations(baseUrl, payload) {
+  return new Promise(function (resolve, reject) {
+    wx.request({
+      url: baseUrl + REMOTE_RECOMMEND_PATH,
+      method: 'POST',
+      data: payload,
+      timeout: REMOTE_RECOMMEND_TIMEOUT_MS,
+      header: {
+        'content-type': 'application/json'
+      },
+      success: function (res) {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(res.data || {});
+          return;
+        }
+
+        reject(new Error('Remote food recommendation failed with status ' + res.statusCode));
+      },
+      fail: function (error) {
+        reject(new Error(error && error.errMsg ? error.errMsg : 'Remote food recommendation request failed'));
+      }
+    });
+  });
+}
+
+function normalizeRemoteRecommendations(response) {
+  const rawRecommendations = response && Array.isArray(response.recommendations)
+    ? response.recommendations
+    : [];
+  const recommendations = rawRecommendations.slice(0, 3).map(function (item, index) {
+    const matchedTags = Array.isArray(item.matchedTags)
+      ? item.matchedTags.filter(function (tag) { return !!tag; })
+      : [];
+
+    return {
+      id: String(item.id || ('openclaw_' + index)),
+      name: String(item.name || ''),
+      type: String(item.type || item.category || ''),
+      category: String(item.type || item.category || ''),
+      perCapita: String(item.perCapita || item.price || ''),
+      distance: String(item.distance || item.distanceText || ''),
+      rating: Number(item.rating || 0),
+      matchedTags: matchedTags,
+      matchedTagsText: matchedTags.length ? matchedTags.join('、') : 'OpenClaw 推荐',
+      reason: String(item.reason || ''),
+      riskTip: String(item.riskTip || item.risk || '暂无明显风险'),
+      source: response.source || 'openclaw'
+    };
+  }).filter(function (item) {
+    return !!(item.name && item.type && item.perCapita && item.distance && item.reason);
+  });
+
+  if (recommendations.length < 2) {
+    throw new Error('Remote food recommendation returned fewer than 2 valid items');
+  }
+
+  return recommendations;
 }
 
 function pickRecommendations(scoredShops, slots, excludeIds) {
@@ -657,7 +892,8 @@ function formatRecommendation(shop, slots, preferences) {
     matchedTags: matchedTags,
     matchedTagsText: matchedTags.length ? matchedTags.join('、') : '默认推荐',
     reason: buildReason(shop, slots, matchedTags),
-    riskTip: buildRiskTip(shop, slots, preferences)
+    riskTip: buildRiskTip(shop, slots, preferences),
+    source: 'mock'
   };
 }
 
@@ -923,5 +1159,6 @@ module.exports = {
   getNextQuestion,
   answerQuestion,
   goBack,
-  generateRecommendations
+  generateRecommendations,
+  getLastRecommendationMeta
 };

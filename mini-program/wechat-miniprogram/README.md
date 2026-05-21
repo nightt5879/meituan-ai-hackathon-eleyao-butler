@@ -84,3 +84,22 @@
 
 <repo-root>\mini-program\wechat-miniprogram
 ```
+
+## 4. OpenClaw 单人约饭接入
+
+「今天吃什么」单人流程会优先请求后端：
+
+```text
+POST /api/food/recommend
+```
+
+配置方式：
+
+- 在 `app.js` 的 `globalData.foodRecommendApiBaseUrl` 中填写 Next.js 后端地址，例如 `https://your-backend.example.com`。
+- 本字段留空时，小程序不会请求远端，会继续使用本地 mock 推荐。
+- OpenClaw Gateway URL、token、模型 key 只允许配置在后端环境变量中，不能写入小程序。
+
+失败降级：
+
+- 后端不可用、OpenClaw 超时、返回结构不合法时，小程序会显示本地 mock 推荐。
+- 页面会提示「远端推荐暂不可用，已先用本地推荐。」。

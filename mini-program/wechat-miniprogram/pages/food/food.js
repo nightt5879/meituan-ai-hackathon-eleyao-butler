@@ -43,6 +43,7 @@ Page({
     summaryFields: [],
     slotItems: [],
     recommendations: [],
+    isRecommendationLoading: false,
     recommendationBatchIndex: 0,
     recommendationNotice: '',
     showAdjustmentOptions: false,
@@ -139,6 +140,7 @@ Page({
         summaryFields: [],
         slotItems: [],
         recommendations: [],
+        isRecommendationLoading: false,
         progressPercent: 0,
         memoryDecision: '',
         recommendationBatchIndex: 0,
@@ -600,29 +602,42 @@ Page({
     this.jumpToQuestionById(questionId);
   },
 
-  handleRefreshRecommendations() {
+  async handleRefreshRecommendations() {
     const currentRecommendations = this.data.recommendations || [];
     const currentIds = currentRecommendations.map(function (item) {
       return item.id;
     });
     const nextBatchIndex = this.data.recommendationBatchIndex + 1;
-    const nextRecommendations = foodAiAdapter.generateRecommendations(
-      this.data.session.slots,
-      this.data.session.preferences,
-      {
-        excludeIds: currentIds,
-        batchIndex: nextBatchIndex
-      }
-    );
+    this.setData({ isRecommendationLoading: true });
+    wx.showLoading({ title: '生成推荐中' });
+
+    let nextRecommendations;
+    try {
+      nextRecommendations = await foodAiAdapter.generateRecommendations(
+        this.data.session.slots,
+        this.data.session.preferences,
+        {
+          excludeIds: currentIds,
+          batchIndex: nextBatchIndex
+        }
+      );
+    } finally {
+      wx.hideLoading();
+    }
+
     const nextIds = nextRecommendations.map(function (item) {
       return item.id;
     });
     const isSameBatch = areSameRecommendationIds(currentIds, nextIds);
+    const recommendationMeta = foodAiAdapter.getLastRecommendationMeta();
 
     this.setData({
       recommendations: nextRecommendations,
+      isRecommendationLoading: false,
       recommendationBatchIndex: nextBatchIndex,
-      recommendationNotice: isSameBatch
+      recommendationNotice: recommendationMeta.fallback
+        ? recommendationMeta.message
+        : isSameBatch
         ? '暂时没有更多合适方案，我再帮你放宽一点条件试试'
         : '我换了一批，你可以看看有没有更顺眼的方案。',
       showAdjustmentOptions: false
@@ -714,7 +729,7 @@ Page({
     ];
   },
 
-  refreshRecommendationsWithAdjustment(adjustment) {
+  async refreshRecommendationsWithAdjustment(adjustment) {
     const currentRecommendations = this.data.recommendations || [];
     const currentIds = currentRecommendations.map(function (item) {
       return item.id;
@@ -728,23 +743,34 @@ Page({
         avoidCategories: this.getCurrentRecommendationCategories()
       })
     };
-    const nextRecommendations = foodAiAdapter.generateRecommendations(
-      this.data.session.slots,
-      adjustedPreferences,
-      adapterOptions
-    );
+    this.setData({ isRecommendationLoading: true });
+    wx.showLoading({ title: '生成推荐中' });
+
+    let nextRecommendations;
+    try {
+      nextRecommendations = await foodAiAdapter.generateRecommendations(
+        this.data.session.slots,
+        adjustedPreferences,
+        adapterOptions
+      );
+    } finally {
+      wx.hideLoading();
+    }
+
     const nextIds = nextRecommendations.map(function (item) {
       return item.id;
     });
     const isSameBatch = areSameRecommendationIds(currentIds, nextIds);
+    const recommendationMeta = foodAiAdapter.getLastRecommendationMeta();
     const noticeText = isSameBatch
       ? '符合条件的方案有限，我先帮你换了更接近的一批。'
       : '已根据「' + adjustment.text + '」重新调整推荐';
 
     this.setData({
       recommendations: nextRecommendations,
+      isRecommendationLoading: false,
       recommendationBatchIndex: nextBatchIndex,
-      recommendationNotice: noticeText,
+      recommendationNotice: recommendationMeta.fallback ? recommendationMeta.message : noticeText,
       showAdjustmentOptions: false,
       adjustmentManualInput: '',
       adjustmentMessages: this.data.adjustmentMessages.concat(
@@ -851,14 +877,24 @@ Page({
     });
   },
 
-  updateQuestionState(session, savedFromIndex, nextAnswerHistory) {
+  async updateQuestionState(session, savedFromIndex, nextAnswerHistory) {
     const currentQuestion = foodAiAdapter.getNextQuestion(session);
-    const recommendations = currentQuestion
-      ? []
-      : foodAiAdapter.generateRecommendations(session.slots, session.preferences);
+    let recommendations = [];
+    let recommendationNotice = '';
     const hasSavedCurrentRecord = this.hasSavedCurrentRecordFlag || this.data.hasSavedCurrentRecord;
 
     if (!currentQuestion) {
+      this.setData({ isRecommendationLoading: true });
+      wx.showLoading({ title: '生成推荐中' });
+      try {
+        recommendations = await foodAiAdapter.generateRecommendations(session.slots, session.preferences);
+      } finally {
+        wx.hideLoading();
+      }
+
+      const recommendationMeta = foodAiAdapter.getLastRecommendationMeta();
+      recommendationNotice = recommendationMeta.fallback ? recommendationMeta.message : '';
+
       // Auto-save only lightweight recommendation history when behavior-learning
       // permission allows it. Reusable preference records and long-term memory
       // are written only when the user explicitly taps 「记住这个偏好」.
@@ -898,9 +934,10 @@ Page({
       summaryFields: this.buildSummaryFields(session),
       slotItems: this.formatSlotItems(session.slots, session.preferences),
       recommendations,
+      isRecommendationLoading: false,
       progressPercent: this.buildProgressPercent(session, currentQuestion),
       recommendationBatchIndex: 0,
-      recommendationNotice: '',
+      recommendationNotice,
       showAdjustmentOptions: false,
       adjustmentMessages: [],
       memoryDecision: !currentQuestion ? '' : this.data.memoryDecision,
