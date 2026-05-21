@@ -1,0 +1,55 @@
+<view class="page scaffold-page theme-{{currentTheme}}">
+  <view class="page-bar">
+    <button class="page-back" bindtap="handleBack">‹</button>
+    <view class="page-heading">
+      <view class="page-title">约饭任务看板</view>
+      <view class="page-subtitle">看板结构已留好，真实成员、冲突和推荐结果后续接入。</view>
+    </view>
+  </view>
+
+  <view class="panel-card progress-card">
+    <view class="progress-head">
+      <view>
+        <view class="progress-title">偏好收集中</view>
+        <view class="progress-desc">0 / 5 已提交 · Mock scaffold</view>
+      </view>
+      <view class="progress-pill">待接入</view>
+    </view>
+    <view class="progress-track">
+      <view class="progress-fill"></view>
+    </view>
+    <view class="avatar-row">
+      <view class="empty-avatar">幺</view>
+      <view class="empty-avatar">友</view>
+      <view class="empty-avatar">友</view>
+      <view class="empty-avatar">友</view>
+      <view class="empty-avatar">友</view>
+    </view>
+  </view>
+
+  <view wx:for="{{steps}}" wx:key="title" class="board-section">
+    <view class="section-head">
+      <view class="section-dot"></view>
+      <view>
+        <view class="section-title-small">{{item.title}}</view>
+        <view class="section-desc-small">{{item.desc}}</view>
+      </view>
+    </view>
+    <view class="empty-panel section-empty">
+      <view class="empty-title">{{item.title}}待接入</view>
+      <view class="empty-desc">这里不会展示假结果。后续接入 API 后，会替换成真实结构化内容。</view>
+    </view>
+  </view>
+
+  <view class="panel-card">
+    <view class="field-label">后续要接的接口</view>
+    <view class="chip-row">
+      <view class="info-chip hard">getTaskBoard</view>
+      <view class="info-chip soft">extractConstraints</view>
+      <view class="info-chip soft">detectConflicts</view>
+      <view class="info-chip">recommend</view>
+    </view>
+  </view>
+
+  <button class="primary-button" bindtap="handleBackHome">回到首页</button>
+</view>

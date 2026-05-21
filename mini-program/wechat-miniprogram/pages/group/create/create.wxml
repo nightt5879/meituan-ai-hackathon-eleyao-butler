@@ -1,0 +1,70 @@
+<view class="page scaffold-page theme-{{currentTheme}}">
+  <view class="page-bar">
+    <button class="page-back" bindtap="handleBack">‹</button>
+    <view class="page-heading">
+      <view class="page-title">发起约饭</view>
+      <view class="page-subtitle">先把产品壳搭好，后续接入真实任务创建接口。</view>
+    </view>
+  </view>
+
+  <view class="status-badge">
+    <view class="status-dot"></view>
+    <text>多人偏好收集 · UI scaffold</text>
+  </view>
+
+  <view class="panel-card">
+    <view class="field">
+      <view class="field-label">你的昵称</view>
+      <input class="field-input" value="{{form.creatorName}}" data-field="creatorName" bindinput="handleInput" />
+    </view>
+
+    <view class="field">
+      <view class="field-label">这次想解决什么</view>
+      <textarea
+        class="field-textarea"
+        value="{{form.rawRequest}}"
+        placeholder="例如：周末晚上 5 个人聚餐，1 个吃素，1 个不吃辣，预算想控制在人均 80 以内。"
+        data-field="rawRequest"
+        bindinput="handleInput"
+      ></textarea>
+      <view class="field-hint">后续这里会接 Agent 约束抽取：硬约束、软偏好、冲突点。</view>
+    </view>
+
+    <view class="split-grid">
+      <view class="field last">
+        <view class="field-label">人数</view>
+        <input class="field-input" value="{{form.peopleCount}}" data-field="peopleCount" bindinput="handleInput" />
+      </view>
+      <view class="field last">
+        <view class="field-label">时间</view>
+        <input class="field-input" value="{{form.dinnerTime}}" data-field="dinnerTime" bindinput="handleInput" />
+      </view>
+    </view>
+  </view>
+
+  <view class="panel-card">
+    <view class="field last">
+      <view class="field-label">地点</view>
+      <input
+        class="field-input"
+        value="{{form.location}}"
+        placeholder="例如：学校东门 / 地铁站附近"
+        data-field="location"
+        bindinput="handleInput"
+      />
+    </view>
+  </view>
+
+  <view class="panel-card">
+    <view class="field-label">后续接口占位</view>
+    <view class="chip-row">
+      <view class="info-chip hard">createTask</view>
+      <view class="info-chip soft">shareUrl</view>
+      <view class="info-chip soft">inviteToken</view>
+      <view class="info-chip">waiting_preferences</view>
+    </view>
+    <view class="field-hint">当前按钮只进入下一张 UI 页面，不创建真实任务。</view>
+  </view>
+
+  <button class="primary-button" bindtap="handleCreateTask">生成任务链接，分享到群</button>
+</view>

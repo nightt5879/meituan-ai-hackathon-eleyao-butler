@@ -1,0 +1,144 @@
+<view class="page home-page theme-{{currentTheme}}">
+  <view class="home-topline">
+    <text class="hello-muted">你好，</text>
+    <text class="hello-name">小幺</text>
+  </view>
+
+  <view class="home-hero">
+    <view class="section-title">今天吃什么？</view>
+    <view class="section-desc">告诉我场景和偏好，<text class="line-break"></text>我帮你挑 2-3 个可执行方案。</view>
+  </view>
+
+  <view class="utility-row">
+    <button class="utility-chip" bindtap="openThemePanel">
+      <text class="utility-icon">◐</text>
+      <text>主题</text>
+    </button>
+    <button class="utility-chip" bindtap="openHistoryPanel">
+      <text class="utility-icon">↺</text>
+      <text>偏好记录</text>
+    </button>
+  </view>
+
+  <view class="primary-entry" bindtap="goToFood">
+    <view class="primary-glow"></view>
+    <view class="primary-mark ai-mark">幺</view>
+    <view class="primary-eyebrow">AI 管家 · 主入口</view>
+    <view class="primary-title">今天吃什么</view>
+    <view class="primary-desc">问 4-7 个小问题，给你 2-3 个匹配场景、预算和忌口的方案</view>
+    <view class="primary-cta">
+      <text>开始问答</text>
+      <text class="cta-arrow">→</text>
+    </view>
+  </view>
+
+  <view class="secondary-grid">
+    <view class="secondary-entry" bindtap="goToGroupDining">
+      <view class="entry-badge">待接入</view>
+      <view class="secondary-icon group-icon">饭</view>
+      <view class="secondary-title">发起约饭</view>
+      <view class="secondary-desc">多人偏好收集 · 冲突识别</view>
+    </view>
+    <view class="secondary-entry" bindtap="goToWeekend">
+      <view class="entry-badge">待接入</view>
+      <view class="secondary-icon weekend-icon">周</view>
+      <view class="secondary-title">周末规划</view>
+      <view class="secondary-desc">一次性约出吃喝玩</view>
+    </view>
+  </view>
+
+  <view class="memory-entry" bindtap="goToMemory">
+    <view class="memory-icon ai-mark">♡</view>
+    <view class="memory-copy">
+      <view class="memory-title">管家记忆</view>
+      <view class="memory-desc">忌口、辣度与偏好授权</view>
+    </view>
+    <view class="memory-arrow">›</view>
+  </view>
+
+  <view class="recent-block">
+    <view class="recent-head">
+      <text>最近一次推荐</text>
+      <text class="recent-link" bindtap="openHistoryPanel">全部记录 ›</text>
+    </view>
+    <view class="recent-card" bindtap="openHistoryPanel">
+      <view class="recent-title-row">
+        <view class="recent-title">{{recentRecordTitle}}</view>
+        <view class="recent-time">{{recentRecordTime}}</view>
+      </view>
+      <view class="recent-summary">{{recentRecordSummary}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{showThemePanel}}" class="panel-mask" bindtap="closeThemePanel">
+    <view class="bottom-panel theme-panel" catchtap="noop">
+      <view class="panel-header">
+        <view>
+          <view class="panel-title">选个主题</view>
+          <view class="panel-desc">换个心情。主题会同时影响首页、AI 头像、推荐卡片和聊天气泡。</view>
+        </view>
+        <button class="panel-close" bindtap="closeThemePanel">×</button>
+      </view>
+
+      <view class="theme-grid">
+        <view
+          wx:for="{{themeCards}}"
+          wx:key="key"
+          class="theme-card {{item.cardClass}}"
+          data-key="{{item.key}}"
+          bindtap="selectTheme"
+        >
+          <view class="theme-preview" style="background: {{item.soft}};">
+            <view class="swatch-row">
+              <view class="swatch" style="background: {{item.primary}};"></view>
+              <view class="swatch" style="background: {{item.soft}};"></view>
+              <view class="swatch" style="background: {{item.accent}};"></view>
+              <view class="swatch" style="background: {{item.warn}};"></view>
+            </view>
+            <view class="mini-chat">
+              <view class="mini-avatar" style="background: {{item.primary}};">幺</view>
+              <view class="mini-line"></view>
+            </view>
+            <view class="mini-bubble" style="background: {{item.primary}};">清淡 · 热乎</view>
+          </view>
+          <view class="theme-card-footer">
+            <view>
+              <view class="theme-name">{{item.name}}</view>
+              <view class="theme-key">{{item.key}}</view>
+            </view>
+            <view class="theme-check {{item.isActive ? 'checked' : ''}}">✓</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{showHistoryPanel}}" class="panel-mask" bindtap="closeHistoryPanel">
+    <view class="bottom-panel history-panel" catchtap="noop">
+      <view class="panel-header">
+        <view>
+          <view class="panel-title">偏好记录</view>
+          <view class="panel-desc">已选择「记住这个偏好」的最近 5 次会留在这里，方便继续调整。</view>
+        </view>
+        <button class="panel-close" bindtap="closeHistoryPanel">×</button>
+      </view>
+
+      <view wx:if="{{!hasHistoryRecords}}" class="empty-state">
+        <view class="empty-mark ai-mark">幺</view>
+        <view class="empty-title">还没有偏好记录</view>
+        <view class="empty-desc">在结果页选择「记住这个偏好」后，我会把场景、预算、距离和推荐结果帮你记下来。</view>
+      </view>
+
+      <view wx:else class="history-list">
+        <view wx:for="{{historyRecords}}" wx:key="id" class="history-item">
+          <view class="history-index">{{item.indexText}}</view>
+          <view class="history-copy">
+            <view class="history-names">{{item.names}}</view>
+            <view class="history-summary">{{item.summary}}</view>
+            <view class="history-time">{{item.time}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

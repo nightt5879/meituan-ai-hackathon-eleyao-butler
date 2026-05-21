@@ -1,0 +1,20 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/home/home",
+    "pages/food/food",
+    "pages/group/create/create",
+    "pages/group/fill/fill",
+    "pages/group/board/board",
+    "pages/weekend/weekend",
+    "pages/memory/memory"
+  ],
+  "window": {
+    "navigationBarTitleText": "饿了幺",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f6f7f9"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

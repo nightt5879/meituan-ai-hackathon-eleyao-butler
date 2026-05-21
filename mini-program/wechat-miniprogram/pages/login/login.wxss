@@ -1,0 +1,106 @@
+.login-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 96rpx 56rpx 54rpx;
+}
+
+.login-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.brand-block {
+  margin-top: 86rpx;
+  margin-bottom: 72rpx;
+}
+
+.brand-mark {
+  width: 144rpx;
+  height: 144rpx;
+  margin-bottom: 28rpx;
+  border-radius: 44rpx;
+  font-size: 72rpx;
+}
+
+.brand-name {
+  margin-bottom: 10rpx;
+  color: var(--theme-text, #1F1A15);
+  font-size: 68rpx;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.brand-subtitle {
+  color: var(--theme-muted, #6B6157);
+  font-size: 27rpx;
+  line-height: 1.55;
+}
+
+.login-copy {
+  margin-bottom: auto;
+}
+
+.login-title {
+  margin-bottom: 16rpx;
+  color: var(--theme-text, #1F1A15);
+  font-size: 44rpx;
+  font-weight: 700;
+}
+
+.login-desc {
+  color: var(--theme-muted, #6B6157);
+  font-size: 27rpx;
+  line-height: 1.68;
+}
+
+.mvp-note {
+  display: flex;
+  gap: 18rpx;
+  margin-bottom: 26rpx;
+  padding: 24rpx 26rpx;
+  border: 1rpx solid var(--theme-primary-soft, #FDEADC);
+  border-radius: 24rpx;
+  background: var(--theme-primary-ghost, #FFF4EA);
+}
+
+.note-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34rpx;
+  height: 34rpx;
+  margin-top: 2rpx;
+  border-radius: 50%;
+  background: var(--theme-primary, #E8743A);
+  color: var(--theme-on-primary, #FFFFFF);
+  font-size: 22rpx;
+  font-weight: 800;
+}
+
+.note-text {
+  color: var(--theme-primary-deep, #C75A22);
+  font-size: 25rpx;
+  line-height: 1.58;
+}
+
+.login-button {
+  height: 96rpx;
+  margin: 0;
+  border-radius: 999rpx;
+  background: #07C160;
+  color: #FFFFFF;
+  font-size: 32rpx;
+  font-weight: 700;
+  line-height: 96rpx;
+}
+
+.login-policy {
+  margin-top: 22rpx;
+  color: var(--theme-subtle, #9A8F83);
+  font-size: 24rpx;
+  line-height: 1.5;
+  text-align: center;
+}
