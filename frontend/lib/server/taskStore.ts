@@ -288,7 +288,7 @@ export async function deleteParticipant(taskId: string, participantId: string) {
   });
 }
 
-export async function saveRecommendation(taskId: string) {
+export async function saveRecommendation(taskId: string, recommendation?: RecommendationResult) {
   return enqueueWrite(async () => {
     const database = await readDatabase();
     const record = database.tasks[taskId];
@@ -298,8 +298,8 @@ export async function saveRecommendation(taskId: string) {
     }
 
     const payload = toPayload(record);
-    const recommendation = generateMockRecommendation(payload.task, payload.participants);
-    record.recommendation_result = recommendation;
+    const nextRecommendation = recommendation ?? generateMockRecommendation(payload.task, payload.participants);
+    record.recommendation_result = nextRecommendation;
     record.recommendation_state = {
       status: "done",
       hasGenerated: true,
