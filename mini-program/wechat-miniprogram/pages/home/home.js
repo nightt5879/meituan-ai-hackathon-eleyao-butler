@@ -10,7 +10,7 @@ Page({
     historyRecords: [],
     hasHistoryRecords: false,
     recentRecordTitle: '还没有推荐记录',
-    recentRecordSummary: '完成一次「今天吃什么」后，我会把偏好和推荐帮你记下来。',
+    recentRecordSummary: '在结果页选择「记住这个偏好」后，我会把偏好和推荐帮你记下来。',
     recentRecordTime: '等待体验',
     recentRecordNames: '暂无'
   },
@@ -70,7 +70,7 @@ Page({
       historyRecords: visibleRecords,
       hasHistoryRecords: visibleRecords.length > 0,
       recentRecordTitle: firstRecord ? firstRecord.names : '还没有推荐记录',
-      recentRecordSummary: firstRecord ? firstRecord.summary : '完成一次「今天吃什么」后，我会把偏好和推荐帮你记下来。',
+      recentRecordSummary: firstRecord ? firstRecord.summary : '在结果页选择「记住这个偏好」后，我会把偏好和推荐帮你记下来。',
       recentRecordTime: firstRecord ? firstRecord.time : '等待体验',
       recentRecordNames: firstRecord ? firstRecord.names : '暂无'
     });

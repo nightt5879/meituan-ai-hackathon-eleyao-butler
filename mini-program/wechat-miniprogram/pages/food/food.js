@@ -340,19 +340,27 @@ Page({
   },
 
   // Top-level result action — explicitly write session slots + preferences
-  // into long-term memory. Preference history was already saved automatically
-  // when recommendations were generated, so we only update long-term memory
-  // here (no duplicate history record).
+  // into long-term memory and a reusable preference record. Session-only
+  // completions intentionally skip this path.
   handleSavePreference() {
     if (this.data.memoryDecision) {
       return;
     }
     const session = this.data.session;
+    const recommendations = this.data.recommendations || [];
     userMemoryAdapter.updateUserMemory({
       slots: session.slots,
       preferences: session.preferences
     });
-    this.setData({ memoryDecision: 'kept' });
+    userMemoryAdapter.savePreferenceRecord(
+      this.buildPreferenceRecord(session, recommendations),
+      { force: true }
+    );
+    this.hasSavedCurrentRecordFlag = true;
+    this.setData({
+      memoryDecision: 'kept',
+      hasSavedCurrentRecord: true
+    });
     wx.showToast({
       title: '已记住，下次会优先参考这些偏好',
       icon: 'none'
@@ -360,8 +368,8 @@ Page({
   },
 
   // Top-level result action — explicit "this session only". Long-term memory
-  // is NOT touched. The lightweight history record auto-saved on flow
-  // completion remains, so the session still shows in 偏好记录.
+  // and reusable preference records are NOT touched. Recommendation history is
+  // still updated separately when behavior-learning permission allows it.
   handleSessionOnly() {
     if (this.data.memoryDecision) {
       return;
@@ -849,22 +857,12 @@ Page({
       ? []
       : foodAiAdapter.generateRecommendations(session.slots, session.preferences);
     const hasSavedCurrentRecord = this.hasSavedCurrentRecordFlag || this.data.hasSavedCurrentRecord;
-    const shouldSavePreferenceRecord = !currentQuestion && !hasSavedCurrentRecord;
 
     if (!currentQuestion) {
-      // Auto-save: recommendation history (for the home "recent recs" chip) and a
-      // lightweight preference record (for the 偏好记录 history view). These are
-      // session/history records, not long-term memory.
-      // Long-term memory (userMemoryAdapter.updateUserMemory) is only written
-      // when the user explicitly taps 「记住这个偏好」 — see handleSavePreference.
+      // Auto-save only lightweight recommendation history when behavior-learning
+      // permission allows it. Reusable preference records and long-term memory
+      // are written only when the user explicitly taps 「记住这个偏好」.
       userMemoryAdapter.saveRecommendationHistory(recommendations);
-
-      if (shouldSavePreferenceRecord) {
-        this.hasSavedCurrentRecordFlag = true;
-        userMemoryAdapter.savePreferenceRecord(
-          this.buildPreferenceRecord(session, recommendations)
-        );
-      }
     }
 
     const selectedTags = this.cloneSelectedTags(emptySelectedTags);
@@ -907,7 +905,7 @@ Page({
       adjustmentMessages: [],
       memoryDecision: !currentQuestion ? '' : this.data.memoryDecision,
       hasSavedCurrentRecord: !currentQuestion
-        ? (hasSavedCurrentRecord || shouldSavePreferenceRecord)
+        ? hasSavedCurrentRecord
         : this.data.hasSavedCurrentRecord
     });
 

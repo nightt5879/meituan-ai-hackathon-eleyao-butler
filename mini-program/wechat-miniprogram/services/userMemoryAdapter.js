@@ -179,6 +179,140 @@ function cloneLearnedFoodPreferences(source) {
   };
 }
 
+function isStableFoodMemoryEnabled(memory) {
+  const safeMemory = memory || getUserMemory();
+  const stablePreferences = normalizeStableFoodPreferences(safeMemory.stableFoodPreferences);
+  return stablePreferences.memoryEnabled !== false;
+}
+
+function getBehaviorProfilePermissions(memory) {
+  const safeMemory = memory || getUserMemory();
+  const permissions = normalizeMemoryPermissions(safeMemory.memoryPermissions);
+  const enabled = permissions.behaviorLearningEnabled !== false;
+
+  return {
+    enabled,
+    taste: enabled && permissions.rememberTastePattern !== false,
+    budget: enabled && permissions.rememberBudgetByMeal !== false,
+    distance: enabled && permissions.rememberDistancePreference !== false,
+    category: enabled && permissions.rememberCommonCategories !== false,
+    diningMode: enabled && permissions.rememberDeliveryDineInPreference !== false,
+    exploration: enabled && permissions.rememberExplorationStyle !== false,
+    adjustment: enabled && permissions.rememberAdjustmentPatterns !== false,
+    report: enabled && permissions.rememberDiningReport !== false
+  };
+}
+
+function canUseBehaviorPreferenceProfile(memory) {
+  const gates = getBehaviorProfilePermissions(memory);
+  return !!(
+    gates.enabled &&
+    (gates.taste || gates.budget || gates.distance || gates.category ||
+      gates.diningMode || gates.exploration || gates.adjustment)
+  );
+}
+
+function canRememberPreferenceRecords(memory) {
+  return canUseBehaviorPreferenceProfile(memory);
+}
+
+function canRememberRecommendationHistory(memory) {
+  const gates = getBehaviorProfilePermissions(memory);
+  return gates.enabled && gates.report;
+}
+
+function buildProfileFromBehaviorSource(source, gates, sourceName) {
+  const safeSource = source || {};
+  const safeGates = gates || getBehaviorProfilePermissions();
+  const tasteTags = safeGates.taste ? (safeSource.tasteTags || []).slice() : [];
+  const needTags = safeGates.taste ? (safeSource.needTags || []).slice() : [];
+
+  return {
+    taste: safeGates.taste
+      ? (safeSource.taste || tasteTags.concat(needTags).join('、') || '')
+      : '',
+    tasteTags,
+    needTags,
+    avoidTags: safeGates.taste ? (safeSource.avoidTags || []).slice() : [],
+    spicyLevel: safeGates.taste ? (safeSource.spicyLevel || '') : '',
+    budget: safeGates.budget ? (safeSource.budget || '') : '',
+    distance: safeGates.distance ? (safeSource.distance || '') : '',
+    source: sourceName
+  };
+}
+
+function buildStablePreferenceProfile(stablePreferences) {
+  const stable = normalizeStableFoodPreferences(stablePreferences);
+  return {
+    taste: '',
+    tasteTags: [],
+    needTags: [],
+    avoidTags: normalizeAvoidTagsForRecommendation(stable.avoidTags),
+    spicyLevel: stable.spicyLevel || '',
+    budget: '',
+    distance: '',
+    source: 'stable'
+  };
+}
+
+function buildLongTermPreferenceProfile(memory, stablePreferences) {
+  const safeMemory = memory || getUserMemory();
+  const prefs = safeMemory.preferences || {};
+  const slots = safeMemory.lastSlots || {};
+  const stable = normalizeStableFoodPreferences(stablePreferences || safeMemory.stableFoodPreferences);
+  const stableAvoidTags = normalizeAvoidTagsForRecommendation(stable.avoidTags);
+  const stableSpicyLevel = stable.spicyLevel || '';
+  const hasLongTermMemory = !!(
+    safeMemory.preferredTaste ||
+    safeMemory.commonBudget ||
+    safeMemory.commonDistance ||
+    (prefs.tasteTags || []).length ||
+    (prefs.needTags || []).length ||
+    (prefs.avoidTags || []).length ||
+    prefs.spicyLevel ||
+    slots.budget ||
+    slots.distance
+  );
+
+  if (!hasLongTermMemory) {
+    return null;
+  }
+
+  return {
+    taste: (prefs.tasteTags || []).concat(prefs.needTags || []).join('、') || safeMemory.preferredTaste || '',
+    tasteTags: (prefs.tasteTags || []).slice(),
+    needTags: (prefs.needTags || []).slice(),
+    avoidTags: stableAvoidTags.length ? stableAvoidTags : (prefs.avoidTags || []).slice(),
+    spicyLevel: stableSpicyLevel || prefs.spicyLevel || '',
+    budget: slots.budget || safeMemory.commonBudget || '',
+    distance: slots.distance || safeMemory.commonDistance || '',
+    source: 'memory'
+  };
+}
+
+function normalizeAvoidTagsForRecommendation(avoidTags) {
+  const tagMap = {
+    '香菜': '不要香菜',
+    '葱蒜': '不要葱蒜',
+    '海鲜': '不吃海鲜',
+    '牛羊肉': '不吃牛羊肉',
+    '油炸': '不吃油炸',
+    '辣': '不吃辣',
+    '无': '',
+    '没有忌口': ''
+  };
+  const result = [];
+
+  (avoidTags || []).forEach(function (tag) {
+    const normalizedTag = tagMap[tag] !== undefined ? tagMap[tag] : tag;
+    if (normalizedTag && result.indexOf(normalizedTag) < 0) {
+      result.push(normalizedTag);
+    }
+  });
+
+  return result;
+}
+
 // OPENCLAW INTEGRATION POINT:
 // After wx.setStorageSync, call the OpenClaw user profile API to persist
 // the updated slots remotely, e.g.: OpenClaw.updateProfile({ slots: nextMemory.lastSlots })
@@ -216,6 +350,11 @@ function updateUserMemory(answerOrSlots) {
 
 function saveRecommendationHistory(recommendations) {
   const currentMemory = getUserMemory();
+
+  if (!canRememberRecommendationHistory(currentMemory)) {
+    return currentMemory;
+  }
+
   const nextMemory = Object.assign({}, currentMemory, {
     recentRecommendations: (recommendations || []).slice(0, 3),
     updatedAt: new Date().toISOString()
@@ -225,8 +364,14 @@ function saveRecommendationHistory(recommendations) {
   return nextMemory;
 }
 
-function savePreferenceRecord(record) {
+function savePreferenceRecord(record, options) {
+  const opts = options || {};
   const currentMemory = getUserMemory();
+
+  if (!opts.force && !canRememberPreferenceRecords(currentMemory)) {
+    return null;
+  }
+
   const nextRecord = normalizePreferenceRecord(record);
   const nextRecords = [nextRecord]
     .concat(currentMemory.preferenceRecords || [])
@@ -358,8 +503,9 @@ function buildRecordSummaryText(record) {
 //
 // Priority order inside getEffectivePreferenceProfile():
 //   1. Real long-term memory (only written when user taps "记住这个偏好")
-//   2. The most-recent preferenceRecord (auto-saved on every completed flow)
-//   3. The V0 mock profile below (so the feature is testable on a fresh install)
+//   2. Stable settings from the 管家记忆 page (avoidTags + spicyLevel)
+//   3. The most-recent preferenceRecord, only when behavior-learning permission allows it
+//   4. The V0 mock profile below (so the feature is testable on a fresh install)
 //
 // IMPORTANT:
 // - The mock profile is V0/demo only. Real Meituan-style data integration
@@ -385,41 +531,46 @@ function getEffectivePreferenceProfile(options) {
   const opts = options || {};
   const useMock = opts.useMock !== false;
   const memory = getUserMemory();
-  const prefs = memory.preferences || {};
-  const slots = memory.lastSlots || {};
+  const stablePreferences = normalizeStableFoodPreferences(memory.stableFoodPreferences);
+
+  if (!isStableFoodMemoryEnabled(memory)) {
+    return null;
+  }
 
   // 1) Explicit long-term memory.
-  if ((prefs.tasteTags || []).length || prefs.spicyLevel || slots.budget || slots.distance) {
-    return {
-      taste: (prefs.tasteTags || []).concat(prefs.needTags || []).join('、') || memory.preferredTaste || '',
-      tasteTags: (prefs.tasteTags || []).slice(),
-      needTags: (prefs.needTags || []).slice(),
-      avoidTags: (prefs.avoidTags || []).slice(),
-      spicyLevel: prefs.spicyLevel || '',
-      budget: slots.budget || memory.commonBudget || '',
-      distance: slots.distance || memory.commonDistance || '',
-      source: 'memory'
-    };
+  const longTermProfile = buildLongTermPreferenceProfile(memory, stablePreferences);
+  if (hasUsefulPreferenceProfile(longTermProfile)) {
+    return longTermProfile;
   }
 
-  // 2) Most-recent completed session (auto-saved).
+  // 2) User-managed stable settings from the memory page.
+  const stableProfile = buildStablePreferenceProfile(stablePreferences);
+  if (hasUsefulPreferenceProfile(stableProfile)) {
+    return stableProfile;
+  }
+
+  if (!canUseBehaviorPreferenceProfile(memory)) {
+    return null;
+  }
+
+  const behaviorGates = getBehaviorProfilePermissions(memory);
+
+  // 3) Most-recent completed session, only through authorized behavior memory.
   const records = Array.isArray(memory.preferenceRecords) ? memory.preferenceRecords : [];
   if (records.length) {
-    const r = records[0];
-    return {
-      taste: (r.tasteTags || []).concat(r.needTags || []).join('、'),
-      tasteTags: (r.tasteTags || []).slice(),
-      needTags: (r.needTags || []).slice(),
-      avoidTags: (r.avoidTags || []).slice(),
-      spicyLevel: r.spicyLevel || '',
-      budget: r.budget || '',
-      distance: r.distance || '',
-      source: 'record'
-    };
+    const recordProfile = buildProfileFromBehaviorSource(records[0], behaviorGates, 'record');
+    if (hasUsefulPreferenceProfile(recordProfile)) {
+      return recordProfile;
+    }
   }
 
-  // 3) V0 mock fallback (disable with { useMock: false }).
-  return useMock ? Object.assign({}, MOCK_PREFERENCE_PROFILE) : null;
+  // 4) V0 mock fallback (disable with { useMock: false }).
+  if (!useMock) {
+    return null;
+  }
+
+  const mockProfile = buildProfileFromBehaviorSource(MOCK_PREFERENCE_PROFILE, behaviorGates, 'mock');
+  return hasUsefulPreferenceProfile(mockProfile) ? mockProfile : null;
 }
 
 function hasUsefulPreferenceProfile(profile) {
@@ -430,6 +581,7 @@ function hasUsefulPreferenceProfile(profile) {
     profile.distance ||
     (profile.tasteTags || []).length ||
     (profile.needTags || []).length ||
+    (profile.avoidTags || []).length ||
     profile.spicyLevel
   );
 }
@@ -438,7 +590,8 @@ function hasUsefulPreferenceProfile(profile) {
 //
 // User-controlled long-term preference data, written ONLY by the
 // 管家记忆 page. Read-only consumers should call getStableFoodPreferences().
-// Step 1: storage layer only — not connected to the food flow yet.
+// The food flow reads it through getEffectivePreferenceProfile() only while
+// memoryEnabled is on.
 
 function getStableFoodPreferences() {
   const memory = getUserMemory();

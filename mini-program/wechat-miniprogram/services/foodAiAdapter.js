@@ -805,7 +805,7 @@ function shouldAvoidSpicy(preferences) {
 
 function isSpicyShop(shop) {
   const spicyTags = ['香辣', '麻辣', '酸辣'];
-  const spicyLevels = ['中辣', '重辣'];
+  const spicyLevels = ['微辣', '中辣', '重辣'];
 
   return spicyLevels.indexOf(shop.spicyLevel) >= 0 || spicyTags.some(function (tag) {
     return shop.tags.indexOf(tag) >= 0;

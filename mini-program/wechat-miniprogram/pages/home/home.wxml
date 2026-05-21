@@ -118,7 +118,7 @@
       <view class="panel-header">
         <view>
           <view class="panel-title">偏好记录</view>
-          <view class="panel-desc">最近 5 次「今天吃什么」会留在这里，方便继续调整。</view>
+          <view class="panel-desc">已选择「记住这个偏好」的最近 5 次会留在这里，方便继续调整。</view>
         </view>
         <button class="panel-close" bindtap="closeHistoryPanel">×</button>
       </view>
@@ -126,7 +126,7 @@
       <view wx:if="{{!hasHistoryRecords}}" class="empty-state">
         <view class="empty-mark ai-mark">幺</view>
         <view class="empty-title">还没有偏好记录</view>
-        <view class="empty-desc">完成一次推荐后，我会把你的场景、预算、距离和推荐结果帮你记下来。</view>
+        <view class="empty-desc">在结果页选择「记住这个偏好」后，我会把场景、预算、距离和推荐结果帮你记下来。</view>
       </view>
 
       <view wx:else class="history-list">
