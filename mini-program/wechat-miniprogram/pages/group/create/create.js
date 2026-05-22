@@ -1,23 +1,25 @@
 const themeAdapter = require('../../../services/themeAdapter');
 const groupDiningAdapter = require('../../../services/groupDiningAdapter');
 
+// Simplified create flow — the organiser only chooses an expected people
+// count. Other backend-required fields (creator name, raw request, dinner
+// time, location) are filled with sensible defaults inside the adapter.
+
+const PEOPLE_PRESETS = ['3', '4', '5', '6', '8', '10'];
+
 Page({
   data: {
     currentTheme: 'warm',
     isSubmitting: false,
-    // Populated after a successful createTask call.
-    createdTask: null,    // { taskId, inviteToken, sharePath, task }
-    form: {
-      creatorName: '小幺',
-      rawRequest: '',
-      peopleCount: '5 人',
-      dinnerTime: '周六 18:30',
-      location: ''
-    }
+    peopleOptions: [],
+    selectedPeople: '5',
+    customPeopleInput: '',
+    createdTask: null     // { taskId, inviteToken, sharePath, task }
   },
 
   onLoad() {
     this.syncTheme();
+    this.refreshPeopleOptions('5');
   },
 
   onShow() {
@@ -34,24 +36,50 @@ Page({
     wx.navigateBack();
   },
 
-  handleInput(event) {
-    const field = event.currentTarget.dataset.field;
-    const value = event.detail.value;
-    const form = Object.assign({}, this.data.form);
-    form[field] = value;
-    this.setData({ form });
+  refreshPeopleOptions(selected) {
+    this.setData({
+      peopleOptions: PEOPLE_PRESETS.map(function (value) {
+        return { value: value, active: value === selected };
+      })
+    });
+  },
+
+  handleSelectPeople(event) {
+    const value = event.currentTarget.dataset.value;
+    if (!value) { return; }
+    this.setData({
+      selectedPeople: value,
+      customPeopleInput: ''
+    });
+    this.refreshPeopleOptions(value);
+  },
+
+  handleCustomPeopleInput(event) {
+    const raw = event.detail.value || '';
+    this.setData({
+      customPeopleInput: raw,
+      selectedPeople: raw.trim() ? raw.trim() : this.data.selectedPeople
+    });
+    this.refreshPeopleOptions(''); // clear preset highlight while typing custom
+  },
+
+  resolvePeopleCount() {
+    const custom = (this.data.customPeopleInput || '').trim();
+    if (custom) { return custom; }
+    return this.data.selectedPeople;
   },
 
   handleCreateTask() {
     if (this.data.isSubmitting) { return; }
 
-    const form = this.data.form;
-    if (!form.creatorName || !form.creatorName.trim()) {
-      wx.showToast({ title: '先填一下昵称', icon: 'none' });
+    const peopleCount = this.resolvePeopleCount();
+    const peopleNumber = parseInt(peopleCount, 10);
+    if (!peopleNumber || peopleNumber < 2) {
+      wx.showToast({ title: '请选择或填写至少 2 人', icon: 'none' });
       return;
     }
-    if (!form.rawRequest || !form.rawRequest.trim()) {
-      wx.showToast({ title: '描述一下这次想解决什么', icon: 'none' });
+    if (peopleNumber > 30) {
+      wx.showToast({ title: '人数最多 30 人', icon: 'none' });
       return;
     }
 
@@ -59,7 +87,10 @@ Page({
     wx.showLoading({ title: '生成任务…', mask: true });
 
     const self = this;
-    groupDiningAdapter.createTask(form).then(function (board) {
+    groupDiningAdapter.createTask({
+      peopleCount: peopleNumber
+      // creator name / raw request / dinner time / location → adapter defaults
+    }).then(function (board) {
       wx.hideLoading();
       self.setData({
         isSubmitting: false,
@@ -76,7 +107,7 @@ Page({
       self.setData({ isSubmitting: false });
       console.error('createTask failed', err);
       wx.showToast({
-        title: '创建任务失败：' + ((err && (err.errMsg || err.message)) || 'unknown'),
+        title: '创建失败：' + ((err && (err.errMsg || err.message)) || 'unknown'),
         icon: 'none'
       });
     });
@@ -103,22 +134,19 @@ Page({
     });
   },
 
-  // Mini-program share affordance — produces a card pointing at the fill
-  // page with the inviteToken so recipients land directly on their form.
+  handleCreateAnother() {
+    this.setData({ createdTask: null });
+  },
+
+  // Mini-program share affordance — uses the adapter-returned sharePath so
+  // invitees land directly on the fill page with both taskId + inviteToken.
   onShareAppMessage() {
     const created = this.data.createdTask;
     if (!created) {
-      return {
-        title: '一起约个饭吧',
-        path: '/pages/group/create/create'
-      };
+      return { title: '一起约个饭吧', path: '/pages/group/create/create' };
     }
     const task = created.task || {};
-    const title = (task.creatorName ? task.creatorName + ' ' : '') +
-                  '邀请你一起约饭：' + (task.title || '一次多人约饭');
-    return {
-      title: title,
-      path: created.sharePath
-    };
+    const title = '邀请你一起约饭：' + (task.title || '一次多人约饭');
+    return { title: title, path: created.sharePath };
   }
 });

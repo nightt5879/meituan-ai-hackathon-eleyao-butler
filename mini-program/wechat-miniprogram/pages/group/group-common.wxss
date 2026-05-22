@@ -187,3 +187,38 @@
   font-size: 24rpx;
   line-height: 1.6;
 }
+
+/* Inline priority tag used inside .field-label to distinguish hard vs
+   soft requirements on the fill page. */
+.priority-tag {
+  display: inline-block;
+  margin-left: 12rpx;
+  padding: 2rpx 12rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.priority-tag.must {
+  background: rgba(255, 138, 61, 0.15);
+  color: #C66218;
+}
+
+.priority-tag.nice {
+  background: rgba(74, 144, 226, 0.15);
+  color: #2B5A8F;
+}
+
+/* Adjustment-request inline panel that expands beneath a candidate card. */
+.adjustment-panel {
+  margin-top: 14rpx;
+  padding: 24rpx;
+  border: 1rpx dashed var(--theme-border, #F3DDC7);
+  border-radius: 18rpx;
+  background: var(--theme-soft, #FFF1E3);
+}
+
+.adjustment-panel .field-label {
+  color: #C66218;
+}

@@ -3,67 +3,52 @@
     <button class="page-back" bindtap="handleBack">‹</button>
     <view class="page-heading">
       <view class="page-title">发起约饭</view>
-      <view class="page-subtitle">先把产品壳搭好，后续接入真实任务创建接口。</view>
+      <view class="page-subtitle">选一下人数就能生成任务链接，朋友点开就能填偏好。</view>
     </view>
   </view>
 
   <view class="status-badge">
     <view class="status-dot"></view>
-    <text>多人偏好收集 · UI scaffold</text>
+    <text>极简发起 · 其余字段管家会先填默认</text>
   </view>
 
-  <view class="panel-card">
+  <view wx:if="{{!createdTask}}" class="panel-card">
     <view class="field">
-      <view class="field-label">你的昵称</view>
-      <input class="field-input" value="{{form.creatorName}}" data-field="creatorName" bindinput="handleInput" />
-    </view>
-
-    <view class="field">
-      <view class="field-label">这次想解决什么</view>
-      <textarea
-        class="field-textarea"
-        value="{{form.rawRequest}}"
-        placeholder="例如：周末晚上 5 个人聚餐，1 个吃素，1 个不吃辣，预算想控制在人均 80 以内。"
-        data-field="rawRequest"
-        bindinput="handleInput"
-      ></textarea>
-      <view class="field-hint">后续这里会接 Agent 约束抽取：硬约束、软偏好、冲突点。</view>
-    </view>
-
-    <view class="split-grid">
-      <view class="field last">
-        <view class="field-label">人数</view>
-        <input class="field-input" value="{{form.peopleCount}}" data-field="peopleCount" bindinput="handleInput" />
+      <view class="field-label">预计几个人？</view>
+      <view class="option-grid">
+        <view
+          wx:for="{{peopleOptions}}"
+          wx:key="value"
+          class="option-cell {{item.active ? 'active' : ''}}"
+          data-value="{{item.value}}"
+          bindtap="handleSelectPeople"
+        >{{item.value}} 人</view>
       </view>
-      <view class="field last">
-        <view class="field-label">时间</view>
-        <input class="field-input" value="{{form.dinnerTime}}" data-field="dinnerTime" bindinput="handleInput" />
-      </view>
+      <view class="field-hint">不在列表里？下面也可以直接填数字。</view>
     </view>
-  </view>
 
-  <view class="panel-card">
     <view class="field last">
-      <view class="field-label">地点</view>
+      <view class="field-label">自定义人数</view>
       <input
         class="field-input"
-        value="{{form.location}}"
-        placeholder="例如：学校东门 / 地铁站附近"
-        data-field="location"
-        bindinput="handleInput"
+        type="number"
+        value="{{customPeopleInput}}"
+        placeholder="例如 12"
+        bindinput="handleCustomPeopleInput"
       />
     </view>
   </view>
 
   <view wx:if="{{!createdTask}}" class="panel-card">
-    <view class="field-label">下一步</view>
-    <view class="field-hint">点下面按钮会调用 adapter.createTask 生成任务（本地 mock）。生成后会出现分享路径和「查看看板」按钮。</view>
+    <view class="field-label">关于其他字段</view>
+    <view class="field-hint">时间、地点、口味会让朋友各自填。管家会自动整理冲突，并给出一个最终方案。</view>
   </view>
 
   <button wx:if="{{!createdTask}}" class="primary-button" loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="handleCreateTask">生成任务链接</button>
 
   <view wx:if="{{createdTask}}" class="panel-card">
     <view class="field-label">任务已生成</view>
+    <view class="field-hint">任务标题：{{createdTask.task.title}}</view>
     <view class="field-hint">taskId：{{createdTask.taskId}}</view>
     <view class="field-hint">邀请 token：{{createdTask.inviteToken}}</view>
     <view class="field-hint" style="word-break: break-all;">分享路径：{{createdTask.sharePath}}</view>
@@ -75,7 +60,8 @@
     </view>
   </view>
 
-  <button wx:if="{{createdTask}}" class="primary-button" open-type="share">分享给群里</button>
+  <button wx:if="{{createdTask}}" class="primary-button" open-type="share">分享到群里</button>
   <button wx:if="{{createdTask}}" class="primary-button" bindtap="handleViewBoard">查看任务看板</button>
   <button wx:if="{{createdTask}}" class="primary-button" bindtap="handleCopySharePath">复制分享路径</button>
+  <button wx:if="{{createdTask}}" class="primary-button" bindtap="handleCreateAnother">再发起一个</button>
 </view>

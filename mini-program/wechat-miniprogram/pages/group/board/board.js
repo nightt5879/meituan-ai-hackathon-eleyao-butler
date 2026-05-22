@@ -43,6 +43,29 @@ Page({
       { key: 'participants',   title: '成员偏好',  desc: 'submitPreference 写入后展示真实昵称与抽取约束' },
       { key: 'conflicts',      title: '冲突识别',  desc: 'adapter 会基于成员偏好生成 conflicts' },
       { key: 'recommendation', title: '候选方案',  desc: '点「生成推荐」会调用 generateRecommendation' }
+    ],
+
+    // ─── Adjustment-request inline panel ─────────────────────────────────
+    // adjustmentTargetCandidate: { id, name } — which candidate the panel
+    // is open for. Empty when panel is closed.
+    adjustmentTargetCandidate: null,
+    adjustmentNickname: '',
+    adjustmentVisibility: 'public',
+    adjustmentReasonType: '',
+    adjustmentNote: '',
+    isSubmittingAdjustment: false,
+    adjustmentReasons: [
+      { value: 'cannot_eat',           label: '吃不了' },
+      { value: 'over_budget',          label: '超预算' },
+      { value: 'time_mismatch',        label: '时间不合' },
+      { value: 'too_far',              label: '太远' },
+      { value: 'prefer_other_cuisine', label: '想换品类' },
+      { value: 'other',                label: '其他' }
+    ],
+    adjustmentVisibilityOptions: [
+      { value: 'public',         label: '公开' },
+      { value: 'nickname_only',  label: '只显示昵称' },
+      { value: 'private',        label: '匿名' }
     ]
   },
 
@@ -194,7 +217,7 @@ Page({
     if (!this.data.taskId) { return; }
     const self = this;
     this._pollTimer = setInterval(function () {
-      if (self.data.isLoading || self.data.isRecommending) { return; }
+      if (self.data.isLoading || self.data.isRecommending || self.data.isSubmittingAdjustment) { return; }
       self.loadBoard({ silent: true }).catch(function () {});
     }, POLL_INTERVAL_MS);
   },
@@ -204,5 +227,92 @@ Page({
       clearInterval(this._pollTimer);
       this._pollTimer = null;
     }
+  },
+
+  // ─── Adjustment request — inline panel that expands beneath a candidate ──
+
+  handleOpenAdjustmentPanel(event) {
+    const id = event.currentTarget.dataset.candidateId || '';
+    const name = event.currentTarget.dataset.candidateName || '';
+    if (!id) { return; }
+    this.setData({
+      adjustmentTargetCandidate: { id: id, name: name },
+      adjustmentReasonType: '',
+      adjustmentNote: ''
+      // adjustmentNickname / adjustmentVisibility preserved across opens.
+    });
+  },
+
+  handleCloseAdjustmentPanel() {
+    this.setData({
+      adjustmentTargetCandidate: null,
+      adjustmentReasonType: '',
+      adjustmentNote: ''
+    });
+  },
+
+  handleSelectAdjustmentReason(event) {
+    const value = event.currentTarget.dataset.value || '';
+    this.setData({ adjustmentReasonType: value });
+  },
+
+  handleSelectAdjustmentVisibility(event) {
+    const value = event.currentTarget.dataset.value || 'public';
+    this.setData({ adjustmentVisibility: value });
+  },
+
+  handleAdjustmentNicknameInput(event) {
+    this.setData({ adjustmentNickname: event.detail.value });
+  },
+
+  handleAdjustmentNoteInput(event) {
+    this.setData({ adjustmentNote: event.detail.value });
+  },
+
+  handleSubmitAdjustmentRequest() {
+    if (this.data.isSubmittingAdjustment) { return; }
+    const target = this.data.adjustmentTargetCandidate;
+    if (!target) { return; }
+    if (!this.data.adjustmentReasonType) {
+      wx.showToast({ title: '请选择不满意原因', icon: 'none' });
+      return;
+    }
+    const nickname = (this.data.adjustmentNickname || '').trim();
+    if (this.data.adjustmentVisibility !== 'private' && !nickname) {
+      wx.showToast({ title: '请填写昵称，或选「匿名」', icon: 'none' });
+      return;
+    }
+
+    this.setData({ isSubmittingAdjustment: true });
+    wx.showLoading({ title: '提交反馈…', mask: true });
+
+    const self = this;
+    groupDiningAdapter.submitAdjustmentRequest(this.data.taskId, this.data.inviteToken, {
+      nickname: nickname,
+      visibility: this.data.adjustmentVisibility,
+      candidateId: target.id,
+      candidateName: target.name,
+      reasonType: this.data.adjustmentReasonType,
+      note: this.data.adjustmentNote
+    }).then(function (board) {
+      wx.hideLoading();
+      self.setData({
+        board: board,
+        statusLabel: statusLabel(boardStatus(board)),
+        isSubmittingAdjustment: false,
+        adjustmentTargetCandidate: null,
+        adjustmentReasonType: '',
+        adjustmentNote: ''
+      });
+      wx.showToast({ title: '已提交反馈', icon: 'success' });
+    }).catch(function (err) {
+      wx.hideLoading();
+      console.error('submitAdjustmentRequest failed', err);
+      self.setData({ isSubmittingAdjustment: false });
+      wx.showToast({
+        title: '提交失败：' + ((err && (err.errMsg || err.message)) || 'unknown'),
+        icon: 'none'
+      });
+    });
   }
 });
