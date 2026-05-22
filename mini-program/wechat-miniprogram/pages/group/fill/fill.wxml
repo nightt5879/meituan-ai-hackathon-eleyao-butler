@@ -46,7 +46,19 @@
   <!-- Availability -->
   <view class="panel-card">
     <view class="field">
-      <view class="field-label">可参与时间 · 选哪几天<text class="priority-tag must">必须满足</text></view>
+      <view class="field-heading">
+        <view class="field-label">可参与时间 · 选哪几天</view>
+        <view class="priority-toggle">
+          <view
+            wx:for="{{priorityOptions}}"
+            wx:key="value"
+            class="priority-option {{form.requirementPriority.days === item.value ? 'active' : ''}} {{item.value}}"
+            data-field="days"
+            data-value="{{item.value}}"
+            bindtap="handleSelectPriority"
+          >{{item.label}}</view>
+        </view>
+      </view>
       <view class="field-hint">可多选，选「随时」会清空其他选择。</view>
       <view class="option-grid">
         <view
@@ -60,9 +72,21 @@
     </view>
 
     <view class="field">
-      <view class="field-label">可参与时间 · 选哪几个时段<text class="priority-tag must">必须满足</text></view>
+      <view class="field-heading">
+        <view class="field-label">可参与时间 · 选哪几个时段</view>
+        <view class="priority-toggle">
+          <view
+            wx:for="{{priorityOptions}}"
+            wx:key="value"
+            class="priority-option {{form.requirementPriority.hours === item.value ? 'active' : ''}} {{item.value}}"
+            data-field="hours"
+            data-value="{{item.value}}"
+            bindtap="handleSelectPriority"
+          >{{item.label}}</view>
+        </view>
+      </view>
       <view class="field-hint">精确到小时，可多选。</view>
-      <view class="option-grid">
+      <view class="option-grid hour-grid">
         <view
           wx:for="{{hourChips}}"
           wx:key="value"
@@ -74,7 +98,19 @@
     </view>
 
     <view class="field last">
-      <view class="field-label">时间补充（选填）</view>
+      <view class="field-heading">
+        <view class="field-label">时间补充（选填）</view>
+        <view class="priority-toggle">
+          <view
+            wx:for="{{priorityOptions}}"
+            wx:key="value"
+            class="priority-option {{form.requirementPriority.timeText === item.value ? 'active' : ''}} {{item.value}}"
+            data-field="timeText"
+            data-value="{{item.value}}"
+            bindtap="handleSelectPriority"
+          >{{item.label}}</view>
+        </view>
+      </view>
       <input
         class="field-input"
         value="{{form.availableTimeText}}"
@@ -88,7 +124,19 @@
   <!-- Dietary -->
   <view class="panel-card">
     <view class="field last">
-      <view class="field-label">忌口 / 过敏<text class="priority-tag must">必须满足</text></view>
+      <view class="field-heading">
+        <view class="field-label">忌口 / 过敏</view>
+        <view class="priority-toggle">
+          <view
+            wx:for="{{priorityOptions}}"
+            wx:key="value"
+            class="priority-option {{form.requirementPriority.dietary === item.value ? 'active' : ''}} {{item.value}}"
+            data-field="dietary"
+            data-value="{{item.value}}"
+            bindtap="handleSelectPriority"
+          >{{item.label}}</view>
+        </view>
+      </view>
       <view class="field-hint">可多选；选「无忌口」会清空其他选择。</view>
       <view class="option-grid">
         <view
@@ -105,7 +153,19 @@
   <!-- Cuisine -->
   <view class="panel-card">
     <view class="field last">
-      <view class="field-label">想吃的品类<text class="priority-tag nice">希望有</text></view>
+      <view class="field-heading">
+        <view class="field-label">想吃的品类</view>
+        <view class="priority-toggle">
+          <view
+            wx:for="{{priorityOptions}}"
+            wx:key="value"
+            class="priority-option {{form.requirementPriority.cuisine === item.value ? 'active' : ''}} {{item.value}}"
+            data-field="cuisine"
+            data-value="{{item.value}}"
+            bindtap="handleSelectPriority"
+          >{{item.label}}</view>
+        </view>
+      </view>
       <view class="field-hint">可多选；选「都可以」会清空其他选择。</view>
       <view class="option-grid">
         <view
@@ -122,7 +182,19 @@
   <!-- Budget + Spicy -->
   <view class="panel-card">
     <view class="field">
-      <view class="field-label">预算<text class="priority-tag must">必须满足</text></view>
+      <view class="field-heading">
+        <view class="field-label">预算</view>
+        <view class="priority-toggle">
+          <view
+            wx:for="{{priorityOptions}}"
+            wx:key="value"
+            class="priority-option {{form.requirementPriority.budget === item.value ? 'active' : ''}} {{item.value}}"
+            data-field="budget"
+            data-value="{{item.value}}"
+            bindtap="handleSelectPriority"
+          >{{item.label}}</view>
+        </view>
+      </view>
       <view class="option-grid">
         <view
           wx:for="{{budgetChips}}"
@@ -135,7 +207,19 @@
     </view>
 
     <view class="field last">
-      <view class="field-label">辣度<text class="priority-tag must">必须满足</text></view>
+      <view class="field-heading">
+        <view class="field-label">辣度</view>
+        <view class="priority-toggle">
+          <view
+            wx:for="{{priorityOptions}}"
+            wx:key="value"
+            class="priority-option {{form.requirementPriority.spicy === item.value ? 'active' : ''}} {{item.value}}"
+            data-field="spicy"
+            data-value="{{item.value}}"
+            bindtap="handleSelectPriority"
+          >{{item.label}}</view>
+        </view>
+      </view>
       <view class="option-grid">
         <view
           wx:for="{{spicyChips}}"
@@ -151,7 +235,19 @@
   <!-- Natural language preference + prompt chips -->
   <view class="panel-card">
     <view class="field">
-      <view class="field-label">想补充的（选填）<text class="priority-tag nice">希望有</text></view>
+      <view class="field-heading">
+        <view class="field-label">想补充的（选填）</view>
+        <view class="priority-toggle">
+          <view
+            wx:for="{{priorityOptions}}"
+            wx:key="value"
+            class="priority-option {{form.requirementPriority.preference === item.value ? 'active' : ''}} {{item.value}}"
+            data-field="preference"
+            data-value="{{item.value}}"
+            bindtap="handleSelectPriority"
+          >{{item.label}}</view>
+        </view>
+      </view>
       <textarea
         class="field-textarea"
         value="{{form.rawPreference}}"

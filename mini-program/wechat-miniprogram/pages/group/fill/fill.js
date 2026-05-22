@@ -27,6 +27,20 @@ const PROMPT_CHIPS = [
   '想去近一点', '不想排太久', '适合聊天', '想吃点暖和的',
   '预算 50 以下', '想试试新店', '清淡不油腻'
 ];
+const PRIORITY_OPTIONS = [
+  { label: '必须满足', value: 'must' },
+  { label: '希望满足', value: 'nice' }
+];
+const DEFAULT_REQUIREMENT_PRIORITY = {
+  days: 'must',
+  hours: 'must',
+  timeText: 'must',
+  dietary: 'must',
+  cuisine: 'nice',
+  budget: 'nice',
+  spicy: 'nice',
+  preference: 'nice'
+};
 
 // Maps butler-memory avoid tags → fill-page dietary chips when possible.
 const AVOID_TO_DIETARY = {
@@ -69,6 +83,7 @@ Page({
       budgetTag: '',
       spicyPreference: '',
       rawPreference: '',
+      requirementPriority: Object.assign({}, DEFAULT_REQUIREMENT_PRIORITY),
       // Free-text additions for needs the chips don't cover.
       customHardRequirement: '',
       customSoftPreference: ''
@@ -78,6 +93,7 @@ Page({
     dayChips: [], hourChips: [], dietaryChips: [], cuisineChips: [],
     budgetChips: [], spicyChips: [], visibilityChips: [],
     promptChips: PROMPT_CHIPS,
+    priorityOptions: PRIORITY_OPTIONS,
 
     // Live preview of what will be sent as hardRequirements / softPreferences.
     previewHardRequirements: [],
@@ -235,6 +251,18 @@ Page({
     this.rebuildAllChips();
   },
 
+  handleSelectPriority(event) {
+    const field = event.currentTarget.dataset.field;
+    const value = event.currentTarget.dataset.value === 'must' ? 'must' : 'nice';
+    if (!field) { return; }
+    const form = Object.assign({}, this.data.form);
+    const current = form.requirementPriority || {};
+    form.requirementPriority = Object.assign({}, DEFAULT_REQUIREMENT_PRIORITY, current);
+    form.requirementPriority[field] = value;
+    this.setData({ form });
+    this.rebuildPreview();
+  },
+
   handlePromptChipTap(event) {
     const text = event.currentTarget.dataset.value || '';
     if (!text) { return; }
@@ -352,7 +380,8 @@ Page({
       // Explicit priority lists (the same shape preview renders) so the
       // backend doesn't have to re-derive them from chip selections.
       hardRequirements: buildHardRequirements(form),
-      softPreferences: buildSoftPreferences(form)
+      softPreferences: buildSoftPreferences(form),
+      requirementPriorities: Object.assign({}, form.requirementPriority || {})
     };
 
     const self = this;
@@ -446,54 +475,117 @@ function guessBudgetTag(budgetText) {
   return '';
 }
 
-// Derive the explicit "must satisfy" list from the form. Same logic the
+// Derive the explicit "must satisfy" list from the form. Same buckets the
 // submit payload uses, also fed into the preview chips.
 function buildHardRequirements(form) {
-  const out = [];
+  return buildRequirementBuckets(form).hard;
+}
 
-  if (form.spicyPreference === 'no_spicy') { out.push('不吃辣'); }
-  (form.dietaryRestrictions || []).forEach(function (tag) {
-    if (tag && tag !== '无忌口') { out.push(tag); }
-  });
+// Derive the "nice to have" list from the same field-level priority switches.
+function buildSoftPreferences(form) {
+  return buildRequirementBuckets(form).soft;
+}
 
-  if (form.budgetTag && form.budgetTag !== '都可以') {
-    out.push('预算 ' + form.budgetTag);
-  }
+function buildRequirementBuckets(form) {
+  const buckets = { hard: [], soft: [] };
 
   const days = form.availableDays || [];
   if (days.length && days.indexOf('随时') < 0) {
-    out.push('可参与 · ' + days.join('/'));
+    addByPriority(buckets, priorityOf(form, 'days'), '可参与 · ' + days.join('/'));
   }
+
   const hours = form.availableHours || [];
   if (hours.length) {
     const display = hours.slice(0, 3).join('/') + (hours.length > 3 ? '…' : '');
-    out.push('时段 · ' + display);
+    addByPriority(buckets, priorityOf(form, 'hours'), '时段 · ' + display);
   }
+
   const timeText = (form.availableTimeText || '').trim();
-  if (timeText) { out.push(timeText); }
+  if (timeText) {
+    addByPriority(buckets, priorityOf(form, 'timeText'), timeText);
+  }
 
-  splitCustomText(form.customHardRequirement).forEach(function (t) { out.push(t); });
-
-  return uniqueList(out);
-}
-
-// Derive the "nice to have" list from cuisine chips, the prompt-chip vocab
-// detected in the NL preference textarea, and any free-text additions.
-function buildSoftPreferences(form) {
-  const out = [];
+  (form.dietaryRestrictions || []).forEach(function (tag) {
+    if (tag && tag !== '无忌口') {
+      addByPriority(buckets, priorityOf(form, 'dietary'), tag);
+    }
+  });
 
   (form.cuisinePreferences || []).forEach(function (c) {
-    if (c && c !== '都可以') { out.push('想吃 ' + c); }
+    if (c && c !== '都可以') {
+      addByPriority(buckets, priorityOf(form, 'cuisine'), '想吃 ' + c);
+    }
   });
 
+  if (form.budgetTag && form.budgetTag !== '都可以') {
+    addByPriority(buckets, priorityOf(form, 'budget'), '预算 ' + form.budgetTag);
+  }
+
+  const spicyText = spicyRequirementText(form.spicyPreference);
+  if (spicyText) {
+    addByPriority(buckets, priorityOf(form, 'spicy'), spicyText);
+  }
+
+  const matchedPrompts = [];
   const text = String(form.rawPreference || '');
   PROMPT_CHIPS.forEach(function (chip) {
-    if (text.indexOf(chip) >= 0) { out.push(chip); }
+    if (text.indexOf(chip) >= 0) {
+      matchedPrompts.push(chip);
+      addByPriority(buckets, priorityOf(form, 'preference'), chip);
+    }
   });
 
-  splitCustomText(form.customSoftPreference).forEach(function (t) { out.push(t); });
+  const freeText = stripPromptChips(text, matchedPrompts).trim();
+  if (freeText) {
+    addByPriority(buckets, priorityOf(form, 'preference'), '补充：' + compactRequirementText(freeText));
+  }
 
-  return uniqueList(out);
+  splitCustomText(form.customHardRequirement).forEach(function (t) { buckets.hard.push(t); });
+  splitCustomText(form.customSoftPreference).forEach(function (t) { buckets.soft.push(t); });
+
+  return {
+    hard: uniqueList(buckets.hard),
+    soft: uniqueList(buckets.soft)
+  };
+}
+
+function addByPriority(buckets, priority, text) {
+  if (!text) { return; }
+  if (priority === 'must') { buckets.hard.push(text); }
+  else { buckets.soft.push(text); }
+}
+
+function priorityOf(form, key) {
+  const priority = (form.requirementPriority && form.requirementPriority[key]) ||
+                   DEFAULT_REQUIREMENT_PRIORITY[key] ||
+                   'nice';
+  return priority === 'must' ? 'must' : 'nice';
+}
+
+function spicyRequirementText(value) {
+  if (!value || value === 'any') { return ''; }
+  for (let i = 0; i < SPICY_CHIPS.length; i++) {
+    if (SPICY_CHIPS[i].value === value) {
+      return value === 'no_spicy' ? '不吃辣' : '辣度 ' + SPICY_CHIPS[i].label;
+    }
+  }
+  return '';
+}
+
+function compactRequirementText(text) {
+  const safe = String(text || '').replace(/\s+/g, ' ').trim();
+  return safe.length > 28 ? safe.slice(0, 28) + '…' : safe;
+}
+
+function stripPromptChips(text, chips) {
+  let safe = String(text || '');
+  (chips || []).forEach(function (chip) {
+    if (!chip) { return; }
+    safe = safe.split(chip).join('');
+  });
+  return safe
+    .replace(/[，,；;、\s]+/g, ' ')
+    .trim();
 }
 
 function splitCustomText(text) {

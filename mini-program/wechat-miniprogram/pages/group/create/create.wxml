@@ -15,14 +15,14 @@
   <view wx:if="{{!createdTask}}" class="panel-card">
     <view class="field">
       <view class="field-label">预计几个人？</view>
-      <view class="option-grid">
+      <view class="option-grid people-grid">
         <view
           wx:for="{{peopleOptions}}"
           wx:key="value"
           class="option-cell {{item.active ? 'active' : ''}}"
           data-value="{{item.value}}"
           bindtap="handleSelectPeople"
-        >{{item.value}} 人</view>
+        >{{item.value}}人</view>
       </view>
       <view class="field-hint">不在列表里？下面也可以直接填数字。</view>
     </view>
@@ -60,8 +60,10 @@
     </view>
   </view>
 
-  <button wx:if="{{createdTask}}" class="primary-button" open-type="share">分享到群里</button>
-  <button wx:if="{{createdTask}}" class="primary-button" bindtap="handleViewBoard">查看任务看板</button>
-  <button wx:if="{{createdTask}}" class="primary-button" bindtap="handleCopySharePath">复制分享路径</button>
-  <button wx:if="{{createdTask}}" class="primary-button" bindtap="handleCreateAnother">再发起一个</button>
+  <view wx:if="{{createdTask}}" class="button-stack">
+    <button class="primary-button" open-type="share">分享到群里</button>
+    <button class="primary-button" bindtap="handleViewBoard">查看任务看板</button>
+    <button class="primary-button" bindtap="handleCopySharePath">复制分享路径</button>
+    <button class="primary-button" bindtap="handleCreateAnother">再发起一个</button>
+  </view>
 </view>

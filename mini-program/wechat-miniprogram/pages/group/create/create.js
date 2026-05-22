@@ -5,7 +5,7 @@ const groupDiningAdapter = require('../../../services/groupDiningAdapter');
 // count. Other backend-required fields (creator name, raw request, dinner
 // time, location) are filled with sensible defaults inside the adapter.
 
-const PEOPLE_PRESETS = ['3', '4', '5', '6', '8', '10'];
+const PEOPLE_PRESETS = ['2', '3', '4', '5', '6', '8', '10'];
 
 Page({
   data: {

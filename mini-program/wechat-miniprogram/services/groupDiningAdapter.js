@@ -20,6 +20,8 @@ const API_TIMEOUT_MS = 15000;
 
 // ─── In-memory mock store (mock + fallback modes) ───────────────────────
 const tasks = Object.create(null);
+const MOCK_DB_STORAGE_KEY = '__GROUP_DINING_MOCK_DB__';
+let mockDbHydrated = false;
 const ARTIFICIAL_DELAY_MS = 120;
 const STATUS_WAITING = 'waiting_preferences';
 const STATUS_READY = 'ready_to_recommend';
@@ -150,6 +152,7 @@ function apiRequest(method, path, body) {
 
 function mockCreateTask(payload) {
   return delay(ARTIFICIAL_DELAY_MS).then(function () {
+    hydrateMockDb();
     const safe = payload || {};
     const taskId = generateId('task');
     const inviteToken = generateId('invite');
@@ -185,6 +188,10 @@ function mockCreateTask(payload) {
     };
 
     tasks[taskId] = board;
+    if (!persistMockDb()) {
+      delete tasks[taskId];
+      throw makeError('mock_storage_failed', 'mock 任务保存失败，请重试');
+    }
     return board;
   });
 }
@@ -222,6 +229,7 @@ function mockSubmitPreference(taskId, _inviteToken, payload) {
     if (board.recommendation_result) {
       board.recommendation_state.dirty_reason = 'participants_changed';
     }
+    persistMockDb();
     return board;
   });
 }
@@ -240,6 +248,7 @@ function mockGenerateRecommendation(taskId, _inviteToken) {
     // Regenerating clears stale adjustment requests — they were about the
     // previous candidate list, no longer applicable.
     board.adjustment_requests = [];
+    persistMockDb();
     return board;
   });
 }
@@ -278,6 +287,7 @@ function mockSubmitAdjustmentRequest(taskId, _inviteToken, payload) {
     if (board.recommendation_state) {
       board.recommendation_state.dirty_reason = 'adjustment_requested';
     }
+    persistMockDb();
     return board;
   });
 }
@@ -314,6 +324,7 @@ function buildParticipantBody(payload) {
     // and any custom-typed entries. Backend can persist verbatim.
     hard_requirements: arrayOrEmpty(safe.hardRequirements),
     soft_preferences: arrayOrEmpty(safe.softPreferences),
+    requirement_priorities: plainObjectOrEmpty(safe.requirementPriorities),
     manual_fields: {
       budget_max: budgetMaxFromTag(safe.budgetTag) || parseIntLoose(safe.budget) || null,
       spicy_preference: mapSpicyToEnum(safe.spicyPreference || safe.spicy),
@@ -763,6 +774,7 @@ function normalizeParticipant(p) {
     cuisinePreferences: pickArray(safe, 'cuisinePreferences', 'cuisine_preferences'),
     hardRequirements: pickArray(safe, 'hardRequirements', 'hard_requirements'),
     softPreferences: pickArray(safe, 'softPreferences', 'soft_preferences'),
+    requirementPriorities: pickValue(safe, 'requirementPriorities', 'requirement_priorities', {}),
     budgetTag: pickValue(safe, 'budgetTag', 'budget_tag', ''),
     spicyPreference: spicyEnum,
     spicyLabel: spicyLabelOf(spicyEnum),
@@ -906,6 +918,11 @@ function arrayOrEmpty(value) {
   return Array.isArray(value) ? value.slice() : [];
 }
 
+function plainObjectOrEmpty(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) { return {}; }
+  return Object.assign({}, value);
+}
+
 function numberOrNull(value) {
   if (typeof value === 'number' && isFinite(value)) { return value; }
   if (typeof value === 'string' && value.trim() !== '') {
@@ -952,9 +969,64 @@ function buildSharePath(taskId, inviteToken) {
          '&inviteToken=' + encodeURIComponent(inviteToken);
 }
 
+function hydrateMockDb() {
+  const wxApi = getMockStorageApi();
+  if (ADAPTER_MODE !== 'mock' || mockDbHydrated || !wxApi) { return; }
+  try {
+    const stored = wxApi.getStorageSync(MOCK_DB_STORAGE_KEY);
+    const storedTasks = stored && stored.tasks;
+    if (storedTasks && typeof storedTasks === 'object') {
+      Object.keys(storedTasks).forEach(function (taskId) {
+        if (taskId && storedTasks[taskId]) {
+          tasks[taskId] = storedTasks[taskId];
+        }
+      });
+    }
+    mockDbHydrated = true;
+  } catch (err) {
+    console.warn('[groupDiningAdapter] failed to hydrate mock db', err);
+  }
+}
+
+function persistMockDb() {
+  const wxApi = getMockStorageApi();
+  if (ADAPTER_MODE !== 'mock') { return true; }
+  if (!wxApi) { return false; }
+  try {
+    const snapshot = {
+      version: 1,
+      updated_at: nowIso(),
+      tasks: {}
+    };
+    Object.keys(tasks).forEach(function (taskId) {
+      snapshot.tasks[taskId] = tasks[taskId];
+    });
+    wxApi.setStorageSync(MOCK_DB_STORAGE_KEY, snapshot);
+    return true;
+  } catch (err) {
+    console.warn('[groupDiningAdapter] failed to persist mock db', err);
+    return false;
+  }
+}
+
+function getMockStorageApi() {
+  const wxApi = typeof wx !== 'undefined'
+    ? wx
+    : (typeof globalThis !== 'undefined' ? globalThis.wx : null);
+  if (!wxApi ||
+      typeof wxApi.getStorageSync !== 'function' ||
+      typeof wxApi.setStorageSync !== 'function') {
+    return null;
+  }
+  return wxApi;
+}
+
 function requireBoard(taskId) {
+  hydrateMockDb();
   const board = tasks[taskId];
-  if (!board) { throw makeError('not_found', '任务不存在或已过期'); }
+  if (!board) {
+    throw makeError('not_found', '任务不存在或已过期，请让发起人重新分享链接');
+  }
   return board;
 }
 
