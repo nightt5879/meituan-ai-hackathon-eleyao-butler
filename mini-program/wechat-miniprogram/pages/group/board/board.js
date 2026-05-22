@@ -10,44 +10,82 @@ const STATUS_LABELS = {
   failed: '失败'
 };
 
+const POLL_INTERVAL_MS = 3000;
+
 function statusLabel(status) {
-  if (!status) { return '待接入'; }
+  if (!status) { return '待加载'; }
   return STATUS_LABELS[status] || status;
+}
+
+function boardStatus(board) {
+  if (!board) { return ''; }
+  if (board.recommendationState && board.recommendationState.status) {
+    return board.recommendationState.status;
+  }
+  if (board.task && board.task.status) { return board.task.status; }
+  return '';
 }
 
 Page({
   data: {
     currentTheme: 'warm',
     taskId: '',
+    inviteToken: '',
     isLoading: false,
     isRecommending: false,
+    hasInitialized: false,
     board: null,
-    statusLabel: '待接入',
+    statusLabel: '待加载',
     errorMessage: '',
-    // Static step scaffold preserved so the page still renders when data
-    // hasn't arrived yet. Each step swaps to real data via wx:if in WXML.
+    // Static step scaffold preserved so the page still renders before data
+    // arrives. Each step swaps to real data via wx:if in board.wxml.
     steps: [
-      { key: 'participants',   title: '成员偏好',  desc: '后端返回 participants 后会展示真实昵称与抽取结果' },
-      { key: 'conflicts',      title: '冲突识别',  desc: '后端返回 conflicts 后展示硬约束/软偏好冲突' },
-      { key: 'recommendation', title: '候选方案',  desc: '后端 recommend 调用后展示候选餐厅与最终推荐' }
+      { key: 'participants',   title: '成员偏好',  desc: 'submitPreference 写入后展示真实昵称与抽取约束' },
+      { key: 'conflicts',      title: '冲突识别',  desc: 'adapter 会基于成员偏好生成 conflicts' },
+      { key: 'recommendation', title: '候选方案',  desc: '点「生成推荐」会调用 generateRecommendation' }
     ]
   },
 
   onLoad(query) {
     this.syncTheme();
     const taskId = (query && query.taskId) || '';
-    this.setData({ taskId: taskId });
+    const inviteToken = (query && query.inviteToken) || '';
+    this.setData({ taskId: taskId, inviteToken: inviteToken });
     if (taskId) {
-      this.loadBoard();
+      this.loadBoard({ initial: true });
     } else {
       this.setData({
-        errorMessage: '缺少 taskId，无法加载任务看板。请从创建/填写页跳转过来。'
+        errorMessage: '缺少 taskId，无法加载任务看板。请从创建或填写页跳转过来。'
       });
     }
   },
 
   onShow() {
     this.syncTheme();
+    if (this.data.taskId) {
+      this.startPolling();
+    }
+  },
+
+  onHide() {
+    this.stopPolling();
+  },
+
+  onUnload() {
+    this.stopPolling();
+  },
+
+  onPullDownRefresh() {
+    if (!this.data.taskId) {
+      wx.stopPullDownRefresh();
+      return;
+    }
+    const self = this;
+    this.loadBoard().then(function () {
+      wx.stopPullDownRefresh();
+    }).catch(function () {
+      wx.stopPullDownRefresh();
+    });
   },
 
   syncTheme() {
@@ -66,24 +104,36 @@ Page({
     wx.navigateBack();
   },
 
-  loadBoard() {
+  // loadBoard returns a Promise so onPullDownRefresh / handlers can chain.
+  loadBoard(options) {
+    const opts = options || {};
     const taskId = this.data.taskId;
-    if (!taskId || this.data.isLoading) { return; }
+    if (!taskId) { return Promise.resolve(); }
+    if (this.data.isLoading && !opts.silent) { return Promise.resolve(); }
 
-    this.setData({ isLoading: true, errorMessage: '' });
+    if (!opts.silent) {
+      this.setData({ isLoading: true, errorMessage: '' });
+    }
     const self = this;
-    groupDiningAdapter.getTaskBoard(taskId).then(function (board) {
+    return groupDiningAdapter.getTaskBoard(taskId, this.data.inviteToken).then(function (board) {
       self.setData({
         board: board,
-        statusLabel: statusLabel((board.recommendationState && board.recommendationState.status) || (board.task && board.task.status)),
-        isLoading: false
+        statusLabel: statusLabel(boardStatus(board)),
+        isLoading: false,
+        hasInitialized: true,
+        errorMessage: ''
       });
+      return board;
     }).catch(function (err) {
       console.error('getTaskBoard failed', err);
-      self.setData({
-        isLoading: false,
-        errorMessage: '加载失败：' + ((err && err.errMsg) || 'network')
-      });
+      // On a silent (polled) refresh, swallow errors so we don't spam toasts.
+      if (!opts.silent) {
+        self.setData({
+          isLoading: false,
+          errorMessage: '加载失败：' + ((err && (err.errMsg || err.message)) || 'unknown')
+        });
+      }
+      throw err;
     });
   },
 
@@ -94,25 +144,65 @@ Page({
   handleGenerateRecommendation() {
     const taskId = this.data.taskId;
     if (!taskId || this.data.isRecommending) { return; }
+    // Pause polling so the optimistic state isn't immediately overwritten.
+    this.stopPolling();
 
     this.setData({ isRecommending: true, errorMessage: '' });
     wx.showLoading({ title: '生成推荐…', mask: true });
+
     const self = this;
-    groupDiningAdapter.generateRecommendation(taskId).then(function (board) {
+    groupDiningAdapter.generateRecommendation(taskId, this.data.inviteToken).then(function (board) {
       wx.hideLoading();
       self.setData({
         board: board,
-        statusLabel: statusLabel((board.recommendationState && board.recommendationState.status) || (board.task && board.task.status)),
+        statusLabel: statusLabel(boardStatus(board)),
         isRecommending: false
       });
+      // Resume polling so subsequent participants still drive refreshes.
+      self.startPolling();
     }).catch(function (err) {
       wx.hideLoading();
       console.error('generateRecommendation failed', err);
       self.setData({
         isRecommending: false,
-        errorMessage: '生成推荐失败：' + ((err && err.errMsg) || 'network')
+        errorMessage: '生成推荐失败：' + ((err && (err.errMsg || err.message)) || 'unknown')
       });
       wx.showToast({ title: '生成失败', icon: 'none' });
+      self.startPolling();
     });
+  },
+
+  handleCopyGroupMessage() {
+    const board = this.data.board;
+    const message = board && board.recommendationResult && board.recommendationResult.groupMessage;
+    if (!message) {
+      wx.showToast({ title: '还没有群消息', icon: 'none' });
+      return;
+    }
+    wx.setClipboardData({
+      data: message,
+      success: function () {
+        wx.showToast({ title: '已复制到剪贴板', icon: 'none' });
+      }
+    });
+  },
+
+  // Polls every 3s so non-creator members see new submissions arrive.
+  // Skipped while a manual refresh / recommendation is in flight.
+  startPolling() {
+    if (this._pollTimer) { return; }
+    if (!this.data.taskId) { return; }
+    const self = this;
+    this._pollTimer = setInterval(function () {
+      if (self.data.isLoading || self.data.isRecommending) { return; }
+      self.loadBoard({ silent: true }).catch(function () {});
+    }, POLL_INTERVAL_MS);
+  },
+
+  stopPolling() {
+    if (this._pollTimer) {
+      clearInterval(this._pollTimer);
+      this._pollTimer = null;
+    }
   }
 });

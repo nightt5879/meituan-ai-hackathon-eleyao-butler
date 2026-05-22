@@ -3,7 +3,7 @@
     <button class="page-back" bindtap="handleBack">‹</button>
     <view class="page-heading">
       <view class="page-title">约饭任务看板</view>
-      <view class="page-subtitle">看板数据来自后端 /api/tasks/:taskId。点「刷新」拉最新进度。</view>
+      <view class="page-subtitle">数据通过 adapter.getTaskBoard 获取；下拉刷新；每 3 秒自动同步一次。</view>
     </view>
   </view>
 
@@ -12,11 +12,16 @@
     <view class="field-hint">{{errorMessage}}</view>
   </view>
 
-  <view class="panel-card progress-card">
+  <view wx:if="{{!hasInitialized && !errorMessage}}" class="panel-card">
+    <view class="field-label">加载中…</view>
+    <view class="field-hint">正在通过 adapter 取最新看板数据。</view>
+  </view>
+
+  <view wx:if="{{board}}" class="panel-card progress-card">
     <view class="progress-head">
       <view>
-        <view class="progress-title">{{board.task.title || (taskId ? '偏好收集中' : '等待任务 ID')}}</view>
-        <view class="progress-desc">{{board ? (board.submittedCount + ' / ' + board.expectedCount + ' 已提交') : '等待后端返回数据'}}</view>
+        <view class="progress-title">{{board.task.title || '偏好收集中'}}</view>
+        <view class="progress-desc">{{board.submittedCount}} / {{board.expectedCount}} 已提交{{board.recommendationState.dirtyReason ? ' · 推荐已过期' : ''}}</view>
       </view>
       <view class="progress-pill">{{statusLabel}}</view>
     </view>
@@ -29,17 +34,17 @@
     </view>
   </view>
 
-  <view wx:for="{{steps}}" wx:key="key" class="board-section">
+  <view wx:if="{{board}}" wx:for="{{steps}}" wx:for-item="step" wx:key="key" class="board-section">
     <view class="section-head">
       <view class="section-dot"></view>
       <view>
-        <view class="section-title-small">{{item.title}}</view>
-        <view class="section-desc-small">{{item.desc}}</view>
+        <view class="section-title-small">{{step.title}}</view>
+        <view class="section-desc-small">{{step.desc}}</view>
       </view>
     </view>
 
-    <!-- Section: 成员偏好 -->
-    <block wx:if="{{item.key === 'participants'}}">
+    <!-- ───────── 成员偏好 ───────── -->
+    <block wx:if="{{step.key === 'participants'}}">
       <view wx:if="{{board.participants.length}}" class="panel-card">
         <view wx:for="{{board.participants}}" wx:for-item="member" wx:key="id" class="field">
           <view class="field-label">{{member.nickname}}</view>
@@ -59,8 +64,8 @@
       </view>
     </block>
 
-    <!-- Section: 冲突识别 -->
-    <block wx:if="{{item.key === 'conflicts'}}">
+    <!-- ───────── 冲突识别 ───────── -->
+    <block wx:if="{{step.key === 'conflicts'}}">
       <view wx:if="{{board.conflicts.length}}" class="panel-card">
         <view wx:for="{{board.conflicts}}" wx:for-item="conflict" wx:key="description" class="field">
           <view class="field-label">{{conflict.type}} · {{conflict.severity}}</view>
@@ -70,12 +75,12 @@
       </view>
       <view wx:else class="empty-panel section-empty">
         <view class="empty-title">暂无冲突</view>
-        <view class="empty-desc">后端 /api/tasks/:taskId 抽取出冲突后会在这里展示。</view>
+        <view class="empty-desc">成员偏好相近，或还没有足够数据触发冲突识别。</view>
       </view>
     </block>
 
-    <!-- Section: 候选方案 -->
-    <block wx:if="{{item.key === 'recommendation'}}">
+    <!-- ───────── 候选方案 ───────── -->
+    <block wx:if="{{step.key === 'recommendation'}}">
       <view wx:if="{{board.recommendationResult}}" class="panel-card">
         <view class="field">
           <view class="field-label">最终推荐 · {{board.recommendationResult.finalChoice.name}}</view>
@@ -85,35 +90,49 @@
           </view>
           <view wx:if="{{board.recommendationResult.finalChoice.backup}}" class="field-hint">备选：{{board.recommendationResult.finalChoice.backup}}</view>
         </view>
+
         <view wx:if="{{board.recommendationResult.groupMessage}}" class="field">
           <view class="field-label">群里发这条</view>
           <view class="field-hint">{{board.recommendationResult.groupMessage}}</view>
+          <button class="primary-button" bindtap="handleCopyGroupMessage">复制群消息</button>
         </view>
+
         <view wx:if="{{board.recommendationResult.candidates.length}}" class="field">
           <view class="field-label">全部候选 ({{board.recommendationResult.candidates.length}})</view>
-          <view class="chip-row">
-            <view wx:for="{{board.recommendationResult.candidates}}" wx:for-item="cand" wx:key="id" class="info-chip">{{cand.name}}</view>
+          <view wx:for="{{board.recommendationResult.candidates}}" wx:for-item="cand" wx:key="id" class="field">
+            <view class="field-label">{{cand.name}} · 人均 ¥{{cand.avgPrice}} · {{cand.walkMinutes}} 分钟</view>
+            <view class="field-hint">{{cand.reason}}</view>
+            <view class="chip-row">
+              <view wx:for="{{cand.tags}}" wx:for-item="t" wx:key="*this" class="info-chip">{{t}}</view>
+            </view>
+            <view class="chip-row">
+              <view class="info-chip {{cand.audit.passed ? 'soft' : 'hard'}}">自检 {{cand.audit.passed ? '通过' : '存在风险'}}</view>
+              <view wx:if="{{cand.audit.hardRules.spicy === 'risk' || cand.audit.hardRules.spicy === 'fail'}}" class="info-chip hard">辣度可能不合</view>
+              <view wx:if="{{cand.audit.hardRules.budget === 'risk' || cand.audit.hardRules.budget === 'fail'}}" class="info-chip hard">预算偏紧</view>
+              <view wx:if="{{cand.audit.hardRules.distance === 'risk' || cand.audit.hardRules.distance === 'fail'}}" class="info-chip hard">距离稍远</view>
+            </view>
+            <view wx:if="{{cand.audit.llmExplanation}}" class="field-hint">自检说明：{{cand.audit.llmExplanation}}</view>
           </view>
         </view>
       </view>
       <view wx:else class="empty-panel section-empty">
         <view class="empty-title">还没生成推荐</view>
-        <view class="empty-desc">点下面「生成推荐」会调用 /api/tasks/:taskId/recommend。</view>
+        <view class="empty-desc">点下面「生成推荐」会调用 adapter.generateRecommendation。</view>
       </view>
     </block>
   </view>
 
   <view class="panel-card">
-    <view class="field-label">数据来源</view>
+    <view class="field-label">Adapter 调用</view>
     <view class="chip-row">
-      <view class="info-chip hard">GET /api/tasks/:id</view>
-      <view class="info-chip soft">POST /api/tasks/:id/participants</view>
-      <view class="info-chip">POST /api/tasks/:id/recommend</view>
+      <view class="info-chip hard">getTaskBoard(taskId, inviteToken)</view>
+      <view class="info-chip soft">submitPreference</view>
+      <view class="info-chip">generateRecommendation</view>
     </view>
-    <view class="field-hint">推荐、冲突、final_choice、群消息均来自后端。</view>
+    <view class="field-hint">所有数据均经 adapter；页面不直接 wx.request。Mock 数据可在 services/groupDiningAdapter.js 替换为真实接口。</view>
   </view>
 
   <button class="primary-button" loading="{{isRecommending}}" disabled="{{!taskId || isRecommending}}" bindtap="handleGenerateRecommendation">生成推荐</button>
-  <button class="primary-button" loading="{{isLoading}}" disabled="{{!taskId || isLoading}}" bindtap="handleRefresh">刷新看板</button>
+  <button class="primary-button" loading="{{isLoading}}" disabled="{{!taskId || isLoading}}" bindtap="handleRefresh">手动刷新</button>
   <button class="primary-button" bindtap="handleBackHome">回到首页</button>
 </view>

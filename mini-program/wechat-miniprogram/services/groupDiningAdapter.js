@@ -1,67 +1,149 @@
-// Group dining API adapter — talks to the Next.js backend at /api/tasks.
+// Group dining adapter — Promise-based mock implementation.
 //
-// The backend speaks snake_case. The mini-program pages prefer camelCase.
-// This adapter is the ONLY place that bridges the two — pages should never
-// touch snake_case directly.
+// PUBLIC CONTRACT (stable — replace internals with wx.request later):
+//   createTask(payload)                          → Promise<Board>
+//   getTaskBoard(taskId, inviteToken)            → Promise<Board>
+//   submitPreference(taskId, inviteToken, body)  → Promise<Board>
+//   generateRecommendation(taskId, inviteToken)  → Promise<Board>
 //
-// Recommendation, conflicts, audit checks, the final choice and the group
-// message all come from the backend. We never compute any of those here.
-//
-// During WeChat DevTools development against a local Next.js server, enable
-// "不校验合法域名" so http://localhost:3000 is reachable. In production the
-// real domain must be allow-listed in mp.weixin.qq.com.
+// Pages MUST go through these methods — never call wx.request directly.
+// The mock stores everything in memory; data is reset on app restart.
+// Conflicts, recommendations, audits, final choice and group_message are
+// computed below as fixed mock heuristics — the frontend never derives any
+// of this, so swapping to a real backend later is a drop-in change.
 
-let API_BASE_URL = 'http://localhost:3000';
-const API_TIMEOUT_MS = 15000;
+const ARTIFICIAL_DELAY_MS = 120;
+const STATUS_WAITING = 'waiting_preferences';
+const STATUS_READY = 'ready_to_recommend';
+const STATUS_DONE = 'done';
 
-function setApiBaseUrl(url) {
-  if (typeof url === 'string' && url) {
-    API_BASE_URL = url.replace(/\/+$/, '');
-  }
-}
+const tasks = Object.create(null);
 
-function getApiBaseUrl() {
-  return API_BASE_URL;
-}
+// A small fixed seed task so the board can be opened without going through
+// create — useful for QA. Open `/pages/group/board/board?taskId=demo_task`.
+seedDemoTask();
 
-// Promisified wx.request. Resolves with parsed JSON on 2xx, rejects with
-// { status, errMsg, data } on any failure.
-function request(method, path, body) {
-  return new Promise(function (resolve, reject) {
-    wx.request({
-      url: API_BASE_URL + path,
-      method: method,
-      data: body == null ? undefined : body,
-      header: { 'Content-Type': 'application/json' },
-      timeout: API_TIMEOUT_MS,
-      success: function (res) {
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(res.data);
-        } else {
-          reject({
-            status: res.statusCode,
-            errMsg: 'HTTP ' + res.statusCode,
-            data: res.data
-          });
-        }
+// ─── Public methods ─────────────────────────────────────────────────────
+
+function createTask(payload) {
+  return delay(ARTIFICIAL_DELAY_MS).then(function () {
+    const safe = payload || {};
+    const taskId = generateId('task');
+    const inviteToken = generateId('invite');
+    const expected = parseIntLoose(safe.peopleCount || safe.expectedPeopleCount);
+
+    const task = {
+      id: taskId,
+      title: buildTitle(safe),
+      creatorName: trim(safe.creatorName),
+      rawRequest: trim(safe.rawRequest),
+      locationText: trim(safe.location || safe.locationText),
+      expectedPeopleCount: expected > 0 ? expected : 5,
+      dinnerTime: trim(safe.dinnerTime),
+      status: STATUS_WAITING,
+      createdAt: nowIso()
+    };
+
+    const board = {
+      taskId: taskId,
+      inviteToken: inviteToken,
+      sharePath: buildSharePath(taskId, inviteToken),
+      task: task,
+      participants: [],
+      conflicts: [],
+      recommendationState: {
+        status: STATUS_WAITING,
+        hasGenerated: false,
+        updatedAt: nowIso(),
+        dirtyReason: ''
       },
-      fail: function (err) {
-        reject({
-          status: 0,
-          errMsg: (err && err.errMsg) || 'network_failed',
-          data: null
-        });
-      }
-    });
+      recommendationResult: null,
+      submittedCount: 0,
+      expectedCount: task.expectedPeopleCount
+    };
+
+    tasks[taskId] = board;
+    return cloneBoard(board);
   });
 }
 
-// ─── Field-coercion helpers ─────────────────────────────────────────────
+function getTaskBoard(taskId, inviteToken) {
+  return delay(80).then(function () {
+    const board = requireBoard(taskId);
+    validateInvite(board, inviteToken);
+    return cloneBoard(board);
+  });
+}
 
-function toIntOrZero(value) {
-  if (typeof value === 'number' && isFinite(value)) {
-    return Math.max(0, Math.floor(value));
-  }
+function submitPreference(taskId, inviteToken, payload) {
+  return delay(ARTIFICIAL_DELAY_MS).then(function () {
+    const board = requireBoard(taskId);
+    validateInvite(board, inviteToken);
+    const safe = payload || {};
+
+    const nickname = trim(safe.nickname);
+    if (!nickname) {
+      throw makeError('invalid_payload', '请先填写昵称');
+    }
+
+    const participant = {
+      id: generateId('p'),
+      nickname: nickname,
+      rawPreference: trim(safe.rawPreference),
+      manualFields: buildManualFields(safe),
+      extractedConstraints: extractConstraints(safe),
+      createdAt: nowIso()
+    };
+
+    board.participants.push(participant);
+    board.submittedCount = board.participants.length;
+    board.conflicts = detectConflicts(board.participants);
+    board.recommendationState = recomputeState(board);
+    // Submitting after a recommendation marks it as stale.
+    if (board.recommendationResult) {
+      board.recommendationState.dirtyReason = 'participants_changed';
+    }
+    return cloneBoard(board);
+  });
+}
+
+function generateRecommendation(taskId, inviteToken) {
+  return delay(380).then(function () {
+    const board = requireBoard(taskId);
+    validateInvite(board, inviteToken);
+
+    board.recommendationResult = synthesizeRecommendation(board);
+    board.recommendationState = {
+      status: STATUS_DONE,
+      hasGenerated: true,
+      updatedAt: nowIso(),
+      dirtyReason: ''
+    };
+    if (board.task) { board.task.status = STATUS_DONE; }
+    return cloneBoard(board);
+  });
+}
+
+// ─── Internal helpers ───────────────────────────────────────────────────
+
+function delay(ms) {
+  return new Promise(function (resolve) { setTimeout(resolve, ms); });
+}
+
+function nowIso() { return new Date().toISOString(); }
+
+function generateId(prefix) {
+  return prefix + '_' + Date.now().toString(36) + '_' + Math.floor(Math.random() * 100000).toString(36);
+}
+
+function trim(value) {
+  if (typeof value === 'string') { return value.trim(); }
+  if (value == null) { return ''; }
+  return String(value);
+}
+
+function parseIntLoose(value) {
+  if (typeof value === 'number' && isFinite(value)) { return Math.max(0, Math.floor(value)); }
   if (typeof value === 'string') {
     const match = value.match(/-?\d+/);
     if (match) { return parseInt(match[0], 10); }
@@ -69,266 +151,365 @@ function toIntOrZero(value) {
   return 0;
 }
 
-function trimOrEmpty(value) {
-  if (typeof value === 'string') { return value.trim(); }
-  if (value == null) { return ''; }
-  return String(value);
+function buildTitle(payload) {
+  const dinner = trim(payload.dinnerTime);
+  const people = parseIntLoose(payload.peopleCount || payload.expectedPeopleCount);
+  if (dinner && people) { return dinner + ' · ' + people + ' 人聚餐'; }
+  if (dinner) { return dinner + ' · 多人聚餐'; }
+  return '一次多人约饭';
 }
 
-// Map a UI Chinese spicy label to the backend's enum.
-// Backend enum: 'spicy' | 'no_spicy' | 'any'.
-function mapSpicyToBackend(label) {
-  if (label === '不吃辣') { return 'no_spicy'; }
-  if (label === '中辣' || label === '重辣') { return 'spicy'; }
-  // 微辣 / 还没选择 / anything else → no strong preference.
-  return 'any';
+function buildSharePath(taskId, inviteToken) {
+  return '/pages/group/fill/fill?taskId=' + encodeURIComponent(taskId) +
+         '&inviteToken=' + encodeURIComponent(inviteToken);
 }
 
-function mapSpicyToLabel(value) {
-  if (value === 'no_spicy') { return '不吃辣'; }
-  if (value === 'spicy') { return '能吃辣'; }
-  if (value === 'any') { return '都行'; }
+function requireBoard(taskId) {
+  const board = tasks[taskId];
+  if (!board) { throw makeError('not_found', '任务不存在或已过期'); }
+  return board;
+}
+
+// Mock is lenient: any inviteToken (or none) is accepted. Real backend
+// would compare token against the creator session or share signature.
+function validateInvite(board, inviteToken) {
+  return true;
+}
+
+function makeError(code, message) {
+  const err = new Error(message);
+  err.code = code;
+  err.errMsg = message;
+  return err;
+}
+
+function buildManualFields(payload) {
+  const budgetMax = parseIntLoose(payload.budget != null ? payload.budget : payload.budgetMax);
+  const spicyPreference = mapSpicyToEnum(payload.spicy || payload.spicyPreference);
+  return {
+    budgetMax: budgetMax > 0 ? budgetMax : null,
+    spicyPreference: spicyPreference,
+    spicyLabel: spicyLabelOf(spicyPreference),
+    leaveBefore: trim(payload.leaveBefore)
+  };
+}
+
+function mapSpicyToEnum(input) {
+  if (input === 'spicy' || input === 'no_spicy' || input === 'any') { return input; }
+  if (input === '不吃辣') { return 'no_spicy'; }
+  if (input === '中辣' || input === '重辣') { return 'spicy'; }
+  if (input === '微辣') { return 'any'; }
   return '';
 }
 
-// ─── Request body builders (camelCase in → snake_case out) ──────────────
-
-function buildCreateTaskBody(payload) {
-  const safe = payload || {};
-  return {
-    creator_name:           trimOrEmpty(safe.creatorName       || safe.creator_name),
-    raw_request:            trimOrEmpty(safe.rawRequest        || safe.raw_request),
-    location_text:          trimOrEmpty(safe.location          || safe.locationText    || safe.location_text),
-    expected_people_count:  toIntOrZero(safe.peopleCount       || safe.expectedPeopleCount || safe.expected_people_count),
-    dinner_time:            trimOrEmpty(safe.dinnerTime        || safe.dinner_time)
-  };
+function spicyLabelOf(enumValue) {
+  if (enumValue === 'no_spicy') { return '不吃辣'; }
+  if (enumValue === 'spicy') { return '能吃辣'; }
+  if (enumValue === 'any') { return '都行'; }
+  return '';
 }
 
-function buildParticipantBody(payload) {
-  const safe = payload || {};
-  const manual = safe.manualFields || safe.manual_fields || {};
+// Tiny rule-based extractor for the mock; real backend would use an LLM.
+function extractConstraints(payload) {
+  const text = trim(payload.rawPreference).toLowerCase();
+  const hard = [];
+  const soft = [];
 
-  // The fill page flattens manual fields onto `form`; tolerate both shapes.
-  const budgetRaw = safe.budget != null ? safe.budget
-    : (manual.budgetMax != null ? manual.budgetMax : manual.budget_max);
-  const spicyRaw = safe.spicy != null ? safe.spicy
-    : (manual.spicyPreference || manual.spicy_preference);
-  const leaveRaw = safe.leaveBefore != null ? safe.leaveBefore
-    : (manual.leaveBefore || manual.leave_before);
+  if (text.indexOf('不吃辣') >= 0 || mapSpicyToEnum(payload.spicy) === 'no_spicy') {
+    hard.push('不吃辣');
+  }
+  ['牛羊肉', '海鲜', '花生', '香菜', '葱蒜', '乳制品'].forEach(function (tag) {
+    if (text.indexOf(tag) >= 0) { hard.push('不吃' + tag); }
+  });
+  if (text.indexOf('素') >= 0) { hard.push('要有素食'); }
 
-  const body = {
-    nickname: trimOrEmpty(safe.nickname),
-    raw_preference: trimOrEmpty(safe.rawPreference || safe.raw_preference),
-    manual_fields: {}
-  };
+  if (text.indexOf('便宜') >= 0 || text.indexOf('实惠') >= 0) { soft.push('偏好平价'); }
+  if (text.indexOf('近') >= 0 || text.indexOf('附近') >= 0) { soft.push('偏好近一点'); }
+  if (text.indexOf('安静') >= 0 || text.indexOf('清净') >= 0) { soft.push('偏好安静'); }
+  if (text.indexOf('热闹') >= 0) { soft.push('偏好热闹'); }
+  if (text.indexOf('快') >= 0) { soft.push('偏好出餐快'); }
+  if (mapSpicyToEnum(payload.spicy) === 'spicy') { soft.push('能吃辣'); }
 
-  const budgetNumber = toIntOrZero(budgetRaw);
-  if (budgetNumber > 0) {
-    body.manual_fields.budget_max = budgetNumber;
+  return { hardConstraints: hard, softPreferences: soft };
+}
+
+function detectConflicts(participants) {
+  const conflicts = [];
+
+  // Taste conflict — at least one wants spicy, at least one rejects it.
+  const hasSpicy = participants.some(function (p) {
+    return p.manualFields && p.manualFields.spicyPreference === 'spicy';
+  });
+  const hasNoSpicy = participants.some(function (p) {
+    return p.manualFields && p.manualFields.spicyPreference === 'no_spicy';
+  });
+  if (hasSpicy && hasNoSpicy) {
+    conflicts.push({
+      type: 'taste',
+      severity: 'medium',
+      description: '有人能吃辣，有人不吃辣',
+      resolutionStrategy: '推荐鸳鸯锅或可分餐厅型，确保两边都能吃'
+    });
   }
 
-  if (typeof spicyRaw === 'string' && spicyRaw && spicyRaw !== '还没选择') {
-    if (spicyRaw === 'spicy' || spicyRaw === 'no_spicy' || spicyRaw === 'any') {
-      body.manual_fields.spicy_preference = spicyRaw;
-    } else {
-      body.manual_fields.spicy_preference = mapSpicyToBackend(spicyRaw);
+  // Budget conflict — spread between min and max budgets > 50 yuan.
+  const budgets = participants
+    .map(function (p) { return p.manualFields && p.manualFields.budgetMax; })
+    .filter(function (n) { return typeof n === 'number' && n > 0; });
+  if (budgets.length >= 2) {
+    const min = Math.min.apply(null, budgets);
+    const max = Math.max.apply(null, budgets);
+    if (max - min > 50) {
+      conflicts.push({
+        type: 'budget',
+        severity: 'medium',
+        description: '预算分歧 ' + min + ' 到 ' + max + ' 元',
+        resolutionStrategy: '推荐人均 ' + Math.round((min + max) / 2) + ' 元上下的中间档'
+      });
     }
   }
 
-  const leave = trimOrEmpty(leaveRaw);
-  if (leave) {
-    body.manual_fields.leave_before = leave;
+  // Time conflict — someone needs to leave before a clearly-early time.
+  const leaves = participants
+    .map(function (p) { return p.manualFields && p.manualFields.leaveBefore; })
+    .filter(function (s) { return s; });
+  if (leaves.length) {
+    const earliest = leaves.sort()[0];
+    if (earliest && earliest < '20:30') {
+      conflicts.push({
+        type: 'time',
+        severity: 'low',
+        description: '有人需要 ' + earliest + ' 前离开',
+        resolutionStrategy: '推荐出餐快或可预订的店'
+      });
+    }
   }
 
-  return body;
+  return conflicts;
 }
 
-// ─── Response normalizers (snake_case in → camelCase out) ───────────────
-
-function normalizeManualFields(manualFields) {
-  const m = manualFields || {};
+function recomputeState(board) {
+  const submitted = board.participants.length;
+  const expected = board.expectedCount || (board.task && board.task.expectedPeopleCount) || 0;
+  const ready = expected > 0 && submitted >= expected;
   return {
-    budgetMax: typeof m.budget_max === 'number' ? m.budget_max : null,
-    spicyPreference: m.spicy_preference || '',
-    spicyLabel: mapSpicyToLabel(m.spicy_preference),
-    leaveBefore: m.leave_before || ''
+    status: ready ? STATUS_READY : STATUS_WAITING,
+    hasGenerated: !!board.recommendationResult,
+    updatedAt: nowIso(),
+    dirtyReason: ''
   };
 }
 
-function normalizeExtractedConstraints(extracted) {
-  const e = extracted || {};
+// ─── Recommendation synthesis (mock) ────────────────────────────────────
+
+const MOCK_RESTAURANTS = [
+  {
+    id: 'r_yuanyang',
+    name: '老灶坊·鸳鸯锅',
+    category: '火锅',
+    avgPrice: 88,
+    distanceM: 420,
+    walkMinutes: 6,
+    rating: 4.6,
+    tags: ['鸳鸯锅', '可分餐', '热闹'],
+    supportsSpicy: true,
+    supportsNonSpicy: true
+  },
+  {
+    id: 'r_homestyle',
+    name: '阿姐家常菜',
+    category: '家常菜',
+    avgPrice: 56,
+    distanceM: 280,
+    walkMinutes: 4,
+    rating: 4.5,
+    tags: ['平价', '出餐快', '素菜多'],
+    supportsSpicy: true,
+    supportsNonSpicy: true
+  },
+  {
+    id: 'r_combo',
+    name: '七点小聚·套餐厅',
+    category: '简餐套餐',
+    avgPrice: 75,
+    distanceM: 540,
+    walkMinutes: 8,
+    rating: 4.4,
+    tags: ['套餐', '安静', '可预订'],
+    supportsSpicy: false,
+    supportsNonSpicy: true
+  },
+  {
+    id: 'r_hunan',
+    name: '辣巷子湘菜',
+    category: '湘菜',
+    avgPrice: 78,
+    distanceM: 650,
+    walkMinutes: 9,
+    rating: 4.5,
+    tags: ['下饭', '香辣', '人多热闹'],
+    supportsSpicy: true,
+    supportsNonSpicy: false
+  }
+];
+
+function synthesizeRecommendation(board) {
+  const conflicts = board.conflicts || [];
+  const hasTasteConflict = conflicts.some(function (c) { return c.type === 'taste'; });
+  const hasBudgetConflict = conflicts.some(function (c) { return c.type === 'budget'; });
+  const hasTimeConflict = conflicts.some(function (c) { return c.type === 'time'; });
+  const participants = board.participants || [];
+
+  // Pick a primary + 2 alternates based on detected conflicts.
+  let primary;
+  if (hasTasteConflict) {
+    primary = pickRestaurant('r_yuanyang');
+  } else if (hasBudgetConflict) {
+    primary = pickRestaurant('r_homestyle');
+  } else if (hasTimeConflict) {
+    primary = pickRestaurant('r_combo');
+  } else {
+    primary = pickRestaurant('r_hunan');
+  }
+  const others = MOCK_RESTAURANTS
+    .filter(function (r) { return r.id !== primary.id; })
+    .slice(0, 2);
+
+  const candidates = [primary].concat(others).map(function (r) {
+    return formatCandidate(r, board, primary.id === r.id);
+  });
+
+  const risks = [];
+  if (hasTasteConflict) { risks.push('口味分歧已通过鸳鸯锅化解'); }
+  if (hasBudgetConflict) { risks.push('预算分歧已选中间档'); }
+  if (hasTimeConflict) { risks.push('已选出餐较快的店'); }
+  if (!participants.length) { risks.push('尚无成员偏好，结果为默认方案'); }
+
+  const dinner = (board.task && board.task.dinnerTime) || '今晚';
+  const location = (board.task && board.task.locationText) || '附近';
+  const groupMessage =
+    '今晚 ' + dinner + ' 一起吃 ' + primary.name +
+    '（人均 ¥' + primary.avgPrice + '，' + primary.walkMinutes + ' 分钟到 ' + location + '）。' +
+    (risks.length ? '风险：' + risks.join('；') + '。' : '') +
+    '到了我会发位置。';
+
+  const normalAiMessage =
+    '已根据 ' + participants.length + ' 位成员偏好挑出 ' + primary.name +
+    '，理由：' + primary.tags.join('、') + '。';
+
   return {
-    hardConstraints: Array.isArray(e.hard_constraints) ? e.hard_constraints.slice() : [],
-    softPreferences: Array.isArray(e.soft_preferences) ? e.soft_preferences.slice() : []
+    candidates: candidates,
+    finalChoice: {
+      restaurantId: primary.id,
+      name: primary.name,
+      reason: primary.tags.join('、') + '，最适合本次需求',
+      risks: risks,
+      backup: others[0] ? others[0].name : ''
+    },
+    groupMessage: groupMessage,
+    normalAiMessage: normalAiMessage
   };
 }
 
-function normalizeParticipant(p) {
-  const safe = p || {};
+function pickRestaurant(id) {
+  for (let i = 0; i < MOCK_RESTAURANTS.length; i++) {
+    if (MOCK_RESTAURANTS[i].id === id) { return MOCK_RESTAURANTS[i]; }
+  }
+  return MOCK_RESTAURANTS[0];
+}
+
+function formatCandidate(r, board, isPrimary) {
+  const participants = board.participants || [];
+  const hasNoSpicyMember = participants.some(function (p) {
+    return p.manualFields && p.manualFields.spicyPreference === 'no_spicy';
+  });
+  const hasSpicyMember = participants.some(function (p) {
+    return p.manualFields && p.manualFields.spicyPreference === 'spicy';
+  });
+  const budgets = participants
+    .map(function (p) { return p.manualFields && p.manualFields.budgetMax; })
+    .filter(function (n) { return typeof n === 'number' && n > 0; });
+  const tightestBudget = budgets.length ? Math.min.apply(null, budgets) : 0;
+
+  const hardRules = {
+    spicy: (hasNoSpicyMember && !r.supportsNonSpicy) ? 'fail'
+         : (hasSpicyMember && !r.supportsSpicy)     ? 'risk'
+         : 'pass',
+    budget: tightestBudget && r.avgPrice > tightestBudget ? 'risk' : 'pass',
+    distance: r.distanceM > 1500 ? 'risk' : 'pass'
+  };
+  const softChecks = {
+    atmosphere: r.tags.indexOf('安静') >= 0 || r.tags.indexOf('热闹') >= 0 ? 'pass' : 'risk',
+    speed: r.tags.indexOf('出餐快') >= 0 ? 'pass' : 'risk'
+  };
+  const passed = hardRules.spicy !== 'fail' && hardRules.budget !== 'fail';
+
   return {
-    id: safe.participant_id || '',
-    nickname: safe.nickname || '',
-    rawPreference: safe.raw_preference || '',
-    manualFields: normalizeManualFields(safe.manual_fields),
-    extractedConstraints: normalizeExtractedConstraints(safe.extracted_constraints)
+    id: r.id,
+    name: r.name,
+    category: r.category,
+    avgPrice: r.avgPrice,
+    distanceM: r.distanceM,
+    walkMinutes: r.walkMinutes,
+    rating: r.rating,
+    score: isPrimary ? 92 : 80,
+    tags: r.tags.slice(),
+    reason: isPrimary
+      ? '综合 ' + r.tags.join('、') + '，覆盖大多数偏好'
+      : '作为备选：' + r.tags.join('、'),
+    audit: {
+      passed: passed,
+      hardRules: hardRules,
+      softChecks: softChecks,
+      llmExplanation: isPrimary
+        ? '该方案在硬约束上全部通过，软偏好覆盖率较高。'
+        : '作为备选方案，仍满足关键硬约束。'
+    }
   };
 }
 
-function normalizeConflict(c) {
-  const safe = c || {};
-  return {
-    type: safe.type || '',
-    severity: safe.severity || 'low',
-    description: safe.description || '',
-    resolutionStrategy: safe.resolution_strategy || ''
-  };
+// ─── Cloning helpers (so callers can't mutate the in-memory store) ──────
+
+function cloneBoard(board) {
+  return JSON.parse(JSON.stringify(board));
 }
 
-function normalizeAudit(audit) {
-  const safe = audit || {};
-  return {
-    passed: !!safe.passed,
-    hardRules: safe.hard_rules || {},
-    softChecks: safe.soft_checks || {},
-    llmExplanation: safe.llm_explanation || ''
-  };
-}
+// ─── Demo seed (only for QA — replaceable when real backend is wired) ──
 
-function normalizeCandidate(c) {
-  const safe = c || {};
-  return {
-    id: safe.restaurant_id || '',
-    name: safe.name || '',
-    category: safe.category || '',
-    avgPrice: typeof safe.avg_price === 'number' ? safe.avg_price : null,
-    distanceM: typeof safe.distance_m === 'number' ? safe.distance_m : null,
-    walkMinutes: typeof safe.walk_minutes === 'number' ? safe.walk_minutes : null,
-    rating: typeof safe.rating === 'number' ? safe.rating : null,
-    score: typeof safe.score === 'number' ? safe.score : null,
-    tags: Array.isArray(safe.tags) ? safe.tags.slice() : [],
-    reason: safe.reason || '',
-    audit: normalizeAudit(safe.audit)
+function seedDemoTask() {
+  const taskId = 'demo_task';
+  const inviteToken = 'demo_invite';
+  const task = {
+    id: taskId,
+    title: '周六 18:30 · 5 人聚餐',
+    creatorName: '小幺',
+    rawRequest: '周末晚上 5 个人聚餐，1 个吃素，1 个不吃辣，预算控制在人均 80 以内。',
+    locationText: '学校东门',
+    expectedPeopleCount: 5,
+    dinnerTime: '周六 18:30',
+    status: STATUS_WAITING,
+    createdAt: nowIso()
   };
-}
-
-function normalizeFinalChoice(choice) {
-  const safe = choice || {};
-  return {
-    restaurantId: safe.restaurant_id || '',
-    name: safe.name || '',
-    reason: safe.reason || '',
-    risks: Array.isArray(safe.risks) ? safe.risks.slice() : [],
-    backup: safe.backup || ''
-  };
-}
-
-function normalizeRecommendationResult(result) {
-  if (!result) { return null; }
-  return {
-    candidates: Array.isArray(result.candidates) ? result.candidates.map(normalizeCandidate) : [],
-    finalChoice: normalizeFinalChoice(result.final_choice),
-    groupMessage: result.group_message || '',
-    normalAiMessage: result.normal_ai_message || ''
-  };
-}
-
-function normalizeRecommendationState(state) {
-  const safe = state || {};
-  return {
-    status: safe.status || '',
-    hasGenerated: !!safe.hasGenerated,
-    updatedAt: safe.updated_at || '',
-    dirtyReason: safe.dirty_reason || ''
-  };
-}
-
-function normalizeTask(t) {
-  const safe = t || {};
-  return {
-    id: safe.task_id || '',
-    title: safe.title || '',
-    creatorName: safe.creator_name || '',
-    rawRequest: safe.raw_request || '',
-    locationText: safe.location_text || '',
-    expectedPeopleCount: typeof safe.expected_people_count === 'number' ? safe.expected_people_count : 0,
-    dinnerTime: safe.dinner_time || '',
-    status: safe.status || '',
-    shareUrl: safe.share_url || '',
-    globalConstraints: safe.global_constraints || null
-  };
-}
-
-// Map a full board payload from the backend.
-// Backend response shape: { task, participants, conflicts,
-//                           recommendation_state, recommendation_result }.
-function mapTaskBoard(payload) {
-  const safe = payload || {};
-  const task = normalizeTask(safe.task);
-  const participants = Array.isArray(safe.participants)
-    ? safe.participants.map(normalizeParticipant)
-    : [];
-  return {
+  tasks[taskId] = {
+    taskId: taskId,
+    inviteToken: inviteToken,
+    sharePath: buildSharePath(taskId, inviteToken),
     task: task,
-    taskId: task.id,
-    participants: participants,
-    conflicts: Array.isArray(safe.conflicts) ? safe.conflicts.map(normalizeConflict) : [],
-    recommendationState: normalizeRecommendationState(safe.recommendation_state),
-    recommendationResult: normalizeRecommendationResult(safe.recommendation_result),
-    submittedCount: participants.length,
-    expectedCount: task.expectedPeopleCount,
-    shareUrl: task.shareUrl || safe.share_url || '',
-    raw: safe
+    participants: [],
+    conflicts: [],
+    recommendationState: {
+      status: STATUS_WAITING,
+      hasGenerated: false,
+      updatedAt: nowIso(),
+      dirtyReason: ''
+    },
+    recommendationResult: null,
+    submittedCount: 0,
+    expectedCount: task.expectedPeopleCount
   };
-}
-
-// ─── Public API ─────────────────────────────────────────────────────────
-
-// POST /api/tasks
-// Returns a Promise resolving to a normalized board PLUS convenience aliases
-// (taskId, shareUrl, fillUrl, boardUrl) the create page uses for navigation.
-function createTask(payload) {
-  const body = buildCreateTaskBody(payload);
-  return request('POST', '/api/tasks', body).then(function (data) {
-    const board = mapTaskBoard(data);
-    return Object.assign(board, {
-      taskId:   (data && data.task_id)    || board.taskId   || '',
-      shareUrl: (data && data.share_url)  || board.shareUrl || '',
-      fillUrl:  (data && data.fill_url)   || '',
-      boardUrl: (data && data.board_url)  || ''
-    });
-  });
-}
-
-// GET /api/tasks/:taskId
-function getTaskBoard(taskId) {
-  const id = encodeURIComponent(taskId || '');
-  return request('GET', '/api/tasks/' + id, null).then(mapTaskBoard);
-}
-
-// POST /api/tasks/:taskId/participants
-// May return either the new participant or the full updated board; we
-// normalise as a board when possible and otherwise pass the raw payload
-// through so callers can decide what to do.
-function submitPreference(taskId, payload) {
-  const id = encodeURIComponent(taskId || '');
-  const body = buildParticipantBody(payload);
-  return request('POST', '/api/tasks/' + id + '/participants', body).then(function (data) {
-    if (data && data.task) { return mapTaskBoard(data); }
-    return { raw: data };
-  });
-}
-
-// POST /api/tasks/:taskId/recommend — no request body required.
-// Returns the updated board (with recommendation_result populated).
-function generateRecommendation(taskId) {
-  const id = encodeURIComponent(taskId || '');
-  return request('POST', '/api/tasks/' + id + '/recommend', {}).then(mapTaskBoard);
 }
 
 module.exports = {
-  API_TIMEOUT_MS,
-  setApiBaseUrl,
-  getApiBaseUrl,
   createTask,
   getTaskBoard,
   submitPreference,

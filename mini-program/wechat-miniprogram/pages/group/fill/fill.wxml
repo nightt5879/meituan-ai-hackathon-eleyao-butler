@@ -7,13 +7,24 @@
     </view>
   </view>
 
-  <view class="task-brief">
-    <view class="task-eyebrow">小幺 邀请你 · 多人约饭</view>
-    <view class="task-title">周末晚上 5 人聚餐，预算控制在人均 80 以内</view>
+  <view wx:if="{{errorMessage}}" class="panel-card">
+    <view class="field-label">无法加载任务</view>
+    <view class="field-hint">{{errorMessage}}</view>
+  </view>
+
+  <view wx:elif="{{isLoadingTask && !taskSummary}}" class="task-brief">
+    <view class="task-eyebrow">加载任务中…</view>
+    <view class="task-title">正在通过 adapter.getTaskBoard 取数据</view>
+  </view>
+
+  <view wx:elif="{{taskSummary}}" class="task-brief">
+    <view class="task-eyebrow">{{taskSummary.creatorName || '发起人'}} 邀请你 · 多人约饭</view>
+    <view class="task-title">{{taskSummary.rawRequest || taskSummary.title}}</view>
     <view class="task-meta">
-      <text>周六 18:30</text>
-      <text>5 人</text>
-      <text>待生成链接</text>
+      <text wx:if="{{taskSummary.dinnerTime}}">{{taskSummary.dinnerTime}}</text>
+      <text wx:if="{{taskSummary.expectedPeopleCount}}">{{taskSummary.expectedPeopleCount}} 人</text>
+      <text wx:if="{{taskSummary.locationText}}">{{taskSummary.locationText}}</text>
+      <text>{{taskSummary.submittedCount}}/{{taskSummary.expectedPeopleCount}} 已提交</text>
     </view>
   </view>
 

@@ -55,16 +55,27 @@
     </view>
   </view>
 
-  <view class="panel-card">
-    <view class="field-label">后续接口占位</view>
+  <view wx:if="{{!createdTask}}" class="panel-card">
+    <view class="field-label">下一步</view>
+    <view class="field-hint">点下面按钮会调用 adapter.createTask 生成任务（本地 mock）。生成后会出现分享路径和「查看看板」按钮。</view>
+  </view>
+
+  <button wx:if="{{!createdTask}}" class="primary-button" loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="handleCreateTask">生成任务链接</button>
+
+  <view wx:if="{{createdTask}}" class="panel-card">
+    <view class="field-label">任务已生成</view>
+    <view class="field-hint">taskId：{{createdTask.taskId}}</view>
+    <view class="field-hint">邀请 token：{{createdTask.inviteToken}}</view>
+    <view class="field-hint" style="word-break: break-all;">分享路径：{{createdTask.sharePath}}</view>
     <view class="chip-row">
       <view class="info-chip hard">createTask</view>
-      <view class="info-chip soft">shareUrl</view>
+      <view class="info-chip soft">sharePath</view>
       <view class="info-chip soft">inviteToken</view>
       <view class="info-chip">waiting_preferences</view>
     </view>
-    <view class="field-hint">当前按钮只进入下一张 UI 页面，不创建真实任务。</view>
   </view>
 
-  <button class="primary-button" bindtap="handleCreateTask">生成任务链接，分享到群</button>
+  <button wx:if="{{createdTask}}" class="primary-button" open-type="share">分享给群里</button>
+  <button wx:if="{{createdTask}}" class="primary-button" bindtap="handleViewBoard">查看任务看板</button>
+  <button wx:if="{{createdTask}}" class="primary-button" bindtap="handleCopySharePath">复制分享路径</button>
 </view>
