@@ -3,31 +3,33 @@
     <button class="page-back" bindtap="handleBack">‹</button>
     <view class="page-heading">
       <view class="page-title">约饭任务看板</view>
-      <view class="page-subtitle">看板结构已留好，真实成员、冲突和推荐结果后续接入。</view>
+      <view class="page-subtitle">看板数据来自后端 /api/tasks/:taskId。点「刷新」拉最新进度。</view>
     </view>
+  </view>
+
+  <view wx:if="{{errorMessage}}" class="panel-card">
+    <view class="field-label">加载提示</view>
+    <view class="field-hint">{{errorMessage}}</view>
   </view>
 
   <view class="panel-card progress-card">
     <view class="progress-head">
       <view>
-        <view class="progress-title">偏好收集中</view>
-        <view class="progress-desc">0 / 5 已提交 · Mock scaffold</view>
+        <view class="progress-title">{{board.task.title || (taskId ? '偏好收集中' : '等待任务 ID')}}</view>
+        <view class="progress-desc">{{board ? (board.submittedCount + ' / ' + board.expectedCount + ' 已提交') : '等待后端返回数据'}}</view>
       </view>
-      <view class="progress-pill">待接入</view>
+      <view class="progress-pill">{{statusLabel}}</view>
     </view>
     <view class="progress-track">
       <view class="progress-fill"></view>
     </view>
     <view class="avatar-row">
       <view class="empty-avatar">幺</view>
-      <view class="empty-avatar">友</view>
-      <view class="empty-avatar">友</view>
-      <view class="empty-avatar">友</view>
-      <view class="empty-avatar">友</view>
+      <view wx:for="{{board.participants}}" wx:key="id" class="empty-avatar">{{item.nickname || '友'}}</view>
     </view>
   </view>
 
-  <view wx:for="{{steps}}" wx:key="title" class="board-section">
+  <view wx:for="{{steps}}" wx:key="key" class="board-section">
     <view class="section-head">
       <view class="section-dot"></view>
       <view>
@@ -35,21 +37,83 @@
         <view class="section-desc-small">{{item.desc}}</view>
       </view>
     </view>
-    <view class="empty-panel section-empty">
-      <view class="empty-title">{{item.title}}待接入</view>
-      <view class="empty-desc">这里不会展示假结果。后续接入 API 后，会替换成真实结构化内容。</view>
-    </view>
+
+    <!-- Section: 成员偏好 -->
+    <block wx:if="{{item.key === 'participants'}}">
+      <view wx:if="{{board.participants.length}}" class="panel-card">
+        <view wx:for="{{board.participants}}" wx:for-item="member" wx:key="id" class="field">
+          <view class="field-label">{{member.nickname}}</view>
+          <view class="field-hint">{{member.rawPreference || '（未填写自由偏好）'}}</view>
+          <view class="chip-row">
+            <view wx:if="{{member.manualFields.budgetMax}}" class="info-chip">预算 ≤ {{member.manualFields.budgetMax}}</view>
+            <view wx:if="{{member.manualFields.spicyLabel}}" class="info-chip">{{member.manualFields.spicyLabel}}</view>
+            <view wx:if="{{member.manualFields.leaveBefore}}" class="info-chip">{{member.manualFields.leaveBefore}} 前离开</view>
+            <view wx:for="{{member.extractedConstraints.hardConstraints}}" wx:for-item="hc" wx:key="*this" class="info-chip hard">{{hc}}</view>
+            <view wx:for="{{member.extractedConstraints.softPreferences}}" wx:for-item="sp" wx:key="*this" class="info-chip soft">{{sp}}</view>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="empty-panel section-empty">
+        <view class="empty-title">还没有成员提交</view>
+        <view class="empty-desc">把分享链接发给朋友，他们填好后这里会出现真实数据。</view>
+      </view>
+    </block>
+
+    <!-- Section: 冲突识别 -->
+    <block wx:if="{{item.key === 'conflicts'}}">
+      <view wx:if="{{board.conflicts.length}}" class="panel-card">
+        <view wx:for="{{board.conflicts}}" wx:for-item="conflict" wx:key="description" class="field">
+          <view class="field-label">{{conflict.type}} · {{conflict.severity}}</view>
+          <view class="field-hint">{{conflict.description}}</view>
+          <view class="field-hint">建议：{{conflict.resolutionStrategy}}</view>
+        </view>
+      </view>
+      <view wx:else class="empty-panel section-empty">
+        <view class="empty-title">暂无冲突</view>
+        <view class="empty-desc">后端 /api/tasks/:taskId 抽取出冲突后会在这里展示。</view>
+      </view>
+    </block>
+
+    <!-- Section: 候选方案 -->
+    <block wx:if="{{item.key === 'recommendation'}}">
+      <view wx:if="{{board.recommendationResult}}" class="panel-card">
+        <view class="field">
+          <view class="field-label">最终推荐 · {{board.recommendationResult.finalChoice.name}}</view>
+          <view class="field-hint">{{board.recommendationResult.finalChoice.reason}}</view>
+          <view wx:if="{{board.recommendationResult.finalChoice.risks.length}}" class="chip-row">
+            <view wx:for="{{board.recommendationResult.finalChoice.risks}}" wx:for-item="risk" wx:key="*this" class="info-chip hard">{{risk}}</view>
+          </view>
+          <view wx:if="{{board.recommendationResult.finalChoice.backup}}" class="field-hint">备选：{{board.recommendationResult.finalChoice.backup}}</view>
+        </view>
+        <view wx:if="{{board.recommendationResult.groupMessage}}" class="field">
+          <view class="field-label">群里发这条</view>
+          <view class="field-hint">{{board.recommendationResult.groupMessage}}</view>
+        </view>
+        <view wx:if="{{board.recommendationResult.candidates.length}}" class="field">
+          <view class="field-label">全部候选 ({{board.recommendationResult.candidates.length}})</view>
+          <view class="chip-row">
+            <view wx:for="{{board.recommendationResult.candidates}}" wx:for-item="cand" wx:key="id" class="info-chip">{{cand.name}}</view>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="empty-panel section-empty">
+        <view class="empty-title">还没生成推荐</view>
+        <view class="empty-desc">点下面「生成推荐」会调用 /api/tasks/:taskId/recommend。</view>
+      </view>
+    </block>
   </view>
 
   <view class="panel-card">
-    <view class="field-label">后续要接的接口</view>
+    <view class="field-label">数据来源</view>
     <view class="chip-row">
-      <view class="info-chip hard">getTaskBoard</view>
-      <view class="info-chip soft">extractConstraints</view>
-      <view class="info-chip soft">detectConflicts</view>
-      <view class="info-chip">recommend</view>
+      <view class="info-chip hard">GET /api/tasks/:id</view>
+      <view class="info-chip soft">POST /api/tasks/:id/participants</view>
+      <view class="info-chip">POST /api/tasks/:id/recommend</view>
     </view>
+    <view class="field-hint">推荐、冲突、final_choice、群消息均来自后端。</view>
   </view>
 
+  <button class="primary-button" loading="{{isRecommending}}" disabled="{{!taskId || isRecommending}}" bindtap="handleGenerateRecommendation">生成推荐</button>
+  <button class="primary-button" loading="{{isLoading}}" disabled="{{!taskId || isLoading}}" bindtap="handleRefresh">刷新看板</button>
   <button class="primary-button" bindtap="handleBackHome">回到首页</button>
 </view>

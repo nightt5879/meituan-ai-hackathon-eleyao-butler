@@ -4,6 +4,8 @@ const groupDiningAdapter = require('../../../services/groupDiningAdapter');
 Page({
   data: {
     currentTheme: 'warm',
+    taskId: '',
+    isSubmitting: false,
     form: {
       nickname: '',
       rawPreference: '',
@@ -19,8 +21,15 @@ Page({
     ]
   },
 
-  onLoad() {
+  onLoad(query) {
     this.syncTheme();
+    const taskId = (query && query.taskId) || '';
+    this.setData({ taskId: taskId });
+    if (!taskId) {
+      // No taskId in the query — the page was opened directly without the
+      // create-task hand-off. We still render the form, but submit will warn.
+      console.warn('fill page opened without taskId');
+    }
   },
 
   onShow() {
@@ -56,9 +65,38 @@ Page({
   },
 
   handleSubmitPreference() {
-    const result = groupDiningAdapter.submitPreference('group_mock_task', this.data.form);
-    wx.navigateTo({
-      url: result.nextUrl
+    if (this.data.isSubmitting) { return; }
+
+    const taskId = this.data.taskId;
+    if (!taskId) {
+      wx.showToast({ title: '缺少 taskId，请回到上一步重新创建', icon: 'none' });
+      return;
+    }
+
+    const form = this.data.form;
+    if (!form.nickname || !form.nickname.trim()) {
+      wx.showToast({ title: '先填一下昵称', icon: 'none' });
+      return;
+    }
+
+    this.setData({ isSubmitting: true });
+    wx.showLoading({ title: '提交偏好…', mask: true });
+
+    const self = this;
+    groupDiningAdapter.submitPreference(taskId, form).then(function () {
+      wx.hideLoading();
+      self.setData({ isSubmitting: false });
+      wx.navigateTo({
+        url: '/pages/group/board/board?taskId=' + encodeURIComponent(taskId)
+      });
+    }).catch(function (err) {
+      wx.hideLoading();
+      self.setData({ isSubmitting: false });
+      console.error('submitPreference failed', err);
+      wx.showToast({
+        title: '提交失败：' + ((err && err.errMsg) || 'network'),
+        icon: 'none'
+      });
     });
   }
 });
