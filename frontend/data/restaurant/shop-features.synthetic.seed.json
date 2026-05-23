@@ -1,0 +1,5847 @@
+{
+  "schemaVersion": 1,
+  "source": "synthetic_mvp",
+  "sourceId": "synthetic_mvp_2026_05_24",
+  "synthetic": true,
+  "generatedAt": "2026-05-24",
+  "features": [
+    {
+      "shopId": "synthetic_gut_001",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "西餐",
+        "意面披萨",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "group_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "今天一个人快速解决",
+        "三到六人约饭",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": true,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "西餐",
+        "意面披萨",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内",
+        "solo_friendly",
+        "group_friendly",
+        "chat_friendly",
+        "50-80",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "合成画像显示适合多人分食或约饭",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_002",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "西餐",
+        "意面轻食",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "西餐",
+        "意面轻食",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算友好的商场简餐画像"
+      ],
+      "riskHints": [
+        "模拟风险：座位画像偏简餐，不适合多人久坐"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_003",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "茶饮",
+        "奶茶",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "茶饮",
+        "奶茶",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "chat_friendly",
+        "student_budget",
+        "20-30",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_004",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "茶饮",
+        "奶茶",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "茶饮",
+        "奶茶",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "chat_friendly",
+        "student_budget",
+        "20-30",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_005",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "咖啡",
+        "轻咖啡",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "咖啡",
+        "轻咖啡",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_006",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "咖啡",
+        "轻咖啡",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "咖啡",
+        "轻咖啡",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_007",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "轻食",
+        "沙拉",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "轻食",
+        "沙拉",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_008",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "轻食",
+        "沙拉",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "轻食",
+        "沙拉",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_009",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "甜品",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "甜品",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_010",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "日料",
+        "日式简餐",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "日料",
+        "日式简餐",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "solo_friendly",
+        "chat_friendly",
+        "50-80",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_011",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "韩餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "韩餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内",
+        "group_friendly",
+        "chat_friendly",
+        "50-80",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_012",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "粤菜",
+        "广府菜",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粤菜",
+        "广府菜",
+        "不辣可选",
+        "清淡可选",
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内",
+        "group_friendly",
+        "chat_friendly",
+        "50-80",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_013",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "student_budget",
+        "20-30"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_014",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "student_budget",
+        "20-30"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_015",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "student_budget",
+        "20-30"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_016",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "student_budget",
+        "20-30"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_017",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "student_budget",
+        "20-30"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_018",
+      "supportsSpicy": true,
+      "supportsNonSpicy": false,
+      "quietScore": 2.3,
+      "tasteTags": [
+        "烧烤",
+        "烤串",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭"
+      ],
+      "avoidTags": [
+        "介意嘈杂",
+        "赶时间",
+        "完全不吃辣"
+      ],
+      "queueRisk": "high",
+      "noiseLevel": "high",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": false,
+      "rainyDayFriendly": false,
+      "featureTags": [
+        "烧烤",
+        "烤串",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "重口味聚餐",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [
+        "模拟风险：热门时段可能需要预留等待弹性",
+        "模拟风险：环境可能偏热闹，不适合安静聊天",
+        "模拟风险：口味画像偏辣，需确认同行忌口"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_019",
+      "supportsSpicy": true,
+      "supportsNonSpicy": false,
+      "quietScore": 2.3,
+      "tasteTags": [
+        "烧烤",
+        "烤串",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭"
+      ],
+      "avoidTags": [
+        "介意嘈杂",
+        "赶时间",
+        "完全不吃辣"
+      ],
+      "queueRisk": "high",
+      "noiseLevel": "high",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": false,
+      "rainyDayFriendly": false,
+      "featureTags": [
+        "烧烤",
+        "烤串",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "重口味聚餐",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [
+        "模拟风险：热门时段可能需要预留等待弹性",
+        "模拟风险：环境可能偏热闹，不适合安静聊天",
+        "模拟风险：口味画像偏辣，需确认同行忌口"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_020",
+      "supportsSpicy": true,
+      "supportsNonSpicy": false,
+      "quietScore": 2.3,
+      "tasteTags": [
+        "烧烤",
+        "烤串",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭"
+      ],
+      "avoidTags": [
+        "介意嘈杂",
+        "赶时间",
+        "完全不吃辣"
+      ],
+      "queueRisk": "high",
+      "noiseLevel": "high",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": false,
+      "rainyDayFriendly": false,
+      "featureTags": [
+        "烧烤",
+        "烤串",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "重口味聚餐",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [
+        "模拟风险：热门时段可能需要预留等待弹性",
+        "模拟风险：环境可能偏热闹，不适合安静聊天",
+        "模拟风险：口味画像偏辣，需确认同行忌口"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_021",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "家常菜",
+        "小炒",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "三到六人约饭",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "家常菜",
+        "小炒",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "多人约饭",
+        "雨天室内",
+        "group_friendly",
+        "30-50"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_022",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "家常菜",
+        "小炒",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "三到六人约饭",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "家常菜",
+        "小炒",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "多人约饭",
+        "雨天室内",
+        "group_friendly",
+        "30-50"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_023",
+      "supportsSpicy": true,
+      "supportsNonSpicy": false,
+      "quietScore": 2.3,
+      "tasteTags": [
+        "川湘菜",
+        "香辣小炒",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "三到六人约饭"
+      ],
+      "avoidTags": [
+        "介意嘈杂",
+        "赶时间",
+        "完全不吃辣"
+      ],
+      "queueRisk": "high",
+      "noiseLevel": "high",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": false,
+      "featureTags": [
+        "川湘菜",
+        "香辣小炒",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "重口味聚餐",
+        "group_friendly",
+        "30-50"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "预算压力较低"
+      ],
+      "riskHints": [
+        "模拟风险：热门时段可能需要预留等待弹性",
+        "模拟风险：环境可能偏热闹，不适合安静聊天",
+        "模拟风险：口味画像偏辣，需确认同行忌口"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_024",
+      "supportsSpicy": true,
+      "supportsNonSpicy": false,
+      "quietScore": 2.3,
+      "tasteTags": [
+        "川湘菜",
+        "香辣小炒",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "三到六人约饭"
+      ],
+      "avoidTags": [
+        "介意嘈杂",
+        "赶时间",
+        "完全不吃辣"
+      ],
+      "queueRisk": "high",
+      "noiseLevel": "high",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": false,
+      "featureTags": [
+        "川湘菜",
+        "香辣小炒",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "重口味聚餐",
+        "group_friendly",
+        "30-50"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "预算压力较低"
+      ],
+      "riskHints": [
+        "模拟风险：热门时段可能需要预留等待弹性",
+        "模拟风险：环境可能偏热闹，不适合安静聊天",
+        "模拟风险：口味画像偏辣，需确认同行忌口"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_025",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "茶饮",
+        "奶茶",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "茶饮",
+        "奶茶",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "student_budget",
+        "20-30"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_026",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 2.3,
+      "tasteTags": [
+        "火锅",
+        "锅物",
+        "不辣可选",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭"
+      ],
+      "avoidTags": [
+        "介意嘈杂",
+        "赶时间"
+      ],
+      "queueRisk": "high",
+      "noiseLevel": "high",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": false,
+      "featureTags": [
+        "火锅",
+        "锅物",
+        "不辣可选",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "重口味聚餐",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "锅物画像适合重口味聚餐",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [
+        "模拟风险：热门时段可能需要预留等待弹性",
+        "模拟风险：环境可能偏热闹，不适合安静聊天"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_027",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "student_budget",
+        "20-30",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_028",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "student_budget",
+        "20-30",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_029",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "咖啡",
+        "轻咖啡",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "咖啡",
+        "轻咖啡",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_030",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "咖啡",
+        "轻咖啡",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "咖啡",
+        "轻咖啡",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_031",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "轻食",
+        "沙拉",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "轻食",
+        "沙拉",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_032",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "轻食",
+        "沙拉",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "轻食",
+        "沙拉",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_033",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "student_budget",
+        "20-30",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_034",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "甜品",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "甜品",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_035",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "student_budget",
+        "20-30"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_036",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "student_budget",
+        "20-30"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_037",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "粤菜",
+        "广府菜",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": true,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粤菜",
+        "广府菜",
+        "不辣可选",
+        "清淡可选",
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内",
+        "group_friendly",
+        "chat_friendly",
+        "50-80",
+        "适合聊天"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_038",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "粤菜",
+        "广府菜",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": true,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粤菜",
+        "广府菜",
+        "不辣可选",
+        "清淡可选",
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内",
+        "group_friendly",
+        "chat_friendly",
+        "50-80",
+        "适合聊天"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_039",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "家常菜",
+        "小炒",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "三到六人约饭",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "家常菜",
+        "小炒",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "多人约饭",
+        "雨天室内",
+        "group_friendly",
+        "30-50"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_040",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "家常菜",
+        "小炒",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "三到六人约饭",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "家常菜",
+        "小炒",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "多人约饭",
+        "雨天室内",
+        "group_friendly",
+        "30-50"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_041",
+      "supportsSpicy": true,
+      "supportsNonSpicy": false,
+      "quietScore": 2.3,
+      "tasteTags": [
+        "烧烤",
+        "烤串",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭"
+      ],
+      "avoidTags": [
+        "介意嘈杂",
+        "完全不吃辣"
+      ],
+      "queueRisk": "medium",
+      "noiseLevel": "high",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": false,
+      "rainyDayFriendly": false,
+      "featureTags": [
+        "烧烤",
+        "烤串",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "重口味聚餐",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [
+        "模拟风险：环境可能偏热闹，不适合安静聊天",
+        "模拟风险：口味画像偏辣，需确认同行忌口"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_042",
+      "supportsSpicy": true,
+      "supportsNonSpicy": false,
+      "quietScore": 2.3,
+      "tasteTags": [
+        "烧烤",
+        "烤串",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭"
+      ],
+      "avoidTags": [
+        "介意嘈杂",
+        "完全不吃辣"
+      ],
+      "queueRisk": "medium",
+      "noiseLevel": "high",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": false,
+      "rainyDayFriendly": false,
+      "featureTags": [
+        "烧烤",
+        "烤串",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "重口味聚餐",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [
+        "模拟风险：环境可能偏热闹，不适合安静聊天",
+        "模拟风险：口味画像偏辣，需确认同行忌口"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_043",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "student_budget",
+        "20-30"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_044",
+      "supportsSpicy": true,
+      "supportsNonSpicy": false,
+      "quietScore": 2.3,
+      "tasteTags": [
+        "川湘菜",
+        "香辣小炒",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "三到六人约饭"
+      ],
+      "avoidTags": [
+        "介意嘈杂",
+        "完全不吃辣"
+      ],
+      "queueRisk": "medium",
+      "noiseLevel": "high",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": false,
+      "featureTags": [
+        "川湘菜",
+        "香辣小炒",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "重口味聚餐",
+        "group_friendly",
+        "30-50"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "预算压力较低"
+      ],
+      "riskHints": [
+        "模拟风险：环境可能偏热闹，不适合安静聊天",
+        "模拟风险：口味画像偏辣，需确认同行忌口"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_045",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "潮汕菜",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "潮汕菜",
+        "不辣可选",
+        "清淡可选",
+        "多人约饭",
+        "雨天室内",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_046",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "东北菜",
+        "不辣可选",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "雨天室内",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "东北菜",
+        "不辣可选",
+        "重口味",
+        "多人约饭",
+        "雨天室内",
+        "重口味聚餐",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_047",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "chat_friendly",
+        "student_budget",
+        "20-30",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_048",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "chat_friendly",
+        "student_budget",
+        "20-30",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_049",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "咖啡",
+        "轻咖啡",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "咖啡",
+        "轻咖啡",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_050",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "咖啡",
+        "轻咖啡",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "咖啡",
+        "轻咖啡",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_051",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "轻食",
+        "沙拉",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "轻食",
+        "沙拉",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_052",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "茶饮",
+        "奶茶",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "茶饮",
+        "奶茶",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "chat_friendly",
+        "student_budget",
+        "20-30",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_053",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "chat_friendly",
+        "student_budget",
+        "20-30",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_054",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "甜品",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "甜品",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_055",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "student_budget",
+        "20-30"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_056",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "student_budget",
+        "20-30"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_057",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "student_budget",
+        "20-30"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_058",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "家常菜",
+        "小炒",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "三到六人约饭",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "家常菜",
+        "小炒",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "多人约饭",
+        "雨天室内",
+        "group_friendly",
+        "30-50"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_059",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "家常菜",
+        "小炒",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "三到六人约饭",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "家常菜",
+        "小炒",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "多人约饭",
+        "雨天室内",
+        "group_friendly",
+        "30-50"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_060",
+      "supportsSpicy": true,
+      "supportsNonSpicy": false,
+      "quietScore": 2.3,
+      "tasteTags": [
+        "烧烤",
+        "烤串",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭"
+      ],
+      "avoidTags": [
+        "介意嘈杂",
+        "赶时间",
+        "完全不吃辣"
+      ],
+      "queueRisk": "high",
+      "noiseLevel": "high",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": false,
+      "rainyDayFriendly": false,
+      "featureTags": [
+        "烧烤",
+        "烤串",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "重口味聚餐",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [
+        "模拟风险：热门时段可能需要预留等待弹性",
+        "模拟风险：环境可能偏热闹，不适合安静聊天",
+        "模拟风险：口味画像偏辣，需确认同行忌口"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_061",
+      "supportsSpicy": true,
+      "supportsNonSpicy": false,
+      "quietScore": 2.3,
+      "tasteTags": [
+        "烧烤",
+        "烤串",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭"
+      ],
+      "avoidTags": [
+        "介意嘈杂",
+        "赶时间",
+        "完全不吃辣"
+      ],
+      "queueRisk": "high",
+      "noiseLevel": "high",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": false,
+      "rainyDayFriendly": false,
+      "featureTags": [
+        "烧烤",
+        "烤串",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "重口味聚餐",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [
+        "模拟风险：热门时段可能需要预留等待弹性",
+        "模拟风险：环境可能偏热闹，不适合安静聊天",
+        "模拟风险：口味画像偏辣，需确认同行忌口"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_062",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 2.3,
+      "tasteTags": [
+        "火锅",
+        "锅物",
+        "不辣可选",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭"
+      ],
+      "avoidTags": [
+        "介意嘈杂",
+        "赶时间"
+      ],
+      "queueRisk": "high",
+      "noiseLevel": "high",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": false,
+      "featureTags": [
+        "火锅",
+        "锅物",
+        "不辣可选",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "重口味聚餐",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [
+        "模拟风险：热门时段可能需要预留等待弹性",
+        "模拟风险：环境可能偏热闹，不适合安静聊天"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_063",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 2.3,
+      "tasteTags": [
+        "火锅",
+        "锅物",
+        "不辣可选",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭"
+      ],
+      "avoidTags": [
+        "介意嘈杂",
+        "赶时间"
+      ],
+      "queueRisk": "high",
+      "noiseLevel": "high",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": false,
+      "featureTags": [
+        "火锅",
+        "锅物",
+        "不辣可选",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "重口味聚餐",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [
+        "模拟风险：热门时段可能需要预留等待弹性",
+        "模拟风险：环境可能偏热闹，不适合安静聊天"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_064",
+      "supportsSpicy": true,
+      "supportsNonSpicy": false,
+      "quietScore": 2.3,
+      "tasteTags": [
+        "川湘菜",
+        "香辣小炒",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "三到六人约饭"
+      ],
+      "avoidTags": [
+        "介意嘈杂",
+        "赶时间",
+        "完全不吃辣"
+      ],
+      "queueRisk": "high",
+      "noiseLevel": "high",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": false,
+      "featureTags": [
+        "川湘菜",
+        "香辣小炒",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "重口味聚餐",
+        "group_friendly",
+        "30-50"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "预算压力较低"
+      ],
+      "riskHints": [
+        "模拟风险：热门时段可能需要预留等待弹性",
+        "模拟风险：环境可能偏热闹，不适合安静聊天",
+        "模拟风险：口味画像偏辣，需确认同行忌口"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_065",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "潮汕菜",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "潮汕菜",
+        "不辣可选",
+        "清淡可选",
+        "多人约饭",
+        "雨天室内",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_066",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "新疆菜",
+        "西北风味",
+        "不辣可选",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "雨天室内",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "新疆菜",
+        "西北风味",
+        "不辣可选",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "雨天室内",
+        "重口味聚餐",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_067",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "student_budget",
+        "20-30"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_068",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "student_budget",
+        "20-30"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_069",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内",
+        "低预算"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "student_budget"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "低预算",
+        "solo_friendly",
+        "student_budget",
+        "20-30"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_070",
+      "supportsSpicy": true,
+      "supportsNonSpicy": false,
+      "quietScore": 2.3,
+      "tasteTags": [
+        "烧烤",
+        "烤串",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭"
+      ],
+      "avoidTags": [
+        "介意嘈杂",
+        "完全不吃辣"
+      ],
+      "queueRisk": "medium",
+      "noiseLevel": "high",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": false,
+      "rainyDayFriendly": false,
+      "featureTags": [
+        "烧烤",
+        "烤串",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "重口味聚餐",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [
+        "模拟风险：环境可能偏热闹，不适合安静聊天",
+        "模拟风险：口味画像偏辣，需确认同行忌口"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_071",
+      "supportsSpicy": true,
+      "supportsNonSpicy": false,
+      "quietScore": 2.3,
+      "tasteTags": [
+        "烧烤",
+        "烤串",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭"
+      ],
+      "avoidTags": [
+        "介意嘈杂",
+        "完全不吃辣"
+      ],
+      "queueRisk": "medium",
+      "noiseLevel": "high",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": false,
+      "rainyDayFriendly": false,
+      "featureTags": [
+        "烧烤",
+        "烤串",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "重口味聚餐",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [
+        "模拟风险：环境可能偏热闹，不适合安静聊天",
+        "模拟风险：口味画像偏辣，需确认同行忌口"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_072",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "东北菜",
+        "不辣可选",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "雨天室内",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "东北菜",
+        "不辣可选",
+        "重口味",
+        "多人约饭",
+        "雨天室内",
+        "重口味聚餐",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_073",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "东北菜",
+        "不辣可选",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "雨天室内",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "东北菜",
+        "不辣可选",
+        "重口味",
+        "多人约饭",
+        "雨天室内",
+        "重口味聚餐",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_074",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "家常菜",
+        "小炒",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "三到六人约饭",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "家常菜",
+        "小炒",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "多人约饭",
+        "雨天室内",
+        "group_friendly",
+        "30-50"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_075",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "家常菜",
+        "小炒",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "三到六人约饭",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "家常菜",
+        "小炒",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "多人约饭",
+        "雨天室内",
+        "group_friendly",
+        "30-50"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_076",
+      "supportsSpicy": true,
+      "supportsNonSpicy": false,
+      "quietScore": 2.3,
+      "tasteTags": [
+        "川湘菜",
+        "香辣小炒",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "三到六人约饭"
+      ],
+      "avoidTags": [
+        "介意嘈杂",
+        "完全不吃辣"
+      ],
+      "queueRisk": "medium",
+      "noiseLevel": "high",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": false,
+      "featureTags": [
+        "川湘菜",
+        "香辣小炒",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "重口味聚餐",
+        "group_friendly",
+        "30-50"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "预算压力较低"
+      ],
+      "riskHints": [
+        "模拟风险：环境可能偏热闹，不适合安静聊天",
+        "模拟风险：口味画像偏辣，需确认同行忌口"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_077",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "粤菜",
+        "广府菜",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": true,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粤菜",
+        "广府菜",
+        "不辣可选",
+        "清淡可选",
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内",
+        "group_friendly",
+        "chat_friendly",
+        "50-80",
+        "适合聊天"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_078",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "tasteTags": [
+        "新疆菜",
+        "西北风味",
+        "不辣可选",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "雨天室内",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "三到六人约饭",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "新疆菜",
+        "西北风味",
+        "不辣可选",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "雨天室内",
+        "重口味聚餐",
+        "group_friendly",
+        "50-80"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_079",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "solo_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "solo_friendly",
+        "30-50",
+        "校内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_080",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "solo_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "快餐",
+        "简餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "solo_friendly",
+        "30-50",
+        "校内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_081",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "茶饮",
+        "奶茶",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "solo_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "茶饮",
+        "奶茶",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "solo_friendly",
+        "30-50",
+        "校内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_082",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "茶饮",
+        "奶茶",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "solo_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "茶饮",
+        "奶茶",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "solo_friendly",
+        "30-50",
+        "校内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_083",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "咖啡",
+        "轻咖啡",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "咖啡",
+        "轻咖啡",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "校内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_084",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "咖啡",
+        "轻咖啡",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "咖啡",
+        "轻咖啡",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "校内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_085",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "轻食",
+        "沙拉",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "轻食",
+        "沙拉",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "校内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算压力较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_086",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "轻食",
+        "沙拉",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "50-80",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "轻食",
+        "沙拉",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "50-80",
+        "适合聊天",
+        "校内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_087",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "solo_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粥粉面",
+        "粉面",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "单人快吃",
+        "雨天室内",
+        "solo_friendly",
+        "80+",
+        "校内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_088",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "日料",
+        "日式简餐",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "80+",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "日料",
+        "日式简餐",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "校内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算友好的甜品小坐画像"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_089",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "西餐",
+        "意面披萨",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "group_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "三到六人约饭",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": true,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "西餐",
+        "意面披萨",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内",
+        "solo_friendly",
+        "group_friendly",
+        "chat_friendly",
+        "80+",
+        "适合聊天",
+        "校内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "合成画像显示适合多人分食或约饭",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_090",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "甜品",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "甜品",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天",
+        "校内"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算友好的甜品小坐画像"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_091",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "韩餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "80+",
+      "goodFor": [
+        "三到六人约饭",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "韩餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内",
+        "group_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_092",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "韩餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "80+",
+      "goodFor": [
+        "三到六人约饭",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "韩餐",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内",
+        "group_friendly",
+        "chat_friendly",
+        "80+",
+        "适合聊天"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_093",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "日料",
+        "日式简餐",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "80+",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "日料",
+        "日式简餐",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "solo_friendly",
+        "chat_friendly",
+        "80+",
+        "适合聊天"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算友好的甜品小坐画像"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_094",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "西餐",
+        "意面披萨",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "group_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "80+",
+      "goodFor": [
+        "今天一个人快速解决",
+        "三到六人约饭",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": true,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "西餐",
+        "意面披萨",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内",
+        "solo_friendly",
+        "group_friendly",
+        "chat_friendly",
+        "80+",
+        "适合聊天"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "合成画像显示适合多人分食或约饭",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_095",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 2.3,
+      "tasteTags": [
+        "火锅",
+        "锅物",
+        "不辣可选",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "80+",
+      "goodFor": [
+        "三到六人约饭"
+      ],
+      "avoidTags": [
+        "介意嘈杂"
+      ],
+      "queueRisk": "medium",
+      "noiseLevel": "high",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": false,
+      "featureTags": [
+        "火锅",
+        "锅物",
+        "不辣可选",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "重口味聚餐",
+        "group_friendly",
+        "80+"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [
+        "模拟风险：环境可能偏热闹，不适合安静聊天"
+      ],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_096",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "粤菜",
+        "广府菜",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "80+",
+      "goodFor": [
+        "三到六人约饭",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粤菜",
+        "广府菜",
+        "不辣可选",
+        "清淡可选",
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内",
+        "group_friendly",
+        "chat_friendly",
+        "80+",
+        "适合聊天"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_097",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "家常菜",
+        "小炒",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "80+",
+      "goodFor": [
+        "三到六人约饭",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "家常菜",
+        "小炒",
+        "不辣可选",
+        "可选辣度",
+        "清淡可选",
+        "多人约饭",
+        "雨天室内",
+        "group_friendly",
+        "80+"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_098",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "潮汕菜",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "雨天室内"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "80+",
+      "goodFor": [
+        "三到六人约饭",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "潮汕菜",
+        "不辣可选",
+        "清淡可选",
+        "多人约饭",
+        "雨天室内",
+        "group_friendly",
+        "80+"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_099",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "新疆菜",
+        "西北风味",
+        "不辣可选",
+        "可选辣度",
+        "重口味"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "雨天室内",
+        "重口味聚餐"
+      ],
+      "crowdTags": [
+        "group_friendly"
+      ],
+      "budgetLevel": "80+",
+      "goodFor": [
+        "三到六人约饭",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "新疆菜",
+        "西北风味",
+        "不辣可选",
+        "可选辣度",
+        "重口味",
+        "多人约饭",
+        "雨天室内",
+        "重口味聚餐",
+        "group_friendly",
+        "80+"
+      ],
+      "explainHints": [
+        "合成画像显示适合多人分食或约饭",
+        "以室内点位为主，适合作为雨天备选",
+        "适合预算更宽松的一餐"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_100",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.4,
+      "tasteTags": [
+        "甜品",
+        "不辣可选",
+        "清淡可选"
+      ],
+      "sceneTags": [
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "30-50",
+      "goodFor": [
+        "今天一个人快速解决",
+        "边吃边聊天",
+        "雨天室内备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "甜品",
+        "不辣可选",
+        "清淡可选",
+        "单人快吃",
+        "朋友聊天",
+        "雨天室内",
+        "周末规划",
+        "solo_friendly",
+        "chat_friendly",
+        "30-50",
+        "适合聊天"
+      ],
+      "explainHints": [
+        "合成画像显示适合单人快吃",
+        "空间画像偏适合聊天停留",
+        "以室内点位为主，适合作为雨天备选",
+        "预算友好的甜品小坐画像"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    }
+  ]
+}

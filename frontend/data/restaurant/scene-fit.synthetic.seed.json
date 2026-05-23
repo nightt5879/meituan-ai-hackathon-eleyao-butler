@@ -1,0 +1,3540 @@
+{
+  "schemaVersion": 1,
+  "source": "synthetic_mvp",
+  "sourceId": "synthetic_mvp_2026_05_24",
+  "synthetic": true,
+  "generatedAt": "2026-05-24",
+  "sceneFits": [
+    {
+      "shopId": "synthetic_gut_001",
+      "sceneScores": {
+        "soloToday": 68,
+        "groupMeetup": 100,
+        "weekendPlan": 89
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_002",
+      "sceneScores": {
+        "soloToday": 86,
+        "groupMeetup": 55,
+        "weekendPlan": 74
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好的商场意面轻食",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "更适合二人轻量聊天而非多人分食",
+          "噪声模拟等级不过高"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为轻食补给点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [
+          "模拟风险：座位画像偏简餐，不适合多人久坐"
+        ],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_003",
+      "sceneScores": {
+        "soloToday": 80,
+        "groupMeetup": 62,
+        "weekendPlan": 67
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_004",
+      "sceneScores": {
+        "soloToday": 80,
+        "groupMeetup": 62,
+        "weekendPlan": 67
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_005",
+      "sceneScores": {
+        "soloToday": 80,
+        "groupMeetup": 72,
+        "weekendPlan": 89
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_006",
+      "sceneScores": {
+        "soloToday": 80,
+        "groupMeetup": 72,
+        "weekendPlan": 89
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_007",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 72,
+        "weekendPlan": 89
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_008",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 72,
+        "weekendPlan": 89
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_009",
+      "sceneScores": {
+        "soloToday": 80,
+        "groupMeetup": 72,
+        "weekendPlan": 89
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_010",
+      "sceneScores": {
+        "soloToday": 68,
+        "groupMeetup": 72,
+        "weekendPlan": 89
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_011",
+      "sceneScores": {
+        "soloToday": 43,
+        "groupMeetup": 78,
+        "weekendPlan": 64
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合二到四人商场简餐约饭",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天可作为商场内用餐节点",
+          "更适合吃完继续走的简餐节奏",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [
+          "模拟风险：商场简餐画像不适合长时间聚会"
+        ],
+        "weekendPlan": [
+          "模拟风险：周末规划中更像用餐补给点，不是主要停留点"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_012",
+      "sceneScores": {
+        "soloToday": 43,
+        "groupMeetup": 100,
+        "weekendPlan": 67
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_013",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 43,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_014",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 43,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_015",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 53,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_016",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 53,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_017",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 43,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_018",
+      "sceneScores": {
+        "soloToday": 27,
+        "groupMeetup": 72,
+        "weekendPlan": 25
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "口味偏重，同行忌辣时需谨慎"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "更适合晚餐聚餐，不适合作为轻松逛吃停留点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [
+          "模拟风险：赶时间时不建议优先选",
+          "模拟风险：环境可能偏热闹"
+        ],
+        "groupMeetup": [
+          "模拟风险：聊天体验可能受噪声影响",
+          "模拟风险：多人同行需要预留等待弹性"
+        ],
+        "weekendPlan": [
+          "模拟风险：雨天舒适度一般",
+          "模拟风险：贝岗火锅画像偏热闹，周末规划中不适合安静停留"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_019",
+      "sceneScores": {
+        "soloToday": 27,
+        "groupMeetup": 72,
+        "weekendPlan": 25
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "口味偏重，同行忌辣时需谨慎"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [
+          "模拟风险：赶时间时不建议优先选",
+          "模拟风险：环境可能偏热闹"
+        ],
+        "groupMeetup": [
+          "模拟风险：聊天体验可能受噪声影响",
+          "模拟风险：多人同行需要预留等待弹性"
+        ],
+        "weekendPlan": [
+          "模拟风险：雨天舒适度一般"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_020",
+      "sceneScores": {
+        "soloToday": 27,
+        "groupMeetup": 72,
+        "weekendPlan": 25
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "口味偏重，同行忌辣时需谨慎"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [
+          "模拟风险：赶时间时不建议优先选",
+          "模拟风险：环境可能偏热闹"
+        ],
+        "groupMeetup": [
+          "模拟风险：聊天体验可能受噪声影响",
+          "模拟风险：多人同行需要预留等待弹性"
+        ],
+        "weekendPlan": [
+          "模拟风险：雨天舒适度一般"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_021",
+      "sceneScores": {
+        "soloToday": 55,
+        "groupMeetup": 85,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_022",
+      "sceneScores": {
+        "soloToday": 55,
+        "groupMeetup": 85,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_023",
+      "sceneScores": {
+        "soloToday": 39,
+        "groupMeetup": 72,
+        "weekendPlan": 25
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "口味偏重，同行忌辣时需谨慎"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [
+          "模拟风险：赶时间时不建议优先选",
+          "模拟风险：环境可能偏热闹"
+        ],
+        "groupMeetup": [
+          "模拟风险：聊天体验可能受噪声影响",
+          "模拟风险：多人同行需要预留等待弹性"
+        ],
+        "weekendPlan": [
+          "模拟风险：雨天舒适度一般"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_024",
+      "sceneScores": {
+        "soloToday": 39,
+        "groupMeetup": 72,
+        "weekendPlan": 25
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "口味偏重，同行忌辣时需谨慎"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [
+          "模拟风险：赶时间时不建议优先选",
+          "模拟风险：环境可能偏热闹"
+        ],
+        "groupMeetup": [
+          "模拟风险：聊天体验可能受噪声影响",
+          "模拟风险：多人同行需要预留等待弹性"
+        ],
+        "weekendPlan": [
+          "模拟风险：雨天舒适度一般"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_025",
+      "sceneScores": {
+        "soloToday": 80,
+        "groupMeetup": 53,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_026",
+      "sceneScores": {
+        "soloToday": 35,
+        "groupMeetup": 72,
+        "weekendPlan": 25
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "更适合晚餐聚餐，不适合作为轻松逛吃停留点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [
+          "模拟风险：赶时间时不建议优先选",
+          "模拟风险：环境可能偏热闹"
+        ],
+        "groupMeetup": [
+          "模拟风险：聊天体验可能受噪声影响",
+          "模拟风险：多人同行需要预留等待弹性"
+        ],
+        "weekendPlan": [
+          "模拟风险：雨天舒适度一般",
+          "模拟风险：贝岗火锅画像偏热闹，周末规划中不适合安静停留"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_027",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 47,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_028",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 47,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_029",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 72,
+        "weekendPlan": 81
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_030",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 72,
+        "weekendPlan": 81
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_031",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 72,
+        "weekendPlan": 81
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_032",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 72,
+        "weekendPlan": 81
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_033",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 57,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_034",
+      "sceneScores": {
+        "soloToday": 80,
+        "groupMeetup": 72,
+        "weekendPlan": 81
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_035",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 43,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_036",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 43,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_037",
+      "sceneScores": {
+        "soloToday": 43,
+        "groupMeetup": 100,
+        "weekendPlan": 59
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_038",
+      "sceneScores": {
+        "soloToday": 43,
+        "groupMeetup": 100,
+        "weekendPlan": 59
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_039",
+      "sceneScores": {
+        "soloToday": 55,
+        "groupMeetup": 85,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_040",
+      "sceneScores": {
+        "soloToday": 55,
+        "groupMeetup": 85,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_041",
+      "sceneScores": {
+        "soloToday": 27,
+        "groupMeetup": 77,
+        "weekendPlan": 25
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "口味偏重，同行忌辣时需谨慎"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [
+          "模拟风险：环境可能偏热闹"
+        ],
+        "groupMeetup": [
+          "模拟风险：聊天体验可能受噪声影响"
+        ],
+        "weekendPlan": [
+          "模拟风险：雨天舒适度一般"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_042",
+      "sceneScores": {
+        "soloToday": 27,
+        "groupMeetup": 77,
+        "weekendPlan": 25
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "口味偏重，同行忌辣时需谨慎"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [
+          "模拟风险：环境可能偏热闹"
+        ],
+        "groupMeetup": [
+          "模拟风险：聊天体验可能受噪声影响"
+        ],
+        "weekendPlan": [
+          "模拟风险：雨天舒适度一般"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_043",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 43,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_044",
+      "sceneScores": {
+        "soloToday": 39,
+        "groupMeetup": 77,
+        "weekendPlan": 25
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "口味偏重，同行忌辣时需谨慎"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [
+          "模拟风险：环境可能偏热闹"
+        ],
+        "groupMeetup": [
+          "模拟风险：聊天体验可能受噪声影响"
+        ],
+        "weekendPlan": [
+          "模拟风险：雨天舒适度一般"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_045",
+      "sceneScores": {
+        "soloToday": 43,
+        "groupMeetup": 85,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_046",
+      "sceneScores": {
+        "soloToday": 43,
+        "groupMeetup": 85,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_047",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 62,
+        "weekendPlan": 67
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_048",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 62,
+        "weekendPlan": 67
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_049",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 72,
+        "weekendPlan": 89
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_050",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 72,
+        "weekendPlan": 89
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_051",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 72,
+        "weekendPlan": 89
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_052",
+      "sceneScores": {
+        "soloToday": 80,
+        "groupMeetup": 62,
+        "weekendPlan": 67
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_053",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 62,
+        "weekendPlan": 67
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_054",
+      "sceneScores": {
+        "soloToday": 80,
+        "groupMeetup": 72,
+        "weekendPlan": 89
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_055",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 43,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_056",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 43,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_057",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 43,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_058",
+      "sceneScores": {
+        "soloToday": 55,
+        "groupMeetup": 85,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_059",
+      "sceneScores": {
+        "soloToday": 55,
+        "groupMeetup": 85,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_060",
+      "sceneScores": {
+        "soloToday": 27,
+        "groupMeetup": 72,
+        "weekendPlan": 25
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "口味偏重，同行忌辣时需谨慎"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [
+          "模拟风险：赶时间时不建议优先选",
+          "模拟风险：环境可能偏热闹"
+        ],
+        "groupMeetup": [
+          "模拟风险：聊天体验可能受噪声影响",
+          "模拟风险：多人同行需要预留等待弹性"
+        ],
+        "weekendPlan": [
+          "模拟风险：雨天舒适度一般"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_061",
+      "sceneScores": {
+        "soloToday": 27,
+        "groupMeetup": 72,
+        "weekendPlan": 25
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "口味偏重，同行忌辣时需谨慎"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [
+          "模拟风险：赶时间时不建议优先选",
+          "模拟风险：环境可能偏热闹"
+        ],
+        "groupMeetup": [
+          "模拟风险：聊天体验可能受噪声影响",
+          "模拟风险：多人同行需要预留等待弹性"
+        ],
+        "weekendPlan": [
+          "模拟风险：雨天舒适度一般"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_062",
+      "sceneScores": {
+        "soloToday": 35,
+        "groupMeetup": 72,
+        "weekendPlan": 25
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [
+          "模拟风险：赶时间时不建议优先选",
+          "模拟风险：环境可能偏热闹"
+        ],
+        "groupMeetup": [
+          "模拟风险：聊天体验可能受噪声影响",
+          "模拟风险：多人同行需要预留等待弹性"
+        ],
+        "weekendPlan": [
+          "模拟风险：雨天舒适度一般"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_063",
+      "sceneScores": {
+        "soloToday": 35,
+        "groupMeetup": 72,
+        "weekendPlan": 25
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [
+          "模拟风险：赶时间时不建议优先选",
+          "模拟风险：环境可能偏热闹"
+        ],
+        "groupMeetup": [
+          "模拟风险：聊天体验可能受噪声影响",
+          "模拟风险：多人同行需要预留等待弹性"
+        ],
+        "weekendPlan": [
+          "模拟风险：雨天舒适度一般"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_064",
+      "sceneScores": {
+        "soloToday": 39,
+        "groupMeetup": 72,
+        "weekendPlan": 25
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "口味偏重，同行忌辣时需谨慎"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [
+          "模拟风险：赶时间时不建议优先选",
+          "模拟风险：环境可能偏热闹"
+        ],
+        "groupMeetup": [
+          "模拟风险：聊天体验可能受噪声影响",
+          "模拟风险：多人同行需要预留等待弹性"
+        ],
+        "weekendPlan": [
+          "模拟风险：雨天舒适度一般"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_065",
+      "sceneScores": {
+        "soloToday": 43,
+        "groupMeetup": 85,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_066",
+      "sceneScores": {
+        "soloToday": 43,
+        "groupMeetup": 85,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_067",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 43,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_068",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 43,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_069",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 43,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_070",
+      "sceneScores": {
+        "soloToday": 27,
+        "groupMeetup": 77,
+        "weekendPlan": 25
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "口味偏重，同行忌辣时需谨慎"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [
+          "模拟风险：环境可能偏热闹"
+        ],
+        "groupMeetup": [
+          "模拟风险：聊天体验可能受噪声影响"
+        ],
+        "weekendPlan": [
+          "模拟风险：雨天舒适度一般"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_071",
+      "sceneScores": {
+        "soloToday": 27,
+        "groupMeetup": 77,
+        "weekendPlan": 25
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "口味偏重，同行忌辣时需谨慎"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [
+          "模拟风险：环境可能偏热闹"
+        ],
+        "groupMeetup": [
+          "模拟风险：聊天体验可能受噪声影响"
+        ],
+        "weekendPlan": [
+          "模拟风险：雨天舒适度一般"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_072",
+      "sceneScores": {
+        "soloToday": 43,
+        "groupMeetup": 85,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_073",
+      "sceneScores": {
+        "soloToday": 43,
+        "groupMeetup": 85,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_074",
+      "sceneScores": {
+        "soloToday": 55,
+        "groupMeetup": 85,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_075",
+      "sceneScores": {
+        "soloToday": 55,
+        "groupMeetup": 85,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_076",
+      "sceneScores": {
+        "soloToday": 39,
+        "groupMeetup": 77,
+        "weekendPlan": 25
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "口味偏重，同行忌辣时需谨慎"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [
+          "模拟风险：环境可能偏热闹"
+        ],
+        "groupMeetup": [
+          "模拟风险：聊天体验可能受噪声影响"
+        ],
+        "weekendPlan": [
+          "模拟风险：雨天舒适度一般"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_077",
+      "sceneScores": {
+        "soloToday": 43,
+        "groupMeetup": 100,
+        "weekendPlan": 59
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_078",
+      "sceneScores": {
+        "soloToday": 43,
+        "groupMeetup": 85,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_079",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 57,
+        "weekendPlan": 55
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_080",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 57,
+        "weekendPlan": 55
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_081",
+      "sceneScores": {
+        "soloToday": 80,
+        "groupMeetup": 57,
+        "weekendPlan": 55
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_082",
+      "sceneScores": {
+        "soloToday": 80,
+        "groupMeetup": 57,
+        "weekendPlan": 55
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_083",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 72,
+        "weekendPlan": 89
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_084",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 72,
+        "weekendPlan": 89
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_085",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 72,
+        "weekendPlan": 89
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_086",
+      "sceneScores": {
+        "soloToday": 83,
+        "groupMeetup": 72,
+        "weekendPlan": 89
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_087",
+      "sceneScores": {
+        "soloToday": 83,
+        "groupMeetup": 47,
+        "weekendPlan": 55
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": [
+          "模拟风险：人均预算偏高"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_088",
+      "sceneScores": {
+        "soloToday": 68,
+        "groupMeetup": 62,
+        "weekendPlan": 89
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": [
+          "模拟风险：人均预算偏高"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_089",
+      "sceneScores": {
+        "soloToday": 68,
+        "groupMeetup": 94,
+        "weekendPlan": 89
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": [
+          "模拟风险：人均预算偏高"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_090",
+      "sceneScores": {
+        "soloToday": 82,
+        "groupMeetup": 62,
+        "weekendPlan": 86
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_091",
+      "sceneScores": {
+        "soloToday": 43,
+        "groupMeetup": 94,
+        "weekendPlan": 81
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": [
+          "模拟风险：人均预算偏高"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_092",
+      "sceneScores": {
+        "soloToday": 43,
+        "groupMeetup": 94,
+        "weekendPlan": 81
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": [
+          "模拟风险：人均预算偏高"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_093",
+      "sceneScores": {
+        "soloToday": 68,
+        "groupMeetup": 62,
+        "weekendPlan": 81
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": [
+          "模拟风险：人均预算偏高"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_094",
+      "sceneScores": {
+        "soloToday": 68,
+        "groupMeetup": 94,
+        "weekendPlan": 81
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": [
+          "模拟风险：人均预算偏高"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_095",
+      "sceneScores": {
+        "soloToday": 35,
+        "groupMeetup": 67,
+        "weekendPlan": 25
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [
+          "模拟风险：环境可能偏热闹"
+        ],
+        "groupMeetup": [
+          "模拟风险：聊天体验可能受噪声影响"
+        ],
+        "weekendPlan": [
+          "模拟风险：雨天舒适度一般",
+          "模拟风险：人均预算偏高"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_096",
+      "sceneScores": {
+        "soloToday": 43,
+        "groupMeetup": 94,
+        "weekendPlan": 59
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": [
+          "模拟风险：人均预算偏高"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_097",
+      "sceneScores": {
+        "soloToday": 43,
+        "groupMeetup": 79,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": [
+          "模拟风险：人均预算偏高"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_098",
+      "sceneScores": {
+        "soloToday": 43,
+        "groupMeetup": 79,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": [
+          "模拟风险：人均预算偏高"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_099",
+      "sceneScores": {
+        "soloToday": 43,
+        "groupMeetup": 79,
+        "weekendPlan": 47
+      },
+      "explainHints": {
+        "soloToday": [
+          "适合预算更宽松时选择",
+          "建议给等待留一点弹性",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": [
+          "模拟风险：人均预算偏高"
+        ]
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_100",
+      "sceneScores": {
+        "soloToday": 82,
+        "groupMeetup": 62,
+        "weekendPlan": 80
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "建议给等待留一点弹性",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "适合作为咖啡甜品或轻食停留点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    }
+  ]
+}

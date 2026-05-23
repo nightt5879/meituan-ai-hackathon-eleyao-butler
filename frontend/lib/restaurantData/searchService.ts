@@ -1,6 +1,6 @@
 import { distanceKm } from "./geo";
 import { loadRestaurantData } from "./loadData";
-import type { DishSearchItem, GeoPoint, SearchDishesFilters, SearchShopsQuery, Shop, ShopSearchItem } from "./types";
+import type { DiningScene, DishSearchItem, GeoPoint, SearchDishesFilters, SearchShopsQuery, Shop, ShopSearchItem } from "./types";
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
@@ -48,6 +48,10 @@ function normalizeGeoPoint(value: unknown): GeoPoint | undefined {
   return { latitude, longitude };
 }
 
+function normalizeScene(value: unknown): DiningScene | undefined {
+  return value === "soloToday" || value === "groupMeetup" || value === "weekendPlan" ? value : undefined;
+}
+
 function includesAll(sourceTags: string[], requiredTags: string[]) {
   if (requiredTags.length === 0) {
     return true;
@@ -61,8 +65,19 @@ function matchesKeyword(shop: Shop, keyword: string) {
     return true;
   }
 
-  const haystack = [shop.name, shop.category, shop.address, ...shop.tags].join(" ").toLowerCase();
+  const haystack = [shop.name, shop.category, shop.address, ...(shop.cuisines ?? []), ...shop.tags].join(" ").toLowerCase();
   return haystack.includes(keyword);
+}
+
+function combinedShopTags(shop: ShopSearchItem) {
+  return [
+    ...shop.tags,
+    ...(shop.cuisines ?? []),
+    ...(shop.features?.featureTags ?? []),
+    ...(shop.features?.tasteTags ?? []),
+    ...(shop.features?.sceneTags ?? []),
+    ...(shop.features?.crowdTags ?? [])
+  ];
 }
 
 export async function searchShops(rawQuery: SearchShopsQuery = {}) {
@@ -76,6 +91,7 @@ export async function searchShops(rawQuery: SearchShopsQuery = {}) {
   const radiusKm = normalizeNumber(query.radiusKm);
   const maxAvgPrice = normalizeNumber(query.maxAvgPrice);
   const regionId = normalizeString(query.regionId);
+  const scene = normalizeScene(query.scene);
   const limit = normalizeLimit(query.limit, 20, 100);
 
   const items: ShopSearchItem[] = data.shops
@@ -83,7 +99,6 @@ export async function searchShops(rawQuery: SearchShopsQuery = {}) {
     .filter((shop) => categories.length === 0 || categories.includes(shop.category))
     .filter((shop) => sources.length === 0 || sources.includes(shop.source))
     .filter((shop) => maxAvgPrice === undefined || shop.avgPrice === null || shop.avgPrice <= maxAvgPrice)
-    .filter((shop) => includesAll(shop.tags, tags))
     .filter((shop) => matchesKeyword(shop, keyword))
     .map((shop) => {
       const distance = center ? distanceKm(center, { latitude: shop.latitude, longitude: shop.longitude }) : undefined;
@@ -91,11 +106,21 @@ export async function searchShops(rawQuery: SearchShopsQuery = {}) {
       return {
         ...shop,
         distanceKm: distance,
-        features: data.featuresByShopId.get(shop.id)
+        features: data.featuresByShopId.get(shop.id),
+        sceneFit: data.sceneFitByShopId.get(shop.id)
       };
     })
+    .filter((shop) => includesAll(combinedShopTags(shop), tags))
     .filter((shop) => radiusKm === undefined || shop.distanceKm === undefined || shop.distanceKm <= radiusKm)
     .sort((a, b) => {
+      if (scene) {
+        const sceneDelta = (b.sceneFit?.sceneScores[scene] ?? -1) - (a.sceneFit?.sceneScores[scene] ?? -1);
+
+        if (sceneDelta !== 0) {
+          return sceneDelta;
+        }
+      }
+
       if (a.distanceKm !== undefined || b.distanceKm !== undefined) {
         return (a.distanceKm ?? Number.POSITIVE_INFINITY) - (b.distanceKm ?? Number.POSITIVE_INFINITY);
       }
@@ -121,6 +146,7 @@ export async function getShopDetail(shopId: string) {
   return {
     shop,
     features: data.featuresByShopId.get(shop.id) ?? null,
+    sceneFit: data.sceneFitByShopId.get(shop.id) ?? null,
     dishes: data.dishesByShopId.get(shop.id) ?? [],
     sourceMeta: data.sourceMeta.sources.filter((source) => source.id === shop.sourceId)
   };

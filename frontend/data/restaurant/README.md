@@ -5,9 +5,14 @@ This folder contains the Guangzhou University Town restaurant data layer MVP for
 ## Files
 
 - `regions/guangzhou_university_town.json`: region center, radius, validation radius, and future 20km expansion settings.
+- `regions/gut-business-districts.synthetic.json`: synthetic generation scaffold for Guangzhou University Town business districts, campus anchors, and manual-sample jitter points. It is not an exact administrative boundary file.
 - `shops.gut.seed.json`: 30 reviewed manual sample shops for Guangzhou University Town.
+- `shops.synthetic.seed.json`: 100 synthetic MVP shops generated inside the scaffolded Guangzhou University Town space.
 - `dishes.gut.seed.json`: generated-from-hints dishes linked by `shopId`.
+- `dishes.synthetic.seed.json`: synthetic dishes linked to synthetic shops.
 - `shop-features.gut.seed.json`: generated-from-hints shop features for filtering and ranking.
+- `shop-features.synthetic.seed.json`: synthetic shop features, including taste, scene, crowd, budget, queue-risk, noise, and explanation hints.
+- `scene-fit.synthetic.seed.json`: synthetic scene scores and explanation/risk hints for solo today, group meetup, and weekend planning recommendations.
 - `data-source-meta.json`: source kind definitions and source batch metadata.
 - `import/shops.manual.template.csv`: recommended simplified Chinese CSV template for manual collection.
 - `import/shops.manual.gut-2026-05-23.csv`: source CSV for the current 30-shop manual collection batch.
@@ -19,6 +24,7 @@ Every shop, dish, feature, and region must include `source` and `sourceId`.
 
 - `manual_sample`: manually organized shop sample data. Current formal shops use this source and come from the reviewed manual CSV batch.
 - `generated_from_hints`: generated dishes or shop features derived from manual shop category, tags, and representative dish hints. It is not a real menu or verified store environment.
+- `synthetic_mvp`: virtual restaurant data for recommendation MVP testing. It uses real Guangzhou University Town spatial constraints, but shop names, dishes, prices, queue risk, noise, scene scores, and explanations are synthetic.
 - `generated`: synthetic data created for development only. The current formal seed no longer contains old generated example shops.
 - `manual_public_curated`: future manually curated public POI data with source links and collected time.
 - `amap_poi_draft`: draft data from Amap API, requiring manual review.
@@ -29,8 +35,39 @@ Current formal seed status:
 - 30 shops, all `source: "manual_sample"`.
 - 150 dishes, all `source: "generated_from_hints"`.
 - 30 shop-feature records, all `source: "generated_from_hints"`.
+- 100 synthetic shops, all `source: "synthetic_mvp"` and `synthetic: true`.
+- 600 synthetic dishes, all `source: "synthetic_mvp"` and `synthetic: true`.
+- 100 synthetic shop-feature records and 100 synthetic scene-fit records.
 
 The shop base fields come from manual CSV organization. Dishes and features are generated from category and representative dish hints, and must not be presented as real menus, live prices, live queue risk, or verified environment facts. This project has not connected to real Meituan, Dianping, Amap, Tencent LBS, or other production POI APIs yet.
+
+The synthetic MVP files are physically separate from the manual seed files and are merged only by `frontend/lib/restaurantData/loadData.ts`. Synthetic coordinates are generated inside scaffolded Guangzhou University Town business districts, around campus anchors, or near existing manual sample coordinates with jitter. They are virtual candidate points for recommendation testing only: they do not represent real merchants, real menus, real ratings, real sales, live queues, user reviews, or any platform-certified data.
+
+## Synthetic Scene Fit
+
+`scene-fit.synthetic.seed.json` supports three recommendation scenes:
+
+- `soloToday`: single-person "what should I eat today", emphasizing budget, distance, quick meals, low simulated queue risk, and dietary fit.
+- `groupMeetup`: group meals, emphasizing group-friendly dishes, chat fit, acceptable simulated noise, stable per-person budget, and taste compatibility.
+- `weekendPlan`: weekend planning, emphasizing stay comfort, coffee/dessert/light-meal stops, rainy-day indoor fit, and route-node explanations.
+
+Scene explanations should be presented as synthetic recommendation hints, not verified facts about real venues.
+
+## Synthetic Generation
+
+Synthetic seed files are generated with a fixed seed:
+
+```powershell
+node frontend/scripts/generate-synthetic-restaurant-data.mjs
+```
+
+The script writes missing synthetic seed files. It does not overwrite existing synthetic files unless `--force` is passed:
+
+```powershell
+node frontend/scripts/generate-synthetic-restaurant-data.mjs --force
+```
+
+Use `--dry-run` to inspect counts without writing files.
 
 ## CSV Import
 
@@ -170,7 +207,9 @@ Run:
 node frontend/scripts/validate-restaurant-data.mjs
 ```
 
-The validator checks required fields, references, source metadata, dish counts, and whether shop coordinates fall within the Guangzhou University Town validation radius.
+The validator checks required fields, references, source metadata, dish counts, synthetic markers, synthetic confidence, scene-fit coverage, forbidden misleading platform wording, and whether shop coordinates fall within the Guangzhou University Town validation radius or the synthetic business-district scaffold.
+
+If a future version connects real POI or a database, keep `source`, `sourceId`, `synthetic`, `confidence`, and scene-fit provenance explicit. Replace synthetic shops with reviewed real POI batches instead of silently relabeling synthetic data as real.
 
 ## API Examples
 
@@ -203,6 +242,12 @@ Rank shops:
 
 ```powershell
 Invoke-RestMethod -Method Post -Uri http://localhost:3000/api/restaurants/rank -ContentType 'application/json' -Body '{"slots":{"budgetMax":50,"tasteTags":["清淡"],"needTags":["适合聊天"]},"userMemory":{},"limit":3}'
+```
+
+Rank with a scene:
+
+```powershell
+Invoke-RestMethod -Method Post -Uri http://localhost:3000/api/restaurants/rank -ContentType 'application/json' -Body '{"slots":{"scene":"soloToday","budgetMax":50,"needTags":["不辣可选"],"maxDistanceKm":3},"userMemory":{},"limit":5}'
 ```
 
 ## 20km Expansion
