@@ -73,7 +73,7 @@
       <view class="section-dot"></view>
       <view>
         <view class="section-title-small">候选方案</view>
-        <view class="section-desc-small">规则版 mock Agent 已生成 2-3 个可执行候选。</view>
+        <view class="section-desc-small">已生成 2-3 个可执行候选，方便大家快速对比。</view>
       </view>
     </view>
     <view wx:for="{{board.recommendations}}" wx:key="restaurant_id" wx:for-item="candidate" class="panel-card candidate-card">

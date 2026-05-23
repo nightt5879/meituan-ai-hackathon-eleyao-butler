@@ -5,25 +5,37 @@
 .page-bar {
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: 12rpx;
   margin-bottom: 28rpx;
 }
 
 .page-back {
   flex-shrink: 0;
-  width: 64rpx;
-  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72rpx;
+  min-width: 72rpx;
+  height: 72rpx;
   margin: 0;
   padding: 0;
-  border-radius: 20rpx;
+  border: 0;
+  border-radius: 50%;
   background: var(--theme-card, #FFFFFF);
   color: var(--theme-muted, #6B6157);
-  font-size: 48rpx;
-  line-height: 58rpx;
+  font-size: 44rpx;
+  line-height: 1;
+  box-shadow: 0 8rpx 22rpx rgba(45, 30, 15, 0.08);
+}
+
+.page-back::after {
+  border: 0;
 }
 
 .page-heading {
+  flex: 1;
   min-width: 0;
+  transform: translateX(-4rpx);
 }
 
 .page-title {
@@ -75,6 +87,11 @@
   margin-bottom: 0;
 }
 
+.field .primary-button,
+.field .ghost-button {
+  margin-top: 16rpx;
+}
+
 .field-label {
   margin-bottom: 10rpx;
   color: var(--theme-muted, #6B6157);
@@ -124,7 +141,7 @@
 .chip-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 10rpx;
+  gap: 14rpx 12rpx;
 }
 
 .info-chip {
@@ -134,6 +151,7 @@
   color: var(--theme-chip-text, #3F3527);
   font-size: 22rpx;
   font-weight: 700;
+  line-height: 1.4;
 }
 
 .info-chip.hard {
@@ -148,12 +166,26 @@
 
 .primary-button,
 .ghost-button {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   height: 92rpx;
   margin: 0;
+  padding: 0 24rpx;
   border-radius: 24rpx;
   font-size: 30rpx;
   font-weight: 800;
-  line-height: 92rpx;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.primary-button + .primary-button,
+.ghost-button + .ghost-button,
+.primary-button + .ghost-button,
+.ghost-button + .primary-button {
+  margin-top: 18rpx;
 }
 
 .primary-button {
@@ -165,6 +197,47 @@
   border: 1rpx solid var(--theme-border-strong, rgba(45, 30, 15, 0.14));
   background: var(--theme-card, #FFFFFF);
   color: var(--theme-muted, #6B6157);
+}
+
+.button-stack {
+  margin-top: 4rpx;
+}
+
+.option-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx 12rpx;
+}
+
+.option-cell {
+  box-sizing: border-box;
+  flex: 1 1 148rpx;
+  min-width: 132rpx;
+  max-width: 100%;
+  min-height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12rpx 18rpx;
+  border: 1rpx solid var(--theme-border-strong, rgba(45, 30, 15, 0.14));
+  border-radius: 999rpx;
+  background: var(--theme-card, #FFFFFF);
+  color: var(--theme-text, #1F1A15);
+  font-size: 24rpx;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.option-cell.active {
+  border-color: var(--theme-primary, #E8743A);
+  background: var(--theme-primary, #E8743A);
+  color: var(--theme-on-primary, #FFFFFF);
+}
+
+.people-grid .option-cell {
+  flex: 0 1 112rpx;
+  min-width: 112rpx;
 }
 
 .empty-panel {
@@ -186,4 +259,39 @@
   color: var(--theme-muted, #6B6157);
   font-size: 24rpx;
   line-height: 1.6;
+}
+
+/* Inline priority tag used inside .field-label to distinguish hard vs
+   soft requirements on the fill page. */
+.priority-tag {
+  display: inline-block;
+  margin-left: 12rpx;
+  padding: 2rpx 12rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.priority-tag.must {
+  background: rgba(255, 138, 61, 0.15);
+  color: #C66218;
+}
+
+.priority-tag.nice {
+  background: rgba(74, 144, 226, 0.15);
+  color: #2B5A8F;
+}
+
+/* Adjustment-request inline panel that expands beneath a candidate card. */
+.adjustment-panel {
+  margin-top: 14rpx;
+  padding: 24rpx;
+  border: 1rpx dashed var(--theme-border, #F3DDC7);
+  border-radius: 18rpx;
+  background: var(--theme-soft, #FFF1E3);
+}
+
+.adjustment-panel .field-label {
+  color: #C66218;
 }

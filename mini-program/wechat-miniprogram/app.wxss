@@ -1,7 +1,7 @@
 page {
   min-height: 100vh;
-  background: #FBF6EF;
-  color: #1F1A15;
+  background: #FDF8F3;
+  color: #211A16;
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
@@ -9,48 +9,48 @@ page {
   box-sizing: border-box;
   min-height: 100vh;
   padding: 48rpx 32rpx;
-  background: var(--theme-bg, #FBF6EF);
-  color: var(--theme-text, #1F1A15);
+  background: var(--theme-bg, #FDF8F3);
+  color: var(--theme-text, #211A16);
 }
 
 .theme-warm {
-  --theme-bg: #FBF6EF;
-  --theme-bg-soft: #F5EFE4;
-  --theme-primary: #E8743A;
-  --theme-primary-deep: #C75A22;
-  --theme-primary-soft: #FDEADC;
-  --theme-primary-ghost: #FFF4EA;
-  --theme-soft: #FFF4EA;
-  --theme-secondary: #FDEADC;
+  --theme-bg: #FDF8F3;
+  --theme-bg-soft: #FFF4EC;
+  --theme-primary: #F07030;
+  --theme-primary-deep: #C95A24;
+  --theme-primary-soft: #FCEFE7;
+  --theme-primary-ghost: rgba(240, 112, 48, 0.06);
+  --theme-soft: rgba(240, 112, 48, 0.06);
+  --theme-secondary: #FCEFE7;
   --theme-card: #FFFFFF;
-  --theme-card-muted: #FAF6EE;
-  --theme-text: #1F1A15;
-  --theme-muted: #6B6157;
-  --theme-subtle: #9A8F83;
-  --theme-border: rgba(45, 30, 15, 0.08);
-  --theme-border-strong: rgba(45, 30, 15, 0.14);
-  --theme-chip-bg: #F2EBDF;
-  --theme-chip-text: #3F3527;
+  --theme-card-muted: #FFF8F2;
+  --theme-text: #211A16;
+  --theme-muted: #7A6D63;
+  --theme-subtle: #A79789;
+  --theme-border: #F1E3D7;
+  --theme-border-strong: #E9D3C1;
+  --theme-chip-bg: #FCEFE7;
+  --theme-chip-text: #4A3124;
   --theme-on-primary: #FFFFFF;
   --theme-ai-bubble: #FFFFFF;
-  --theme-user-bubble: #FFE3CC;
-  --theme-user-text: #5C3517;
+  --theme-user-bubble: #FFE5D4;
+  --theme-user-text: #5C2E18;
   --theme-accent: #5B8C5A;
   --theme-warn: #C77A1B;
   --theme-danger: #C04A3A;
-  --theme-risk-bg: #FFF4EA;
+  --theme-risk-bg: #FFF4EC;
   --theme-risk-text: #6B4A2F;
 }
 
 .theme-blue {
   --theme-bg: #F3F7FB;
   --theme-bg-soft: #E7EEF6;
-  --theme-primary: #3D7BD9;
+  --theme-primary: #3D7EF5;
   --theme-primary-deep: #235DB8;
-  --theme-primary-soft: #DCE8FA;
-  --theme-primary-ghost: #EFF4FC;
-  --theme-soft: #EFF4FC;
-  --theme-secondary: #DCE8FA;
+  --theme-primary-soft: #EAF2FF;
+  --theme-primary-ghost: #EFF5FF;
+  --theme-soft: #EFF5FF;
+  --theme-secondary: #EAF2FF;
   --theme-card: #FFFFFF;
   --theme-card-muted: #F2F6FA;
   --theme-text: #0F1B2A;
@@ -64,13 +64,73 @@ page {
   --theme-ai-bubble: #FFFFFF;
   --theme-user-bubble: #DCE8FA;
   --theme-user-text: #1B3B6D;
-  --theme-accent: #3DAA8C;
+  --theme-accent: #FF7043;
   --theme-warn: #C58A1B;
   --theme-danger: #C84A4A;
   --theme-risk-bg: #EFF4FC;
   --theme-risk-text: #2A4B73;
 }
 
+.theme-mint {
+  --theme-bg: #F4FBF7;
+  --theme-bg-soft: #EAF8F1;
+  --theme-primary: #2DBF82;
+  --theme-primary-deep: #1C8E60;
+  --theme-primary-soft: #E5F7F0;
+  --theme-primary-ghost: #ECFAF4;
+  --theme-soft: #ECFAF4;
+  --theme-secondary: #E5F7F0;
+  --theme-card: #FFFFFF;
+  --theme-card-muted: #F7FCF9;
+  --theme-text: #10261B;
+  --theme-muted: #5A7165;
+  --theme-subtle: #88A094;
+  --theme-border: #C8E8DA;
+  --theme-border-strong: #A8D8C4;
+  --theme-chip-bg: #E5F7F0;
+  --theme-chip-text: #1F513B;
+  --theme-on-primary: #FFFFFF;
+  --theme-ai-bubble: #FFFFFF;
+  --theme-user-bubble: #DDF6EA;
+  --theme-user-text: #1F513B;
+  --theme-accent: #2A9D8F;
+  --theme-warn: #C58A1B;
+  --theme-danger: #C84A4A;
+  --theme-risk-bg: #ECFAF4;
+  --theme-risk-text: #265B43;
+}
+
+.theme-cat {
+  --theme-bg: #FFF9E8;
+  --theme-bg-soft: #FFF2C8;
+  --theme-primary: #F5A623;
+  --theme-primary-deep: #C77A1B;
+  --theme-primary-soft: #FFF4D6;
+  --theme-primary-ghost: #FFF7DE;
+  --theme-soft: #FFF7DE;
+  --theme-secondary: #FFF4D6;
+  --theme-card: #FFFFFF;
+  --theme-card-muted: #FFFDF4;
+  --theme-text: #251C12;
+  --theme-muted: #7A6A4A;
+  --theme-subtle: #A99A78;
+  --theme-border: #F1E1AD;
+  --theme-border-strong: #E8CC7A;
+  --theme-chip-bg: #FFF4D6;
+  --theme-chip-text: #5B4417;
+  --theme-on-primary: #FFFFFF;
+  --theme-ai-bubble: #FFFFFF;
+  --theme-user-bubble: #FFF0B8;
+  --theme-user-text: #5B4417;
+  --theme-accent: #FF6B6B;
+  --theme-warn: #C77A1B;
+  --theme-danger: #D65252;
+  --theme-risk-bg: #FFF7DE;
+  --theme-risk-text: #6B4A2F;
+}
+
+/* Restored from HEAD — sakura-pink palette for the dessert / date vibe.
+   Visible in the home page theme picker as 樱花粉. */
 .theme-pink {
   --theme-bg: #FCF4F6;
   --theme-bg-soft: #F6E7EC;
@@ -100,6 +160,8 @@ page {
   --theme-risk-text: #6A2B43;
 }
 
+/* Restored from HEAD — dark mode for night dining / low-light reading.
+   Visible in the home page theme picker as 夜间黑. */
 .theme-dark {
   --theme-bg: #15161A;
   --theme-bg-soft: #1E2026;
@@ -129,6 +191,38 @@ page {
   --theme-risk-text: #FBD8B8;
 }
 
+/* Restored from HEAD — the previous default-orange identity. Users who
+   liked the older look can switch back via the home page theme picker.
+   The new theme classes above (warm / blue / mint / cat) are unchanged. */
+.theme-original {
+  --theme-bg: #FBF6EF;
+  --theme-bg-soft: #F5EFE4;
+  --theme-primary: #E8743A;
+  --theme-primary-deep: #C75A22;
+  --theme-primary-soft: #FDEADC;
+  --theme-primary-ghost: #FFF4EA;
+  --theme-soft: #FFF4EA;
+  --theme-secondary: #FDEADC;
+  --theme-card: #FFFFFF;
+  --theme-card-muted: #FAF6EE;
+  --theme-text: #1F1A15;
+  --theme-muted: #6B6157;
+  --theme-subtle: #9A8F83;
+  --theme-border: rgba(45, 30, 15, 0.08);
+  --theme-border-strong: rgba(45, 30, 15, 0.14);
+  --theme-chip-bg: #F2EBDF;
+  --theme-chip-text: #3F3527;
+  --theme-on-primary: #FFFFFF;
+  --theme-ai-bubble: #FFFFFF;
+  --theme-user-bubble: #FFE3CC;
+  --theme-user-text: #5C3517;
+  --theme-accent: #5B8C5A;
+  --theme-warn: #C77A1B;
+  --theme-danger: #C04A3A;
+  --theme-risk-bg: #FFF4EA;
+  --theme-risk-text: #6B4A2F;
+}
+
 .section-title {
   margin: 0 0 16rpx;
   color: var(--theme-text, #1F1A15);
@@ -150,10 +244,10 @@ page {
   align-items: center;
   justify-content: center;
   border-radius: 24rpx;
-  background: var(--theme-primary, #E8743A);
+  background: var(--theme-primary, #F07030);
   color: var(--theme-on-primary, #FFFFFF);
   font-weight: 800;
-  box-shadow: 0 14rpx 34rpx rgba(232, 116, 58, 0.24);
+  box-shadow: 0 14rpx 34rpx rgba(240, 112, 48, 0.18);
 }
 
 .theme-dark .ai-mark {
