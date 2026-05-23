@@ -74,14 +74,15 @@ export function extractParticipantConstraints(input: ParticipantInput): Particip
   const raw = input.raw_preference;
   const hardConstraints: string[] = [];
   const softPreferences: string[] = [];
-  const spicyPreference = input.manual_fields.spicy_preference;
-  const parsedBudget = input.manual_fields.budget_max ?? extractBudgetMax(raw, 0);
+  const manualFields = input.manual_fields ?? {};
+  const spicyPreference = manualFields.spicy_preference;
+  const parsedBudget = manualFields.budget_max ?? extractBudgetMax(raw, 0);
 
   if (spicyPreference === "no_spicy" || includesAny(raw, ["不吃辣", "不能吃辣", "完全不吃辣", "不要辣"])) {
     hardConstraints.push("不吃辣");
   }
 
-  if (input.manual_fields.leave_before) {
+  if (manualFields.leave_before) {
     hardConstraints.push(`${input.manual_fields.leave_before} 前离开或回去`);
   }
 
@@ -126,6 +127,7 @@ export function buildMockParticipant(input: ParticipantInput, existingId?: strin
 
   return {
     participant_id: existingId ?? `p_local_${encodeURIComponent(nickname)}`,
+    client_id: input.client_id?.trim() || undefined,
     nickname,
     raw_preference: input.raw_preference.trim(),
     manual_fields,
@@ -137,6 +139,7 @@ export function extractConstraints(participants: Participant[]) {
   return participants.map((participant) =>
     buildMockParticipant(
       {
+        client_id: participant.client_id,
         nickname: participant.nickname,
         raw_preference: participant.raw_preference,
         manual_fields: participant.manual_fields

@@ -13,6 +13,7 @@ export type ManualFields = {
 
 export type Participant = {
   participant_id: string;
+  client_id?: string;
   nickname: string;
   raw_preference: string;
   manual_fields: ManualFields;
@@ -113,6 +114,7 @@ export type StoredTaskFields = {
 };
 
 export type ParticipantInput = {
+  client_id?: string;
   nickname: string;
   raw_preference: string;
   manual_fields: ManualFields;

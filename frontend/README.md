@@ -71,7 +71,115 @@ Vercel serverless 不适合用本地 JSON 文件做长期持久化。函数文�
 
 ## 当前边界
 
-- 不接真实 OpenClaw。
+- 多人约饭 H5 仍不接真实 OpenClaw；小程序单人约饭通过 `/api/food/recommend` 接云端 OpenClaw Gateway。
 - 不接美团 / 大众点评 / 地图等外部 API。
 - 不注册或配置云数据库。
-- 推荐仍复用 `frontend/lib/mockFunctions.ts` 的规则版 mock Agent。
+- 多人 H5 推荐仍复用 `frontend/lib/mockFunctions.ts` 的规则版 mock Agent。
+
+## 小程序多人约饭后端 API
+
+小程序多人约饭第一版不走 H5 页面，只复用当前 Next.js API 运行环境和 JSON 文件存储。创建任务会返回明文 `inviteToken`，服务端只保存 `sha256(inviteToken)`；读取、提交成员和生成推荐都必须带 token。
+
+核心接口：
+
+```text
+GET  /api/health
+POST /api/group-tasks
+GET  /api/group-tasks/:taskId?inviteToken=...
+POST /api/group-tasks/:taskId/participants
+POST /api/group-tasks/:taskId/recommend
+```
+
+最小 curl 验收：
+
+```powershell
+$base="http://localhost:3000"
+$task=Invoke-RestMethod "$base/api/group-tasks" -Method POST -ContentType "application/json" -Body (@{
+  creatorName="小幺"
+  rawRequest="周六晚上 5 个人聚餐，人均 80 内，适合聊天"
+  locationText="学校东门"
+  expectedPeopleCount=5
+  dinnerTime="周六 18:30"
+} | ConvertTo-Json)
+
+$body=@{
+  inviteToken=$task.inviteToken
+  clientId="local_device_id"
+  nickname="阿杰"
+  rawPreference="我完全不吃辣，预算最好 80 内"
+  manualFields=@{ budgetMax=80; spicyPreference="no_spicy"; leaveBefore="20:30" }
+} | ConvertTo-Json -Depth 5
+
+Invoke-RestMethod "$base/api/group-tasks/$($task.taskId)/participants" -Method POST -ContentType "application/json" -Body $body
+Invoke-RestMethod "$base/api/group-tasks/$($task.taskId)/recommend" -Method POST -ContentType "application/json" -Body (@{ inviteToken=$task.inviteToken } | ConvertTo-Json)
+```
+
+小程序端配置后端 origin：
+
+```js
+groupDiningApiBaseUrl: 'https://your-backend.example.com'
+```
+
+## 小程序单人约饭 OpenClaw 配置
+
+`POST /api/food/recommend` 是微信小程序「今天吃什么」接 OpenClaw 的后端代理接口。这个接口不提供后端 mock provider；正常路径必须调用云端 OpenClaw Gateway。
+
+本地启动前配置：
+
+```powershell
+$env:OPENCLAW_GATEWAY_URL="wss://your-openclaw-gateway.example.com"
+$env:OPENCLAW_GATEWAY_TOKEN="your-gateway-token"
+npm.cmd run dev
+```
+
+可选变量：
+
+```powershell
+$env:OPENCLAW_GATEWAY_TIMEOUT_MS="30000"
+$env:OPENCLAW_CHAT_SESSION_ID="food-recommendation"
+$env:OPENCLAW_CHAT_SESSION_KEY="food-recommendation"
+$env:OPENCLAW_AGENT_ID="agent-id"
+```
+
+小程序端只配置后端 origin，例如在 `mini-program/wechat-miniprogram/app.js` 里设置：
+
+```js
+foodRecommendApiBaseUrl: 'https://your-backend.example.com'
+```
+
+OpenClaw Gateway token 只放后端环境变量，不能写进小程序。
+
+## 小程序周末轻规划 API
+
+后端提供小程序周末轻规划第一版接口，不走 H5 页面，不接真实地图/点评 POI。天气使用 Open-Meteo 广州番禺坐标，POI 和活动为学校周边 mock 数据。
+
+```text
+POST /api/weekend/plans
+GET  /api/weekend/plans/:planId
+```
+
+请求示例：
+
+```json
+{
+  "timeWindow": "周六下午 3 小时",
+  "budgetMax": 120,
+  "startArea": "学校东门",
+  "mood": "想轻松一点",
+  "energyLevel": "中等",
+  "companions": "朋友",
+  "interests": ["咖啡", "citywalk", "拍照"],
+  "rawText": "想在学校附近走走，不要太赶"
+}
+```
+
+返回包含 `planId`、`weather`、`routes[3]` 和 `source`。每条路线包含时间线、预计预算、预计时长、地点/活动、交通说明、自检项、风险提示和邀约文案。
+
+天气失败时返回 `weather.status = "unavailable"`、`weather.fallback = true`、`source.weather = "fallback-conservative"`，并仍生成 3 条保守路线。
+
+本地可用环境变量：
+
+```powershell
+$env:MEITUAN_WEEKEND_STATE_FILE="D:\tmp\meituan\weekend-plans.json"
+$env:MEITUAN_WEEKEND_WEATHER_DISABLED="1"
+```

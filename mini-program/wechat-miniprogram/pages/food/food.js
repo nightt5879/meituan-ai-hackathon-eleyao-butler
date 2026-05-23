@@ -43,6 +43,7 @@ Page({
     summaryFields: [],
     slotItems: [],
     recommendations: [],
+    isRecommendationLoading: false,
     recommendationBatchIndex: 0,
     recommendationNotice: '',
     showAdjustmentOptions: false,
@@ -53,6 +54,11 @@ Page({
     hasSavedCurrentRecord: false,
     memoryDecision: '',
     progressPercent: 0,
+    connectionStatus: buildConnectionStatusView({
+      state: 'checking',
+      text: '检测 OpenClaw 中',
+      detail: ''
+    }),
 
     // ─── Preference pre-check state ─────────────────────────────────────
     // prefCheckActive   — true while the butler is asking "今天也按这个来吗？"
@@ -93,10 +99,12 @@ Page({
     }
 
     this.startSession();
+    this.refreshConnectionStatus();
   },
 
   onShow() {
     this.syncTheme();
+    this.refreshConnectionStatus();
   },
 
   syncTheme() {
@@ -139,6 +147,7 @@ Page({
         summaryFields: [],
         slotItems: [],
         recommendations: [],
+        isRecommendationLoading: false,
         progressPercent: 0,
         memoryDecision: '',
         recommendationBatchIndex: 0,
@@ -171,6 +180,32 @@ Page({
           url: '/pages/home/home'
         });
       }
+    });
+  },
+
+  async refreshConnectionStatus() {
+    this.setData({
+      connectionStatus: buildConnectionStatusView({
+        state: 'checking',
+        text: '检测 OpenClaw 中',
+        detail: this.data.connectionStatus.detail || ''
+      })
+    });
+
+    const status = await foodAiAdapter.getFoodConnectionStatus();
+    this.setData({
+      connectionStatus: buildConnectionStatusView(status)
+    });
+  },
+
+  handleConnectionStatusTap() {
+    const status = this.data.connectionStatus || {};
+
+    wx.showModal({
+      title: status.text || '连接状态',
+      content: status.detail || '暂无连接详情',
+      showCancel: false,
+      confirmText: '知道了'
     });
   },
 
@@ -258,6 +293,10 @@ Page({
 
     // choice question — required
     if (!selectedOptions.length && !manualAnswer) {
+      if (currentQuestion.allowEmpty || currentQuestion.optional) {
+        this.submitAnswer('未选择');
+        return;
+      }
       wx.showToast({ title: '请先选择或填写一个偏好', icon: 'none' });
       return;
     }
@@ -600,31 +639,52 @@ Page({
     this.jumpToQuestionById(questionId);
   },
 
-  handleRefreshRecommendations() {
+  async handleRefreshRecommendations() {
     const currentRecommendations = this.data.recommendations || [];
     const currentIds = currentRecommendations.map(function (item) {
       return item.id;
     });
     const nextBatchIndex = this.data.recommendationBatchIndex + 1;
-    const nextRecommendations = foodAiAdapter.generateRecommendations(
-      this.data.session.slots,
-      this.data.session.preferences,
-      {
-        excludeIds: currentIds,
-        batchIndex: nextBatchIndex
-      }
-    );
+    this.setData({ isRecommendationLoading: true });
+    wx.showLoading({ title: '生成推荐中' });
+
+    let nextRecommendations;
+    try {
+      nextRecommendations = await foodAiAdapter.generateRecommendations(
+        this.data.session.slots,
+        this.data.session.preferences,
+        {
+          excludeIds: currentIds,
+          batchIndex: nextBatchIndex,
+          decisionSheet: this.data.session.decisionSheet
+        }
+      );
+    } finally {
+      wx.hideLoading();
+    }
+
     const nextIds = nextRecommendations.map(function (item) {
       return item.id;
     });
     const isSameBatch = areSameRecommendationIds(currentIds, nextIds);
+    const recommendationMeta = foodAiAdapter.getLastRecommendationMeta();
 
     this.setData({
       recommendations: nextRecommendations,
+      isRecommendationLoading: false,
       recommendationBatchIndex: nextBatchIndex,
-      recommendationNotice: isSameBatch
+      recommendationNotice: recommendationMeta.fallback
+        ? recommendationMeta.message
+        : isSameBatch
         ? '暂时没有更多合适方案，我再帮你放宽一点条件试试'
         : '我换了一批，你可以看看有没有更顺眼的方案。',
+      connectionStatus: recommendationMeta.fallback
+        ? buildConnectionStatusView({
+            state: 'degraded',
+            text: 'OpenClaw 推荐未返回',
+            detail: recommendationMeta.error || recommendationMeta.message
+          })
+        : this.data.connectionStatus,
       showAdjustmentOptions: false
     });
   },
@@ -714,7 +774,7 @@ Page({
     ];
   },
 
-  refreshRecommendationsWithAdjustment(adjustment) {
+  async refreshRecommendationsWithAdjustment(adjustment) {
     const currentRecommendations = this.data.recommendations || [];
     const currentIds = currentRecommendations.map(function (item) {
       return item.id;
@@ -728,23 +788,43 @@ Page({
         avoidCategories: this.getCurrentRecommendationCategories()
       })
     };
-    const nextRecommendations = foodAiAdapter.generateRecommendations(
-      this.data.session.slots,
-      adjustedPreferences,
-      adapterOptions
-    );
+    this.setData({ isRecommendationLoading: true });
+    wx.showLoading({ title: '生成推荐中' });
+
+    let nextRecommendations;
+    try {
+      nextRecommendations = await foodAiAdapter.generateRecommendations(
+        this.data.session.slots,
+        adjustedPreferences,
+        Object.assign({}, adapterOptions, {
+          decisionSheet: this.data.session.decisionSheet
+        })
+      );
+    } finally {
+      wx.hideLoading();
+    }
+
     const nextIds = nextRecommendations.map(function (item) {
       return item.id;
     });
     const isSameBatch = areSameRecommendationIds(currentIds, nextIds);
+    const recommendationMeta = foodAiAdapter.getLastRecommendationMeta();
     const noticeText = isSameBatch
       ? '符合条件的方案有限，我先帮你换了更接近的一批。'
       : '已根据「' + adjustment.text + '」重新调整推荐';
 
     this.setData({
       recommendations: nextRecommendations,
+      isRecommendationLoading: false,
       recommendationBatchIndex: nextBatchIndex,
-      recommendationNotice: noticeText,
+      recommendationNotice: recommendationMeta.fallback ? recommendationMeta.message : noticeText,
+      connectionStatus: recommendationMeta.fallback
+        ? buildConnectionStatusView({
+            state: 'degraded',
+            text: 'OpenClaw 推荐未返回',
+            detail: recommendationMeta.error || recommendationMeta.message
+          })
+        : this.data.connectionStatus,
       showAdjustmentOptions: false,
       adjustmentManualInput: '',
       adjustmentMessages: this.data.adjustmentMessages.concat(
@@ -805,7 +885,7 @@ Page({
       chatMessages: this.buildChatMessages(prevSession, prevQuestion),
       slotSummaryText: this.buildSlotSummaryText(prevSession.slots, prevSession.preferences),
       summaryFields: this.buildSummaryFields(prevSession),
-      slotItems: this.formatSlotItems(prevSession.slots, prevSession.preferences)
+      slotItems: this.formatSlotItems(prevSession.slots, prevSession.preferences, prevSession.decisionSheet)
     });
   },
 
@@ -821,6 +901,60 @@ Page({
     }
 
     this.updateQuestionState(session, prevIndex, answerHistory);
+    this.prefetchDynamicQuestions(session);
+  },
+
+  prefetchDynamicQuestions(session) {
+    if (!foodAiAdapter.shouldPrefetchDynamicQuestions(session)) {
+      return;
+    }
+
+    const loadingSession = foodAiAdapter.markDynamicQuestionPlanLoading(session);
+    this.setData({ session: loadingSession });
+
+    foodAiAdapter.requestDynamicQuestionPlan(loadingSession).then((plan) => {
+      if (this.data.isFinished) {
+        return;
+      }
+
+      const currentSession = this.data.session;
+      const mergedSession = foodAiAdapter.mergeDynamicQuestionPlan(currentSession, plan);
+
+      if (mergedSession === currentSession) {
+        return;
+      }
+
+      const currentQuestion = foodAiAdapter.getNextQuestion(mergedSession);
+      const selectedTags = this.cloneSelectedTags(emptySelectedTags);
+      const keepCurrentInput = this.data.currentQuestion &&
+        currentQuestion &&
+        this.data.currentQuestion.id === currentQuestion.id;
+
+      this.setData({
+        session: mergedSession,
+        currentQuestion,
+        currentOptions: keepCurrentInput
+          ? this.data.currentOptions
+          : currentQuestion && (currentQuestion.kind === 'choice' || currentQuestion.kind === 'multi-choice')
+          ? this.formatQuestionOptions(currentQuestion, [])
+          : [],
+        tagGroups: keepCurrentInput
+          ? this.data.tagGroups
+          : currentQuestion && currentQuestion.kind === 'tag'
+          ? this.formatTagGroups(currentQuestion, selectedTags)
+          : [],
+        isTagQuestion: !!currentQuestion && currentQuestion.kind === 'tag',
+        showManualInput: !!currentQuestion,
+        selectedOptions: keepCurrentInput ? this.data.selectedOptions : [],
+        selectedTags: keepCurrentInput ? this.data.selectedTags : selectedTags,
+        manualAnswer: keepCurrentInput ? this.data.manualAnswer : '',
+        chatMessages: this.buildChatMessages(mergedSession, currentQuestion),
+        slotSummaryText: this.buildSlotSummaryText(mergedSession.slots, mergedSession.preferences),
+        summaryFields: this.buildSummaryFields(mergedSession),
+        slotItems: this.formatSlotItems(mergedSession.slots, mergedSession.preferences, mergedSession.decisionSheet),
+        progressPercent: this.buildProgressPercent(mergedSession, currentQuestion)
+      });
+    }).catch(() => {});
   },
 
   toggleOption(value) {
@@ -851,14 +985,41 @@ Page({
     });
   },
 
-  updateQuestionState(session, savedFromIndex, nextAnswerHistory) {
+  async updateQuestionState(session, savedFromIndex, nextAnswerHistory) {
     const currentQuestion = foodAiAdapter.getNextQuestion(session);
-    const recommendations = currentQuestion
-      ? []
-      : foodAiAdapter.generateRecommendations(session.slots, session.preferences);
+    let recommendations = [];
+    let recommendationNotice = '';
+    let nextConnectionStatus = this.data.connectionStatus;
     const hasSavedCurrentRecord = this.hasSavedCurrentRecordFlag || this.data.hasSavedCurrentRecord;
 
     if (!currentQuestion) {
+      this.setData({ isRecommendationLoading: true });
+      wx.showLoading({ title: '生成推荐中' });
+      try {
+        recommendations = await foodAiAdapter.generateRecommendations(session.slots, session.preferences, {
+          decisionSheet: session.decisionSheet
+        });
+      } finally {
+        wx.hideLoading();
+      }
+
+      const recommendationMeta = foodAiAdapter.getLastRecommendationMeta();
+      recommendationNotice = recommendationMeta.fallback ? recommendationMeta.message : '';
+      nextConnectionStatus = recommendationMeta.fallback
+        ? buildConnectionStatusView({
+            state: 'degraded',
+            text: 'OpenClaw 推荐未返回',
+            detail: [
+              this.data.connectionStatus.detail || '',
+              recommendationMeta.error ? '推荐失败原因：' + recommendationMeta.error : ''
+            ].filter(function (line) { return !!line; }).join('\n')
+          })
+        : buildConnectionStatusView({
+            state: 'connected',
+            text: 'OpenClaw 推荐成功',
+            detail: this.data.connectionStatus.detail || '远端 OpenClaw 已成功返回推荐。'
+          });
+
       // Auto-save only lightweight recommendation history when behavior-learning
       // permission allows it. Reusable preference records and long-term memory
       // are written only when the user explicitly taps 「记住这个偏好」.
@@ -896,11 +1057,13 @@ Page({
       chatMessages: this.buildChatMessages(session, currentQuestion),
       slotSummaryText: this.buildSlotSummaryText(session.slots, session.preferences),
       summaryFields: this.buildSummaryFields(session),
-      slotItems: this.formatSlotItems(session.slots, session.preferences),
+      slotItems: this.formatSlotItems(session.slots, session.preferences, session.decisionSheet),
       recommendations,
+      isRecommendationLoading: false,
       progressPercent: this.buildProgressPercent(session, currentQuestion),
       recommendationBatchIndex: 0,
-      recommendationNotice: '',
+      recommendationNotice,
+      connectionStatus: nextConnectionStatus,
       showAdjustmentOptions: false,
       adjustmentMessages: [],
       memoryDecision: !currentQuestion ? '' : this.data.memoryDecision,
@@ -1071,7 +1234,7 @@ Page({
       chatMessages,
       slotSummaryText: this.buildSlotSummaryText(replayResult.session.slots, replayResult.session.preferences),
       summaryFields: this.buildSummaryFields(replayResult.session),
-      slotItems: this.formatSlotItems(replayResult.session.slots, replayResult.session.preferences),
+      slotItems: this.formatSlotItems(replayResult.session.slots, replayResult.session.preferences, replayResult.session.decisionSheet),
       recommendations: [],
       recommendationBatchIndex: 0,
       recommendationNotice: '',
@@ -1460,16 +1623,24 @@ Page({
     const currentIndex = session.questionIndex || 0;
 
     return this.getQuestionList(session).map(function (question, index) {
-      return buildSummaryField(question, index, currentIndex, slots, preferences, manualInputs);
+      return buildSummaryField(
+        question,
+        index,
+        currentIndex,
+        slots,
+        preferences,
+        manualInputs,
+        session.decisionSheet
+      );
     }).filter(function (field) {
       return !!field;
     });
   },
 
-  formatSlotItems(slots, preferences) {
+  formatSlotItems(slots, preferences, decisionSheet) {
     const safePreferences = preferences || {};
 
-    return [
+    const items = [
       {
         label: '就餐场景',
         value: slots.mealPurpose || '待补充'
@@ -1503,6 +1674,16 @@ Page({
         value: slots.distance || '待补充'
       }
     ];
+    const dynamicItems = decisionSheet && Array.isArray(decisionSheet.dynamic)
+      ? decisionSheet.dynamic.map(function (dimension) {
+          return {
+            label: dimension.label || '补充偏好',
+            value: dimension.value || '待补充'
+          };
+        })
+      : [];
+
+    return items.concat(dynamicItems);
   },
 
   buildPreferenceRecord(session, recommendations) {
@@ -1548,6 +1729,28 @@ function hasUsefulSlotValue(value) {
   return !!value && value !== '待补充' && value !== '未选择';
 }
 
+function buildConnectionStatusView(status) {
+  const safeStatus = status || {};
+  const state = safeStatus.state || 'checking';
+  const textMap = {
+    checking: '检测 OpenClaw 中',
+    connected: 'OpenClaw 已连接',
+    'backend-only': '后端在线 · OpenClaw 未确认',
+    degraded: 'OpenClaw 推荐未返回',
+    mock: '本地推荐模式',
+    error: '后端未连接'
+  };
+
+  return {
+    state,
+    statusClass: 'status-' + state,
+    text: safeStatus.text || textMap[state] || '连接状态未知',
+    detail: safeStatus.detail || '',
+    baseUrl: safeStatus.baseUrl || '',
+    checkedAt: safeStatus.checkedAt || ''
+  };
+}
+
 // Display-only helper. Combines a structured slot value with the user's free-form
 // manual input as "structured；补充：manual". Submission/scoring code never goes
 // through this — it only changes how bubbles, summary chips, and record summaries
@@ -1585,7 +1788,7 @@ function buildPreferenceRecordSummary(slots, manualInputs) {
   return baseText || '一次吃饭偏好';
 }
 
-function buildSummaryField(question, index, currentIndex, slots, preferences, manualInputs) {
+function buildSummaryField(question, index, currentIndex, slots, preferences, manualInputs, decisionSheet) {
   let label = '';
   let value = '';
   let isTagField = false;
@@ -1610,6 +1813,9 @@ function buildSummaryField(question, index, currentIndex, slots, preferences, ma
   } else if (question.slot === 'distance') {
     label = '距离';
     value = slots.distance || '待补充';
+  } else if (String(question.slot || '').indexOf('dynamic.') === 0) {
+    label = question.label || '补充偏好';
+    value = getDynamicSummaryValue(decisionSheet, question) || '待补充';
   }
 
   if (!label) {
@@ -1636,6 +1842,18 @@ function buildSummaryField(question, index, currentIndex, slots, preferences, ma
     fieldClass: stateClass + disabledClass,
     rowClass: disabledClass
   };
+}
+
+function getDynamicSummaryValue(decisionSheet, question) {
+  const key = String(question.targetDimension || question.slot || '').replace(/^dynamic\./, '');
+  const dynamicDimensions = decisionSheet && Array.isArray(decisionSheet.dynamic)
+    ? decisionSheet.dynamic
+    : [];
+  const matched = dynamicDimensions.find(function (dimension) {
+    return dimension.key === key;
+  });
+
+  return matched ? matched.value : '';
 }
 
 function buildTasteSummaryValue(preferences) {

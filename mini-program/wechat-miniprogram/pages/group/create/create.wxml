@@ -1,70 +1,70 @@
 <view class="page scaffold-page theme-{{currentTheme}}">
-  <!-- Native navigation bar already provides the back arrow — no in-content
-       page-back button here. Keep page-bar as a thin title container. -->
-  <view class="page-bar create-page-bar">
+  <view class="page-bar">
+    <button class="page-back" bindtap="handleBack">‹</button>
     <view class="page-heading">
       <view class="page-title">发起约饭</view>
-      <view class="page-subtitle">选一下人数就能生成任务链接，朋友点开就能填偏好。</view>
+      <view class="page-subtitle">创建一份可分享的多人约饭任务，成员填写后会同步到同一个看板。</view>
     </view>
   </view>
 
   <view class="status-badge">
     <view class="status-dot"></view>
-    <text>极简发起 · 其余字段管家会先填默认</text>
+    <text>多人偏好收集 · 后端联调</text>
   </view>
 
-  <view wx:if="{{!createdTask}}" class="panel-card">
+  <view class="panel-card">
     <view class="field">
-      <view class="field-label">预计几个人？</view>
-      <view class="option-grid people-grid">
-        <view
-          wx:for="{{peopleOptions}}"
-          wx:key="value"
-          class="option-cell {{item.active ? 'active' : ''}}"
-          data-value="{{item.value}}"
-          bindtap="handleSelectPeople"
-        >{{item.value}}人</view>
-      </view>
-      <view class="field-hint">不在列表里？下面也可以直接填数字。</view>
+      <view class="field-label">你的昵称</view>
+      <input class="field-input" value="{{form.creatorName}}" data-field="creatorName" bindinput="handleInput" />
     </view>
 
+    <view class="field">
+      <view class="field-label">这次想解决什么</view>
+      <textarea
+        class="field-textarea"
+        value="{{form.rawRequest}}"
+        placeholder="例如：周末晚上 5 个人聚餐，1 个吃素，1 个不吃辣，预算想控制在人均 80 以内。"
+        data-field="rawRequest"
+        bindinput="handleInput"
+      ></textarea>
+      <view class="field-hint">后续这里会接 Agent 约束抽取：硬约束、软偏好、冲突点。</view>
+    </view>
+
+    <view class="split-grid">
+      <view class="field last">
+        <view class="field-label">人数</view>
+        <input class="field-input" value="{{form.peopleCount}}" data-field="peopleCount" bindinput="handleInput" />
+      </view>
+      <view class="field last">
+        <view class="field-label">时间</view>
+        <input class="field-input" value="{{form.dinnerTime}}" data-field="dinnerTime" bindinput="handleInput" />
+      </view>
+    </view>
+  </view>
+
+  <view class="panel-card">
     <view class="field last">
-      <view class="field-label">自定义人数</view>
+      <view class="field-label">地点</view>
       <input
         class="field-input"
-        type="number"
-        value="{{customPeopleInput}}"
-        placeholder="例如 12"
-        bindinput="handleCustomPeopleInput"
+        value="{{form.location}}"
+        placeholder="例如：学校东门 / 地铁站附近"
+        data-field="location"
+        bindinput="handleInput"
       />
     </view>
   </view>
 
-  <view wx:if="{{!createdTask}}" class="panel-card">
-    <view class="field-label">关于其他字段</view>
-    <view class="field-hint">时间、地点、口味会让朋友各自填。管家会自动整理冲突，并给出一个最终方案。</view>
-  </view>
-
-  <button wx:if="{{!createdTask}}" class="primary-button" loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="handleCreateTask">生成任务链接</button>
-
-  <view wx:if="{{createdTask}}" class="panel-card">
-    <view class="field-label">任务已生成</view>
-    <view class="field-hint">任务标题：{{createdTask.task.title}}</view>
-    <view class="field-hint">taskId：{{createdTask.taskId}}</view>
-    <view class="field-hint">邀请 token：{{createdTask.inviteToken}}</view>
-    <view class="field-hint" style="word-break: break-all;">分享路径：{{createdTask.sharePath}}</view>
+  <view class="panel-card">
+    <view class="field-label">当前链路</view>
     <view class="chip-row">
       <view class="info-chip hard">createTask</view>
-      <view class="info-chip soft">sharePath</view>
+      <view class="info-chip soft">shareUrl</view>
       <view class="info-chip soft">inviteToken</view>
       <view class="info-chip">waiting_preferences</view>
     </view>
+    <view class="field-hint">创建后会返回 taskId 和 inviteToken，并生成可分享的填写路径。</view>
   </view>
 
-  <view wx:if="{{createdTask}}" class="button-stack">
-    <button class="primary-button" open-type="share">分享到群里</button>
-    <button class="primary-button" bindtap="handleViewBoard">查看任务看板</button>
-    <button class="primary-button" bindtap="handleCopySharePath">复制分享路径</button>
-    <button class="primary-button" bindtap="handleCreateAnother">再发起一个</button>
-  </view>
+  <button class="primary-button" bindtap="handleCreateTask">生成任务链接，分享到群</button>
 </view>

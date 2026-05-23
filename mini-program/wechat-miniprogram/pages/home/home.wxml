@@ -5,8 +5,8 @@
   </view>
 
   <view class="home-hero">
-    <view class="section-title">今天需要管家帮什么？</view>
-    <view class="section-desc">从一个人吃什么，到多人约饭和周末规划，<text class="line-break"></text>先给你 2-3 个可执行方案。</view>
+    <view class="section-title">今天吃什么？</view>
+    <view class="section-desc">告诉我场景和偏好，<text class="line-break"></text>我帮你挑 2-3 个可执行方案。</view>
   </view>
 
   <view class="utility-row">
@@ -20,38 +20,30 @@
     </button>
   </view>
 
-  <view class="entry-list">
-    <view class="home-entry-card" bindtap="goToFood">
-      <view class="entry-mark food-icon">吃</view>
-      <view class="entry-copy">
-        <view class="entry-title">今天吃什么</view>
-        <view class="entry-desc">一个人也能快速拿到 2-3 个方案</view>
-      </view>
-      <view class="entry-side">
-        <view class="entry-arrow">›</view>
-      </view>
+  <view class="primary-entry" bindtap="goToFood">
+    <view class="primary-glow"></view>
+    <view class="primary-mark ai-mark">幺</view>
+    <view class="primary-eyebrow">AI 管家 · 主入口</view>
+    <view class="primary-title">今天吃什么</view>
+    <view class="primary-desc">问 4-7 个小问题，给你 2-3 个匹配场景、预算和忌口的方案</view>
+    <view class="primary-cta">
+      <text>开始问答</text>
+      <text class="cta-arrow">→</text>
     </view>
+  </view>
 
-    <view class="home-entry-card" bindtap="goToGroupDining">
-      <view class="entry-mark group-icon">饭</view>
-      <view class="entry-copy">
-        <view class="entry-title">发起约饭</view>
-        <view class="entry-desc">收集大家偏好，生成折中方案</view>
-      </view>
-      <view class="entry-side">
-        <view class="entry-arrow">›</view>
-      </view>
+  <view class="secondary-grid">
+    <view class="secondary-entry" bindtap="goToGroupDining">
+      <view class="entry-badge entry-badge-live">可联调</view>
+      <view class="secondary-icon group-icon">饭</view>
+      <view class="secondary-title">发起约饭</view>
+      <view class="secondary-desc">创建任务 · 分享填写 · 生成推荐</view>
     </view>
-
-    <view class="home-entry-card" bindtap="goToWeekend">
-      <view class="entry-mark weekend-icon">周</view>
-      <view class="entry-copy">
-        <view class="entry-title">周末规划</view>
-        <view class="entry-desc">按时间、预算和兴趣安排轻路线</view>
-      </view>
-      <view class="entry-side">
-        <view class="entry-arrow">›</view>
-      </view>
+    <view class="secondary-entry" bindtap="goToWeekend">
+      <view class="entry-badge">待接入</view>
+      <view class="secondary-icon weekend-icon">周</view>
+      <view class="secondary-title">周末规划</view>
+      <view class="secondary-desc">一次性约出吃喝玩</view>
     </view>
   </view>
 
@@ -59,7 +51,7 @@
     <view class="memory-icon ai-mark">♡</view>
     <view class="memory-copy">
       <view class="memory-title">管家记忆</view>
-      <view class="memory-desc">忌口、预算、偏好授权，让推荐更懂你的边界</view>
+      <view class="memory-desc">忌口、辣度与偏好授权</view>
     </view>
     <view class="memory-arrow">›</view>
   </view>
