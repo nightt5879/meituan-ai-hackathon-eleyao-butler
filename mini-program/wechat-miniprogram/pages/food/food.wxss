@@ -280,6 +280,18 @@
   line-height: 1.4;
 }
 
+.result-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-bottom: var(--s-3);
+}
+
+.result-source-chip {
+  font-family: var(--font-mono);
+  letter-spacing: 1rpx;
+}
+
 .line-break {
   display: block;
 }
@@ -418,14 +430,14 @@
 
 .memory-actions-row,
 .result-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--s-2);
   margin-top: var(--s-2);
 }
 
 .memory-actions-row .el-btn,
 .result-actions .el-btn {
-  flex: 1;
   min-width: 0;
   padding-left: var(--s-2);
   padding-right: var(--s-2);

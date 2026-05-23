@@ -110,6 +110,9 @@
   <view wx:if="{{isFinished}}" class="food-results">
     <view class="result-hero">
       <view class="result-kicker">{{slotSummaryText}}</view>
+      <view class="result-tags">
+        <text wx:if="{{connectionStatus.state === 'connected'}}" class="el-chip el-chip--accent result-source-chip">OpenClaw 推荐</text>
+      </view>
       <view class="el-hero el-hero--md">这几家今天<text class="line-break"></text>都能开伙。</view>
     </view>
 
@@ -220,6 +223,7 @@
     <view class="result-actions">
       <button class="el-btn el-btn--ghost" bindtap="handleRefreshRecommendations">换一批</button>
       <button class="el-btn el-btn--ghost" bindtap="handleStartAdjustment">调整</button>
+      <button class="el-btn el-btn--ghost" bindtap="handleBackToHome">回到主页</button>
       <button class="el-btn el-btn--primary" bindtap="handleStartOver">重新开始</button>
     </view>
   </view>
