@@ -37,8 +37,7 @@
   display: flex;
   align-items: center;
   gap: 6rpx;
-  max-width: 224rpx;
-  min-width: 0;
+  max-width: 160rpx;
   padding: 5rpx 8rpx;
   border: 1rpx solid var(--hair);
   background: var(--card);
@@ -63,29 +62,12 @@
   background: var(--bad);
 }
 
-.status-connected .food-status-pill {
-  border-color: transparent;
-  background: var(--accent-soft);
-}
-
-.food-status-label,
-.food-status-text {
+.food-status-label {
   font-family: var(--font-mono);
   font-size: 18rpx;
   letter-spacing: 1rpx;
   white-space: nowrap;
-}
-
-.food-status-label {
   color: var(--muted);
-}
-
-.food-status-text {
-  max-width: 94rpx;
-  overflow: hidden;
-  color: var(--ink);
-  font-weight: 600;
-  text-overflow: ellipsis;
 }
 
 .food-pref-check,

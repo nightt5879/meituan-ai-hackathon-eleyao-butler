@@ -3,8 +3,7 @@
     <view class="food-bar-left">
       <view class="food-status-pill {{connectionStatus.statusClass}}" bindtap="handleConnectionStatusTap">
         <text class="food-status-dot"></text>
-        <text class="food-status-label">OpenClaw</text>
-        <text class="food-status-text">{{connectionStatus.text}}</text>
+        <text class="food-status-label">OPENCLAW</text>
       </view>
     </view>
     <view class="food-title">今天吃什么</view>
