@@ -3,7 +3,7 @@
     <button class="page-back" bindtap="handleBack">‹</button>
     <view class="page-heading">
       <view class="page-title">填一下你的偏好</view>
-      <view class="page-subtitle">这一页后续会由分享链接打开，当前先保留表单和提交结构。</view>
+      <view class="page-subtitle">通过分享链接进入后，偏好会写入同一份多人约饭任务。</view>
     </view>
   </view>
 
@@ -63,8 +63,8 @@
   </view>
 
   <view class="empty-panel">
-    <view class="empty-title">偏好提交接口待接入</view>
-    <view class="empty-desc">当前提交按钮只进入任务看板 UI。后续会写入 participant 记录，再触发约束抽取和冲突识别。</view>
+    <view class="empty-title">提交后同步到看板</view>
+    <view class="empty-desc">后端在线时会写入 participant 记录，并触发约束抽取和冲突识别；失败时会明确提示后端不可用。</view>
   </view>
 
   <button class="primary-button submit-button" bindtap="handleSubmitPreference">提交我的偏好</button>

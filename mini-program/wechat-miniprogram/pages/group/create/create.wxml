@@ -3,13 +3,13 @@
     <button class="page-back" bindtap="handleBack">‹</button>
     <view class="page-heading">
       <view class="page-title">发起约饭</view>
-      <view class="page-subtitle">先把产品壳搭好，后续接入真实任务创建接口。</view>
+      <view class="page-subtitle">创建一份可分享的多人约饭任务，成员填写后会同步到同一个看板。</view>
     </view>
   </view>
 
   <view class="status-badge">
     <view class="status-dot"></view>
-    <text>多人偏好收集 · UI scaffold</text>
+    <text>多人偏好收集 · 后端联调</text>
   </view>
 
   <view class="panel-card">
@@ -56,14 +56,14 @@
   </view>
 
   <view class="panel-card">
-    <view class="field-label">后续接口占位</view>
+    <view class="field-label">当前链路</view>
     <view class="chip-row">
       <view class="info-chip hard">createTask</view>
       <view class="info-chip soft">shareUrl</view>
       <view class="info-chip soft">inviteToken</view>
       <view class="info-chip">waiting_preferences</view>
     </view>
-    <view class="field-hint">当前按钮只进入下一张 UI 页面，不创建真实任务。</view>
+    <view class="field-hint">创建后会返回 taskId 和 inviteToken，并生成可分享的填写路径。</view>
   </view>
 
   <button class="primary-button" bindtap="handleCreateTask">生成任务链接，分享到群</button>

@@ -34,10 +34,10 @@
 
   <view class="secondary-grid">
     <view class="secondary-entry" bindtap="goToGroupDining">
-      <view class="entry-badge">待接入</view>
+      <view class="entry-badge entry-badge-live">可联调</view>
       <view class="secondary-icon group-icon">饭</view>
       <view class="secondary-title">发起约饭</view>
-      <view class="secondary-desc">多人偏好收集 · 冲突识别</view>
+      <view class="secondary-desc">创建任务 · 分享填写 · 生成推荐</view>
     </view>
     <view class="secondary-entry" bindtap="goToWeekend">
       <view class="entry-badge">待接入</view>

@@ -164,6 +164,11 @@
   font-weight: 700;
 }
 
+.entry-badge-live {
+  background: rgba(91, 140, 90, 0.12);
+  color: var(--theme-accent, #5B8C5A);
+}
+
 .secondary-icon {
   display: flex;
   align-items: center;
