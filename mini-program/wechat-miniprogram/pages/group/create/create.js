@@ -40,9 +40,18 @@ Page({
   },
 
   handleCreateTask() {
-    const result = groupDiningAdapter.createTask(this.data.form);
-    wx.navigateTo({
-      url: result.nextUrl
+    wx.showLoading({ title: '创建中' });
+    groupDiningAdapter.createTask(this.data.form).then(function (result) {
+      wx.hideLoading();
+      wx.navigateTo({
+        url: result.nextUrl
+      });
+    }).catch(function () {
+      wx.hideLoading();
+      wx.showToast({
+        title: '创建失败',
+        icon: 'none'
+      });
     });
   }
 });

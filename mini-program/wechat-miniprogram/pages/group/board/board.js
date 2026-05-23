@@ -12,10 +12,20 @@ Page({
     ]
   },
 
-  onLoad() {
+  onLoad(options) {
+    const taskId = options && options.taskId ? options.taskId : 'group_mock_task';
     this.syncTheme();
-    this.setData({
-      board: groupDiningAdapter.getTaskBoard('group_mock_task')
+    wx.showLoading({ title: '加载中' });
+    groupDiningAdapter.getTaskBoard(taskId).then((board) => {
+      wx.hideLoading();
+      this.setData({
+        board: board
+      });
+    }).catch(() => {
+      wx.hideLoading();
+      this.setData({
+        board: groupDiningAdapter.getFallbackTaskBoard(taskId)
+      });
     });
   },
 
