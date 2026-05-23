@@ -4,45 +4,18 @@
 }
 
 .food-bar {
-  margin-bottom: var(--s-3);
+  justify-content: flex-start;
+  margin-bottom: var(--s-5);
+  border-bottom: 0;
 }
 
-.food-back {
-  max-width: 360rpx;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.food-status-row {
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-  margin: 0 var(--page-x) var(--s-5);
-  padding: 12rpx 0;
-  border-top: 1rpx solid var(--hair);
-  border-bottom: 1rpx solid var(--hair);
-}
-
-.food-status-no {
-  color: var(--muted);
-  font-family: var(--font-mono);
-  font-size: var(--t-nano);
-  letter-spacing: 1rpx;
-}
-
-.food-status-rule {
-  flex: 1;
-  height: 1rpx;
-  background: var(--hair);
-}
-
-.food-status-main {
+.food-status-pill {
   display: flex;
   align-items: center;
   gap: 8rpx;
+  max-width: 330rpx;
   min-width: 0;
-  padding: 6rpx 10rpx;
+  padding: 6rpx 12rpx;
   border: 1rpx solid var(--hair);
   background: var(--card);
 }
@@ -66,7 +39,7 @@
   background: var(--bad);
 }
 
-.status-connected .food-status-main {
+.status-connected .food-status-pill {
   border-color: transparent;
   background: var(--accent-soft);
 }

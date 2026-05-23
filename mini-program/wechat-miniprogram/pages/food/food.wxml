@@ -1,14 +1,8 @@
 <view class="el-page food-page theme-{{currentTheme}}">
   <view class="el-bar food-bar">
-    <view class="left food-back" bindtap="handleBackToHome">← 今天吃什么</view>
-  </view>
-
-  <view class="food-status-row {{connectionStatus.statusClass}}" bindtap="handleConnectionStatusTap">
-    <view class="food-status-no">SYS</view>
-    <view class="food-status-rule"></view>
-    <view class="food-status-main">
+    <view class="food-status-pill {{connectionStatus.statusClass}}" bindtap="handleConnectionStatusTap">
       <text class="food-status-dot"></text>
-      <text class="food-status-label">STATUS</text>
+      <text class="food-status-label">OpenClaw</text>
       <text class="food-status-text">{{connectionStatus.text}}</text>
     </view>
   </view>
