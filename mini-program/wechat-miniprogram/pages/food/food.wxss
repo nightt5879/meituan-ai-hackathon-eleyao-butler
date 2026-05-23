@@ -4,7 +4,7 @@
 }
 
 .food-bar {
-  margin-bottom: var(--s-5);
+  margin-bottom: var(--s-3);
 }
 
 .food-back {
@@ -14,19 +14,81 @@
   white-space: nowrap;
 }
 
-.header-online-dot {
+.food-status-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0 var(--page-x) var(--s-5);
+  padding: 12rpx 0;
+  border-top: 1rpx solid var(--hair);
+  border-bottom: 1rpx solid var(--hair);
+}
+
+.food-status-no {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--t-nano);
+  letter-spacing: 1rpx;
+}
+
+.food-status-rule {
+  flex: 1;
+  height: 1rpx;
+  background: var(--hair);
+}
+
+.food-status-main {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  min-width: 0;
+  padding: 6rpx 10rpx;
+  border: 1rpx solid var(--hair);
+  background: var(--card);
+}
+
+.food-status-dot {
+  flex-shrink: 0;
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
   background: var(--ok);
 }
 
-.status-backend-only .header-online-dot,
-.status-checking .header-online-dot,
-.status-degraded .header-online-dot {
+.status-backend-only .food-status-dot,
+.status-checking .food-status-dot,
+.status-degraded .food-status-dot {
   background: var(--warn);
 }
 
-.status-error .header-online-dot,
-.status-mock .header-online-dot {
+.status-error .food-status-dot,
+.status-mock .food-status-dot {
   background: var(--bad);
+}
+
+.status-connected .food-status-main {
+  border-color: transparent;
+  background: var(--accent-soft);
+}
+
+.food-status-label,
+.food-status-text {
+  font-family: var(--font-mono);
+  font-size: var(--t-nano);
+  letter-spacing: 1rpx;
+  white-space: nowrap;
+}
+
+.food-status-label {
+  color: var(--muted);
+}
+
+.food-status-text {
+  max-width: 240rpx;
+  overflow: hidden;
+  color: var(--ink);
+  font-weight: 600;
+  text-overflow: ellipsis;
 }
 
 .food-pref-check,
