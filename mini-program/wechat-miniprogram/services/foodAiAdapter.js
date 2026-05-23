@@ -713,15 +713,21 @@ function normalizeFoodConnectionStatus(baseUrl, response, diagnostics) {
   const diagnosticLines = diagnostics || [];
 
   if (backend.ok && openclaw.ok) {
+    const gatewayOnly = openclaw.gatewayReachable && !openclaw.cliReachable;
+
     return {
       state: 'connected',
-      text: 'OpenClaw 已连接',
+      text: gatewayOnly ? 'OpenClaw Gateway 可达' : 'OpenClaw 已连接',
       detail: [
         'API base URL: ' + baseUrl,
-        'OpenClaw: connected',
+        'OpenClaw: ' + (gatewayOnly ? 'gateway reachable' : 'connected'),
+        'gateway: ' + (openclaw.gatewayReachable ? 'reachable' : 'unreachable'),
+        openclaw.gatewayUrl ? 'gatewayUrl: ' + openclaw.gatewayUrl : '',
+        'cliStatus: ' + (openclaw.cliReachable ? 'ok' : 'not confirmed'),
         'profile: ' + (openclaw.profile || 'unknown'),
         'agent: ' + (openclaw.agentId || 'unknown'),
         'session: ' + (openclaw.sessionId || 'unknown'),
+        openclaw.detail || '',
         diagnosticLines.join('\n'),
         buildRecentFoodDebugLogText()
       ].filter(function (line) { return !!line; }).join('\n'),
@@ -737,6 +743,9 @@ function normalizeFoodConnectionStatus(baseUrl, response, diagnostics) {
       detail: [
         'API base URL: ' + baseUrl,
         '后端可访问，但 OpenClaw status 检查未通过。',
+        'gateway: ' + (openclaw.gatewayReachable ? 'reachable' : 'unreachable'),
+        openclaw.gatewayUrl ? 'gatewayUrl: ' + openclaw.gatewayUrl : '',
+        'cliStatus: ' + (openclaw.cliReachable ? 'ok' : 'not confirmed'),
         openclaw.detail || '',
         diagnosticLines.join('\n'),
         buildRecentFoodDebugLogText()
