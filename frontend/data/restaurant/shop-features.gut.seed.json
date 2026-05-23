@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "features": [
+    {
+      "shopId": "gut_seed_east_gate_noodle",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.2,
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "queueRisk": "medium",
+      "featureTags": ["快餐", "预算友好", "单人友好"],
+      "source": "generated",
+      "sourceId": "generated_feature_seed_2026_05"
+    },
+    {
+      "shopId": "gut_seed_south_square_lightmeal",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 4.2,
+      "chatFriendly": true,
+      "groupFriendly": true,
+      "queueRisk": "low",
+      "featureTags": ["低油", "不辣可选", "适合聊天"],
+      "source": "generated",
+      "sourceId": "generated_feature_seed_2026_05"
+    },
+    {
+      "shopId": "gut_seed_west_street_hunan_bowl",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.4,
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "queueRisk": "medium",
+      "featureTags": ["可选辣度", "下饭", "预算友好"],
+      "source": "generated",
+      "sourceId": "generated_feature_seed_2026_05"
+    },
+    {
+      "shopId": "gut_seed_library_cafe_bistro",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 4.6,
+      "chatFriendly": true,
+      "groupFriendly": true,
+      "queueRisk": "low",
+      "featureTags": ["安静", "适合聊天", "下午茶"],
+      "source": "generated",
+      "sourceId": "generated_feature_seed_2026_05"
+    },
+    {
+      "shopId": "gut_seed_inner_ring_hotpot",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 2.8,
+      "chatFriendly": false,
+      "groupFriendly": true,
+      "queueRisk": "high",
+      "featureTags": ["火锅", "多人聚餐", "可选辣度"],
+      "source": "generated",
+      "sourceId": "generated_feature_seed_2026_05"
+    },
+    {
+      "shopId": "gut_seed_north_market_cantonese",
+      "supportsSpicy": true,
+      "supportsNonSpicy": true,
+      "quietScore": 3.8,
+      "chatFriendly": true,
+      "groupFriendly": true,
+      "queueRisk": "medium",
+      "featureTags": ["粤菜", "家常菜", "不辣可选"],
+      "source": "generated",
+      "sourceId": "generated_feature_seed_2026_05"
+    }
+  ]
+}

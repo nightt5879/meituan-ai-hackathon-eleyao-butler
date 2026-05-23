@@ -1,0 +1,2 @@
+id,name,category,address,latitude,longitude,avgPrice,tags,regionId,source,sourceId
+gut_csv_example_shop,CSV示例餐厅,简餐,广州大学城人工整理示例地址,23.0525,113.393,35,简餐;不辣可选;预算友好,guangzhou_university_town,manual_sample,manual_csv_import

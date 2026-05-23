@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "sourceKinds": {
+    "generated": {
+      "label": "生成示例数据",
+      "synthetic": true,
+      "trustLevel": "low",
+      "description": "由项目为验证数据层框架而生成的示例数据，不代表真实商家、真实菜单或实时状态。"
+    },
+    "manual_sample": {
+      "label": "人工样例/区域配置",
+      "synthetic": true,
+      "trustLevel": "low",
+      "description": "人工维护的样例或配置数据，可用于开发验证；若未标注公开来源，不得视为真实 POI。"
+    },
+    "manual_public_curated": {
+      "label": "人工公开信息整理",
+      "synthetic": false,
+      "trustLevel": "medium",
+      "description": "后续可由人工根据公开页面整理，必须记录来源链接、采集时间和限制。"
+    },
+    "amap_poi_draft": {
+      "label": "高德 POI 草稿",
+      "synthetic": false,
+      "trustLevel": "medium",
+      "description": "由高德 Web Service 查询生成的草稿数据，必须人工复核后才能合并进正式 seed。"
+    },
+    "tencent_poi_draft": {
+      "label": "腾讯位置服务 POI 草稿",
+      "synthetic": false,
+      "trustLevel": "medium",
+      "description": "由腾讯位置服务查询生成的草稿数据，必须人工复核后才能合并进正式 seed。"
+    }
+  },
+  "sources": [
+    {
+      "id": "manual_region_sample_2026_05",
+      "source": "manual_sample",
+      "title": "广州大学城区域配置样例",
+      "collectedAt": "2026-05-23",
+      "description": "用于 MVP 数据校验和查询半径的区域配置，不代表精确行政边界。"
+    },
+    {
+      "id": "generated_seed_2026_05",
+      "source": "generated",
+      "title": "广州大学城店铺 seed 示例",
+      "collectedAt": "2026-05-23",
+      "description": "6 家合成示例店，用于验证数据层、查询 API 和导入流程。"
+    },
+    {
+      "id": "generated_dish_seed_2026_05",
+      "source": "generated",
+      "title": "广州大学城菜品 seed 示例",
+      "collectedAt": "2026-05-23",
+      "description": "每家示例店 5 个生成菜品，不代表真实菜单。"
+    },
+    {
+      "id": "generated_feature_seed_2026_05",
+      "source": "generated",
+      "title": "广州大学城店铺特征 seed 示例",
+      "collectedAt": "2026-05-23",
+      "description": "为简单筛选和排序准备的生成特征，不代表真实环境、排队或营业状态。"
+    },
+    {
+      "id": "manual_csv_import",
+      "source": "manual_sample",
+      "title": "人工 CSV 导入草稿",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.template.csv 导入的草稿数据，需人工审核后再进入正式 seed。"
+    },
+    {
+      "id": "amap_poi_draft",
+      "source": "amap_poi_draft",
+      "title": "高德 POI API 草稿",
+      "collectedAt": "2026-05-23",
+      "description": "高德 API sample 脚本输出的草稿，不应直接覆盖正式 seed。"
+    },
+    {
+      "id": "tencent_poi_draft",
+      "source": "tencent_poi_draft",
+      "title": "腾讯位置服务 POI API 草稿",
+      "collectedAt": "2026-05-23",
+      "description": "腾讯 API sample 脚本输出的草稿，不应直接覆盖正式 seed。"
+    }
+  ]
+}
