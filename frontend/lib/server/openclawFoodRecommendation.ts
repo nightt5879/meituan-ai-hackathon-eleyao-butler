@@ -1,4 +1,6 @@
 import { execFile } from "node:child_process";
+import type { FoodDecisionSheet } from "@/lib/server/foodDecisionSheet";
+import { sanitizeFoodDecisionSheet } from "@/lib/server/foodDecisionSheet";
 
 type StringMap = Record<string, unknown>;
 
@@ -46,6 +48,7 @@ export type FoodRecommendRequest = {
       avoidCategories?: string[];
     };
   };
+  decisionSheet?: FoodDecisionSheet;
 };
 
 export type FoodRecommendResponse = {
@@ -73,7 +76,7 @@ export function sanitizeFoodRecommendRequest(input: unknown): FoodRecommendReque
     : {};
   const stableMemoryEnabled = memoryProfile.enabled !== false;
 
-  return {
+  const sanitized: FoodRecommendRequest = {
     slots: {
       mealPurpose: readString(slots.mealPurpose),
       branchPreference: canUseCategory ? readString(slots.branchPreference) : "",
@@ -102,6 +105,9 @@ export function sanitizeFoodRecommendRequest(input: unknown): FoodRecommendReque
         },
     requestContext: sanitizeRequestContext(requestContext)
   };
+
+  sanitized.decisionSheet = sanitizeFoodDecisionSheet(payload.decisionSheet, sanitized);
+  return sanitized;
 }
 
 export async function generateFoodRecommendationsWithOpenClaw(
@@ -130,6 +136,8 @@ function buildFoodRecommendationPrompt(request: FoodRecommendRequest) {
     "The JSON schema is:",
     '{"recommendations":[{"id":"shop_xxx","name":"...","type":"...","perCapita":"24 yuan/person","distance":"500 m","rating":4.6,"matchedTags":["..."],"reason":"...","riskTip":"..."}],"source":"openclaw"}',
     "Use Chinese copy for shop names, type, reason, and riskTip when possible.",
+    "Treat decisionSheet as the final matching table: fixed dimensions are the stable required profile, dynamic dimensions are the user's extra AI-guided constraints.",
+    "If dynamic dimensions are present, reference them in matchedTags/reason/riskTip when they affect the choice.",
     "Hard constraints are mandatory. If avoidTags or spicyLevel say no spicy, do not recommend spicy, hotpot, mala, Sichuan, Hunan, skewer, or similar high-spice shops.",
     "Do not infer or expose private data that is not present in the payload.",
     "Payload:",
@@ -167,6 +175,7 @@ function buildOpenClawPromptPayload(request: FoodRecommendRequest) {
   return {
     slots,
     preferences,
+    decisionSheet: request.decisionSheet,
     memoryProfile,
     requestContext: omitEmptyValues({
       excludeIds: request.requestContext?.excludeIds,

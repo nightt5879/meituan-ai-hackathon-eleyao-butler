@@ -16,7 +16,9 @@ const mockShopData = require('../data/mockShops');
 const userMemoryAdapter = require('./userMemoryAdapter');
 
 const REMOTE_RECOMMEND_PATH = '/api/food/recommend';
+const REMOTE_QUESTION_PLAN_PATH = '/api/food/question-plan';
 const REMOTE_RECOMMEND_TIMEOUT_MS = 15000;
+const REMOTE_QUESTION_PLAN_TIMEOUT_MS = 9000;
 
 let lastRecommendationMeta = {
   source: 'mock',
@@ -206,19 +208,30 @@ function resolveBranchQuestions(mealPurpose) {
 }
 
 function createInitialSession() {
+  const slots = {
+    mealPurpose: '',
+    branchPreference: '',
+    taste: '',
+    budget: '',
+    distance: '',
+    taboo: ''
+  };
+  const preferences = clonePreferences(defaultPreferences);
+
   return {
     questionIndex: 0,
     resolvedQuestions: null,  // populated after mealPurpose is answered
     totalQuestions: null,     // populated after branch is resolved
-    slots: {
-      mealPurpose: '',
-      branchPreference: '',
-      taste: '',
-      budget: '',
-      distance: '',
-      taboo: ''
+    slots,
+    preferences,
+    dynamicDimensions: [],
+    dynamicQuestions: [],
+    dynamicQuestionPlan: {
+      status: 'idle',
+      requested: false,
+      source: ''
     },
-    preferences: clonePreferences(defaultPreferences),
+    decisionSheet: buildDecisionSheet(slots, preferences, []),
     answers: []
   };
 }
@@ -272,14 +285,28 @@ function answerQuestion(session, answer) {
       slots: clearedSlots,
       preferences: clonePreferences(defaultPreferences),
       resolvedQuestions: resolved,
-      totalQuestions: resolved.length
+      totalQuestions: resolved.length,
+      dynamicDimensions: [],
+      dynamicQuestions: [],
+      dynamicQuestionPlan: {
+        status: 'idle',
+        requested: false,
+        source: ''
+      },
+      decisionSheet: buildDecisionSheet(clearedSlots, defaultPreferences, [])
     });
   }
 
   // Carry forward resolvedQuestions and totalQuestions for all subsequent answers.
   return Object.assign({}, nextSession, {
     resolvedQuestions: session.resolvedQuestions,
-    totalQuestions: session.totalQuestions
+    totalQuestions: session.totalQuestions,
+    dynamicQuestions: session.dynamicQuestions || [],
+    dynamicQuestionPlan: session.dynamicQuestionPlan || {
+      status: 'idle',
+      requested: false,
+      source: ''
+    }
   });
 }
 
@@ -307,22 +334,145 @@ function answerChoiceQuestion(session, question, answer) {
   }
 
   const nextSlots = Object.assign({}, session.slots);
-  nextSlots[question.slot] = value;
+  let nextDynamicDimensions = session.dynamicDimensions || [];
+
+  if (isDynamicQuestion(question)) {
+    nextDynamicDimensions = upsertDynamicDimension(nextDynamicDimensions, question, value);
+  } else {
+    nextSlots[question.slot] = value;
+  }
 
   return advanceSession(session, nextSlots, session.preferences, {
     slot: question.slot,
     label: question.label,
     value: value
-  });
+  }, nextDynamicDimensions);
 }
 
-function advanceSession(session, slots, preferences, answerRecord) {
+function advanceSession(session, slots, preferences, answerRecord, dynamicDimensions) {
+  const nextDynamicDimensions = dynamicDimensions || session.dynamicDimensions || [];
+
   return {
     questionIndex: session.questionIndex + 1,
     slots: slots,
     preferences: clonePreferences(preferences),
+    dynamicDimensions: nextDynamicDimensions,
+    dynamicQuestions: session.dynamicQuestions || [],
+    dynamicQuestionPlan: session.dynamicQuestionPlan || {
+      status: 'idle',
+      requested: false,
+      source: ''
+    },
+    decisionSheet: buildDecisionSheet(slots, preferences, nextDynamicDimensions),
     answers: session.answers.concat([answerRecord])
   };
+}
+
+function isDynamicQuestion(question) {
+  return !!question && String(question.slot || '').indexOf('dynamic.') === 0;
+}
+
+function upsertDynamicDimension(dimensions, question, value) {
+  const key = getDynamicQuestionKey(question);
+  const nextDimensions = (dimensions || []).filter(function (dimension) {
+    return dimension.key !== key;
+  });
+
+  if (!key || !value || value === '未选择') {
+    return nextDimensions;
+  }
+
+  nextDimensions.push({
+    key,
+    label: question.label || '补充偏好',
+    value,
+    source: 'dynamic',
+    hard: false,
+    reason: question.reason || ''
+  });
+
+  return nextDimensions;
+}
+
+function getDynamicQuestionKey(question) {
+  if (!question) { return ''; }
+  return String(question.targetDimension || question.slot || '')
+    .replace(/^dynamic\./, '')
+    .replace(/[^a-zA-Z0-9_-]/g, '');
+}
+
+function buildDecisionSheet(slots, preferences, dynamicDimensions) {
+  const safeSlots = slots || {};
+  const safePreferences = normalizePreferences(preferences);
+  const fixed = [
+    buildDecisionDimension('mealPurpose', '就餐场景', safeSlots.mealPurpose, true),
+    buildDecisionDimension('branchPreference', '品类/偏好', safeSlots.branchPreference, false),
+    buildDecisionDimension(
+      'taste',
+      '口味/感觉',
+      safePreferences.tasteTags.concat(safePreferences.needTags).join('、'),
+      false
+    ),
+    buildDecisionDimension('avoid', '忌口', safePreferences.avoidTags.join('、'), true),
+    buildDecisionDimension('spicyLevel', '辣度', safePreferences.spicyLevel, true),
+    buildDecisionDimension('budget', '预算', safeSlots.budget, true),
+    buildDecisionDimension('distance', '距离', safeSlots.distance, true)
+  ];
+  const missingHardKeys = fixed.filter(function (dimension) {
+    return dimension.hard && !dimension.value && dimension.key !== 'avoid' && dimension.key !== 'spicyLevel';
+  }).map(function (dimension) {
+    return dimension.key;
+  });
+  const safeDynamicDimensions = normalizeDynamicDimensions(dynamicDimensions);
+
+  return {
+    fixed,
+    dynamic: safeDynamicDimensions,
+    readiness: {
+      hardReady: missingHardKeys.length === 0,
+      missingHardKeys,
+      optionalReadyCount: fixed.filter(function (dimension) {
+        return !dimension.hard && !!dimension.value;
+      }).length + safeDynamicDimensions.length
+    },
+    source: 'client'
+  };
+}
+
+function buildDecisionDimension(key, label, value, hard) {
+  return {
+    key,
+    label,
+    value: String(value || '').trim(),
+    source: 'fixed',
+    hard: !!hard
+  };
+}
+
+function normalizeDynamicDimensions(dimensions) {
+  const seen = {};
+  const result = [];
+
+  (dimensions || []).forEach(function (dimension) {
+    const key = String(dimension && dimension.key || '').replace(/[^a-zA-Z0-9_-]/g, '');
+    const value = String(dimension && dimension.value || '').trim();
+
+    if (!key || !value || seen[key]) {
+      return;
+    }
+
+    seen[key] = true;
+    result.push({
+      key,
+      label: String(dimension.label || key).slice(0, 16),
+      value: value.slice(0, 80),
+      source: 'dynamic',
+      hard: dimension.hard === true,
+      reason: String(dimension.reason || '').slice(0, 80)
+    });
+  });
+
+  return result.slice(0, 8);
 }
 
 // ─── Recommendations ───────────────────────────────────────────────────────
@@ -408,6 +558,211 @@ function setLastRecommendationMeta(meta) {
   }, meta || {});
 }
 
+function shouldPrefetchDynamicQuestions(session) {
+  if (!session || !session.resolvedQuestions || !session.slots || !session.slots.mealPurpose) {
+    return false;
+  }
+
+  const plan = session.dynamicQuestionPlan || {};
+  return plan.requested !== true && plan.status !== 'loading' && session.questionIndex >= 1;
+}
+
+function markDynamicQuestionPlanLoading(session) {
+  if (!session) { return session; }
+
+  return Object.assign({}, session, {
+    dynamicQuestionPlan: {
+      status: 'loading',
+      requested: true,
+      source: ''
+    }
+  });
+}
+
+async function requestDynamicQuestionPlan(session) {
+  const baseUrl = getFoodRecommendApiBaseUrl();
+
+  if (!baseUrl) {
+    return buildLocalDynamicQuestionPlan(session);
+  }
+
+  const payload = buildRemoteRecommendationPayload(session.slots, session.preferences, {
+    decisionSheet: session.decisionSheet || buildDecisionSheet(
+      session.slots,
+      session.preferences,
+      session.dynamicDimensions || []
+    )
+  });
+
+  try {
+    return await requestRemoteQuestionPlan(baseUrl, payload);
+  } catch (error) {
+    return buildLocalDynamicQuestionPlan(session, error);
+  }
+}
+
+function mergeDynamicQuestionPlan(session, plan) {
+  if (!session || !plan) { return session; }
+
+  const resolvedQuestions = session.resolvedQuestions || null;
+  const normalizedQuestions = normalizeRemoteDynamicQuestions(plan.questions, session);
+  const mergedDecisionSheet = mergeDecisionSheet(
+    session,
+    plan.decisionSheet,
+    session.dynamicDimensions || []
+  );
+  const planState = {
+    status: 'ready',
+    requested: true,
+    source: plan.source || 'rules',
+    message: plan.message || ''
+  };
+
+  if (!resolvedQuestions || session.questionIndex >= resolvedQuestions.length || !normalizedQuestions.length) {
+    return Object.assign({}, session, {
+      dynamicQuestionPlan: planState,
+      decisionSheet: mergedDecisionSheet
+    });
+  }
+
+  const existingIds = {};
+  resolvedQuestions.forEach(function (question) {
+    existingIds[question.id] = true;
+  });
+
+  const newQuestions = normalizedQuestions.filter(function (question) {
+    return !existingIds[question.id];
+  });
+
+  if (!newQuestions.length) {
+    return Object.assign({}, session, {
+      dynamicQuestionPlan: planState,
+      decisionSheet: mergedDecisionSheet
+    });
+  }
+
+  const nextQuestions = resolvedQuestions.concat(newQuestions);
+
+  return Object.assign({}, session, {
+    resolvedQuestions: nextQuestions,
+    totalQuestions: nextQuestions.length,
+    dynamicQuestions: (session.dynamicQuestions || []).concat(newQuestions),
+    dynamicQuestionPlan: planState,
+    decisionSheet: mergedDecisionSheet
+  });
+}
+
+function buildLocalDynamicQuestionPlan(session, error) {
+  return {
+    status: 'ready',
+    source: 'rules',
+    message: error && error.message ? error.message : '',
+    decisionSheet: session.decisionSheet || buildDecisionSheet(
+      session.slots,
+      session.preferences,
+      session.dynamicDimensions || []
+    ),
+    questions: [
+      {
+        id: 'ai-priority',
+        kind: 'choice',
+        slot: 'dynamic.priority',
+        label: '本次优先级',
+        title: '这顿饭你最想优先满足哪一点？',
+        options: ['近一点', '便宜一点', '快一点', '好吃更重要', '安静一点'],
+        optional: true,
+        allowEmpty: true,
+        targetDimension: 'priority',
+        reason: '用于在预算、距离、速度和体验之间做最终取舍。'
+      },
+      {
+        id: 'ai-queue-tolerance',
+        kind: 'choice',
+        slot: 'dynamic.queueTolerance',
+        label: '排队容忍',
+        title: '能接受等位或排队吗？',
+        options: ['不能排队', '10 分钟以内', '20 分钟以内', '无所谓'],
+        optional: true,
+        allowEmpty: true,
+        targetDimension: 'queueTolerance',
+        reason: '用于规避高峰期不稳定方案。'
+      }
+    ]
+  };
+}
+
+function requestRemoteQuestionPlan(baseUrl, payload) {
+  return new Promise(function (resolve, reject) {
+    wx.request({
+      url: baseUrl + REMOTE_QUESTION_PLAN_PATH,
+      method: 'POST',
+      data: payload,
+      timeout: REMOTE_QUESTION_PLAN_TIMEOUT_MS,
+      header: {
+        'content-type': 'application/json'
+      },
+      success: function (res) {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(res.data || {});
+          return;
+        }
+
+        reject(new Error('Remote food question plan failed with status ' + res.statusCode));
+      },
+      fail: function (error) {
+        reject(new Error(error && error.errMsg ? error.errMsg : 'Remote food question plan request failed'));
+      }
+    });
+  });
+}
+
+function normalizeRemoteDynamicQuestions(questions, session) {
+  const existingKeys = {};
+
+  (session.dynamicDimensions || []).forEach(function (dimension) {
+    existingKeys[dimension.key] = true;
+  });
+
+  return (Array.isArray(questions) ? questions : []).map(function (question, index) {
+    const targetDimension = String(question.targetDimension || question.slot || '')
+      .replace(/^dynamic\./, '')
+      .replace(/[^a-zA-Z0-9_-]/g, '');
+    const options = Array.isArray(question.options)
+      ? question.options.map(function (item) { return String(item || '').trim(); }).filter(function (item) { return !!item; }).slice(0, 6)
+      : [];
+
+    if (!targetDimension || existingKeys[targetDimension] || options.length < 2) {
+      return null;
+    }
+
+    return {
+      id: String(question.id || ('ai-' + targetDimension + '-' + index)).replace(/[^a-zA-Z0-9_-]/g, ''),
+      kind: question.kind === 'multi-choice' ? 'multi-choice' : 'choice',
+      slot: 'dynamic.' + targetDimension,
+      label: String(question.label || '补充偏好').slice(0, 12),
+      title: String(question.title || '再补充一个偏好？').slice(0, 48),
+      options,
+      optional: question.optional !== false,
+      allowEmpty: question.allowEmpty !== false,
+      targetDimension,
+      reason: String(question.reason || '').slice(0, 80)
+    };
+  }).filter(function (question) {
+    return !!question;
+  }).slice(0, 3);
+}
+
+function mergeDecisionSheet(session, incomingSheet, fallbackDynamicDimensions) {
+  const incomingDynamic = incomingSheet && Array.isArray(incomingSheet.dynamic)
+    ? incomingSheet.dynamic
+    : [];
+  const dynamicDimensions = normalizeDynamicDimensions(fallbackDynamicDimensions).concat(
+    normalizeDynamicDimensions(incomingDynamic)
+  );
+
+  return buildDecisionSheet(session.slots, session.preferences, dynamicDimensions);
+}
+
 function getFoodRecommendApiBaseUrl() {
   var app = typeof getApp === 'function' ? getApp({ allowDefault: true }) : null;
   var globalBaseUrl = app && app.globalData ? app.globalData.foodRecommendApiBaseUrl : '';
@@ -466,6 +821,7 @@ function buildRemoteRecommendationPayload(slots, preferences, options) {
   const payload = {
     slots: requestSlots,
     preferences: requestPreferences,
+    decisionSheet: safeOptions.decisionSheet || buildDecisionSheet(requestSlots, requestPreferences, []),
     memoryProfile: stableEnabled
       ? {
           enabled: true,
@@ -1148,7 +1504,15 @@ function goBack(session) {
   if (prevIndex === 0) {
     prevSession = Object.assign({}, prevSession, {
       resolvedQuestions: null,
-      totalQuestions: null
+      totalQuestions: null,
+      dynamicDimensions: [],
+      dynamicQuestions: [],
+      dynamicQuestionPlan: {
+        status: 'idle',
+        requested: false,
+        source: ''
+      },
+      decisionSheet: buildDecisionSheet(prevSession.slots, prevSession.preferences, [])
     });
   }
   return prevSession;
@@ -1159,6 +1523,10 @@ module.exports = {
   getNextQuestion,
   answerQuestion,
   goBack,
+  shouldPrefetchDynamicQuestions,
+  markDynamicQuestionPlanLoading,
+  requestDynamicQuestionPlan,
+  mergeDynamicQuestionPlan,
   generateRecommendations,
   getLastRecommendationMeta
 };

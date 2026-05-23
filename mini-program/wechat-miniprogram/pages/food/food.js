@@ -260,6 +260,10 @@ Page({
 
     // choice question — required
     if (!selectedOptions.length && !manualAnswer) {
+      if (currentQuestion.allowEmpty || currentQuestion.optional) {
+        this.submitAnswer('未选择');
+        return;
+      }
       wx.showToast({ title: '请先选择或填写一个偏好', icon: 'none' });
       return;
     }
@@ -618,7 +622,8 @@ Page({
         this.data.session.preferences,
         {
           excludeIds: currentIds,
-          batchIndex: nextBatchIndex
+          batchIndex: nextBatchIndex,
+          decisionSheet: this.data.session.decisionSheet
         }
       );
     } finally {
@@ -751,7 +756,9 @@ Page({
       nextRecommendations = await foodAiAdapter.generateRecommendations(
         this.data.session.slots,
         adjustedPreferences,
-        adapterOptions
+        Object.assign({}, adapterOptions, {
+          decisionSheet: this.data.session.decisionSheet
+        })
       );
     } finally {
       wx.hideLoading();
@@ -831,7 +838,7 @@ Page({
       chatMessages: this.buildChatMessages(prevSession, prevQuestion),
       slotSummaryText: this.buildSlotSummaryText(prevSession.slots, prevSession.preferences),
       summaryFields: this.buildSummaryFields(prevSession),
-      slotItems: this.formatSlotItems(prevSession.slots, prevSession.preferences)
+      slotItems: this.formatSlotItems(prevSession.slots, prevSession.preferences, prevSession.decisionSheet)
     });
   },
 
@@ -847,6 +854,60 @@ Page({
     }
 
     this.updateQuestionState(session, prevIndex, answerHistory);
+    this.prefetchDynamicQuestions(session);
+  },
+
+  prefetchDynamicQuestions(session) {
+    if (!foodAiAdapter.shouldPrefetchDynamicQuestions(session)) {
+      return;
+    }
+
+    const loadingSession = foodAiAdapter.markDynamicQuestionPlanLoading(session);
+    this.setData({ session: loadingSession });
+
+    foodAiAdapter.requestDynamicQuestionPlan(loadingSession).then((plan) => {
+      if (this.data.isFinished) {
+        return;
+      }
+
+      const currentSession = this.data.session;
+      const mergedSession = foodAiAdapter.mergeDynamicQuestionPlan(currentSession, plan);
+
+      if (mergedSession === currentSession) {
+        return;
+      }
+
+      const currentQuestion = foodAiAdapter.getNextQuestion(mergedSession);
+      const selectedTags = this.cloneSelectedTags(emptySelectedTags);
+      const keepCurrentInput = this.data.currentQuestion &&
+        currentQuestion &&
+        this.data.currentQuestion.id === currentQuestion.id;
+
+      this.setData({
+        session: mergedSession,
+        currentQuestion,
+        currentOptions: keepCurrentInput
+          ? this.data.currentOptions
+          : currentQuestion && (currentQuestion.kind === 'choice' || currentQuestion.kind === 'multi-choice')
+          ? this.formatQuestionOptions(currentQuestion, [])
+          : [],
+        tagGroups: keepCurrentInput
+          ? this.data.tagGroups
+          : currentQuestion && currentQuestion.kind === 'tag'
+          ? this.formatTagGroups(currentQuestion, selectedTags)
+          : [],
+        isTagQuestion: !!currentQuestion && currentQuestion.kind === 'tag',
+        showManualInput: !!currentQuestion,
+        selectedOptions: keepCurrentInput ? this.data.selectedOptions : [],
+        selectedTags: keepCurrentInput ? this.data.selectedTags : selectedTags,
+        manualAnswer: keepCurrentInput ? this.data.manualAnswer : '',
+        chatMessages: this.buildChatMessages(mergedSession, currentQuestion),
+        slotSummaryText: this.buildSlotSummaryText(mergedSession.slots, mergedSession.preferences),
+        summaryFields: this.buildSummaryFields(mergedSession),
+        slotItems: this.formatSlotItems(mergedSession.slots, mergedSession.preferences, mergedSession.decisionSheet),
+        progressPercent: this.buildProgressPercent(mergedSession, currentQuestion)
+      });
+    }).catch(() => {});
   },
 
   toggleOption(value) {
@@ -887,7 +948,9 @@ Page({
       this.setData({ isRecommendationLoading: true });
       wx.showLoading({ title: '生成推荐中' });
       try {
-        recommendations = await foodAiAdapter.generateRecommendations(session.slots, session.preferences);
+        recommendations = await foodAiAdapter.generateRecommendations(session.slots, session.preferences, {
+          decisionSheet: session.decisionSheet
+        });
       } finally {
         wx.hideLoading();
       }
@@ -932,7 +995,7 @@ Page({
       chatMessages: this.buildChatMessages(session, currentQuestion),
       slotSummaryText: this.buildSlotSummaryText(session.slots, session.preferences),
       summaryFields: this.buildSummaryFields(session),
-      slotItems: this.formatSlotItems(session.slots, session.preferences),
+      slotItems: this.formatSlotItems(session.slots, session.preferences, session.decisionSheet),
       recommendations,
       isRecommendationLoading: false,
       progressPercent: this.buildProgressPercent(session, currentQuestion),
@@ -1108,7 +1171,7 @@ Page({
       chatMessages,
       slotSummaryText: this.buildSlotSummaryText(replayResult.session.slots, replayResult.session.preferences),
       summaryFields: this.buildSummaryFields(replayResult.session),
-      slotItems: this.formatSlotItems(replayResult.session.slots, replayResult.session.preferences),
+      slotItems: this.formatSlotItems(replayResult.session.slots, replayResult.session.preferences, replayResult.session.decisionSheet),
       recommendations: [],
       recommendationBatchIndex: 0,
       recommendationNotice: '',
@@ -1497,16 +1560,24 @@ Page({
     const currentIndex = session.questionIndex || 0;
 
     return this.getQuestionList(session).map(function (question, index) {
-      return buildSummaryField(question, index, currentIndex, slots, preferences, manualInputs);
+      return buildSummaryField(
+        question,
+        index,
+        currentIndex,
+        slots,
+        preferences,
+        manualInputs,
+        session.decisionSheet
+      );
     }).filter(function (field) {
       return !!field;
     });
   },
 
-  formatSlotItems(slots, preferences) {
+  formatSlotItems(slots, preferences, decisionSheet) {
     const safePreferences = preferences || {};
 
-    return [
+    const items = [
       {
         label: '就餐场景',
         value: slots.mealPurpose || '待补充'
@@ -1540,6 +1611,16 @@ Page({
         value: slots.distance || '待补充'
       }
     ];
+    const dynamicItems = decisionSheet && Array.isArray(decisionSheet.dynamic)
+      ? decisionSheet.dynamic.map(function (dimension) {
+          return {
+            label: dimension.label || '补充偏好',
+            value: dimension.value || '待补充'
+          };
+        })
+      : [];
+
+    return items.concat(dynamicItems);
   },
 
   buildPreferenceRecord(session, recommendations) {
@@ -1622,7 +1703,7 @@ function buildPreferenceRecordSummary(slots, manualInputs) {
   return baseText || '一次吃饭偏好';
 }
 
-function buildSummaryField(question, index, currentIndex, slots, preferences, manualInputs) {
+function buildSummaryField(question, index, currentIndex, slots, preferences, manualInputs, decisionSheet) {
   let label = '';
   let value = '';
   let isTagField = false;
@@ -1647,6 +1728,9 @@ function buildSummaryField(question, index, currentIndex, slots, preferences, ma
   } else if (question.slot === 'distance') {
     label = '距离';
     value = slots.distance || '待补充';
+  } else if (String(question.slot || '').indexOf('dynamic.') === 0) {
+    label = question.label || '补充偏好';
+    value = getDynamicSummaryValue(decisionSheet, question) || '待补充';
   }
 
   if (!label) {
@@ -1673,6 +1757,18 @@ function buildSummaryField(question, index, currentIndex, slots, preferences, ma
     fieldClass: stateClass + disabledClass,
     rowClass: disabledClass
   };
+}
+
+function getDynamicSummaryValue(decisionSheet, question) {
+  const key = String(question.targetDimension || question.slot || '').replace(/^dynamic\./, '');
+  const dynamicDimensions = decisionSheet && Array.isArray(decisionSheet.dynamic)
+    ? decisionSheet.dynamic
+    : [];
+  const matched = dynamicDimensions.find(function (dimension) {
+    return dimension.key === key;
+  });
+
+  return matched ? matched.value : '';
 }
 
 function buildTasteSummaryValue(preferences) {
