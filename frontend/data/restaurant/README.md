@@ -29,20 +29,20 @@ Current seed data is framework test data. Do not present it as a complete or ver
 Recommended path: fill `frontend/data/restaurant/import/shops.manual.template.csv`. It uses a short Chinese header:
 
 ```text
-店名,类别,菜系,人均,地址,纬度,经度,来源链接,备注
+店名,类别,人均,地址,纬度,经度,代表菜
 ```
 
 Field meanings:
 
 - `店名`: Required. Reviewed shop name.
-- `类别`: Required. Primary category, such as 粤菜、川湘菜、火锅、烧烤、日料、韩餐、粉面、快餐、奶茶、轻食.
-- `菜系`: Optional. More cuisine labels; use semicolons for multiple values.
+- `类别`: Required. Recommended values are 粤菜、川湘菜、火锅、烧烤、日料、韩餐、粉面、快餐、奶茶、轻食、咖啡、甜品、其他.
 - `人均`: Optional. Estimated per-person price in CNY.
-- `地址`: Optional for draft, but must be reviewed before merging into formal seed.
+- `地址`: Optional for draft, but recommended. Review it before merging into formal seed.
 - `纬度`: Required. Latitude, usually around `23.x` near Guangzhou University Town.
 - `经度`: Required. Longitude, usually around `113.x`. Do not swap latitude and longitude.
-- `来源链接`: Optional public source or map URL for review.
-- `备注`: Optional. If blank, importer writes `人工地图整理，菜品后续按类别生成补全`.
+- `代表菜`: Optional. Use English semicolons (`;`) for multiple dishes, for example `叉烧饭;例汤套餐`. The importer stores this as `importHints.dishHints` so later generated dishes can prefer these names.
+
+Human collection should focus on real shop name, category, address, coordinates, and per-person price. Tags, dishes, and features are prepared later by Codex or a follow-up script. Generated dishes and generated features must use `source: "generated"` in their own JSON files and must not pretend to be real menus.
 
 The importer automatically fills:
 
@@ -53,10 +53,11 @@ The importer automatically fills:
 - `collectedAt`: today's date
 - `confidence`: `0.65`
 - `dishSeedMode`: `generated_by_category`
-- `tags`: Chinese tags inferred from `类别`
+- `cuisines`: inferred from `类别`
+- `tags`: Chinese tags inferred from `类别` and `代表菜`
 - `featureTags`: program tags inferred from `类别`
-- `sourceUrl`: copied from `来源链接`
 - `avgPrice`: parsed from `人均`
+- `notes`: `人工地图整理，菜品后续按类别生成补全`
 
 Run:
 

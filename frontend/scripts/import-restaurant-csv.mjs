@@ -34,60 +34,88 @@ const expectedHeaders = [
 ];
 
 const requiredRowFields = ["id", "name", "category", "address", "latitude", "longitude", "regionId", "source", "sourceId", "collectedAt", "confidence"];
-const manualHeaders = ["店名", "类别", "菜系", "人均", "地址", "纬度", "经度", "来源链接", "备注"];
+const manualHeaders = ["店名", "类别", "人均", "地址", "纬度", "经度", "代表菜"];
 const manualRequiredRowFields = ["店名", "类别", "纬度", "经度"];
 const today = new Date().toISOString().slice(0, 10);
 
 const categoryDefaults = [
   {
     match: ["粤菜", "广府菜", "茶餐厅"],
+    cuisines: ["粤菜"],
     tags: ["粤菜", "不辣可选", "多人聚餐"],
     featureTags: ["cantonese", "non_spicy_available", "group_friendly"]
   },
   {
     match: ["川湘菜", "川菜", "湘菜", "香辣"],
+    cuisines: ["川菜", "湘菜"],
     tags: ["川湘菜", "香辣", "下饭"],
     featureTags: ["spicy", "rice_friendly", "group_friendly"]
   },
   {
     match: ["火锅"],
+    cuisines: ["火锅"],
     tags: ["火锅", "多人聚餐", "可选辣度"],
     featureTags: ["hotpot", "group_friendly", "spicy_options"]
   },
   {
     match: ["烧烤", "烤肉", "串"],
+    cuisines: ["烧烤"],
     tags: ["烧烤", "夜宵", "多人聚餐"],
     featureTags: ["bbq", "late_night", "group_friendly"]
   },
   {
     match: ["日料", "日本料理", "寿司"],
+    cuisines: ["日料"],
     tags: ["日料", "简餐", "不辣可选"],
     featureTags: ["japanese", "non_spicy_available", "light_meal"]
   },
   {
     match: ["韩餐", "韩国料理", "韩式"],
+    cuisines: ["韩餐"],
     tags: ["韩餐", "多人聚餐", "可选辣度"],
     featureTags: ["korean", "group_friendly", "spicy_options"]
   },
   {
     match: ["粉面", "面", "粉", "粥"],
+    cuisines: ["粉面"],
     tags: ["粉面", "快餐", "预算友好"],
     featureTags: ["noodle", "quick_meal", "budget_friendly"]
   },
   {
     match: ["快餐", "简餐", "盖饭", "便当"],
+    cuisines: ["快餐"],
     tags: ["快餐", "预算友好", "单人友好"],
     featureTags: ["quick_meal", "budget_friendly", "solo_friendly"]
   },
   {
-    match: ["奶茶", "饮品", "咖啡"],
+    match: ["奶茶", "饮品"],
+    cuisines: ["奶茶", "饮品"],
     tags: ["奶茶饮品", "下午茶", "外带"],
     featureTags: ["drink", "takeaway", "afternoon_tea"]
   },
   {
     match: ["轻食", "沙拉", "健康餐"],
+    cuisines: ["轻食"],
     tags: ["轻食", "低油", "不辣可选"],
     featureTags: ["light_meal", "low_oil", "non_spicy_available"]
+  },
+  {
+    match: ["咖啡"],
+    cuisines: ["咖啡"],
+    tags: ["咖啡", "下午茶", "适合聊天"],
+    featureTags: ["coffee", "afternoon_tea", "chat_friendly"]
+  },
+  {
+    match: ["甜品"],
+    cuisines: ["甜品"],
+    tags: ["甜品", "下午茶", "外带"],
+    featureTags: ["dessert", "afternoon_tea", "takeaway"]
+  },
+  {
+    match: ["其他"],
+    cuisines: ["其他"],
+    tags: ["其他", "人工整理"],
+    featureTags: ["manual_curated", "needs_review"]
   }
 ];
 
@@ -197,6 +225,7 @@ function getCategoryDefaults(category) {
   const matched = categoryDefaults.find((item) => item.match.some((keyword) => category.includes(keyword)));
 
   return matched ?? {
+    cuisines: [category || "其他"],
     tags: [category, "人工整理"],
     featureTags: ["manual_curated", "needs_review"]
   };
@@ -343,22 +372,23 @@ function buildManualShop(record, rowIndex, manualIndex) {
   const latitude = parseNumber(record["纬度"], "纬度", rowIndex);
   const longitude = parseNumber(record["经度"], "经度", rowIndex);
   const defaults = getCategoryDefaults(record["类别"]);
-  const notes = record["备注"] || "人工地图整理，菜品后续按类别生成补全";
+  const dishHints = parseList(record["代表菜"]);
+  const notes = "人工地图整理，菜品后续按类别生成补全";
   const shop = {
     id: `gut_manual_${padNumber(manualIndex)}`,
     name: record["店名"],
     category: record["类别"],
-    cuisines: parseList(record["菜系"]),
+    cuisines: defaults.cuisines,
     address: record["地址"] || "",
     latitude,
     longitude,
     avgPrice: parseOptionalNumber(record["人均"], "人均", rowIndex),
     rating: null,
-    tags: unique([...defaults.tags, ...parseList(record["菜系"])]),
+    tags: unique([...defaults.tags, ...dishHints]),
     regionId: "guangzhou_university_town",
     source: "manual_sample",
     sourceId: `manual_gut_${padNumber(manualIndex)}`,
-    sourceUrl: record["来源链接"] || null,
+    sourceUrl: null,
     collectedAt: today,
     confidence: 0.65,
     updatedAt: today,
@@ -366,6 +396,7 @@ function buildManualShop(record, rowIndex, manualIndex) {
       featureTags: defaults.featureTags,
       dishSeedMode: "generated_by_category",
       notes,
+      dishHints,
       reviewWarnings: []
     }
   };
