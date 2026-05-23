@@ -15,8 +15,8 @@ page {
   /* ── Ink ──────────────────────────────────────────────────────────── */
   --ink:          #0E0E0C;  /* 正文主色，几乎是黑 */
   --ink-2:        #2C2C28;  /* 次级正文、长描述 */
-  --muted:        #6E6E66;  /* 元信息、hint */
-  --subtle:       #A6A69E;  /* 极弱辅助 */
+  --muted:        #55584F;  /* 元信息、hint */
+  --subtle:       #7D8076;  /* 极弱辅助 */
   --on-accent:    #FFFFFF;  /* 在绿色按钮 / TOP 标签上的字 */
 
   /* ── Lines ────────────────────────────────────────────────────────── */
@@ -37,7 +37,7 @@ page {
 
   /* ── Typography ───────────────────────────────────────────────────── */
   --font-sans:    "PingFang SC", "Noto Sans SC", -apple-system, system-ui, sans-serif;
-  --font-serif:   "Source Han Serif SC", "Songti SC", "Noto Serif SC", serif;
+  --font-serif:   "PingFang SC", "Noto Sans SC", -apple-system, system-ui, sans-serif;
   --font-mono:    "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
 
   /* Type scale，单位 rpx（750rpx 屏宽）            ≈ px 在 375 屏 */
@@ -135,7 +135,7 @@ page {
 .el-hero {
   font-family: var(--font-serif);
   font-size: var(--t-hero);
-  font-weight: 500;
+  font-weight: 650;
   letter-spacing: 0;
   line-height: 1.2;
   color: var(--ink);

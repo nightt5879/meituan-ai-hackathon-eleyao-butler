@@ -43,7 +43,7 @@ page {
   color: var(--ink);
   font-family: var(--font-serif);
   font-size: var(--t-h1);
-  font-weight: 500;
+  font-weight: 650;
   line-height: 1.22;
   letter-spacing: 0;
 }
