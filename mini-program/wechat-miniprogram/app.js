@@ -1,10 +1,10 @@
 App({
   globalData: {
     isLoggedIn: false,
-    // Set to the deployed Next.js backend origin, for example:
-    // https://your-domain.example.com
+    // Development / real-device debugging backend origin for the single-person
+    // food recommendation flow. Experience build and production still require HTTPS.
     // Leave empty to use the local mock recommendation fallback only.
-    foodRecommendApiBaseUrl: ''
+    foodRecommendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io'
   },
 
   onLaunch() {
