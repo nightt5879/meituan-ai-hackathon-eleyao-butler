@@ -1,100 +1,126 @@
-<view class="page scaffold-page theme-{{currentTheme}}">
-  <view class="page-bar">
-    <button class="page-back" bindtap="handleBack">‹</button>
-    <view class="page-heading">
-      <view class="page-title">约饭任务看板</view>
-      <view class="page-subtitle">共享成员偏好、冲突识别和推荐结果。</view>
+<view class="el-page board-page theme-{{currentTheme}}">
+  <view class="el-bar board-bar">
+    <view class="left" bindtap="handleBack">← 看板</view>
+    <view class="right">
+      <text class="el-dot {{board && board.status === 'remote_ok' ? '' : 'el-dot--warn'}}"></text>
+      <text>{{board && board.status === 'remote_ok' ? '同步' : '本地兜底'}}</text>
     </view>
   </view>
 
-  <view wx:if="{{board}}" class="panel-card progress-card">
-    <view class="progress-head">
-      <view>
-        <view class="progress-title">{{board.task.title || '多人约饭'}}</view>
-        <view class="progress-desc">{{board.submittedCount}} / {{board.expectedCount}} 已提交 · {{board.message}}</view>
-      </view>
-      <view class="progress-pill">{{board.status === 'remote_ok' ? '后端在线' : '本地兜底'}}</view>
+  <view wx:if="{{board}}" class="board-hero">
+    <view class="board-kicker">TASK · {{board.expectedCount}} PAX</view>
+    <view class="el-hero el-hero--md">{{board.task.title || '多人约饭'}}</view>
+    <view class="board-message">{{board.message}}</view>
+
+    <view class="board-progress">
+      <view class="board-progress__num">{{board.submittedCount}}</view>
+      <view class="board-progress__meta">/ {{board.expectedCount}} 已提交</view>
+      <view class="board-progress__status">{{board.progressPercent}}%</view>
     </view>
     <view class="progress-track">
       <view class="progress-fill" style="width: {{board.progressPercent}}%;"></view>
     </view>
-    <view class="chip-row board-actions">
-      <button class="secondary-button compact-button" bindtap="handleRefresh" loading="{{isLoading}}">刷新</button>
-      <button class="primary-button compact-button" bindtap="handleGenerateRecommendation" loading="{{isRecommending}}">生成推荐</button>
+    <view class="board-actions">
+      <button class="el-btn el-btn--ghost" bindtap="handleRefresh" loading="{{isLoading}}">刷新</button>
+      <button class="el-btn el-btn--primary" bindtap="handleGenerateRecommendation" loading="{{isRecommending}}">生成选择</button>
     </view>
   </view>
 
-  <view wx:if="{{board && board.members.length}}" class="board-section">
-    <view class="section-head">
-      <view class="section-dot"></view>
-      <view>
-        <view class="section-title-small">成员偏好</view>
-        <view class="section-desc-small">来自同一个 taskId + inviteToken 的共享状态。</view>
-      </view>
+  <view wx:if="{{board && board.members.length}}" class="el-section board-section">
+    <view class="el-section__head">
+      <view class="el-section__no">01</view>
+      <view class="el-section__title">成员偏好</view>
+      <view class="el-section__rule"></view>
+      <view class="el-section__sub">{{board.submittedCount}} / {{board.expectedCount}}</view>
     </view>
-    <view wx:for="{{board.members}}" wx:key="participantId" wx:for-item="member" class="panel-card member-card">
-      <view class="member-head">
-        <view class="member-name">{{member.nickname}}</view>
-        <view class="progress-pill">{{member.manualFields.budgetMax ? member.manualFields.budgetMax + ' 元内' : '预算未填'}}</view>
+
+    <view wx:for="{{board.members}}" wx:key="participantId" wx:for-item="member" class="board-row">
+      <view class="board-row__no">{{index + 1}}</view>
+      <view class="board-row__body">
+        <view class="board-row__title">{{member.nickname}}</view>
+        <view class="board-row__desc">{{member.rawPreference}}</view>
+        <view class="board-row__chips">
+          <text wx:if="{{member.manualFields.spicyPreference}}" class="el-chip">{{member.manualFields.spicyPreference}}</text>
+          <text wx:if="{{member.manualFields.leaveBefore}}" class="el-chip el-chip--mono">{{member.manualFields.leaveBefore}} 前离开</text>
+        </view>
       </view>
-      <view class="member-desc">{{member.rawPreference}}</view>
-      <view class="chip-row">
-        <view wx:if="{{member.manualFields.spicyPreference}}" class="info-chip soft">{{member.manualFields.spicyPreference}}</view>
-        <view wx:if="{{member.manualFields.leaveBefore}}" class="info-chip hard">{{member.manualFields.leaveBefore}} 前离开</view>
+      <view class="board-row__value">{{member.manualFields.budgetMax ? '¥' + member.manualFields.budgetMax : '—'}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{board && !board.members.length}}" class="el-section board-section">
+    <view class="el-section__head">
+      <view class="el-section__no">01</view>
+      <view class="el-section__title">成员偏好</view>
+      <view class="el-section__rule"></view>
+      <view class="el-section__sub">等待</view>
+    </view>
+    <view class="empty-panel">
+      <view class="empty-title">还没有成员提交</view>
+      <view class="empty-desc">把创建页返回的填写链接发给成员，提交后这里会刷新出共享偏好。</view>
+    </view>
+  </view>
+
+  <view wx:if="{{board && board.conflicts.length}}" class="el-section board-section">
+    <view class="el-section__head">
+      <view class="el-section__no">02</view>
+      <view class="el-section__title">冲突</view>
+      <view class="el-section__rule"></view>
+      <view class="el-section__sub">{{board.conflicts.length}} ITEMS</view>
+    </view>
+
+    <view wx:for="{{board.conflicts}}" wx:key="description" wx:for-item="conflict" class="conflict-row">
+      <view class="conflict-row__tag {{conflict.severity === 'hard' ? 'hard' : ''}}">{{conflict.severity}}</view>
+      <view class="conflict-row__body">
+        <view class="conflict-row__title">{{conflict.type}}</view>
+        <view class="conflict-row__desc">{{conflict.description}}</view>
+        <view class="conflict-row__hint">{{conflict.resolution_strategy}}</view>
       </view>
     </view>
   </view>
 
-  <view wx:if="{{board && !board.members.length}}" class="empty-panel section-empty">
-    <view class="empty-title">还没有成员提交</view>
-    <view class="empty-desc">把创建页返回的 fill 路径发给成员，提交后这里会刷新出共享偏好。</view>
-  </view>
+  <view wx:if="{{board && board.recommendations.length}}" class="el-section board-section">
+    <view class="el-section__head">
+      <view class="el-section__no">03</view>
+      <view class="el-section__title">候选</view>
+      <view class="el-section__rule"></view>
+      <view class="el-section__sub">GENERATED · {{board.recommendations.length}}</view>
+    </view>
 
-  <view wx:if="{{board && board.conflicts.length}}" class="board-section">
-    <view class="section-head">
-      <view class="section-dot"></view>
-      <view>
-        <view class="section-title-small">冲突识别</view>
-        <view class="section-desc-small">预算、忌口、时间和聊天氛围会作为硬检查。</view>
+    <view wx:for="{{board.recommendations}}" wx:key="restaurant_id" wx:for-item="candidate" class="candidate-card {{index === 0 ? 'top' : ''}}">
+      <view class="candidate-head">
+        <view class="candidate-rank">{{index === 0 ? 'TOP' : index + 1}}</view>
+        <view class="candidate-title">{{candidate.name}}</view>
+        <view class="candidate-price">¥{{candidate.avg_price}}</view>
       </view>
-    </view>
-    <view wx:for="{{board.conflicts}}" wx:key="description" wx:for-item="conflict" class="panel-card member-card">
-      <view class="member-head">
-        <view class="member-name">{{conflict.type}}</view>
-        <view class="progress-pill">{{conflict.severity}}</view>
+      <view class="candidate-meta">{{candidate.category}} · {{candidate.distance_m}} 米 · 评分 {{candidate.rating}}</view>
+      <view class="candidate-tags">
+        <text wx:for="{{candidate.tags}}" wx:key="*this" class="el-chip">{{item}}</text>
       </view>
-      <view class="member-desc">{{conflict.description}}</view>
-      <view class="member-desc muted">{{conflict.resolution_strategy}}</view>
-    </view>
-  </view>
-
-  <view wx:if="{{board && board.recommendations.length}}" class="board-section">
-    <view class="section-head">
-      <view class="section-dot"></view>
-      <view>
-        <view class="section-title-small">候选方案</view>
-        <view class="section-desc-small">已生成 2-3 个可执行候选，方便大家快速对比。</view>
+      <view class="candidate-reason">{{candidate.reason}}</view>
+      <view wx:if="{{candidate.audit}}" class="el-note candidate-note">
+        <text class="el-note__tag">CHECK</text>{{candidate.audit.llm_explanation}}
       </view>
-    </view>
-    <view wx:for="{{board.recommendations}}" wx:key="restaurant_id" wx:for-item="candidate" class="panel-card candidate-card">
-      <view class="member-head">
-        <view class="member-name">{{candidate.name}}</view>
-        <view class="progress-pill">{{candidate.category}}</view>
-      </view>
-      <view class="member-desc">人均 {{candidate.avg_price}} 元 · {{candidate.distance_m}} 米 · 评分 {{candidate.rating}}</view>
-      <view class="chip-row">
-        <view wx:for="{{candidate.tags}}" wx:key="*this" class="info-chip soft">{{item}}</view>
-      </view>
-      <view class="member-desc">{{candidate.reason}}</view>
-      <view wx:if="{{candidate.audit}}" class="audit-box">自检：{{candidate.audit.llm_explanation}}</view>
     </view>
   </view>
 
-  <view wx:if="{{board && board.finalChoice}}" class="panel-card board-section">
-    <view class="section-title-small">首推：{{board.finalChoice.name}}</view>
-    <view class="member-desc">{{board.finalChoice.reason}}</view>
-    <view class="audit-box">{{board.groupMessage}}</view>
+  <view wx:if="{{board && board.finalChoice}}" class="el-section board-section">
+    <view class="el-section__head">
+      <view class="el-section__no">04</view>
+      <view class="el-section__title">最终选择</view>
+      <view class="el-section__rule"></view>
+    </view>
+    <view class="candidate-card top">
+      <view class="candidate-head">
+        <view class="candidate-rank">TOP</view>
+        <view class="candidate-title">{{board.finalChoice.name}}</view>
+      </view>
+      <view class="candidate-reason">{{board.finalChoice.reason}}</view>
+      <view class="el-note candidate-note">{{board.groupMessage}}</view>
+    </view>
   </view>
 
-  <button class="primary-button" bindtap="handleBackHome">回到首页</button>
+  <view class="board-bottom">
+    <button class="el-btn el-btn--ghost" bindtap="handleBackHome">回到首页</button>
+  </view>
 </view>
