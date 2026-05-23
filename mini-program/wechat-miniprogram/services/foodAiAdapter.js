@@ -1173,7 +1173,10 @@ function requestRemoteRecommendations(baseUrl, payload) {
           return;
         }
 
-        reject(new Error('Remote food recommendation failed with status ' + res.statusCode));
+        const serverDetail = res.data && (res.data.detail || res.data.error)
+          ? ': ' + (res.data.detail || res.data.error)
+          : '';
+        reject(new Error('Remote food recommendation failed with status ' + res.statusCode + serverDetail));
       },
       fail: function (error) {
         reject(new Error(error && error.errMsg ? error.errMsg : 'Remote food recommendation request failed'));

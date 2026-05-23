@@ -297,28 +297,44 @@ function parseOpenClawRecommendation(rawContent: string): unknown {
 
 function normalizeRecommendations(input: unknown): FoodRecommendationCard[] {
   const payload = isRecord(input) ? input : {};
-  const rawRecommendations = Array.isArray(payload.recommendations) ? payload.recommendations : [];
+  const rawRecommendations = readRecommendationArray(payload);
   const recommendations = rawRecommendations.slice(0, 3).map((item, index) => {
     const raw = isRecord(item) ? item : {};
-    const matchedTags = readStringArray(raw.matchedTags);
+    const matchedTags = readStringArrayFrom(raw, ["matchedTags", "matched_tags", "tags", "labels"]);
+    const name = readStringFrom(raw, ["name", "shopName", "shop_name", "restaurantName", "restaurant_name", "title"]);
+    const type = readStringFrom(raw, ["type", "category", "cuisine", "shopType", "shop_type"]);
+    const perCapita = readStringFrom(raw, [
+      "perCapita",
+      "per_capita",
+      "price",
+      "priceText",
+      "price_text",
+      "avgPrice",
+      "avg_price",
+      "averagePrice",
+      "average_price"
+    ]);
+    const distance = readStringFrom(raw, ["distance", "distanceText", "distance_text"]);
+    const reason = readStringFrom(raw, ["reason", "rationale", "why", "recommendReason", "recommend_reason"]);
+    const riskTip = readStringFrom(raw, ["riskTip", "risk_tip", "risk", "tips", "tip", "note"]);
 
     return {
-      id: readString(raw.id) || `openclaw_${index + 1}`,
-      name: readString(raw.name),
-      type: readString(raw.type || raw.category),
-      perCapita: readString(raw.perCapita || raw.price),
-      distance: readString(raw.distance || raw.distanceText),
-      rating: readNumber(raw.rating, 0),
+      id: readStringFrom(raw, ["id", "shopId", "shop_id", "restaurantId", "restaurant_id"]) || `openclaw_${index + 1}`,
+      name,
+      type: type || "餐饮推荐",
+      perCapita: perCapita || "预算需确认",
+      distance: distance || "距离需确认",
+      rating: readNumberFrom(raw, ["rating", "score", "stars"], 0),
       matchedTags,
       matchedTagsText: matchedTags.length ? matchedTags.join("、") : "OpenClaw recommendation",
-      reason: readString(raw.reason),
-      riskTip: readString(raw.riskTip || raw.risk),
+      reason: reason || "OpenClaw 已根据当前偏好生成该推荐。",
+      riskTip: riskTip || "下单前建议再确认营业状态、排队情况和口味备注。",
       source: "openclaw" as const
     };
   });
 
   const valid = recommendations.filter((item) => {
-    return item.name && item.type && item.perCapita && item.distance && item.reason && item.riskTip;
+    return item.name;
   });
 
   if (valid.length < 2) {
@@ -326,6 +342,62 @@ function normalizeRecommendations(input: unknown): FoodRecommendationCard[] {
   }
 
   return valid;
+}
+
+function readRecommendationArray(payload: StringMap) {
+  const directKeys = ["recommendations", "items", "shops", "restaurants", "candidates"];
+
+  for (const key of directKeys) {
+    const value = payload[key];
+    if (Array.isArray(value)) {
+      return value;
+    }
+  }
+
+  const nestedResult = payload.result;
+  if (isRecord(nestedResult)) {
+    for (const key of directKeys) {
+      const value = nestedResult[key];
+      if (Array.isArray(value)) {
+        return value;
+      }
+    }
+  }
+
+  return [];
+}
+
+function readStringFrom(source: StringMap, keys: string[]) {
+  for (const key of keys) {
+    const value = readString(source[key]);
+    if (value) {
+      return value;
+    }
+  }
+
+  return "";
+}
+
+function readStringArrayFrom(source: StringMap, keys: string[]) {
+  for (const key of keys) {
+    const value = readStringArray(source[key]);
+    if (value.length) {
+      return value;
+    }
+  }
+
+  return [];
+}
+
+function readNumberFrom(source: StringMap, keys: string[], fallback: number) {
+  for (const key of keys) {
+    const value = readNumber(source[key], Number.NaN);
+    if (Number.isFinite(value)) {
+      return value;
+    }
+  }
+
+  return fallback;
 }
 
 function assertNoHardConstraintViolation(
