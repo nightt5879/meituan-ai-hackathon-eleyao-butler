@@ -2,334 +2,2294 @@
   "schemaVersion": 1,
   "dishes": [
     {
-      "id": "dish_east_gate_noodle_001",
-      "shopId": "gut_seed_east_gate_noodle",
-      "name": "清汤牛肉粉",
-      "category": "粉面",
-      "price": 24,
-      "spicyLevel": "none",
-      "tags": ["热汤", "饱腹", "不辣"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
-    },
-    {
-      "id": "dish_east_gate_noodle_002",
-      "shopId": "gut_seed_east_gate_noodle",
-      "name": "酸辣汤粉",
-      "category": "粉面",
-      "price": 22,
-      "spicyLevel": "medium",
-      "tags": ["酸辣", "快餐", "开胃"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
-    },
-    {
-      "id": "dish_east_gate_noodle_003",
-      "shopId": "gut_seed_east_gate_noodle",
-      "name": "番茄鸡蛋面",
-      "category": "粉面",
-      "price": 20,
-      "spicyLevel": "none",
-      "tags": ["番茄", "不辣", "预算友好"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
-    },
-    {
-      "id": "dish_east_gate_noodle_004",
-      "shopId": "gut_seed_east_gate_noodle",
-      "name": "香辣拌粉",
-      "category": "粉面",
-      "price": 23,
-      "spicyLevel": "hot",
-      "tags": ["香辣", "下饭", "快餐"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
-    },
-    {
-      "id": "dish_east_gate_noodle_005",
-      "shopId": "gut_seed_east_gate_noodle",
-      "name": "菌菇青菜面",
-      "category": "粉面",
-      "price": 21,
-      "spicyLevel": "none",
-      "tags": ["蔬菜", "清淡", "不辣"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
-    },
-    {
-      "id": "dish_south_lightmeal_001",
-      "shopId": "gut_seed_south_square_lightmeal",
-      "name": "鸡胸肉能量碗",
-      "category": "轻食",
-      "price": 36,
-      "spicyLevel": "none",
-      "tags": ["高蛋白", "低油", "不辣"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
-    },
-    {
-      "id": "dish_south_lightmeal_002",
-      "shopId": "gut_seed_south_square_lightmeal",
-      "name": "牛油果虾仁沙拉",
-      "category": "轻食",
-      "price": 42,
-      "spicyLevel": "none",
-      "tags": ["清爽", "海鲜", "不辣"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
-    },
-    {
-      "id": "dish_south_lightmeal_003",
-      "shopId": "gut_seed_south_square_lightmeal",
-      "name": "番茄牛肉糙米饭",
-      "category": "简餐",
+      "id": "dish_gut_manual_001_001",
+      "shopId": "gut_manual_001",
+      "name": "意面",
+      "category": "西餐",
       "price": 38,
       "spicyLevel": "none",
-      "tags": ["糙米", "番茄", "不辣"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
+      "tags": [
+        "西餐",
+        "不辣",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
     },
     {
-      "id": "dish_south_lightmeal_004",
-      "shopId": "gut_seed_south_square_lightmeal",
-      "name": "泰式酸辣鸡肉饭",
-      "category": "简餐",
-      "price": 35,
-      "spicyLevel": "mild",
-      "tags": ["酸辣", "低油", "鸡肉"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
-    },
-    {
-      "id": "dish_south_lightmeal_005",
-      "shopId": "gut_seed_south_square_lightmeal",
-      "name": "南瓜杂粮汤",
-      "category": "汤品",
-      "price": 18,
+      "id": "dish_gut_manual_001_002",
+      "shopId": "gut_manual_001",
+      "name": "牛排",
+      "category": "西餐",
+      "price": 45,
       "spicyLevel": "none",
-      "tags": ["清淡", "暖胃", "不辣"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
+      "tags": [
+        "西餐",
+        "不辣"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
     },
     {
-      "id": "dish_west_hunan_001",
-      "shopId": "gut_seed_west_street_hunan_bowl",
-      "name": "小炒黄牛肉盖饭",
-      "category": "盖饭",
-      "price": 38,
-      "spicyLevel": "hot",
-      "tags": ["香辣", "下饭", "牛肉"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
+      "id": "dish_gut_manual_001_003",
+      "shopId": "gut_manual_001",
+      "name": "披萨",
+      "category": "西餐",
+      "price": 48,
+      "spicyLevel": "none",
+      "tags": [
+        "西餐",
+        "不辣"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
     },
     {
-      "id": "dish_west_hunan_002",
-      "shopId": "gut_seed_west_street_hunan_bowl",
-      "name": "青椒肉丝饭",
-      "category": "盖饭",
-      "price": 30,
-      "spicyLevel": "mild",
-      "tags": ["家常", "预算友好", "微辣"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
-    },
-    {
-      "id": "dish_west_hunan_003",
-      "shopId": "gut_seed_west_street_hunan_bowl",
-      "name": "番茄滑蛋饭",
-      "category": "盖饭",
+      "id": "dish_gut_manual_001_004",
+      "shopId": "gut_manual_001",
+      "name": "番茄肉酱意面",
+      "category": "西餐",
       "price": 28,
       "spicyLevel": "none",
-      "tags": ["番茄", "不辣", "家常"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
+      "tags": [
+        "西餐",
+        "不辣",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
     },
     {
-      "id": "dish_west_hunan_004",
-      "shopId": "gut_seed_west_street_hunan_bowl",
-      "name": "剁椒鱼片饭",
-      "category": "盖饭",
-      "price": 36,
-      "spicyLevel": "hot",
-      "tags": ["鱼肉", "香辣", "下饭"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
-    },
-    {
-      "id": "dish_west_hunan_005",
-      "shopId": "gut_seed_west_street_hunan_bowl",
-      "name": "蒜蓉时蔬",
-      "category": "小菜",
-      "price": 18,
-      "spicyLevel": "none",
-      "tags": ["蔬菜", "不辣", "可分享"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
-    },
-    {
-      "id": "dish_library_cafe_001",
-      "shopId": "gut_seed_library_cafe_bistro",
-      "name": "黑椒鸡腿饭",
-      "category": "简餐",
-      "price": 39,
+      "id": "dish_gut_manual_001_005",
+      "shopId": "gut_manual_001",
+      "name": "黑椒牛排",
+      "category": "西餐",
+      "price": 45,
       "spicyLevel": "mild",
-      "tags": ["鸡肉", "简餐", "微辣"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
+      "tags": [
+        "西餐",
+        "微辣"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
     },
     {
-      "id": "dish_library_cafe_002",
-      "shopId": "gut_seed_library_cafe_bistro",
-      "name": "奶油蘑菇意面",
-      "category": "意面",
-      "price": 42,
+      "id": "dish_gut_manual_002_001",
+      "shopId": "gut_manual_002",
+      "name": "披萨",
+      "category": "西餐",
+      "price": 56,
       "spicyLevel": "none",
-      "tags": ["奶香", "不辣", "适合聊天"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
+      "tags": [
+        "西餐",
+        "不辣"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
     },
     {
-      "id": "dish_library_cafe_003",
-      "shopId": "gut_seed_library_cafe_bistro",
+      "id": "dish_gut_manual_002_002",
+      "shopId": "gut_manual_002",
       "name": "番茄肉酱意面",
-      "category": "意面",
-      "price": 40,
+      "category": "西餐",
+      "price": 64,
       "spicyLevel": "none",
-      "tags": ["番茄", "不辣", "简餐"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
+      "tags": [
+        "西餐",
+        "不辣",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
     },
     {
-      "id": "dish_library_cafe_004",
-      "shopId": "gut_seed_library_cafe_bistro",
-      "name": "拿铁咖啡",
-      "category": "饮品",
-      "price": 24,
+      "id": "dish_gut_manual_002_003",
+      "shopId": "gut_manual_002",
+      "name": "黑椒牛排",
+      "category": "西餐",
+      "price": 71,
+      "spicyLevel": "mild",
+      "tags": [
+        "西餐",
+        "微辣"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_002_004",
+      "shopId": "gut_manual_002",
+      "name": "玛格丽特披萨",
+      "category": "西餐",
+      "price": 41,
       "spicyLevel": "none",
-      "tags": ["咖啡", "下午茶", "不辣"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
+      "tags": [
+        "西餐",
+        "不辣"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
     },
     {
-      "id": "dish_library_cafe_005",
-      "shopId": "gut_seed_library_cafe_bistro",
-      "name": "烤南瓜沙拉",
-      "category": "轻食",
-      "price": 32,
-      "spicyLevel": "none",
-      "tags": ["清淡", "低油", "不辣"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
-    },
-    {
-      "id": "dish_inner_hotpot_001",
-      "shopId": "gut_seed_inner_ring_hotpot",
-      "name": "番茄小锅套餐",
-      "category": "火锅",
-      "price": 58,
-      "spicyLevel": "none",
-      "tags": ["番茄锅", "不辣", "多人聚餐"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
-    },
-    {
-      "id": "dish_inner_hotpot_002",
-      "shopId": "gut_seed_inner_ring_hotpot",
-      "name": "麻辣牛油小锅",
-      "category": "火锅",
-      "price": 62,
-      "spicyLevel": "hot",
-      "tags": ["麻辣", "火锅", "牛油"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
-    },
-    {
-      "id": "dish_inner_hotpot_003",
-      "shopId": "gut_seed_inner_ring_hotpot",
-      "name": "菌汤双人锅",
-      "category": "火锅",
-      "price": 88,
-      "spicyLevel": "none",
-      "tags": ["菌汤", "不辣", "双人"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
-    },
-    {
-      "id": "dish_inner_hotpot_004",
-      "shopId": "gut_seed_inner_ring_hotpot",
-      "name": "鲜切牛肉盘",
-      "category": "火锅配菜",
-      "price": 36,
-      "spicyLevel": "none",
-      "tags": ["牛肉", "可分享", "火锅"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
-    },
-    {
-      "id": "dish_inner_hotpot_005",
-      "shopId": "gut_seed_inner_ring_hotpot",
-      "name": "蔬菜拼盘",
-      "category": "火锅配菜",
-      "price": 22,
-      "spicyLevel": "none",
-      "tags": ["蔬菜", "不辣", "可分享"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
-    },
-    {
-      "id": "dish_north_cantonese_001",
-      "shopId": "gut_seed_north_market_cantonese",
-      "name": "豉油鸡饭",
-      "category": "粤式简餐",
+      "id": "dish_gut_manual_002_005",
+      "shopId": "gut_manual_002",
+      "name": "凯撒沙拉",
+      "category": "西餐",
       "price": 34,
       "spicyLevel": "none",
-      "tags": ["粤菜", "鸡肉", "不辣"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
+      "tags": [
+        "西餐",
+        "不辣"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
     },
     {
-      "id": "dish_north_cantonese_002",
-      "shopId": "gut_seed_north_market_cantonese",
-      "name": "叉烧滑蛋饭",
-      "category": "粤式简餐",
+      "id": "dish_gut_manual_003_001",
+      "shopId": "gut_manual_003",
+      "name": "铁锅炖大鹅",
+      "category": "东北菜",
+      "price": 37,
+      "spicyLevel": "none",
+      "tags": [
+        "东北菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_003_002",
+      "shopId": "gut_manual_003",
+      "name": "东北炖鸡锅",
+      "category": "东北菜",
+      "price": 42,
+      "spicyLevel": "none",
+      "tags": [
+        "东北菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_003_003",
+      "shopId": "gut_manual_003",
+      "name": "锅包肉",
+      "category": "东北菜",
+      "price": 47,
+      "spicyLevel": "none",
+      "tags": [
+        "东北菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_003_004",
+      "shopId": "gut_manual_003",
+      "name": "地三鲜",
+      "category": "东北菜",
+      "price": 27,
+      "spicyLevel": "none",
+      "tags": [
+        "东北菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_003_005",
+      "shopId": "gut_manual_003",
+      "name": "小鸡炖蘑菇",
+      "category": "东北菜",
+      "price": 22,
+      "spicyLevel": "none",
+      "tags": [
+        "东北菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_004_001",
+      "shopId": "gut_manual_004",
+      "name": "巨无霸汉堡",
+      "category": "快餐",
+      "price": 19,
+      "spicyLevel": "none",
+      "tags": [
+        "快餐",
+        "不辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_004_002",
+      "shopId": "gut_manual_004",
+      "name": "麦辣鸡翅",
+      "category": "快餐",
+      "price": 21,
+      "spicyLevel": "hot",
+      "tags": [
+        "快餐",
+        "香辣",
+        "预算友好"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_004_003",
+      "shopId": "gut_manual_004",
+      "name": "招牌套餐饭",
+      "category": "快餐",
+      "price": 24,
+      "spicyLevel": "none",
+      "tags": [
+        "快餐",
+        "不辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_004_004",
+      "shopId": "gut_manual_004",
+      "name": "香辣鸡腿堡",
+      "category": "快餐",
+      "price": 14,
+      "spicyLevel": "hot",
+      "tags": [
+        "快餐",
+        "香辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_004_005",
+      "shopId": "gut_manual_004",
+      "name": "烧腊双拼饭",
+      "category": "快餐",
+      "price": 11,
+      "spicyLevel": "none",
+      "tags": [
+        "快餐",
+        "不辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_005_001",
+      "shopId": "gut_manual_005",
+      "name": "大盘鸡",
+      "category": "新疆菜",
       "price": 32,
-      "spicyLevel": "none",
-      "tags": ["叉烧", "滑蛋", "不辣"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
+      "spicyLevel": "mild",
+      "tags": [
+        "新疆菜",
+        "微辣",
+        "预算友好",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
     },
     {
-      "id": "dish_north_cantonese_003",
-      "shopId": "gut_seed_north_market_cantonese",
-      "name": "白灼时蔬",
-      "category": "小菜",
-      "price": 18,
-      "spicyLevel": "none",
-      "tags": ["蔬菜", "清淡", "不辣"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
+      "id": "dish_gut_manual_005_002",
+      "shopId": "gut_manual_005",
+      "name": "新疆拌面",
+      "category": "新疆菜",
+      "price": 30,
+      "spicyLevel": "mild",
+      "tags": [
+        "新疆菜",
+        "微辣",
+        "预算友好",
+        "可分享",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
     },
     {
-      "id": "dish_north_cantonese_004",
-      "shopId": "gut_seed_north_market_cantonese",
-      "name": "例汤套餐",
-      "category": "套餐",
+      "id": "dish_gut_manual_005_003",
+      "shopId": "gut_manual_005",
+      "name": "羊肉抓饭",
+      "category": "新疆菜",
+      "price": 33,
+      "spicyLevel": "mild",
+      "tags": [
+        "新疆菜",
+        "微辣",
+        "预算友好",
+        "可分享",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_005_004",
+      "shopId": "gut_manual_005",
+      "name": "烤羊肉串",
+      "category": "新疆菜",
+      "price": 19,
+      "spicyLevel": "mild",
+      "tags": [
+        "新疆菜",
+        "微辣",
+        "预算友好",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_005_005",
+      "shopId": "gut_manual_005",
+      "name": "馕包肉",
+      "category": "新疆菜",
+      "price": 16,
+      "spicyLevel": "mild",
+      "tags": [
+        "新疆菜",
+        "微辣",
+        "预算友好",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_006_001",
+      "shopId": "gut_manual_006",
+      "name": "炒花甲",
+      "category": "家常菜",
+      "price": 23,
+      "spicyLevel": "none",
+      "tags": [
+        "家常菜",
+        "不辣",
+        "预算友好"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_006_002",
+      "shopId": "gut_manual_006",
+      "name": "三杯鸡",
+      "category": "家常菜",
+      "price": 26,
+      "spicyLevel": "none",
+      "tags": [
+        "家常菜",
+        "不辣",
+        "预算友好"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_006_003",
+      "shopId": "gut_manual_006",
+      "name": "炒青菜",
+      "category": "家常菜",
+      "price": 29,
+      "spicyLevel": "none",
+      "tags": [
+        "家常菜",
+        "不辣",
+        "预算友好"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_006_004",
+      "shopId": "gut_manual_006",
+      "name": "番茄炒蛋",
+      "category": "家常菜",
+      "price": 17,
+      "spicyLevel": "none",
+      "tags": [
+        "家常菜",
+        "不辣",
+        "预算友好"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_006_005",
+      "shopId": "gut_manual_006",
+      "name": "青椒肉丝",
+      "category": "家常菜",
+      "price": 14,
+      "spicyLevel": "mild",
+      "tags": [
+        "家常菜",
+        "微辣",
+        "预算友好"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_007_001",
+      "shopId": "gut_manual_007",
+      "name": "莲白炒馕",
+      "category": "新疆菜",
+      "price": 34,
+      "spicyLevel": "mild",
+      "tags": [
+        "新疆菜",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_007_002",
+      "shopId": "gut_manual_007",
+      "name": "羊肉串",
+      "category": "新疆菜",
+      "price": 38,
+      "spicyLevel": "mild",
+      "tags": [
+        "新疆菜",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_007_003",
+      "shopId": "gut_manual_007",
+      "name": "新疆拌面",
+      "category": "新疆菜",
+      "price": 43,
+      "spicyLevel": "mild",
+      "tags": [
+        "新疆菜",
+        "微辣",
+        "可分享",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_007_004",
+      "shopId": "gut_manual_007",
+      "name": "大盘鸡",
+      "category": "新疆菜",
+      "price": 41,
+      "spicyLevel": "mild",
+      "tags": [
+        "新疆菜",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_007_005",
+      "shopId": "gut_manual_007",
+      "name": "羊肉抓饭",
+      "category": "新疆菜",
+      "price": 20,
+      "spicyLevel": "mild",
+      "tags": [
+        "新疆菜",
+        "微辣",
+        "可分享",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_008_001",
+      "shopId": "gut_manual_008",
+      "name": "肉酱焗饭",
+      "category": "西餐",
+      "price": 19,
+      "spicyLevel": "none",
+      "tags": [
+        "西餐",
+        "不辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_008_002",
+      "shopId": "gut_manual_008",
+      "name": "牛排",
+      "category": "西餐",
+      "price": 23,
+      "spicyLevel": "none",
+      "tags": [
+        "西餐",
+        "不辣",
+        "预算友好"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_008_003",
+      "shopId": "gut_manual_008",
+      "name": "鸡排",
+      "category": "西餐",
+      "price": 24,
+      "spicyLevel": "none",
+      "tags": [
+        "西餐",
+        "不辣",
+        "预算友好"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_008_004",
+      "shopId": "gut_manual_008",
+      "name": "番茄肉酱意面",
+      "category": "西餐",
+      "price": 14,
+      "spicyLevel": "none",
+      "tags": [
+        "西餐",
+        "不辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_008_005",
+      "shopId": "gut_manual_008",
+      "name": "黑椒牛排",
+      "category": "西餐",
+      "price": 23,
+      "spicyLevel": "mild",
+      "tags": [
+        "西餐",
+        "微辣",
+        "预算友好"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_009_001",
+      "shopId": "gut_manual_009",
+      "name": "潮汕牛肉粿条",
+      "category": "潮汕菜",
+      "price": 23,
+      "spicyLevel": "none",
+      "tags": [
+        "潮汕菜",
+        "不辣",
+        "预算友好",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_009_002",
+      "shopId": "gut_manual_009",
+      "name": "潮汕牛肉火锅",
+      "category": "潮汕菜",
+      "price": 27,
+      "spicyLevel": "mild",
+      "tags": [
+        "潮汕菜",
+        "微辣",
+        "预算友好",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_009_003",
+      "shopId": "gut_manual_009",
+      "name": "牛肉丸汤",
+      "category": "潮汕菜",
+      "price": 17,
+      "spicyLevel": "none",
+      "tags": [
+        "潮汕菜",
+        "不辣",
+        "预算友好",
+        "可分享",
+        "暖胃"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_009_004",
+      "shopId": "gut_manual_009",
+      "name": "卤水拼盘",
+      "category": "潮汕菜",
+      "price": 27,
+      "spicyLevel": "none",
+      "tags": [
+        "潮汕菜",
+        "不辣",
+        "预算友好",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_009_005",
+      "shopId": "gut_manual_009",
+      "name": "砂锅粥",
+      "category": "潮汕菜",
+      "price": 14,
+      "spicyLevel": "none",
+      "tags": [
+        "潮汕菜",
+        "不辣",
+        "预算友好",
+        "可分享",
+        "暖胃"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_010_001",
+      "shopId": "gut_manual_010",
+      "name": "烧腊饭",
+      "category": "快餐",
+      "price": 19,
+      "spicyLevel": "none",
+      "tags": [
+        "快餐",
+        "不辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_010_002",
+      "shopId": "gut_manual_010",
+      "name": "蒸饭",
+      "category": "快餐",
+      "price": 21,
+      "spicyLevel": "none",
+      "tags": [
+        "快餐",
+        "不辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_010_003",
+      "shopId": "gut_manual_010",
+      "name": "招牌套餐饭",
+      "category": "快餐",
+      "price": 24,
+      "spicyLevel": "none",
+      "tags": [
+        "快餐",
+        "不辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_010_004",
+      "shopId": "gut_manual_010",
+      "name": "香辣鸡腿堡",
+      "category": "快餐",
+      "price": 14,
+      "spicyLevel": "hot",
+      "tags": [
+        "快餐",
+        "香辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_010_005",
+      "shopId": "gut_manual_010",
+      "name": "烧腊双拼饭",
+      "category": "快餐",
+      "price": 11,
+      "spicyLevel": "none",
+      "tags": [
+        "快餐",
+        "不辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_011_001",
+      "shopId": "gut_manual_011",
+      "name": "桑拿鸡",
+      "category": "粤菜",
+      "price": 41,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_011_002",
+      "shopId": "gut_manual_011",
+      "name": "白切鸡",
+      "category": "粤菜",
+      "price": 47,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_011_003",
+      "shopId": "gut_manual_011",
+      "name": "烧鹅饭",
+      "category": "粤菜",
+      "price": 52,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_011_004",
+      "shopId": "gut_manual_011",
+      "name": "虾饺皇",
+      "category": "粤菜",
+      "price": 30,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_011_005",
+      "shopId": "gut_manual_011",
+      "name": "叉烧滑蛋饭",
+      "category": "粤菜",
+      "price": 25,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_012_001",
+      "shopId": "gut_manual_012",
+      "name": "烧鸡",
+      "category": "粤菜",
+      "price": 30,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_012_002",
+      "shopId": "gut_manual_012",
+      "name": "烧排骨",
+      "category": "粤菜",
+      "price": 34,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_012_003",
+      "shopId": "gut_manual_012",
+      "name": "炒粉",
+      "category": "粤菜",
       "price": 38,
       "spicyLevel": "none",
-      "tags": ["汤品", "家常", "不辣"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
     },
     {
-      "id": "dish_north_cantonese_005",
-      "shopId": "gut_seed_north_market_cantonese",
-      "name": "黑椒牛柳饭",
-      "category": "粤式简餐",
+      "id": "dish_gut_manual_012_004",
+      "shopId": "gut_manual_012",
+      "name": "烤鱼",
+      "category": "粤菜",
+      "price": 22,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_012_005",
+      "shopId": "gut_manual_012",
+      "name": "白切鸡",
+      "category": "粤菜",
+      "price": 18,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_013_001",
+      "shopId": "gut_manual_013",
+      "name": "干锅肥肠",
+      "category": "川湘菜",
+      "price": 32,
+      "spicyLevel": "hot",
+      "tags": [
+        "川湘菜",
+        "香辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_013_002",
+      "shopId": "gut_manual_013",
+      "name": "小炒土猪肉",
+      "category": "川湘菜",
+      "price": 37,
+      "spicyLevel": "hot",
+      "tags": [
+        "川湘菜",
+        "香辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_013_003",
+      "shopId": "gut_manual_013",
+      "name": "小炒黄牛肉",
+      "category": "川湘菜",
+      "price": 41,
+      "spicyLevel": "hot",
+      "tags": [
+        "川湘菜",
+        "香辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_013_004",
+      "shopId": "gut_manual_013",
+      "name": "麻辣小龙虾",
+      "category": "川湘菜",
+      "price": 39,
+      "spicyLevel": "hot",
+      "tags": [
+        "川湘菜",
+        "香辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_013_005",
+      "shopId": "gut_manual_013",
+      "name": "宫保鸡丁",
+      "category": "川湘菜",
+      "price": 19,
+      "spicyLevel": "hot",
+      "tags": [
+        "川湘菜",
+        "香辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_014_001",
+      "shopId": "gut_manual_014",
+      "name": "牛腩拌粉",
+      "category": "快餐",
+      "price": 16,
+      "spicyLevel": "none",
+      "tags": [
+        "快餐",
+        "不辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_014_002",
+      "shopId": "gut_manual_014",
+      "name": "瘦肉汤粉",
+      "category": "快餐",
+      "price": 12,
+      "spicyLevel": "none",
+      "tags": [
+        "快餐",
+        "不辣",
+        "预算友好",
+        "饱腹",
+        "暖胃"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_014_003",
+      "shopId": "gut_manual_014",
+      "name": "招牌套餐饭",
+      "category": "快餐",
+      "price": 20,
+      "spicyLevel": "none",
+      "tags": [
+        "快餐",
+        "不辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_014_004",
+      "shopId": "gut_manual_014",
+      "name": "香辣鸡腿堡",
+      "category": "快餐",
+      "price": 12,
+      "spicyLevel": "hot",
+      "tags": [
+        "快餐",
+        "香辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_014_005",
+      "shopId": "gut_manual_014",
+      "name": "烧腊双拼饭",
+      "category": "快餐",
+      "price": 10,
+      "spicyLevel": "none",
+      "tags": [
+        "快餐",
+        "不辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_015_001",
+      "shopId": "gut_manual_015",
+      "name": "脆皮烧鸭",
+      "category": "粤菜",
+      "price": 36,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_015_002",
+      "shopId": "gut_manual_015",
+      "name": "香煎豆腐",
+      "category": "粤菜",
+      "price": 41,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_015_003",
+      "shopId": "gut_manual_015",
+      "name": "多味鱼",
+      "category": "粤菜",
+      "price": 46,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_015_004",
+      "shopId": "gut_manual_015",
+      "name": "白切鸡",
+      "category": "粤菜",
+      "price": 26,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_015_005",
+      "shopId": "gut_manual_015",
+      "name": "烧鹅饭",
+      "category": "粤菜",
+      "price": 43,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_016_001",
+      "shopId": "gut_manual_016",
+      "name": "寿司",
+      "category": "日料",
+      "price": 70,
+      "spicyLevel": "none",
+      "tags": [
+        "日料",
+        "不辣"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_016_002",
+      "shopId": "gut_manual_016",
+      "name": "寿司拼盘",
+      "category": "日料",
+      "price": 84,
+      "spicyLevel": "none",
+      "tags": [
+        "日料",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_016_003",
+      "shopId": "gut_manual_016",
+      "name": "照烧鸡排饭",
+      "category": "日料",
+      "price": 88,
+      "spicyLevel": "none",
+      "tags": [
+        "日料",
+        "不辣",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_016_004",
+      "shopId": "gut_manual_016",
+      "name": "豚骨拉面",
+      "category": "日料",
+      "price": 51,
+      "spicyLevel": "none",
+      "tags": [
+        "日料",
+        "不辣",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_016_005",
+      "shopId": "gut_manual_016",
+      "name": "日式咖喱饭",
+      "category": "日料",
       "price": 42,
       "spicyLevel": "mild",
-      "tags": ["牛肉", "微辣", "下饭"],
-      "source": "generated",
-      "sourceId": "generated_dish_seed_2026_05"
+      "tags": [
+        "日料",
+        "微辣",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_017_001",
+      "shopId": "gut_manual_017",
+      "name": "紫苏焖鸭",
+      "category": "家常菜",
+      "price": 30,
+      "spicyLevel": "none",
+      "tags": [
+        "家常菜",
+        "不辣"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_017_002",
+      "shopId": "gut_manual_017",
+      "name": "肉末茄子",
+      "category": "家常菜",
+      "price": 34,
+      "spicyLevel": "none",
+      "tags": [
+        "家常菜",
+        "不辣"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_017_003",
+      "shopId": "gut_manual_017",
+      "name": "清蒸鲈鱼",
+      "category": "家常菜",
+      "price": 38,
+      "spicyLevel": "none",
+      "tags": [
+        "家常菜",
+        "不辣"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_017_004",
+      "shopId": "gut_manual_017",
+      "name": "番茄炒蛋",
+      "category": "家常菜",
+      "price": 22,
+      "spicyLevel": "none",
+      "tags": [
+        "家常菜",
+        "不辣"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_017_005",
+      "shopId": "gut_manual_017",
+      "name": "青椒肉丝",
+      "category": "家常菜",
+      "price": 18,
+      "spicyLevel": "mild",
+      "tags": [
+        "家常菜",
+        "微辣"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_018_001",
+      "shopId": "gut_manual_018",
+      "name": "虾饺皇",
+      "category": "粤菜",
+      "price": 60,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_018_002",
+      "shopId": "gut_manual_018",
+      "name": "蛋挞",
+      "category": "粤菜",
+      "price": 68,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_018_003",
+      "shopId": "gut_manual_018",
+      "name": "烧鹅",
+      "category": "粤菜",
+      "price": 76,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_018_004",
+      "shopId": "gut_manual_018",
+      "name": "白切鸡",
+      "category": "粤菜",
+      "price": 44,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_018_005",
+      "shopId": "gut_manual_018",
+      "name": "烧鹅饭",
+      "category": "粤菜",
+      "price": 72,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_019_001",
+      "shopId": "gut_manual_019",
+      "name": "火锅鸡",
+      "category": "火锅",
+      "price": 36,
+      "spicyLevel": "mild",
+      "tags": [
+        "火锅",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_019_002",
+      "shopId": "gut_manual_019",
+      "name": "排骨火锅鸡",
+      "category": "火锅",
+      "price": 36,
+      "spicyLevel": "mild",
+      "tags": [
+        "火锅",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_019_003",
+      "shopId": "gut_manual_019",
+      "name": "招牌锅底",
+      "category": "火锅",
+      "price": 38,
+      "spicyLevel": "mild",
+      "tags": [
+        "火锅",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_019_004",
+      "shopId": "gut_manual_019",
+      "name": "鲜切牛肉盘",
+      "category": "火锅",
+      "price": 36,
+      "spicyLevel": "mild",
+      "tags": [
+        "火锅",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_019_005",
+      "shopId": "gut_manual_019",
+      "name": "手打肉丸",
+      "category": "火锅",
+      "price": 18,
+      "spicyLevel": "mild",
+      "tags": [
+        "火锅",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_020_001",
+      "shopId": "gut_manual_020",
+      "name": "广式鸡煲",
+      "category": "火锅",
+      "price": 38,
+      "spicyLevel": "mild",
+      "tags": [
+        "火锅",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_020_002",
+      "shopId": "gut_manual_020",
+      "name": "招牌锅底",
+      "category": "火锅",
+      "price": 45,
+      "spicyLevel": "mild",
+      "tags": [
+        "火锅",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_020_003",
+      "shopId": "gut_manual_020",
+      "name": "鲜切牛肉盘",
+      "category": "火锅",
+      "price": 48,
+      "spicyLevel": "mild",
+      "tags": [
+        "火锅",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_020_004",
+      "shopId": "gut_manual_020",
+      "name": "手打肉丸",
+      "category": "火锅",
+      "price": 28,
+      "spicyLevel": "mild",
+      "tags": [
+        "火锅",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_020_005",
+      "shopId": "gut_manual_020",
+      "name": "蔬菜拼盘",
+      "category": "火锅",
+      "price": 45,
+      "spicyLevel": "mild",
+      "tags": [
+        "火锅",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_021_001",
+      "shopId": "gut_manual_021",
+      "name": "羊肉串",
+      "category": "烧烤",
+      "price": 30,
+      "spicyLevel": "mild",
+      "tags": [
+        "烧烤",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_021_002",
+      "shopId": "gut_manual_021",
+      "name": "烤鸡翅",
+      "category": "烧烤",
+      "price": 34,
+      "spicyLevel": "mild",
+      "tags": [
+        "烧烤",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_021_003",
+      "shopId": "gut_manual_021",
+      "name": "烤茄子",
+      "category": "烧烤",
+      "price": 38,
+      "spicyLevel": "mild",
+      "tags": [
+        "烧烤",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_021_004",
+      "shopId": "gut_manual_021",
+      "name": "烤韭菜",
+      "category": "烧烤",
+      "price": 22,
+      "spicyLevel": "mild",
+      "tags": [
+        "烧烤",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_021_005",
+      "shopId": "gut_manual_021",
+      "name": "烤牛肉串",
+      "category": "烧烤",
+      "price": 18,
+      "spicyLevel": "mild",
+      "tags": [
+        "烧烤",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_022_001",
+      "shopId": "gut_manual_022",
+      "name": "秘制牛腩",
+      "category": "家常菜",
+      "price": 22,
+      "spicyLevel": "none",
+      "tags": [
+        "家常菜",
+        "不辣",
+        "预算友好"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_022_002",
+      "shopId": "gut_manual_022",
+      "name": "茶树菇炖鸡",
+      "category": "家常菜",
+      "price": 25,
+      "spicyLevel": "none",
+      "tags": [
+        "家常菜",
+        "不辣",
+        "预算友好"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_022_003",
+      "shopId": "gut_manual_022",
+      "name": "清蒸黄骨鱼",
+      "category": "家常菜",
+      "price": 28,
+      "spicyLevel": "none",
+      "tags": [
+        "家常菜",
+        "不辣",
+        "预算友好"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_022_004",
+      "shopId": "gut_manual_022",
+      "name": "番茄炒蛋",
+      "category": "家常菜",
+      "price": 16,
+      "spicyLevel": "none",
+      "tags": [
+        "家常菜",
+        "不辣",
+        "预算友好"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_022_005",
+      "shopId": "gut_manual_022",
+      "name": "青椒肉丝",
+      "category": "家常菜",
+      "price": 13,
+      "spicyLevel": "mild",
+      "tags": [
+        "家常菜",
+        "微辣",
+        "预算友好"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_023_001",
+      "shopId": "gut_manual_023",
+      "name": "石板牛肉粒",
+      "category": "粤菜",
+      "price": 92,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_023_002",
+      "shopId": "gut_manual_023",
+      "name": "酸汤肥牛",
+      "category": "粤菜",
+      "price": 67,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享",
+        "暖胃"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_023_003",
+      "shopId": "gut_manual_023",
+      "name": "沙姜鸡",
+      "category": "粤菜",
+      "price": 116,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_023_004",
+      "shopId": "gut_manual_023",
+      "name": "白切鸡",
+      "category": "粤菜",
+      "price": 67,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_023_005",
+      "shopId": "gut_manual_023",
+      "name": "烧鹅饭",
+      "category": "粤菜",
+      "price": 110,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_024_001",
+      "shopId": "gut_manual_024",
+      "name": "锅包肉",
+      "category": "东北菜",
+      "price": 27,
+      "spicyLevel": "none",
+      "tags": [
+        "东北菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_024_002",
+      "shopId": "gut_manual_024",
+      "name": "地三鲜",
+      "category": "东北菜",
+      "price": 31,
+      "spicyLevel": "none",
+      "tags": [
+        "东北菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_024_003",
+      "shopId": "gut_manual_024",
+      "name": "小鸡炖蘑菇",
+      "category": "东北菜",
+      "price": 34,
+      "spicyLevel": "none",
+      "tags": [
+        "东北菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_024_004",
+      "shopId": "gut_manual_024",
+      "name": "东北大拉皮",
+      "category": "东北菜",
+      "price": 20,
+      "spicyLevel": "none",
+      "tags": [
+        "东北菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_024_005",
+      "shopId": "gut_manual_024",
+      "name": "酸菜白肉",
+      "category": "东北菜",
+      "price": 16,
+      "spicyLevel": "none",
+      "tags": [
+        "东北菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_025_001",
+      "shopId": "gut_manual_025",
+      "name": "蒜苔腊肉",
+      "category": "家常菜",
+      "price": 41,
+      "spicyLevel": "none",
+      "tags": [
+        "家常菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_025_002",
+      "shopId": "gut_manual_025",
+      "name": "香干炒肉",
+      "category": "家常菜",
+      "price": 46,
+      "spicyLevel": "none",
+      "tags": [
+        "家常菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_025_003",
+      "shopId": "gut_manual_025",
+      "name": "回锅肉",
+      "category": "家常菜",
+      "price": 51,
+      "spicyLevel": "none",
+      "tags": [
+        "家常菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_025_004",
+      "shopId": "gut_manual_025",
+      "name": "番茄炒蛋",
+      "category": "家常菜",
+      "price": 30,
+      "spicyLevel": "none",
+      "tags": [
+        "家常菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_025_005",
+      "shopId": "gut_manual_025",
+      "name": "青椒肉丝",
+      "category": "家常菜",
+      "price": 24,
+      "spicyLevel": "mild",
+      "tags": [
+        "家常菜",
+        "微辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_026_001",
+      "shopId": "gut_manual_026",
+      "name": "橄榄鸡打边炉",
+      "category": "潮汕菜",
+      "price": 38,
+      "spicyLevel": "none",
+      "tags": [
+        "潮汕菜",
+        "不辣",
+        "可分享",
+        "暖胃"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_026_002",
+      "shopId": "gut_manual_026",
+      "name": "潮汕牛肉粿条",
+      "category": "潮汕菜",
+      "price": 43,
+      "spicyLevel": "none",
+      "tags": [
+        "潮汕菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_026_003",
+      "shopId": "gut_manual_026",
+      "name": "牛肉丸汤",
+      "category": "潮汕菜",
+      "price": 28,
+      "spicyLevel": "none",
+      "tags": [
+        "潮汕菜",
+        "不辣",
+        "可分享",
+        "暖胃"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_026_004",
+      "shopId": "gut_manual_026",
+      "name": "卤水拼盘",
+      "category": "潮汕菜",
+      "price": 45,
+      "spicyLevel": "none",
+      "tags": [
+        "潮汕菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_026_005",
+      "shopId": "gut_manual_026",
+      "name": "砂锅粥",
+      "category": "潮汕菜",
+      "price": 23,
+      "spicyLevel": "none",
+      "tags": [
+        "潮汕菜",
+        "不辣",
+        "可分享",
+        "暖胃"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_027_001",
+      "shopId": "gut_manual_027",
+      "name": "水晶鸡",
+      "category": "粤菜",
+      "price": 72,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_027_002",
+      "shopId": "gut_manual_027",
+      "name": "白切鸡",
+      "category": "粤菜",
+      "price": 82,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_027_003",
+      "shopId": "gut_manual_027",
+      "name": "客家豆腐",
+      "category": "粤菜",
+      "price": 91,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_027_004",
+      "shopId": "gut_manual_027",
+      "name": "烧鹅饭",
+      "category": "粤菜",
+      "price": 86,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_027_005",
+      "shopId": "gut_manual_027",
+      "name": "虾饺皇",
+      "category": "粤菜",
+      "price": 43,
+      "spicyLevel": "none",
+      "tags": [
+        "粤菜",
+        "不辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_028_001",
+      "shopId": "gut_manual_028",
+      "name": "重庆小面",
+      "category": "快餐",
+      "price": 23,
+      "spicyLevel": "none",
+      "tags": [
+        "快餐",
+        "不辣",
+        "预算友好",
+        "可分享",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_028_002",
+      "shopId": "gut_manual_028",
+      "name": "麻辣牛肉面",
+      "category": "快餐",
+      "price": 26,
+      "spicyLevel": "hot",
+      "tags": [
+        "快餐",
+        "香辣",
+        "预算友好",
+        "可分享",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_028_003",
+      "shopId": "gut_manual_028",
+      "name": "锅巴土豆",
+      "category": "快餐",
+      "price": 29,
+      "spicyLevel": "none",
+      "tags": [
+        "快餐",
+        "不辣",
+        "预算友好",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_028_004",
+      "shopId": "gut_manual_028",
+      "name": "招牌套餐饭",
+      "category": "快餐",
+      "price": 17,
+      "spicyLevel": "none",
+      "tags": [
+        "快餐",
+        "不辣",
+        "预算友好",
+        "可分享",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_028_005",
+      "shopId": "gut_manual_028",
+      "name": "香辣鸡腿堡",
+      "category": "快餐",
+      "price": 14,
+      "spicyLevel": "hot",
+      "tags": [
+        "快餐",
+        "香辣",
+        "预算友好",
+        "可分享",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_029_001",
+      "shopId": "gut_manual_029",
+      "name": "吮指原味鸡",
+      "category": "快餐",
+      "price": 19,
+      "spicyLevel": "none",
+      "tags": [
+        "快餐",
+        "不辣",
+        "预算友好"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_029_002",
+      "shopId": "gut_manual_029",
+      "name": "汉堡",
+      "category": "快餐",
+      "price": 21,
+      "spicyLevel": "none",
+      "tags": [
+        "快餐",
+        "不辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_029_003",
+      "shopId": "gut_manual_029",
+      "name": "招牌套餐饭",
+      "category": "快餐",
+      "price": 24,
+      "spicyLevel": "none",
+      "tags": [
+        "快餐",
+        "不辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_029_004",
+      "shopId": "gut_manual_029",
+      "name": "香辣鸡腿堡",
+      "category": "快餐",
+      "price": 14,
+      "spicyLevel": "hot",
+      "tags": [
+        "快餐",
+        "香辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_029_005",
+      "shopId": "gut_manual_029",
+      "name": "烧腊双拼饭",
+      "category": "快餐",
+      "price": 11,
+      "spicyLevel": "none",
+      "tags": [
+        "快餐",
+        "不辣",
+        "预算友好",
+        "饱腹"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_030_001",
+      "shopId": "gut_manual_030",
+      "name": "麻辣小龙虾",
+      "category": "川湘菜",
+      "price": 46,
+      "spicyLevel": "hot",
+      "tags": [
+        "川湘菜",
+        "香辣"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_030_002",
+      "shopId": "gut_manual_030",
+      "name": "椒香小酥肉",
+      "category": "川湘菜",
+      "price": 43,
+      "spicyLevel": "hot",
+      "tags": [
+        "川湘菜",
+        "香辣"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_030_003",
+      "shopId": "gut_manual_030",
+      "name": "宫保鸡丁",
+      "category": "川湘菜",
+      "price": 48,
+      "spicyLevel": "hot",
+      "tags": [
+        "川湘菜",
+        "香辣"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_030_004",
+      "shopId": "gut_manual_030",
+      "name": "小炒黄牛肉",
+      "category": "川湘菜",
+      "price": 28,
+      "spicyLevel": "hot",
+      "tags": [
+        "川湘菜",
+        "香辣"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
+    },
+    {
+      "id": "dish_gut_manual_030_005",
+      "shopId": "gut_manual_030",
+      "name": "干锅肥肠",
+      "category": "川湘菜",
+      "price": 23,
+      "spicyLevel": "hot",
+      "tags": [
+        "川湘菜",
+        "香辣",
+        "可分享"
+      ],
+      "source": "generated_from_hints",
+      "sourceId": "generated_from_hints_2026_05_23"
     }
   ]
 }

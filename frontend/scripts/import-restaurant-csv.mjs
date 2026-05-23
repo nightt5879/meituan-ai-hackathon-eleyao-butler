@@ -67,19 +67,57 @@ const categoryDefaults = [
     match: ["日料", "日本料理", "寿司"],
     cuisines: ["日料"],
     tags: ["日料", "简餐", "不辣可选"],
-    featureTags: ["japanese", "non_spicy_available", "light_meal"]
+    featureTags: ["japanese", "non_spicy_available", "light_meal"],
+    dishHints: ["寿司拼盘", "照烧鸡排饭", "豚骨拉面", "日式咖喱饭", "味噌汤"]
+  },
+  {
+    match: ["西餐", "意面", "披萨", "牛排"],
+    cuisines: ["西餐"],
+    tags: ["西餐", "简餐", "适合聊天", "不辣可选"],
+    featureTags: ["western", "chat_friendly", "non_spicy_available", "light_meal"],
+    dishHints: ["黑椒牛排", "番茄肉酱意面", "奶油蘑菇意面", "玛格丽特披萨", "凯撒沙拉"]
   },
   {
     match: ["韩餐", "韩国料理", "韩式"],
     cuisines: ["韩餐"],
     tags: ["韩餐", "多人聚餐", "可选辣度"],
-    featureTags: ["korean", "group_friendly", "spicy_options"]
+    featureTags: ["korean", "group_friendly", "spicy_options"],
+    dishHints: ["石锅拌饭", "部队锅", "韩式炸鸡", "泡菜炒饭", "烤肉拌饭"]
+  },
+  {
+    match: ["东北菜", "东北"],
+    cuisines: ["东北菜"],
+    tags: ["东北菜", "分量足", "多人聚餐", "下饭"],
+    featureTags: ["northeastern_chinese", "large_portion", "group_friendly", "rice_friendly"],
+    dishHints: ["锅包肉", "地三鲜", "小鸡炖蘑菇", "东北大拉皮", "酸菜白肉"]
+  },
+  {
+    match: ["新疆菜", "新疆", "大盘鸡", "拌面"],
+    cuisines: ["新疆菜"],
+    tags: ["新疆菜", "分量足", "面食", "多人聚餐"],
+    featureTags: ["xinjiang", "large_portion", "noodle", "group_friendly"],
+    dishHints: ["大盘鸡", "新疆拌面", "羊肉抓饭", "烤羊肉串", "馕包肉"]
+  },
+  {
+    match: ["家常菜", "家常", "小炒"],
+    cuisines: ["家常菜"],
+    tags: ["家常菜", "下饭", "预算友好", "不辣可选"],
+    featureTags: ["home_style", "rice_friendly", "budget_friendly", "non_spicy_available"],
+    dishHints: ["番茄炒蛋", "青椒肉丝", "鱼香肉丝", "蒜蓉时蔬", "例汤套餐"]
+  },
+  {
+    match: ["潮汕菜", "潮汕", "潮州菜", "牛肉火锅"],
+    cuisines: ["潮汕菜"],
+    tags: ["潮汕菜", "不辣可选", "多人聚餐", "汤鲜"],
+    featureTags: ["chaoshan", "non_spicy_available", "group_friendly", "soup_friendly"],
+    dishHints: ["潮汕牛肉火锅", "牛肉丸汤", "卤水拼盘", "粿条汤", "砂锅粥"]
   },
   {
     match: ["粉面", "面", "粉", "粥"],
     cuisines: ["粉面"],
     tags: ["粉面", "快餐", "预算友好"],
-    featureTags: ["noodle", "quick_meal", "budget_friendly"]
+    featureTags: ["noodle", "quick_meal", "budget_friendly"],
+    dishHints: ["牛肉粉", "番茄鸡蛋面", "酸辣粉", "云吞面", "砂锅粥"]
   },
   {
     match: ["快餐", "简餐", "盖饭", "便当"],
@@ -115,7 +153,8 @@ const categoryDefaults = [
     match: ["其他"],
     cuisines: ["其他"],
     tags: ["其他", "人工整理"],
-    featureTags: ["manual_curated", "needs_review"]
+    featureTags: ["manual_curated", "needs_review"],
+    dishHints: []
   }
 ];
 
@@ -227,7 +266,8 @@ function getCategoryDefaults(category) {
   return matched ?? {
     cuisines: [category || "其他"],
     tags: [category, "人工整理"],
-    featureTags: ["manual_curated", "needs_review"]
+    featureTags: ["manual_curated", "needs_review"],
+    dishHints: []
   };
 }
 
@@ -372,7 +412,8 @@ function buildManualShop(record, rowIndex, manualIndex) {
   const latitude = parseNumber(record["纬度"], "纬度", rowIndex);
   const longitude = parseNumber(record["经度"], "经度", rowIndex);
   const defaults = getCategoryDefaults(record["类别"]);
-  const dishHints = parseList(record["代表菜"]);
+  const manualDishHints = parseList(record["代表菜"]);
+  const dishHints = manualDishHints.length > 0 ? manualDishHints : defaults.dishHints;
   const notes = "人工地图整理，菜品后续按类别生成补全";
   const shop = {
     id: `gut_manual_${padNumber(manualIndex)}`,
@@ -397,6 +438,7 @@ function buildManualShop(record, rowIndex, manualIndex) {
       dishSeedMode: "generated_by_category",
       notes,
       dishHints,
+      dishHintSource: manualDishHints.length > 0 ? "manual_csv" : "category_default",
       reviewWarnings: []
     }
   };

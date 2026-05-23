@@ -5,13 +5,13 @@
       "label": "生成示例数据",
       "synthetic": true,
       "trustLevel": "low",
-      "description": "由项目为验证数据层框架而生成的示例数据，不代表真实商家、真实菜单或实时状态。"
+      "description": "用于明确标注未来可能出现的纯生成/mock 数据。当前正式餐饮 seed 已移除旧 generated 示例店；若再次使用该 source，必须说明不代表真实商家、真实菜单或实时状态。"
     },
     "manual_sample": {
-      "label": "人工样例/区域配置",
-      "synthetic": true,
-      "trustLevel": "low",
-      "description": "人工维护的样例或配置数据，可用于开发验证；若未标注公开来源，不得视为真实 POI。"
+      "label": "人工整理样例数据",
+      "synthetic": false,
+      "trustLevel": "medium",
+      "description": "由人工从公开地图或现场可见信息整理的店铺基础字段，可用于种子数据；未逐条记录来源链接时仍需视为待复核样例，不代表平台实时数据。"
     },
     "manual_public_curated": {
       "label": "人工公开信息整理",
@@ -30,6 +30,12 @@
       "synthetic": false,
       "trustLevel": "medium",
       "description": "由腾讯位置服务查询生成的草稿数据，必须人工复核后才能合并进正式 seed。"
+    },
+    "generated_from_hints": {
+      "label": "根据人工提示生成的数据",
+      "synthetic": true,
+      "trustLevel": "low",
+      "description": "根据人工填写的类别、标签和代表菜生成的菜品或店铺特征，仅用于推荐服务联调，不得伪装为真实菜单、真实排队或真实环境信息。"
     }
   },
   "sources": [
@@ -41,32 +47,11 @@
       "description": "用于 MVP 数据校验和查询半径的区域配置，不代表精确行政边界。"
     },
     {
-      "id": "generated_seed_2026_05",
-      "source": "generated",
-      "title": "广州大学城店铺 seed 示例",
-      "collectedAt": "2026-05-23",
-      "description": "6 家合成示例店，用于验证数据层、查询 API 和导入流程。"
-    },
-    {
-      "id": "generated_dish_seed_2026_05",
-      "source": "generated",
-      "title": "广州大学城菜品 seed 示例",
-      "collectedAt": "2026-05-23",
-      "description": "每家示例店 5 个生成菜品，不代表真实菜单。"
-    },
-    {
-      "id": "generated_feature_seed_2026_05",
-      "source": "generated",
-      "title": "广州大学城店铺特征 seed 示例",
-      "collectedAt": "2026-05-23",
-      "description": "为简单筛选和排序准备的生成特征，不代表真实环境、排队或营业状态。"
-    },
-    {
       "id": "manual_csv_import",
       "source": "manual_sample",
       "title": "人工 CSV 导入草稿",
       "collectedAt": "2026-05-23",
-      "description": "从 shops.template.csv 导入的草稿数据，需人工审核后再进入正式 seed。"
+      "description": "从 shops.manual.template.csv 导入并审核的草稿数据；合并正式 seed 前需人工确认字段、坐标和来源标注。"
     },
     {
       "id": "amap_poi_draft",
@@ -81,6 +66,223 @@
       "title": "腾讯位置服务 POI API 草稿",
       "collectedAt": "2026-05-23",
       "description": "腾讯 API sample 脚本输出的草稿，不应直接覆盖正式 seed。"
+    },
+    {
+      "id": "manual_gut_001",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 01: 必胜客(GOGO新天地店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_002",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 02: 达美乐比萨(GOGO新天地店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_003",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 03: 锅北北小锅烀饼铁锅炖(GOGO新天地1期店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_004",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 04: 麦当劳(中二横路分店餐厅)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_005",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 05: 艾克馕来了·新疆音乐餐厅(大学城贝岗店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_006",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 06: 念念Restaurant(贝岗店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_007",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 07: 葡萄熟了.新疆味道",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_008",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 08: 萨莉亚意大利餐厅(GOGO新天地店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_009",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 09: 潮前方潮汕牛肉粿·火锅(大学城店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_010",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 10: 都城快餐(大学城店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_011",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 11: 桑拿鸡煲王(大学城店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_012",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 12: 仙庙烧鸡(北亭店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_013",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 13: 大城小厨(大学城店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_014",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 14: 黎城記粉面·饺子·云吞",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_015",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 15: 车田情酒家(大学城店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_016",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 16: 大雄寿司(大学城店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_017",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 17: 林哥私厨",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_018",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 18: 鹿其林酒家(大学城校区广东工业大学店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_019",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 19: 椒椒铜炉火锅鸡(大学城店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_020",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 20: 林记·老广鸡煲",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_021",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 21: 串记烧烤",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_022",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 22: 文宇家常菜(星汇文宇店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_023",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 23: 云山诗意酒家(大学城南站店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_024",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 24: 满街香东北菜馆",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_025",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 25: 拾穗者餐厅(穗石村店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_026",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 26: 潮汕石橄榄鸡炉",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_027",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 27: 饮和居风味餐厅",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_028",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 28: 遇见小面(华南理工校区店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_029",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 29: 肯德基(中医药大学K-COFFEE店)",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "manual_gut_030",
+      "source": "manual_sample",
+      "title": "人工 CSV 审核店铺 30: 粤来遇蜀",
+      "collectedAt": "2026-05-23",
+      "description": "从 shops.manual.template.csv 合并的人工整理店铺记录；店名、类别、人均、地址和坐标来自人工地图整理，后续可继续补充 sourceUrl 或替换为地图 API POI source。"
+    },
+    {
+      "id": "generated_from_hints_2026_05_23",
+      "source": "generated_from_hints",
+      "title": "根据人工 CSV 代表菜生成的菜品与店铺特征",
+      "collectedAt": "2026-05-23",
+      "description": "为 30 家人工审核店铺按类别、标签和代表菜生成的菜品 seed 与 shop-feature；不代表真实菜单、真实价格、真实排队或真实环境。"
     }
   ]
 }

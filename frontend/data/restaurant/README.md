@@ -35,7 +35,7 @@ Recommended path: fill `frontend/data/restaurant/import/shops.manual.template.cs
 Field meanings:
 
 - `店名`: Required. Reviewed shop name.
-- `类别`: Required. Recommended values are 粤菜、川湘菜、火锅、烧烤、日料、韩餐、粉面、快餐、奶茶、轻食、咖啡、甜品、其他.
+- `类别`: Required. Recommended values are 粤菜、川湘菜、火锅、烧烤、日料、韩餐、西餐、东北菜、新疆菜、家常菜、潮汕菜、粉面、快餐、奶茶、轻食、咖啡、甜品、其他.
 - `人均`: Optional. Estimated per-person price in CNY.
 - `地址`: Optional for draft, but recommended. Review it before merging into formal seed.
 - `纬度`: Required. Latitude, usually around `23.x` near Guangzhou University Town.
@@ -102,7 +102,7 @@ Field meanings:
 
 - `id`: Stable shop id, for example `gut_real_noodle_001`. Must be unique.
 - `name`: Shop name. Use the reviewed public POI name.
-- `category`: Primary category used by search and ranking, such as `粤菜`, `川湘菜`, `火锅`, `烧烤`, `日料`, `韩餐`, `粉面`, `快餐`, `奶茶`, or `轻食`.
+- `category`: Primary category used by search and ranking, such as `粤菜`, `川湘菜`, `火锅`, `烧烤`, `日料`, `韩餐`, `西餐`, `东北菜`, `新疆菜`, `家常菜`, `潮汕菜`, `粉面`, `快餐`, `奶茶`, or `轻食`.
 - `cuisines`: More detailed cuisine labels. Use semicolons for multiple values.
 - `avgPrice`: Estimated per-person price in CNY. Leave blank if unknown.
 - `rating`: Public rating if the source is reliable. Leave blank if unknown.

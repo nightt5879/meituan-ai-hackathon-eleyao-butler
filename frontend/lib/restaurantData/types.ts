@@ -1,4 +1,10 @@
-export type RestaurantSource = "generated" | "manual_sample" | "manual_public_curated" | "amap_poi_draft" | "tencent_poi_draft";
+export type RestaurantSource =
+  | "generated"
+  | "generated_from_hints"
+  | "manual_sample"
+  | "manual_public_curated"
+  | "amap_poi_draft"
+  | "tencent_poi_draft";
 
 export type QueueRisk = "low" | "medium" | "high" | "unknown";
 export type SpicyLevel = "none" | "mild" | "medium" | "hot" | "unknown";
