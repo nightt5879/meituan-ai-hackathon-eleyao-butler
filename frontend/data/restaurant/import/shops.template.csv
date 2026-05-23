@@ -1,2 +1,2 @@
-id,name,category,address,latitude,longitude,avgPrice,tags,regionId,source,sourceId
-gut_csv_example_shop,CSV示例餐厅,简餐,广州大学城人工整理示例地址,23.0525,113.393,35,简餐;不辣可选;预算友好,guangzhou_university_town,manual_sample,manual_csv_import
+id,name,category,cuisines,avgPrice,rating,address,latitude,longitude,regionId,source,sourceId,sourceUrl,collectedAt,confidence,tags,featureTags,dishSeedMode,notes
+gut_csv_example_shop,CSV Example Restaurant,fast_food,fast_food;campus_food,35,,Guangzhou University Town example address,23.0525,113.3930,guangzhou_university_town,manual_sample,manual_csv_import,,2026-05-23,0.30,fast_food;budget_friendly,quick_meal;non_spicy_available,generated_by_category,Example row only; replace with reviewed shop data before import.

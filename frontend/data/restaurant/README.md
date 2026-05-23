@@ -9,7 +9,8 @@ This folder contains the Guangzhou University Town restaurant data layer MVP for
 - `dishes.gut.seed.json`: seed dishes linked by `shopId`.
 - `shop-features.gut.seed.json`: derived shop features for filtering and ranking.
 - `data-source-meta.json`: source kind definitions and source batch metadata.
-- `import/shops.template.csv`: manual CSV template for draft imports.
+- `import/shops.manual.template.csv`: recommended simplified Chinese CSV template for manual collection.
+- `import/shops.template.csv`: advanced full-field CSV template for draft imports.
 
 ## Source Rules
 
@@ -25,7 +26,39 @@ Current seed data is framework test data. Do not present it as a complete or ver
 
 ## CSV Import
 
-Edit `import/shops.template.csv` manually with public or internally reviewed POI fields:
+Recommended path: fill `frontend/data/restaurant/import/shops.manual.template.csv`. It uses a short Chinese header:
+
+```text
+店名,类别,菜系,人均,地址,纬度,经度,来源链接,备注
+```
+
+Field meanings:
+
+- `店名`: Required. Reviewed shop name.
+- `类别`: Required. Primary category, such as 粤菜、川湘菜、火锅、烧烤、日料、韩餐、粉面、快餐、奶茶、轻食.
+- `菜系`: Optional. More cuisine labels; use semicolons for multiple values.
+- `人均`: Optional. Estimated per-person price in CNY.
+- `地址`: Optional for draft, but must be reviewed before merging into formal seed.
+- `纬度`: Required. Latitude, usually around `23.x` near Guangzhou University Town.
+- `经度`: Required. Longitude, usually around `113.x`. Do not swap latitude and longitude.
+- `来源链接`: Optional public source or map URL for review.
+- `备注`: Optional. If blank, importer writes `人工地图整理，菜品后续按类别生成补全`.
+
+The importer automatically fills:
+
+- `id`: `gut_manual_001`, `gut_manual_002`, ...
+- `regionId`: `guangzhou_university_town`
+- `source`: `manual_sample`
+- `sourceId`: `manual_gut_001`, `manual_gut_002`, ...
+- `collectedAt`: today's date
+- `confidence`: `0.65`
+- `dishSeedMode`: `generated_by_category`
+- `tags`: Chinese tags inferred from `类别`
+- `featureTags`: program tags inferred from `类别`
+- `sourceUrl`: copied from `来源链接`
+- `avgPrice`: parsed from `人均`
+
+Run:
 
 ```powershell
 node frontend/scripts/import-restaurant-csv.mjs
@@ -38,6 +71,69 @@ frontend/data/restaurant/import/shops.imported.draft.json
 ```
 
 It never overwrites `shops.gut.seed.json`. Review the draft, verify `source` and `sourceId`, then manually merge selected entries.
+
+Suggested batch flow:
+
+1. Collect 10 shops in `shops.manual.template.csv`.
+2. Run the importer and review `shops.imported.draft.json`.
+3. Check duplicate shops, category consistency, coordinates, warning messages, source links, and source IDs.
+4. Manually merge approved shops into `shops.gut.seed.json`.
+5. Add 5-10 dishes per approved shop to `dishes.gut.seed.json`.
+6. Add one feature record per approved shop to `shop-features.gut.seed.json`.
+7. Run `node frontend/scripts/validate-restaurant-data.mjs`.
+8. Repeat another 10-shop batch until the dataset reaches 30-50 shops.
+
+## Manual CSV Guide
+
+Advanced path: use `frontend/data/restaurant/import/shops.template.csv` when you want to control every formal/draft field yourself. Run it with:
+
+```powershell
+node frontend/scripts/import-restaurant-csv.mjs --input=frontend/data/restaurant/import/shops.template.csv
+```
+
+The advanced header is:
+
+```text
+id,name,category,cuisines,avgPrice,rating,address,latitude,longitude,regionId,source,sourceId,sourceUrl,collectedAt,confidence,tags,featureTags,dishSeedMode,notes
+```
+
+Field meanings:
+
+- `id`: Stable shop id, for example `gut_real_noodle_001`. Must be unique.
+- `name`: Shop name. Use the reviewed public POI name.
+- `category`: Primary category used by search and ranking, such as `粤菜`, `川湘菜`, `火锅`, `烧烤`, `日料`, `韩餐`, `粉面`, `快餐`, `奶茶`, or `轻食`.
+- `cuisines`: More detailed cuisine labels. Use semicolons for multiple values.
+- `avgPrice`: Estimated per-person price in CNY. Leave blank if unknown.
+- `rating`: Public rating if the source is reliable. Leave blank if unknown.
+- `address`: Reviewed address text.
+- `latitude`: Latitude, usually around `23.x` for Guangzhou University Town.
+- `longitude`: Longitude, usually around `113.x`. Do not swap latitude and longitude.
+- `regionId`: Use `guangzhou_university_town` for the current region.
+- `source`: Use one of `manual_public_curated`, `manual_sample`, `amap_poi_draft`, `tencent_poi_draft`, or `generated`.
+- `sourceId`: Source batch id declared in `data-source-meta.json`, or a new batch id to add before merging.
+- `sourceUrl`: Public source URL when available. Strongly recommended for `manual_public_curated`.
+- `collectedAt`: Collection date in `YYYY-MM-DD`.
+- `confidence`: Numeric confidence from `0` to `1`.
+- `tags`: Shop tags for filtering. Use semicolons for multiple values.
+- `featureTags`: Hints for later `shop-features.gut.seed.json`. Use semicolons.
+- `dishSeedMode`: How dishes should be prepared later, such as `manual_menu`, `generated_by_category`, or `needs_manual_review`.
+- `notes`: Human review notes. Do not store phone numbers, review text, or private data.
+
+Fields that must be real/reviewed before a row can become formal shop seed: `name`, `category`, `address`, `latitude`, `longitude`, `regionId`, `source`, `sourceId`, `collectedAt`, and `confidence`.
+
+Fields that may be estimated when clearly marked by source and notes: `avgPrice`, `rating`, `tags`, `featureTags`, and `dishSeedMode`. Generated dishes and generated features must use `source: "generated"` in their own JSON files; do not inherit a real shop source for generated menu/details.
+
+Manual workflow:
+
+1. Fill or paste rows into `shops.template.csv`.
+2. Keep multi-value fields separated by semicolons, not commas.
+3. Run `node frontend/scripts/import-restaurant-csv.mjs`.
+4. Review `frontend/data/restaurant/import/shops.imported.draft.json`.
+5. Add any new `sourceId` batch to `data-source-meta.json`.
+6. Manually merge approved shop fields into `shops.gut.seed.json`.
+7. Add 5-10 dishes per shop to `dishes.gut.seed.json`.
+8. Add one feature record per shop to `shop-features.gut.seed.json`.
+9. Run `node frontend/scripts/validate-restaurant-data.mjs`.
 
 ## POI API Drafts
 

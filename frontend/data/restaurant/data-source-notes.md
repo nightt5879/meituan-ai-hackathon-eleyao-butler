@@ -26,6 +26,14 @@ Do not collect or store review text, phone numbers, merchant contact details, pr
 5. Add real or curated dishes only when source and confidence are clear.
 6. Run `node frontend/scripts/validate-restaurant-data.mjs`.
 
+## CSV Curation Notes
+
+The CSV template is for shop POI collection only. It does not create formal dishes or shop features automatically.
+
+For real or semi-real shop expansion, use `manual_public_curated` only when the shop name, address, coordinates, source URL or source note, collection date, and confidence have been reviewed. Use draft sources for raw map API output, and use `generated` for generated dish/menu/feature completion.
+
+Do not commit `*.draft.json` import outputs. They are review artifacts and should remain ignored by Git.
+
 ## Future Updates
 
 For a production-like layer, move from seed JSON to a database or indexed data service. Keep `source`, `sourceId`, `collectedAt`, and trust notes available in API responses so downstream recommendation logic can reason about data reliability.
