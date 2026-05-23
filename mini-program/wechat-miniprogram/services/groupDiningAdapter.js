@@ -14,7 +14,7 @@
 //   'api'      — real backend via wx.request
 //   'fallback' — try API first; on failure warn the user and fall back to mock
 const ADAPTER_MODE = 'mock';
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = 'http://meituan.43-110-71-200.sslip.io';
 const API_PREFIX = '/api/group-tasks'; // easy to switch to '/api/tasks'
 const API_TIMEOUT_MS = 15000;
 
@@ -136,7 +136,7 @@ function apiRequest(method, path, body) {
       timeout: API_TIMEOUT_MS,
       success: function (res) {
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(res.data);
+          resolve(res.data || {});
         } else {
           reject(makeError('http_' + res.statusCode, 'HTTP ' + res.statusCode));
         }
@@ -296,23 +296,26 @@ function mockSubmitAdjustmentRequest(taskId, _inviteToken, payload) {
 
 function buildCreateTaskBody(payload) {
   const safe = payload || {};
-  const expected = parseIntLoose(safe.peopleCount || safe.expectedPeopleCount);
+  const expected = parseIntLoose(
+    safe.peopleCount || safe.expectedPeopleCount || safe.expected_people_count
+  );
   return {
-    creator_name: trim(safe.creatorName) || '发起人',
-    raw_request: trim(safe.rawRequest) || '一次多人聚餐，欢迎大家自由填写偏好',
-    location_text: trim(safe.location || safe.locationText) || '待商量',
+    creator_name: trim(safe.creatorName || safe.creator_name) || '发起人',
+    raw_request: trim(safe.rawRequest || safe.raw_request) || '一次多人聚餐，欢迎大家自由填写偏好',
+    location_text: trim(safe.location || safe.locationText || safe.location_text) || '待商量',
     expected_people_count: expected > 0 ? expected : 5,
-    dinner_time: trim(safe.dinnerTime) || '待商量'
+    dinner_time: trim(safe.dinnerTime || safe.dinner_time) || '待商量'
   };
 }
 
 function buildParticipantBody(payload) {
   const safe = payload || {};
   const availability = safe.availability || {};
+  const manualFields = plainObjectOrEmpty(safe.manualFields || safe.manual_fields);
   return {
     nickname: trim(safe.nickname),
     visibility: trim(safe.visibility) || 'public',
-    raw_preference: trim(safe.rawPreference || safe.naturalLanguagePreference),
+    raw_preference: trim(safe.rawPreference || safe.raw_preference || safe.naturalLanguagePreference),
     available_days: arrayOrEmpty(availability.availableDays),
     available_hours: arrayOrEmpty(availability.availableHours),
     available_time_text: trim(availability.availableTimeText),
@@ -326,9 +329,12 @@ function buildParticipantBody(payload) {
     soft_preferences: arrayOrEmpty(safe.softPreferences),
     requirement_priorities: plainObjectOrEmpty(safe.requirementPriorities),
     manual_fields: {
-      budget_max: budgetMaxFromTag(safe.budgetTag) || parseIntLoose(safe.budget) || null,
-      spicy_preference: mapSpicyToEnum(safe.spicyPreference || safe.spicy),
-      leave_before: trim(safe.leaveBefore)
+      budget_max: budgetMaxFromTag(safe.budgetTag) ||
+                  parseIntLoose(safe.budget) ||
+                  numberOrNull(pickValue(manualFields, 'budgetMax', 'budget_max', null)),
+      spicy_preference: mapSpicyToEnum(safe.spicyPreference || safe.spicy) ||
+                        pickValue(manualFields, 'spicyPreference', 'spicy_preference', ''),
+      leave_before: trim(safe.leaveBefore || pickValue(manualFields, 'leaveBefore', 'leave_before', ''))
     }
   };
 }
@@ -691,22 +697,45 @@ function uniqueList(list) {
 
 function normalizeBoard(payload) {
   const safe = payload || {};
-  const task = normalizeTask(pickValue(safe, 'task', 'task', {}));
-  const participantsRaw = pickArray(safe, 'participants', 'participants');
+  const taskSource = pickValue(safe, 'task', 'task', null) || safe;
+  const task = normalizeTask(taskSource);
+  const participantsRaw = firstNonEmptyArray(
+    pickArray(safe, 'participants', 'participants'),
+    pickArray(taskSource, 'participants', 'participants'),
+    pickArray(safe, 'members', 'members')
+  );
   const participants = participantsRaw.map(normalizeParticipant);
-  const recState = normalizeRecommendationState(pickValue(safe, 'recommendationState', 'recommendation_state', null));
-  const recResult = normalizeRecommendationResult(pickValue(safe, 'recommendationResult', 'recommendation_result', null));
+  const recState = normalizeRecommendationState(
+    pickValue(safe, 'recommendationState', 'recommendation_state', null) ||
+    pickValue(taskSource, 'recommendationState', 'recommendation_state', null) ||
+    { status: pickValue(taskSource, 'status', 'status', '') }
+  );
+  const recResult = normalizeRecommendationResult(
+    pickValue(safe, 'recommendationResult', 'recommendation_result', null) ||
+    pickValue(taskSource, 'recommendationResult', 'recommendation_result', null) ||
+    buildRecommendationResultFromFlatPayload(safe, taskSource)
+  );
 
-  const adjustmentRequests = pickArray(safe, 'adjustmentRequests', 'adjustment_requests')
-    .map(normalizeAdjustmentRequest);
+  const adjustmentRequests = firstNonEmptyArray(
+    pickArray(safe, 'adjustmentRequests', 'adjustment_requests'),
+    pickArray(taskSource, 'adjustmentRequests', 'adjustment_requests')
+  ).map(normalizeAdjustmentRequest);
+  const conflicts = firstNonEmptyArray(
+    pickArray(safe, 'conflicts', 'conflicts'),
+    pickArray(taskSource, 'conflicts', 'conflicts')
+  ).map(normalizeConflict);
 
   return {
     task: task,
-    taskId: task.id || pickValue(safe, 'taskId', 'task_id', ''),
-    inviteToken: pickValue(safe, 'inviteToken', 'invite_token', ''),
-    sharePath: pickValue(safe, 'sharePath', 'share_path', '') || task.shareUrl || '',
+    taskId: task.id || pickValue(safe, 'taskId', 'task_id', '') ||
+            pickValue(taskSource, 'taskId', 'task_id', ''),
+    inviteToken: pickValue(safe, 'inviteToken', 'invite_token', '') ||
+                 pickValue(taskSource, 'inviteToken', 'invite_token', ''),
+    sharePath: pickValue(safe, 'sharePath', 'share_path', '') ||
+               pickValue(taskSource, 'sharePath', 'share_path', '') ||
+               safe.nextUrl || task.shareUrl || '',
     participants: participants,
-    conflicts: pickArray(safe, 'conflicts', 'conflicts').map(normalizeConflict),
+    conflicts: conflicts,
     recommendationState: recState,
     recommendationResult: recResult,
     adjustmentRequests: adjustmentRequests,
@@ -814,7 +843,10 @@ function normalizeRecommendationState(state) {
 function normalizeRecommendationResult(result) {
   if (!result) { return null; }
   const finalRaw = pickValue(result, 'finalChoice', 'final_choice', {});
-  const candidates = pickArray(result, 'candidates', 'candidates').map(normalizeCandidate);
+  const candidates = firstNonEmptyArray(
+    pickArray(result, 'candidates', 'candidates'),
+    pickArray(result, 'recommendations', 'recommendations')
+  ).map(normalizeCandidate);
   return {
     candidates: candidates,
     finalChoice: {
@@ -836,7 +868,7 @@ function normalizeCandidate(c) {
   return {
     id: pickValue(safe, 'id', 'restaurant_id', ''),
     name: safe.name || '',
-    category: safe.category || '',
+    category: safe.category || safe.type || '',
     avgPrice: numberOrNull(pickValue(safe, 'avgPrice', 'avg_price', null)),
     distanceM: numberOrNull(pickValue(safe, 'distanceM', 'distance_m', null)),
     walkMinutes: numberOrNull(pickValue(safe, 'walkMinutes', 'walk_minutes', null)),
@@ -912,6 +944,15 @@ function pickValue(obj, camelKey, snakeKey, defaultValue) {
 function pickArray(obj, camelKey, snakeKey) {
   const v = pickValue(obj, camelKey, snakeKey, []);
   return Array.isArray(v) ? v.slice() : [];
+}
+
+function firstNonEmptyArray() {
+  for (let i = 0; i < arguments.length; i++) {
+    if (Array.isArray(arguments[i]) && arguments[i].length) {
+      return arguments[i].slice();
+    }
+  }
+  return [];
 }
 
 function arrayOrEmpty(value) {
@@ -1098,7 +1139,34 @@ function seedDemoTask() {
   };
 }
 
+function buildRecommendationResultFromFlatPayload(safe, taskSource) {
+  const candidates = firstNonEmptyArray(
+    pickArray(safe, 'candidates', 'candidates'),
+    pickArray(safe, 'recommendations', 'recommendations'),
+    pickArray(taskSource, 'candidates', 'candidates'),
+    pickArray(taskSource, 'recommendations', 'recommendations')
+  );
+  const finalChoice = pickValue(safe, 'finalChoice', 'final_choice', null) ||
+                      pickValue(taskSource, 'finalChoice', 'final_choice', null);
+  const groupMessage = pickValue(safe, 'groupMessage', 'group_message', '') ||
+                       pickValue(taskSource, 'groupMessage', 'group_message', '');
+  const normalAiMessage = pickValue(safe, 'normalAiMessage', 'normal_ai_message', '') ||
+                          pickValue(taskSource, 'normalAiMessage', 'normal_ai_message', '');
+
+  if (!candidates.length && !finalChoice && !groupMessage && !normalAiMessage) {
+    return null;
+  }
+
+  return {
+    candidates: candidates,
+    final_choice: finalChoice || {},
+    group_message: groupMessage,
+    normal_ai_message: normalAiMessage
+  };
+}
+
 module.exports = {
+  API_BASE_URL,
   createTask,
   getTaskBoard,
   submitPreference,

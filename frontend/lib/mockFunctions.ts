@@ -117,10 +117,11 @@ export function extractParticipantConstraints(input: ParticipantInput): Particip
 
 export function buildMockParticipant(input: ParticipantInput, existingId?: string): Participant {
   const nickname = input.nickname.trim() || "我";
-  const parsedBudget = input.manual_fields.budget_max ?? extractBudgetMax(input.raw_preference, 0);
+  const inputManualFields = input.manual_fields ?? {};
+  const parsedBudget = inputManualFields.budget_max ?? extractBudgetMax(input.raw_preference, 0);
   const manual_fields = {
-    ...input.manual_fields,
-    budget_max: parsedBudget > 0 ? parsedBudget : input.manual_fields.budget_max
+    ...inputManualFields,
+    budget_max: parsedBudget > 0 ? parsedBudget : inputManualFields.budget_max
   };
 
   return {
