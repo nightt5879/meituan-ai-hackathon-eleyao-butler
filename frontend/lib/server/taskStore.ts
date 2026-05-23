@@ -208,6 +208,10 @@ function createTaskId() {
   return `task_${Date.now().toString(36)}_${randomUUID().slice(0, 8)}`;
 }
 
+function createParticipantIdFromClientId(clientId: string) {
+  return `p_client_${createHash("sha256").update(clientId).digest("hex").slice(0, 16)}`;
+}
+
 function createInviteToken() {
   return `token_${randomBytes(24).toString("base64url")}`;
 }
@@ -527,11 +531,13 @@ export async function addOrUpdateGroupParticipant(taskId: string, inviteToken: s
     const existing = clientId
       ? record.participants.find((participant) => participant.client_id === clientId)
       : record.participants.find((participant) => participant.nickname === normalizedName);
-    const fallbackExisting = existing ?? record.participants.find((participant) => participant.nickname === normalizedName);
-    const nextParticipant = buildMockParticipant({ ...input, nickname: normalizedName, client_id: clientId }, fallbackExisting?.participant_id);
+    const nextParticipant = buildMockParticipant(
+      { ...input, nickname: normalizedName, client_id: clientId },
+      existing?.participant_id ?? (clientId ? createParticipantIdFromClientId(clientId) : undefined)
+    );
 
-    record.participants = fallbackExisting
-      ? record.participants.map((participant) => (participant.participant_id === fallbackExisting.participant_id ? nextParticipant : participant))
+    record.participants = existing
+      ? record.participants.map((participant) => (participant.participant_id === existing.participant_id ? nextParticipant : participant))
       : [...record.participants, nextParticipant];
     markRecordRecommendationDirty(record, "participants_changed");
     await writeDatabase(database);
