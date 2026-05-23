@@ -76,6 +76,50 @@ Vercel serverless 不适合用本地 JSON 文件做长期持久化。函数文�
 - 不注册或配置云数据库。
 - 多人 H5 推荐仍复用 `frontend/lib/mockFunctions.ts` 的规则版 mock Agent。
 
+## 小程序多人约饭后端 API
+
+小程序多人约饭第一版不走 H5 页面，只复用当前 Next.js API 运行环境和 JSON 文件存储。创建任务会返回明文 `inviteToken`，服务端只保存 `sha256(inviteToken)`；读取、提交成员和生成推荐都必须带 token。
+
+核心接口：
+
+```text
+GET  /api/health
+POST /api/group-tasks
+GET  /api/group-tasks/:taskId?inviteToken=...
+POST /api/group-tasks/:taskId/participants
+POST /api/group-tasks/:taskId/recommend
+```
+
+最小 curl 验收：
+
+```powershell
+$base="http://localhost:3000"
+$task=Invoke-RestMethod "$base/api/group-tasks" -Method POST -ContentType "application/json" -Body (@{
+  creatorName="小幺"
+  rawRequest="周六晚上 5 个人聚餐，人均 80 内，适合聊天"
+  locationText="学校东门"
+  expectedPeopleCount=5
+  dinnerTime="周六 18:30"
+} | ConvertTo-Json)
+
+$body=@{
+  inviteToken=$task.inviteToken
+  clientId="local_device_id"
+  nickname="阿杰"
+  rawPreference="我完全不吃辣，预算最好 80 内"
+  manualFields=@{ budgetMax=80; spicyPreference="no_spicy"; leaveBefore="20:30" }
+} | ConvertTo-Json -Depth 5
+
+Invoke-RestMethod "$base/api/group-tasks/$($task.taskId)/participants" -Method POST -ContentType "application/json" -Body $body
+Invoke-RestMethod "$base/api/group-tasks/$($task.taskId)/recommend" -Method POST -ContentType "application/json" -Body (@{ inviteToken=$task.inviteToken } | ConvertTo-Json)
+```
+
+小程序端配置后端 origin：
+
+```js
+groupDiningApiBaseUrl: 'https://your-backend.example.com'
+```
+
 ## 小程序单人约饭 OpenClaw 配置
 
 `POST /api/food/recommend` 是微信小程序「今天吃什么」接 OpenClaw 的后端代理接口。这个接口不提供后端 mock provider；正常路径必须调用云端 OpenClaw Gateway。
