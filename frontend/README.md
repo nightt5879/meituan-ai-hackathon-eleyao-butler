@@ -148,3 +148,38 @@ foodRecommendApiBaseUrl: 'https://your-backend.example.com'
 ```
 
 OpenClaw Gateway token 只放后端环境变量，不能写进小程序。
+
+## 小程序周末轻规划 API
+
+后端提供小程序周末轻规划第一版接口，不走 H5 页面，不接真实地图/点评 POI。天气使用 Open-Meteo 广州番禺坐标，POI 和活动为学校周边 mock 数据。
+
+```text
+POST /api/weekend/plans
+GET  /api/weekend/plans/:planId
+```
+
+请求示例：
+
+```json
+{
+  "timeWindow": "周六下午 3 小时",
+  "budgetMax": 120,
+  "startArea": "学校东门",
+  "mood": "想轻松一点",
+  "energyLevel": "中等",
+  "companions": "朋友",
+  "interests": ["咖啡", "citywalk", "拍照"],
+  "rawText": "想在学校附近走走，不要太赶"
+}
+```
+
+返回包含 `planId`、`weather`、`routes[3]` 和 `source`。每条路线包含时间线、预计预算、预计时长、地点/活动、交通说明、自检项、风险提示和邀约文案。
+
+天气失败时返回 `weather.status = "unavailable"`、`weather.fallback = true`、`source.weather = "fallback-conservative"`，并仍生成 3 条保守路线。
+
+本地可用环境变量：
+
+```powershell
+$env:MEITUAN_WEEKEND_STATE_FILE="D:\tmp\meituan\weekend-plans.json"
+$env:MEITUAN_WEEKEND_WEATHER_DISABLED="1"
+```
