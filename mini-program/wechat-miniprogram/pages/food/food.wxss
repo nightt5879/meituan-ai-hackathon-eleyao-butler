@@ -241,7 +241,7 @@
 .input-bar {
   display: flex;
   align-items: center;
-  gap: var(--s-2);
+  gap: 10rpx;
 }
 
 .manual-input {
@@ -249,7 +249,7 @@
   flex: 1;
   min-width: 0;
   height: var(--hit);
-  padding: 0 var(--s-4);
+  padding: 0 20rpx;
   border: 1rpx solid var(--hair-strong);
   background: var(--card);
   color: var(--ink);
@@ -262,7 +262,9 @@
 
 .send-button {
   flex-shrink: 0;
-  min-width: 128rpx;
+  min-width: 112rpx;
+  padding-left: 18rpx;
+  padding-right: 18rpx;
 }
 
 .result-hero {

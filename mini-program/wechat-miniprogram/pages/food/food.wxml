@@ -195,7 +195,7 @@
       <input
         class="manual-input"
         value="{{manualAnswer}}"
-        placeholder="也可以直接告诉我你的想法"
+        placeholder="我想的是.."
         placeholder-class="manual-placeholder"
         bindinput="handleManualInput"
       />
