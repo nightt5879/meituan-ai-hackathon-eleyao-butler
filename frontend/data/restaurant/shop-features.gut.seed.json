@@ -283,19 +283,19 @@
     },
     {
       "shopId": "gut_manual_014",
-      "supportsSpicy": false,
+      "supportsSpicy": true,
       "supportsNonSpicy": true,
       "quietScore": 3.4,
       "chatFriendly": false,
       "groupFriendly": false,
       "queueRisk": "medium",
       "featureTags": [
+        "noodle",
         "quick_meal",
         "budget_friendly",
-        "solo_friendly",
+        "粉面",
         "快餐",
         "预算友好",
-        "单人友好",
         "牛腩拌粉",
         "瘦肉汤粉"
       ],
@@ -587,12 +587,12 @@
       "groupFriendly": false,
       "queueRisk": "medium",
       "featureTags": [
+        "noodle",
         "quick_meal",
         "budget_friendly",
-        "solo_friendly",
+        "粉面",
         "快餐",
         "预算友好",
-        "单人友好",
         "重庆小面",
         "麻辣牛肉面"
       ],

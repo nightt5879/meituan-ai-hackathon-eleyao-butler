@@ -5,28 +5,36 @@ This folder contains the Guangzhou University Town restaurant data layer MVP for
 ## Files
 
 - `regions/guangzhou_university_town.json`: region center, radius, validation radius, and future 20km expansion settings.
-- `shops.gut.seed.json`: small seed shop list.
-- `dishes.gut.seed.json`: seed dishes linked by `shopId`.
-- `shop-features.gut.seed.json`: derived shop features for filtering and ranking.
+- `shops.gut.seed.json`: 30 reviewed manual sample shops for Guangzhou University Town.
+- `dishes.gut.seed.json`: generated-from-hints dishes linked by `shopId`.
+- `shop-features.gut.seed.json`: generated-from-hints shop features for filtering and ranking.
 - `data-source-meta.json`: source kind definitions and source batch metadata.
 - `import/shops.manual.template.csv`: recommended simplified Chinese CSV template for manual collection.
+- `import/shops.manual.gut-2026-05-23.csv`: source CSV for the current 30-shop manual collection batch.
 - `import/shops.template.csv`: advanced full-field CSV template for draft imports.
 
 ## Source Rules
 
 Every shop, dish, feature, and region must include `source` and `sourceId`.
 
-- `generated`: synthetic data created for development only. It is not real POI data.
-- `manual_sample`: manually maintained sample/config data. Unless a public source is recorded, treat it as sample data.
+- `manual_sample`: manually organized shop sample data. Current formal shops use this source and come from the reviewed manual CSV batch.
+- `generated_from_hints`: generated dishes or shop features derived from manual shop category, tags, and representative dish hints. It is not a real menu or verified store environment.
+- `generated`: synthetic data created for development only. The current formal seed no longer contains old generated example shops.
 - `manual_public_curated`: future manually curated public POI data with source links and collected time.
 - `amap_poi_draft`: draft data from Amap API, requiring manual review.
 - `tencent_poi_draft`: draft data from Tencent LBS API, requiring manual review.
 
-Current seed data is framework test data. Do not present it as a complete or verified real restaurant dataset.
+Current formal seed status:
+
+- 30 shops, all `source: "manual_sample"`.
+- 150 dishes, all `source: "generated_from_hints"`.
+- 30 shop-feature records, all `source: "generated_from_hints"`.
+
+The shop base fields come from manual CSV organization. Dishes and features are generated from category and representative dish hints, and must not be presented as real menus, live prices, live queue risk, or verified environment facts. This project has not connected to real Meituan, Dianping, Amap, Tencent LBS, or other production POI APIs yet.
 
 ## CSV Import
 
-Recommended path: fill `frontend/data/restaurant/import/shops.manual.template.csv`. It uses a short Chinese header:
+Recommended path: copy `frontend/data/restaurant/import/shops.manual.template.csv` for each new batch, then fill the copied CSV. The current reviewed batch is stored as `frontend/data/restaurant/import/shops.manual.gut-2026-05-23.csv`. The simplified Chinese CSV uses this header:
 
 ```text
 店名,类别,人均,地址,纬度,经度,代表菜
@@ -42,7 +50,7 @@ Field meanings:
 - `经度`: Required. Longitude, usually around `113.x`. Do not swap latitude and longitude.
 - `代表菜`: Optional. Use English semicolons (`;`) for multiple dishes, for example `叉烧饭;例汤套餐`. The importer stores this as `importHints.dishHints` so later generated dishes can prefer these names.
 
-Human collection should focus on real shop name, category, address, coordinates, and per-person price. Tags, dishes, and features are prepared later by Codex or a follow-up script. Generated dishes and generated features must use `source: "generated"` in their own JSON files and must not pretend to be real menus.
+Human collection should focus on real shop name, category, address, coordinates, and per-person price. Tags, dishes, and features are prepared later by Codex or a follow-up script. Generated dishes and generated features must use `source: "generated_from_hints"` when they are derived from CSV category or representative dish hints, and must not pretend to be real menus.
 
 The importer automatically fills:
 
@@ -59,10 +67,10 @@ The importer automatically fills:
 - `avgPrice`: parsed from `人均`
 - `notes`: `人工地图整理，菜品后续按类别生成补全`
 
-Run:
+Run the importer against the copied batch file. If you intentionally edit `shops.manual.template.csv` directly, you can omit `--input`, but the recommended flow is to keep the template as a template:
 
 ```powershell
-node frontend/scripts/import-restaurant-csv.mjs
+node frontend/scripts/import-restaurant-csv.mjs --input=frontend/data/restaurant/import/shops.manual.gut-2026-05-23.csv
 ```
 
 The importer writes:
@@ -75,12 +83,12 @@ It never overwrites `shops.gut.seed.json`. Review the draft, verify `source` and
 
 Suggested batch flow:
 
-1. Collect 10 shops in `shops.manual.template.csv`.
+1. Copy `shops.manual.template.csv` to a dated batch file, such as `shops.manual.gut-2026-05-23.csv`.
 2. Run the importer and review `shops.imported.draft.json`.
 3. Check duplicate shops, category consistency, coordinates, warning messages, source links, and source IDs.
 4. Manually merge approved shops into `shops.gut.seed.json`.
-5. Add 5-10 dishes per approved shop to `dishes.gut.seed.json`.
-6. Add one feature record per approved shop to `shop-features.gut.seed.json`.
+5. Add 5-10 dishes per approved shop to `dishes.gut.seed.json`, using `generated_from_hints` when generated from category or representative dish hints.
+6. Add one feature record per approved shop to `shop-features.gut.seed.json`, using `generated_from_hints` for inferred features.
 7. Run `node frontend/scripts/validate-restaurant-data.mjs`.
 8. Repeat another 10-shop batch until the dataset reaches 30-50 shops.
 
@@ -110,7 +118,7 @@ Field meanings:
 - `latitude`: Latitude, usually around `23.x` for Guangzhou University Town.
 - `longitude`: Longitude, usually around `113.x`. Do not swap latitude and longitude.
 - `regionId`: Use `guangzhou_university_town` for the current region.
-- `source`: Use one of `manual_public_curated`, `manual_sample`, `amap_poi_draft`, `tencent_poi_draft`, or `generated`.
+- `source`: For shops, use one of `manual_public_curated`, `manual_sample`, `amap_poi_draft`, or `tencent_poi_draft`. Use `generated` only for pure development mocks, and use `generated_from_hints` only for generated dishes/features.
 - `sourceId`: Source batch id declared in `data-source-meta.json`, or a new batch id to add before merging.
 - `sourceUrl`: Public source URL when available. Strongly recommended for `manual_public_curated`.
 - `collectedAt`: Collection date in `YYYY-MM-DD`.
@@ -122,7 +130,7 @@ Field meanings:
 
 Fields that must be real/reviewed before a row can become formal shop seed: `name`, `category`, `address`, `latitude`, `longitude`, `regionId`, `source`, `sourceId`, `collectedAt`, and `confidence`.
 
-Fields that may be estimated when clearly marked by source and notes: `avgPrice`, `rating`, `tags`, `featureTags`, and `dishSeedMode`. Generated dishes and generated features must use `source: "generated"` in their own JSON files; do not inherit a real shop source for generated menu/details.
+Fields that may be estimated when clearly marked by source and notes: `avgPrice`, `rating`, `tags`, `featureTags`, and `dishSeedMode`. Generated dishes and generated features must use `source: "generated_from_hints"` when created from shop category or representative dish hints; do not inherit a real shop source for generated menu/details.
 
 Manual workflow:
 
@@ -152,6 +160,8 @@ node frontend/scripts/import-tencent-poi.local.mjs
 
 Both scripts output draft JSON files under `frontend/data/restaurant/import/` and do not modify seed files.
 
+These scripts are samples only in the current MVP. The seed has not been populated from live Meituan/Dianping data or a production map API ingestion pipeline.
+
 ## Validation
 
 Run:
@@ -174,13 +184,13 @@ npm.cmd run dev
 Search shops:
 
 ```powershell
-Invoke-RestMethod -Method Post -Uri http://localhost:3000/api/restaurants/search -ContentType 'application/json' -Body '{"keyword":"示例","limit":3}'
+Invoke-RestMethod -Method Post -Uri http://localhost:3000/api/restaurants/search -ContentType 'application/json' -Body '{"keyword":"粉面","limit":3}'
 ```
 
 Get shop detail:
 
 ```powershell
-Invoke-RestMethod http://localhost:3000/api/restaurants/gut_seed_east_gate_noodle
+Invoke-RestMethod http://localhost:3000/api/restaurants/gut_manual_014
 ```
 
 Search dishes:
