@@ -1,0 +1,69 @@
+import { promises as fs } from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Copy this sample to a local .mjs file before running it with Node.
+// Example: Copy-Item frontend/scripts/import-amap-poi.mjs.sample frontend/scripts/import-amap-poi.local.mjs
+
+const key = process.env.AMAP_WEB_SERVICE_KEY;
+
+if (!key) {
+  console.error("AMAP_WEB_SERVICE_KEY is required. Set it before running this sample.");
+  process.exit(1);
+}
+
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const frontendRoot = path.resolve(scriptDir, "..");
+const outputPath = path.join(frontendRoot, "data", "restaurant", "import", "shops.amap.imported.draft.json");
+
+const keywords = encodeURIComponent("餐饮");
+const city = encodeURIComponent("广州");
+// Amap location order is usually lng,lat.
+const location = "113.393000,23.052500";
+const radius = 3500;
+const url = `https://restapi.amap.com/v3/place/around?key=${encodeURIComponent(key)}&keywords=${keywords}&city=${city}&location=${location}&radius=${radius}&types=050000&offset=20&page=1`;
+
+try {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`Amap request failed with HTTP ${response.status}.`);
+  }
+
+  const payload = await response.json();
+
+  if (payload.status !== "1" || !Array.isArray(payload.pois)) {
+    throw new Error(`Amap response was not successful: ${payload.info ?? "unknown error"}.`);
+  }
+
+  const shops = payload.pois.map((poi) => {
+    const [longitude, latitude] = String(poi.location ?? "").split(",").map(Number);
+
+    return {
+      id: `amap_${poi.id}`,
+      name: poi.name,
+      category: poi.type,
+      address: poi.address || "",
+      latitude,
+      longitude,
+      avgPrice: null,
+      rating: null,
+      tags: ["amap_draft"],
+      regionId: "guangzhou_university_town",
+      source: "amap_poi_draft",
+      sourceId: "amap_poi_draft",
+      rawPoiId: poi.id,
+      updatedAt: new Date().toISOString().slice(0, 10)
+    };
+  });
+
+  await fs.writeFile(
+    outputPath,
+    `${JSON.stringify({ schemaVersion: 1, importedAt: new Date().toISOString(), warning: "Draft only. Review manually before merging.", shops }, null, 2)}\n`,
+    "utf8"
+  );
+  console.log(`Wrote ${shops.length} Amap draft shops to ${outputPath}`);
+} catch (error) {
+  console.error(`Amap POI import sample failed: ${error instanceof Error ? error.message : String(error)}`);
+  process.exit(1);
+}

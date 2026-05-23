@@ -7,6 +7,7 @@ frontend/node_modules/
 frontend/.next/
 frontend/.npm-cache/
 frontend/.data/
+frontend/data/restaurant/import/*.draft.json
 frontend/out/
 frontend/.vercel/
 frontend/npm-debug.log*
