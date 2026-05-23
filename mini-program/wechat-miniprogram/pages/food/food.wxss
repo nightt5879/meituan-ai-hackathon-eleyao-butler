@@ -36,17 +36,17 @@
 .food-status-pill {
   display: flex;
   align-items: center;
-  gap: 6rpx;
-  max-width: 160rpx;
-  padding: 5rpx 8rpx;
+  gap: 8rpx;
+  max-width: 190rpx;
+  padding: 8rpx 12rpx;
   border: 1rpx solid var(--hair);
   background: var(--card);
 }
 
 .food-status-dot {
   flex-shrink: 0;
-  width: 8rpx;
-  height: 8rpx;
+  width: 12rpx;
+  height: 12rpx;
   border-radius: 50%;
   background: var(--ok);
 }
@@ -64,7 +64,7 @@
 
 .food-status-label {
   font-family: var(--font-mono);
-  font-size: 18rpx;
+  font-size: 21rpx;
   letter-spacing: 1rpx;
   white-space: nowrap;
   color: var(--muted);
