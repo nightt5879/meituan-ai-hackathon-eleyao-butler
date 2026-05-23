@@ -1,9 +1,9 @@
 <view class="page food-page theme-{{currentTheme}}">
   <view class="custom-food-header">
     <view class="header-back-button" bindtap="handleBackToHome">‹</view>
-    <view class="header-online-status">
+    <view class="header-online-status {{connectionStatus.statusClass}}" bindtap="handleConnectionStatusTap">
       <view class="header-online-dot"></view>
-      <text class="header-online-text">在线 · 正在帮你挑选</text>
+      <text class="header-online-text">{{connectionStatus.text}}</text>
     </view>
   </view>
 

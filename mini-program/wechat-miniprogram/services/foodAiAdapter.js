@@ -13,6 +13,23 @@
 
 const tagConfig = require('../data/tasteTags');
 const mockShopData = require('../data/mockShops');
+const userMemoryAdapter = require('./userMemoryAdapter');
+
+const REMOTE_RECOMMEND_PATH = '/api/food/recommend';
+const REMOTE_QUESTION_PLAN_PATH = '/api/food/question-plan';
+const REMOTE_PING_PATH = '/api/food/ping';
+const REMOTE_STATUS_PATH = '/api/food/status';
+const REMOTE_RECOMMEND_TIMEOUT_MS = 120000;
+const REMOTE_QUESTION_PLAN_TIMEOUT_MS = 9000;
+const REMOTE_PING_TIMEOUT_MS = 5000;
+const REMOTE_STATUS_TIMEOUT_MS = 15000;
+const FOOD_DEBUG_LOG_STORAGE_KEY = 'FOOD_REMOTE_DEBUG_LOGS';
+
+let lastRecommendationMeta = {
+  source: 'mock',
+  fallback: false,
+  message: ''
+};
 
 const defaultPreferences = {
   tasteTags: [],
@@ -196,19 +213,30 @@ function resolveBranchQuestions(mealPurpose) {
 }
 
 function createInitialSession() {
+  const slots = {
+    mealPurpose: '',
+    branchPreference: '',
+    taste: '',
+    budget: '',
+    distance: '',
+    taboo: ''
+  };
+  const preferences = clonePreferences(defaultPreferences);
+
   return {
     questionIndex: 0,
     resolvedQuestions: null,  // populated after mealPurpose is answered
     totalQuestions: null,     // populated after branch is resolved
-    slots: {
-      mealPurpose: '',
-      branchPreference: '',
-      taste: '',
-      budget: '',
-      distance: '',
-      taboo: ''
+    slots,
+    preferences,
+    dynamicDimensions: [],
+    dynamicQuestions: [],
+    dynamicQuestionPlan: {
+      status: 'idle',
+      requested: false,
+      source: ''
     },
-    preferences: clonePreferences(defaultPreferences),
+    decisionSheet: buildDecisionSheet(slots, preferences, []),
     answers: []
   };
 }
@@ -262,14 +290,28 @@ function answerQuestion(session, answer) {
       slots: clearedSlots,
       preferences: clonePreferences(defaultPreferences),
       resolvedQuestions: resolved,
-      totalQuestions: resolved.length
+      totalQuestions: resolved.length,
+      dynamicDimensions: [],
+      dynamicQuestions: [],
+      dynamicQuestionPlan: {
+        status: 'idle',
+        requested: false,
+        source: ''
+      },
+      decisionSheet: buildDecisionSheet(clearedSlots, defaultPreferences, [])
     });
   }
 
   // Carry forward resolvedQuestions and totalQuestions for all subsequent answers.
   return Object.assign({}, nextSession, {
     resolvedQuestions: session.resolvedQuestions,
-    totalQuestions: session.totalQuestions
+    totalQuestions: session.totalQuestions,
+    dynamicQuestions: session.dynamicQuestions || [],
+    dynamicQuestionPlan: session.dynamicQuestionPlan || {
+      status: 'idle',
+      requested: false,
+      source: ''
+    }
   });
 }
 
@@ -297,22 +339,145 @@ function answerChoiceQuestion(session, question, answer) {
   }
 
   const nextSlots = Object.assign({}, session.slots);
-  nextSlots[question.slot] = value;
+  let nextDynamicDimensions = session.dynamicDimensions || [];
+
+  if (isDynamicQuestion(question)) {
+    nextDynamicDimensions = upsertDynamicDimension(nextDynamicDimensions, question, value);
+  } else {
+    nextSlots[question.slot] = value;
+  }
 
   return advanceSession(session, nextSlots, session.preferences, {
     slot: question.slot,
     label: question.label,
     value: value
-  });
+  }, nextDynamicDimensions);
 }
 
-function advanceSession(session, slots, preferences, answerRecord) {
+function advanceSession(session, slots, preferences, answerRecord, dynamicDimensions) {
+  const nextDynamicDimensions = dynamicDimensions || session.dynamicDimensions || [];
+
   return {
     questionIndex: session.questionIndex + 1,
     slots: slots,
     preferences: clonePreferences(preferences),
+    dynamicDimensions: nextDynamicDimensions,
+    dynamicQuestions: session.dynamicQuestions || [],
+    dynamicQuestionPlan: session.dynamicQuestionPlan || {
+      status: 'idle',
+      requested: false,
+      source: ''
+    },
+    decisionSheet: buildDecisionSheet(slots, preferences, nextDynamicDimensions),
     answers: session.answers.concat([answerRecord])
   };
+}
+
+function isDynamicQuestion(question) {
+  return !!question && String(question.slot || '').indexOf('dynamic.') === 0;
+}
+
+function upsertDynamicDimension(dimensions, question, value) {
+  const key = getDynamicQuestionKey(question);
+  const nextDimensions = (dimensions || []).filter(function (dimension) {
+    return dimension.key !== key;
+  });
+
+  if (!key || !value || value === '未选择') {
+    return nextDimensions;
+  }
+
+  nextDimensions.push({
+    key,
+    label: question.label || '补充偏好',
+    value,
+    source: 'dynamic',
+    hard: false,
+    reason: question.reason || ''
+  });
+
+  return nextDimensions;
+}
+
+function getDynamicQuestionKey(question) {
+  if (!question) { return ''; }
+  return String(question.targetDimension || question.slot || '')
+    .replace(/^dynamic\./, '')
+    .replace(/[^a-zA-Z0-9_-]/g, '');
+}
+
+function buildDecisionSheet(slots, preferences, dynamicDimensions) {
+  const safeSlots = slots || {};
+  const safePreferences = normalizePreferences(preferences);
+  const fixed = [
+    buildDecisionDimension('mealPurpose', '就餐场景', safeSlots.mealPurpose, true),
+    buildDecisionDimension('branchPreference', '品类/偏好', safeSlots.branchPreference, false),
+    buildDecisionDimension(
+      'taste',
+      '口味/感觉',
+      safePreferences.tasteTags.concat(safePreferences.needTags).join('、'),
+      false
+    ),
+    buildDecisionDimension('avoid', '忌口', safePreferences.avoidTags.join('、'), true),
+    buildDecisionDimension('spicyLevel', '辣度', safePreferences.spicyLevel, true),
+    buildDecisionDimension('budget', '预算', safeSlots.budget, true),
+    buildDecisionDimension('distance', '距离', safeSlots.distance, true)
+  ];
+  const missingHardKeys = fixed.filter(function (dimension) {
+    return dimension.hard && !dimension.value && dimension.key !== 'avoid' && dimension.key !== 'spicyLevel';
+  }).map(function (dimension) {
+    return dimension.key;
+  });
+  const safeDynamicDimensions = normalizeDynamicDimensions(dynamicDimensions);
+
+  return {
+    fixed,
+    dynamic: safeDynamicDimensions,
+    readiness: {
+      hardReady: missingHardKeys.length === 0,
+      missingHardKeys,
+      optionalReadyCount: fixed.filter(function (dimension) {
+        return !dimension.hard && !!dimension.value;
+      }).length + safeDynamicDimensions.length
+    },
+    source: 'client'
+  };
+}
+
+function buildDecisionDimension(key, label, value, hard) {
+  return {
+    key,
+    label,
+    value: String(value || '').trim(),
+    source: 'fixed',
+    hard: !!hard
+  };
+}
+
+function normalizeDynamicDimensions(dimensions) {
+  const seen = {};
+  const result = [];
+
+  (dimensions || []).forEach(function (dimension) {
+    const key = String(dimension && dimension.key || '').replace(/[^a-zA-Z0-9_-]/g, '');
+    const value = String(dimension && dimension.value || '').trim();
+
+    if (!key || !value || seen[key]) {
+      return;
+    }
+
+    seen[key] = true;
+    result.push({
+      key,
+      label: String(dimension.label || key).slice(0, 16),
+      value: value.slice(0, 80),
+      source: 'dynamic',
+      hard: dimension.hard === true,
+      reason: String(dimension.reason || '').slice(0, 80)
+    });
+  });
+
+  return result.slice(0, 8);
 }
 
 // ─── Recommendations ───────────────────────────────────────────────────────
@@ -325,7 +490,7 @@ function advanceSession(session, slots, preferences, answerRecord) {
 // Note: preferences is passed separately from slots because tag-based
 // preferences (taste, need, avoid, spicyLevel) are collected via a
 // dedicated tag UI step and are not stored as plain slot strings.
-function generateRecommendations(slots, preferences, options) {
+function generateLocalRecommendations(slots, preferences, options) {
   const safeSlots = slots || {};
   const safePreferences = normalizePreferences(preferences);
   const safeOptions = options || {};
@@ -348,6 +513,707 @@ function generateRecommendations(slots, preferences, options) {
   return picked.slice(0, 3).map(function (shop) {
     return formatRecommendation(shop, safeSlots, safePreferences);
   });
+}
+
+async function generateRecommendations(slots, preferences, options) {
+  const baseUrl = getFoodRecommendApiBaseUrl();
+
+  if (!baseUrl) {
+    const localRecommendations = generateLocalRecommendations(slots, preferences, options);
+    setLastRecommendationMeta({
+      source: 'mock',
+      fallback: false,
+      message: ''
+    });
+    return localRecommendations;
+  }
+
+  try {
+    const payload = buildRemoteRecommendationPayload(slots, preferences, options);
+    const response = await requestRemoteRecommendations(baseUrl, payload);
+    const recommendations = normalizeRemoteRecommendations(response);
+
+    setLastRecommendationMeta({
+      source: response.source || 'openclaw',
+      fallback: false,
+      message: ''
+    });
+    return recommendations;
+  } catch (error) {
+    const fallbackRecommendations = generateLocalRecommendations(slots, preferences, options);
+    const errorMessage = error && error.message ? error.message : String(error || '');
+    setLastRecommendationMeta({
+      source: 'mock',
+      fallback: true,
+      message: buildRemoteFallbackMessage(errorMessage),
+      error: errorMessage
+    });
+    return fallbackRecommendations;
+  }
+}
+
+function buildRemoteFallbackMessage(errorMessage) {
+  if (/timeout|timed out|超时/i.test(errorMessage || '')) {
+    return 'OpenClaw 推荐响应超时，已先用本地推荐。';
+  }
+
+  return '远端推荐暂不可用，已先用本地推荐。';
+}
+
+function getLastRecommendationMeta() {
+  return Object.assign({}, lastRecommendationMeta);
+}
+
+function setLastRecommendationMeta(meta) {
+  lastRecommendationMeta = Object.assign({
+    source: 'mock',
+    fallback: false,
+    message: ''
+  }, meta || {});
+}
+
+async function getFoodConnectionStatus() {
+  const baseUrl = getFoodRecommendApiBaseUrl();
+  const diagnostics = [];
+
+  if (!baseUrl) {
+    recordFoodDebugLog({
+      step: 'config',
+      ok: false,
+      detail: 'missing API base URL'
+    });
+    return {
+      state: 'mock',
+      text: '本地推荐模式',
+      detail: '小程序未配置后端 API base URL，所以只会使用本地 mock 推荐。',
+      baseUrl: ''
+    };
+  }
+
+  try {
+    const pingResult = await requestRemoteFoodPing(baseUrl);
+    diagnostics.push(formatProbeLine('ping', pingResult));
+  } catch (error) {
+    const detail = error && error.message ? error.message : String(error || '');
+    recordFoodDebugLog({
+      step: 'ping',
+      ok: false,
+      baseUrl,
+      detail
+    });
+    return {
+      state: 'error',
+      text: '后端未连接',
+      detail: [
+        'API base URL: ' + baseUrl,
+        '后端 ping 失败，说明手机没有连到你的服务器。',
+        detail,
+        buildRecentFoodDebugLogText()
+      ].filter(function (line) { return !!line; }).join('\n'),
+      baseUrl
+    };
+  }
+
+  try {
+    const response = await requestRemoteFoodStatus(baseUrl);
+    return normalizeFoodConnectionStatus(baseUrl, response, diagnostics);
+  } catch (error) {
+    const detail = error && error.message ? error.message : String(error || '');
+    recordFoodDebugLog({
+      step: 'status',
+      ok: false,
+      baseUrl,
+      detail
+    });
+    return {
+      state: 'backend-only',
+      text: '后端在线 · 状态探测失败',
+      detail: [
+        'API base URL: ' + baseUrl,
+        '后端 ping 已通过，但 /api/food/status 失败。',
+        detail,
+        buildRecentFoodDebugLogText()
+      ].filter(function (line) { return !!line; }).join('\n'),
+      baseUrl
+    };
+  }
+}
+
+function requestRemoteFoodPing(baseUrl) {
+  return requestRemoteProbe({
+    label: 'ping',
+    url: baseUrl + REMOTE_PING_PATH,
+    method: 'GET',
+    timeout: REMOTE_PING_TIMEOUT_MS
+  });
+}
+
+function requestRemoteFoodStatus(baseUrl) {
+  return requestRemoteProbe({
+    label: 'status',
+    url: baseUrl + REMOTE_STATUS_PATH,
+    method: 'GET',
+    timeout: REMOTE_STATUS_TIMEOUT_MS
+  }).then(function (result) {
+    return result.data || {};
+  });
+}
+
+function requestRemoteProbe(options) {
+  return new Promise(function (resolve, reject) {
+    const startedAt = Date.now();
+
+    wx.request({
+      url: options.url,
+      method: options.method || 'GET',
+      timeout: options.timeout,
+      header: {
+        'content-type': 'application/json'
+      },
+      success: function (res) {
+        const durationMs = Date.now() - startedAt;
+        const result = {
+          step: options.label,
+          ok: res.statusCode >= 200 && res.statusCode < 300,
+          statusCode: res.statusCode,
+          durationMs,
+          url: options.url,
+          data: res.data || {}
+        };
+
+        recordFoodDebugLog(result);
+
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(result);
+          return;
+        }
+
+        reject(new Error(options.label + ' failed with status ' + res.statusCode + ' after ' + durationMs + 'ms'));
+      },
+      fail: function (error) {
+        const durationMs = Date.now() - startedAt;
+        const errMsg = error && error.errMsg ? error.errMsg : options.label + ' request failed';
+
+        recordFoodDebugLog({
+          step: options.label,
+          ok: false,
+          durationMs,
+          url: options.url,
+          detail: errMsg
+        });
+        reject(new Error(options.label + ' failed after ' + durationMs + 'ms: ' + errMsg));
+      }
+    });
+  });
+}
+
+function normalizeFoodConnectionStatus(baseUrl, response, diagnostics) {
+  const backend = response && response.backend ? response.backend : {};
+  const openclaw = response && response.openclaw ? response.openclaw : {};
+  const diagnosticLines = diagnostics || [];
+
+  if (backend.ok && openclaw.ok) {
+    const gatewayOnly = openclaw.gatewayReachable && !openclaw.cliReachable;
+
+    return {
+      state: 'connected',
+      text: gatewayOnly ? 'OpenClaw Gateway 可达' : 'OpenClaw 已连接',
+      detail: [
+        'API base URL: ' + baseUrl,
+        'OpenClaw: ' + (gatewayOnly ? 'gateway reachable' : 'connected'),
+        'gateway: ' + (openclaw.gatewayReachable ? 'reachable' : 'unreachable'),
+        openclaw.gatewayUrl ? 'gatewayUrl: ' + openclaw.gatewayUrl : '',
+        'cliStatus: ' + (openclaw.cliReachable ? 'ok' : 'not confirmed'),
+        'profile: ' + (openclaw.profile || 'unknown'),
+        'agent: ' + (openclaw.agentId || 'unknown'),
+        'session: ' + (openclaw.sessionId || 'unknown'),
+        openclaw.detail || '',
+        diagnosticLines.join('\n'),
+        buildRecentFoodDebugLogText()
+      ].filter(function (line) { return !!line; }).join('\n'),
+      baseUrl,
+      checkedAt: backend.checkedAt || ''
+    };
+  }
+
+  if (backend.ok) {
+    return {
+      state: 'backend-only',
+      text: '后端在线 · OpenClaw 未确认',
+      detail: [
+        'API base URL: ' + baseUrl,
+        '后端可访问，但 OpenClaw status 检查未通过。',
+        'gateway: ' + (openclaw.gatewayReachable ? 'reachable' : 'unreachable'),
+        openclaw.gatewayUrl ? 'gatewayUrl: ' + openclaw.gatewayUrl : '',
+        'cliStatus: ' + (openclaw.cliReachable ? 'ok' : 'not confirmed'),
+        openclaw.detail || '',
+        diagnosticLines.join('\n'),
+        buildRecentFoodDebugLogText()
+      ].filter(function (line) { return !!line; }).join('\n'),
+      baseUrl,
+      checkedAt: backend.checkedAt || ''
+    };
+  }
+
+  return {
+    state: 'error',
+    text: '后端状态异常',
+    detail: [
+      'API base URL: ' + baseUrl,
+      diagnosticLines.join('\n'),
+      buildRecentFoodDebugLogText()
+    ].filter(function (line) { return !!line; }).join('\n'),
+    baseUrl
+  };
+}
+
+function formatProbeLine(label, result) {
+  if (!result) {
+    return label + ': no result';
+  }
+
+  return label + ': status=' + (result.statusCode || 'n/a') + ', duration=' + (result.durationMs || 0) + 'ms';
+}
+
+function recordFoodDebugLog(entry) {
+  const safeEntry = Object.assign({
+    at: new Date().toISOString()
+  }, entry || {});
+
+  if (typeof console !== 'undefined' && console.log) {
+    console.log('[food-remote]', safeEntry);
+  }
+
+  if (typeof wx === 'undefined' || !wx.getStorageSync || !wx.setStorageSync) {
+    return;
+  }
+
+  try {
+    const logs = wx.getStorageSync(FOOD_DEBUG_LOG_STORAGE_KEY) || [];
+    const nextLogs = (Array.isArray(logs) ? logs : []).concat([safeEntry]).slice(-20);
+    wx.setStorageSync(FOOD_DEBUG_LOG_STORAGE_KEY, nextLogs);
+  } catch (error) {
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn('[food-remote] failed to write debug log', error);
+    }
+  }
+}
+
+function buildRecentFoodDebugLogText() {
+  const logs = getFoodDebugLogs().slice(-6);
+
+  if (!logs.length) {
+    return '';
+  }
+
+  return '最近请求日志:\n' + logs.map(function (log) {
+    const parts = [
+      log.at || '',
+      log.step || '',
+      log.ok === false ? 'failed' : 'ok',
+      log.statusCode ? 'status=' + log.statusCode : '',
+      log.durationMs !== undefined ? 'duration=' + log.durationMs + 'ms' : '',
+      log.detail || ''
+    ].filter(function (item) { return !!item; });
+
+    return '- ' + parts.join(' | ');
+  }).join('\n');
+}
+
+function getFoodDebugLogs() {
+  if (typeof wx === 'undefined' || !wx.getStorageSync) {
+    return [];
+  }
+
+  try {
+    const logs = wx.getStorageSync(FOOD_DEBUG_LOG_STORAGE_KEY) || [];
+    return Array.isArray(logs) ? logs : [];
+  } catch {
+    return [];
+  }
+}
+
+function shouldPrefetchDynamicQuestions(session) {
+  if (!session || !session.resolvedQuestions || !session.slots || !session.slots.mealPurpose) {
+    return false;
+  }
+
+  const plan = session.dynamicQuestionPlan || {};
+  return plan.requested !== true && plan.status !== 'loading' && session.questionIndex >= 1;
+}
+
+function markDynamicQuestionPlanLoading(session) {
+  if (!session) { return session; }
+
+  return Object.assign({}, session, {
+    dynamicQuestionPlan: {
+      status: 'loading',
+      requested: true,
+      source: ''
+    }
+  });
+}
+
+async function requestDynamicQuestionPlan(session) {
+  const baseUrl = getFoodRecommendApiBaseUrl();
+
+  if (!baseUrl) {
+    return buildLocalDynamicQuestionPlan(session);
+  }
+
+  const payload = buildRemoteRecommendationPayload(session.slots, session.preferences, {
+    decisionSheet: session.decisionSheet || buildDecisionSheet(
+      session.slots,
+      session.preferences,
+      session.dynamicDimensions || []
+    )
+  });
+
+  try {
+    return await requestRemoteQuestionPlan(baseUrl, payload);
+  } catch (error) {
+    return buildLocalDynamicQuestionPlan(session, error);
+  }
+}
+
+function mergeDynamicQuestionPlan(session, plan) {
+  if (!session || !plan) { return session; }
+
+  const resolvedQuestions = session.resolvedQuestions || null;
+  const normalizedQuestions = normalizeRemoteDynamicQuestions(plan.questions, session);
+  const mergedDecisionSheet = mergeDecisionSheet(
+    session,
+    plan.decisionSheet,
+    session.dynamicDimensions || []
+  );
+  const planState = {
+    status: 'ready',
+    requested: true,
+    source: plan.source || 'rules',
+    message: plan.message || ''
+  };
+
+  if (!resolvedQuestions || session.questionIndex >= resolvedQuestions.length || !normalizedQuestions.length) {
+    return Object.assign({}, session, {
+      dynamicQuestionPlan: planState,
+      decisionSheet: mergedDecisionSheet
+    });
+  }
+
+  const existingIds = {};
+  resolvedQuestions.forEach(function (question) {
+    existingIds[question.id] = true;
+  });
+
+  const newQuestions = normalizedQuestions.filter(function (question) {
+    return !existingIds[question.id];
+  });
+
+  if (!newQuestions.length) {
+    return Object.assign({}, session, {
+      dynamicQuestionPlan: planState,
+      decisionSheet: mergedDecisionSheet
+    });
+  }
+
+  const nextQuestions = resolvedQuestions.concat(newQuestions);
+
+  return Object.assign({}, session, {
+    resolvedQuestions: nextQuestions,
+    totalQuestions: nextQuestions.length,
+    dynamicQuestions: (session.dynamicQuestions || []).concat(newQuestions),
+    dynamicQuestionPlan: planState,
+    decisionSheet: mergedDecisionSheet
+  });
+}
+
+function buildLocalDynamicQuestionPlan(session, error) {
+  return {
+    status: 'ready',
+    source: 'rules',
+    message: error && error.message ? error.message : '',
+    decisionSheet: session.decisionSheet || buildDecisionSheet(
+      session.slots,
+      session.preferences,
+      session.dynamicDimensions || []
+    ),
+    questions: [
+      {
+        id: 'ai-priority',
+        kind: 'choice',
+        slot: 'dynamic.priority',
+        label: '本次优先级',
+        title: '这顿饭你最想优先满足哪一点？',
+        options: ['近一点', '便宜一点', '快一点', '好吃更重要', '安静一点'],
+        optional: true,
+        allowEmpty: true,
+        targetDimension: 'priority',
+        reason: '用于在预算、距离、速度和体验之间做最终取舍。'
+      },
+      {
+        id: 'ai-queue-tolerance',
+        kind: 'choice',
+        slot: 'dynamic.queueTolerance',
+        label: '排队容忍',
+        title: '能接受等位或排队吗？',
+        options: ['不能排队', '10 分钟以内', '20 分钟以内', '无所谓'],
+        optional: true,
+        allowEmpty: true,
+        targetDimension: 'queueTolerance',
+        reason: '用于规避高峰期不稳定方案。'
+      }
+    ]
+  };
+}
+
+function requestRemoteQuestionPlan(baseUrl, payload) {
+  return new Promise(function (resolve, reject) {
+    wx.request({
+      url: baseUrl + REMOTE_QUESTION_PLAN_PATH,
+      method: 'POST',
+      data: payload,
+      timeout: REMOTE_QUESTION_PLAN_TIMEOUT_MS,
+      header: {
+        'content-type': 'application/json'
+      },
+      success: function (res) {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(res.data || {});
+          return;
+        }
+
+        reject(new Error('Remote food question plan failed with status ' + res.statusCode));
+      },
+      fail: function (error) {
+        reject(new Error(error && error.errMsg ? error.errMsg : 'Remote food question plan request failed'));
+      }
+    });
+  });
+}
+
+function normalizeRemoteDynamicQuestions(questions, session) {
+  const existingKeys = {};
+
+  (session.dynamicDimensions || []).forEach(function (dimension) {
+    existingKeys[dimension.key] = true;
+  });
+
+  return (Array.isArray(questions) ? questions : []).map(function (question, index) {
+    const targetDimension = String(question.targetDimension || question.slot || '')
+      .replace(/^dynamic\./, '')
+      .replace(/[^a-zA-Z0-9_-]/g, '');
+    const options = Array.isArray(question.options)
+      ? question.options.map(function (item) { return String(item || '').trim(); }).filter(function (item) { return !!item; }).slice(0, 6)
+      : [];
+
+    if (!targetDimension || existingKeys[targetDimension] || options.length < 2) {
+      return null;
+    }
+
+    return {
+      id: String(question.id || ('ai-' + targetDimension + '-' + index)).replace(/[^a-zA-Z0-9_-]/g, ''),
+      kind: question.kind === 'multi-choice' ? 'multi-choice' : 'choice',
+      slot: 'dynamic.' + targetDimension,
+      label: String(question.label || '补充偏好').slice(0, 12),
+      title: String(question.title || '再补充一个偏好？').slice(0, 48),
+      options,
+      optional: question.optional !== false,
+      allowEmpty: question.allowEmpty !== false,
+      targetDimension,
+      reason: String(question.reason || '').slice(0, 80)
+    };
+  }).filter(function (question) {
+    return !!question;
+  }).slice(0, 3);
+}
+
+function mergeDecisionSheet(session, incomingSheet, fallbackDynamicDimensions) {
+  const incomingDynamic = incomingSheet && Array.isArray(incomingSheet.dynamic)
+    ? incomingSheet.dynamic
+    : [];
+  const dynamicDimensions = normalizeDynamicDimensions(fallbackDynamicDimensions).concat(
+    normalizeDynamicDimensions(incomingDynamic)
+  );
+
+  return buildDecisionSheet(session.slots, session.preferences, dynamicDimensions);
+}
+
+function getFoodRecommendApiBaseUrl() {
+  var app = typeof getApp === 'function' ? getApp({ allowDefault: true }) : null;
+  var globalBaseUrl = app && app.globalData ? app.globalData.foodRecommendApiBaseUrl : '';
+  var storedBaseUrl = '';
+
+  if (typeof wx !== 'undefined' && wx.getStorageSync) {
+    storedBaseUrl = wx.getStorageSync('MINIPROGRAM_API_BASE_URL') ||
+      wx.getStorageSync('foodRecommendApiBaseUrl') ||
+      '';
+  }
+
+  return normalizeBaseUrl(storedBaseUrl || globalBaseUrl || '');
+}
+
+function normalizeBaseUrl(baseUrl) {
+  return String(baseUrl || '').trim().replace(/\/+$/, '');
+}
+
+function buildRemoteRecommendationPayload(slots, preferences, options) {
+  const safeSlots = slots || {};
+  const safePreferences = normalizePreferences(preferences);
+  const safeOptions = options || {};
+  const permissions = userMemoryAdapter.getMemoryPermissions();
+  const behaviorEnabled = permissions.behaviorLearningEnabled !== false;
+  const canUseTaste = behaviorEnabled && permissions.rememberTastePattern !== false;
+  const canUseBudget = behaviorEnabled && permissions.rememberBudgetByMeal !== false;
+  const canUseCategory = behaviorEnabled && permissions.rememberCommonCategories !== false;
+  const canUseDistance = behaviorEnabled && permissions.rememberDistancePreference !== false;
+  const stablePreferences = userMemoryAdapter.getStableFoodPreferences();
+  const stableEnabled = stablePreferences.memoryEnabled !== false;
+  const requestSlots = {
+    mealPurpose: safeSlots.mealPurpose || ''
+  };
+  const requestPreferences = {
+    avoidTags: safePreferences.avoidTags.slice(),
+    spicyLevel: safePreferences.spicyLevel || ''
+  };
+
+  if (canUseCategory && safeSlots.branchPreference) {
+    requestSlots.branchPreference = safeSlots.branchPreference;
+  }
+
+  if (canUseBudget && safeSlots.budget) {
+    requestSlots.budget = safeSlots.budget;
+  }
+
+  if (canUseDistance && safeSlots.distance) {
+    requestSlots.distance = safeSlots.distance;
+  }
+
+  if (canUseTaste) {
+    requestPreferences.tasteTags = safePreferences.tasteTags.slice();
+    requestPreferences.needTags = safePreferences.needTags.slice();
+  }
+
+  const payload = {
+    slots: requestSlots,
+    preferences: requestPreferences,
+    decisionSheet: safeOptions.decisionSheet || buildDecisionSheet(requestSlots, requestPreferences, []),
+    memoryProfile: stableEnabled
+      ? {
+          enabled: true,
+          stableFoodPreferences: {
+            avoidTags: (stablePreferences.avoidTags || []).slice(),
+            spicyLevel: stablePreferences.spicyLevel || '',
+            source: stablePreferences.source || 'user-settings'
+          },
+          permissions: buildPermissionPayload(permissions)
+        }
+      : {
+          enabled: false,
+          permissions: buildPermissionPayload(permissions)
+        }
+  };
+  const requestContext = buildRemoteRequestContext(safeOptions);
+
+  if (Object.keys(requestContext).length) {
+    payload.requestContext = requestContext;
+  }
+
+  return payload;
+}
+
+function buildRemoteRequestContext(options) {
+  const context = {};
+  const excludeIds = uniqueStrings(options.excludeIds || []);
+  const batchIndex = Number(options.batchIndex || 0);
+  const adjustment = normalizeAdjustmentOptions(options.adjustment, batchIndex);
+
+  if (excludeIds.length) {
+    context.excludeIds = excludeIds;
+  }
+
+  if (batchIndex > 0) {
+    context.batchIndex = batchIndex;
+  }
+
+  if ((adjustment.types || []).length || (adjustment.avoidCategories || []).length) {
+    context.adjustment = {
+      types: adjustment.types || [],
+      avoidCategories: adjustment.avoidCategories || []
+    };
+  }
+
+  return context;
+}
+
+function buildPermissionPayload(permissions) {
+  const result = {};
+
+  Object.keys(permissions || {}).forEach(function (key) {
+    if (typeof permissions[key] === 'boolean') {
+      result[key] = permissions[key];
+    }
+  });
+
+  return result;
+}
+
+function requestRemoteRecommendations(baseUrl, payload) {
+  return new Promise(function (resolve, reject) {
+    wx.request({
+      url: baseUrl + REMOTE_RECOMMEND_PATH,
+      method: 'POST',
+      data: payload,
+      timeout: REMOTE_RECOMMEND_TIMEOUT_MS,
+      header: {
+        'content-type': 'application/json'
+      },
+      success: function (res) {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(res.data || {});
+          return;
+        }
+
+        reject(new Error('Remote food recommendation failed with status ' + res.statusCode));
+      },
+      fail: function (error) {
+        reject(new Error(error && error.errMsg ? error.errMsg : 'Remote food recommendation request failed'));
+      }
+    });
+  });
+}
+
+function normalizeRemoteRecommendations(response) {
+  const rawRecommendations = response && Array.isArray(response.recommendations)
+    ? response.recommendations
+    : [];
+  const recommendations = rawRecommendations.slice(0, 3).map(function (item, index) {
+    const matchedTags = Array.isArray(item.matchedTags)
+      ? item.matchedTags.filter(function (tag) { return !!tag; })
+      : [];
+
+    return {
+      id: String(item.id || ('openclaw_' + index)),
+      name: String(item.name || ''),
+      type: String(item.type || item.category || ''),
+      category: String(item.type || item.category || ''),
+      perCapita: String(item.perCapita || item.price || ''),
+      distance: String(item.distance || item.distanceText || ''),
+      rating: Number(item.rating || 0),
+      matchedTags: matchedTags,
+      matchedTagsText: matchedTags.length ? matchedTags.join('、') : 'OpenClaw 推荐',
+      reason: String(item.reason || ''),
+      riskTip: String(item.riskTip || item.risk || '暂无明显风险'),
+      source: response.source || 'openclaw'
+    };
+  }).filter(function (item) {
+    return !!(item.name && item.type && item.perCapita && item.distance && item.reason);
+  });
+
+  if (recommendations.length < 2) {
+    throw new Error('Remote food recommendation returned fewer than 2 valid items');
+  }
+
+  return recommendations;
 }
 
 function pickRecommendations(scoredShops, slots, excludeIds) {
@@ -657,7 +1523,8 @@ function formatRecommendation(shop, slots, preferences) {
     matchedTags: matchedTags,
     matchedTagsText: matchedTags.length ? matchedTags.join('、') : '默认推荐',
     reason: buildReason(shop, slots, matchedTags),
-    riskTip: buildRiskTip(shop, slots, preferences)
+    riskTip: buildRiskTip(shop, slots, preferences),
+    source: 'mock'
   };
 }
 
@@ -912,7 +1779,15 @@ function goBack(session) {
   if (prevIndex === 0) {
     prevSession = Object.assign({}, prevSession, {
       resolvedQuestions: null,
-      totalQuestions: null
+      totalQuestions: null,
+      dynamicDimensions: [],
+      dynamicQuestions: [],
+      dynamicQuestionPlan: {
+        status: 'idle',
+        requested: false,
+        source: ''
+      },
+      decisionSheet: buildDecisionSheet(prevSession.slots, prevSession.preferences, [])
     });
   }
   return prevSession;
@@ -923,5 +1798,11 @@ module.exports = {
   getNextQuestion,
   answerQuestion,
   goBack,
-  generateRecommendations
+  shouldPrefetchDynamicQuestions,
+  markDynamicQuestionPlanLoading,
+  requestDynamicQuestionPlan,
+  mergeDynamicQuestionPlan,
+  getFoodConnectionStatus,
+  generateRecommendations,
+  getLastRecommendationMeta
 };

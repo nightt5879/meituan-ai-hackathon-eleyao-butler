@@ -71,7 +71,36 @@ Vercel serverless 不适合用本地 JSON 文件做长期持久化。函数文�
 
 ## 当前边界
 
-- 不接真实 OpenClaw。
+- 多人约饭 H5 仍不接真实 OpenClaw；小程序单人约饭通过 `/api/food/recommend` 接云端 OpenClaw Gateway。
 - 不接美团 / 大众点评 / 地图等外部 API。
 - 不注册或配置云数据库。
-- 推荐仍复用 `frontend/lib/mockFunctions.ts` 的规则版 mock Agent。
+- 多人 H5 推荐仍复用 `frontend/lib/mockFunctions.ts` 的规则版 mock Agent。
+
+## 小程序单人约饭 OpenClaw 配置
+
+`POST /api/food/recommend` 是微信小程序「今天吃什么」接 OpenClaw 的后端代理接口。这个接口不提供后端 mock provider；正常路径必须调用云端 OpenClaw Gateway。
+
+本地启动前配置：
+
+```powershell
+$env:OPENCLAW_GATEWAY_URL="wss://your-openclaw-gateway.example.com"
+$env:OPENCLAW_GATEWAY_TOKEN="your-gateway-token"
+npm.cmd run dev
+```
+
+可选变量：
+
+```powershell
+$env:OPENCLAW_GATEWAY_TIMEOUT_MS="30000"
+$env:OPENCLAW_CHAT_SESSION_ID="food-recommendation"
+$env:OPENCLAW_CHAT_SESSION_KEY="food-recommendation"
+$env:OPENCLAW_AGENT_ID="agent-id"
+```
+
+小程序端只配置后端 origin，例如在 `mini-program/wechat-miniprogram/app.js` 里设置：
+
+```js
+foodRecommendApiBaseUrl: 'https://your-backend.example.com'
+```
+
+OpenClaw Gateway token 只放后端环境变量，不能写进小程序。
