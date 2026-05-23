@@ -52,11 +52,11 @@
 }
 
 .status-backend-only .food-status-dot,
-.status-checking .food-status-dot,
-.status-degraded .food-status-dot {
+.status-checking .food-status-dot {
   background: var(--warn);
 }
 
+.status-degraded .food-status-dot,
 .status-error .food-status-dot,
 .status-mock .food-status-dot {
   background: var(--bad);
