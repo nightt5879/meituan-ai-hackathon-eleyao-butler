@@ -1,6 +1,7 @@
 <view class="page scaffold-page theme-{{currentTheme}}">
-  <view class="page-bar">
-    <button class="page-back" bindtap="handleBack">‹</button>
+  <!-- Native navigation bar already provides the back arrow — no in-content
+       page-back button here. Keep page-bar as a thin title container. -->
+  <view class="page-bar create-page-bar">
     <view class="page-heading">
       <view class="page-title">发起约饭</view>
       <view class="page-subtitle">选一下人数就能生成任务链接，朋友点开就能填偏好。</view>
