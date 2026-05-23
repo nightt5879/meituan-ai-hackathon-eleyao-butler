@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireMiniProgramUser } from "@/lib/server/requestAuth";
 import {
   generateFoodRecommendationsWithOpenClaw,
   sanitizeFoodRecommendRequest
@@ -9,6 +10,12 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   const startedAt = Date.now();
+  const auth = await requireMiniProgramUser(request);
+
+  if (!auth.ok) {
+    return auth.response;
+  }
+
   let body: unknown;
 
   try {

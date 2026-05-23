@@ -2,6 +2,7 @@ const foodAiAdapter = require('../../services/foodAiAdapter');
 const userMemoryAdapter = require('../../services/userMemoryAdapter');
 const tagConfig = require('../../data/tasteTags');
 const themeAdapter = require('../../services/themeAdapter');
+const userIdentityAdapter = require('../../services/userIdentityAdapter');
 
 const emptySelectedTags = {
   taste: [],
@@ -91,7 +92,7 @@ Page({
   onLoad() {
     this.syncTheme();
 
-    if (!wx.getStorageSync('isLoggedIn')) {
+    if (!userIdentityAdapter.hasSession()) {
       wx.reLaunch({
         url: '/pages/login/login'
       });

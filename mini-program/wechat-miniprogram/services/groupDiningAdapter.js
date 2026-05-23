@@ -3,6 +3,7 @@ const STATUS = 'pending_integration';
 const REAL_STATUS = 'remote_ok';
 const CLIENT_ID_STORAGE_KEY = 'groupDiningClientId';
 const API_BASE_STORAGE_KEY = 'MINIPROGRAM_API_BASE_URL';
+const userIdentityAdapter = require('./userIdentityAdapter');
 
 function getApiBaseUrl() {
   try {
@@ -30,13 +31,20 @@ function getApiBaseUrl() {
 
 function request(options) {
   return new Promise(function (resolve, reject) {
+    if (!userIdentityAdapter.hasSession()) {
+      const error = new Error('Wechat login required');
+      error.statusCode = 401;
+      reject(error);
+      return;
+    }
+
     wx.request({
       url: getApiBaseUrl() + options.path,
       method: options.method || 'GET',
       data: options.data,
-      header: {
+      header: Object.assign({
         'content-type': 'application/json'
-      },
+      }, userIdentityAdapter.getAuthorizationHeader()),
       success: function (res) {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data || {});
@@ -51,6 +59,10 @@ function request(options) {
       fail: reject
     });
   });
+}
+
+function isAuthError(error) {
+  return error && error.statusCode === 401;
 }
 
 function getClientId() {
@@ -230,6 +242,9 @@ function createTask(payload) {
     };
   }).catch(function (error) {
     console.warn('[groupDiningAdapter] createTask remote failed', error);
+    if (isAuthError(error)) {
+      throw error;
+    }
     return createFallbackTask(safePayload, error);
   });
 }
@@ -272,6 +287,9 @@ function submitPreference(taskId, inviteToken, payload) {
     };
   }).catch(function (error) {
     console.warn('[groupDiningAdapter] submitPreference remote failed', error);
+    if (isAuthError(error)) {
+      throw error;
+    }
     return submitFallbackPreference(taskId, inviteToken, safePayload, error);
   });
 }
@@ -283,6 +301,9 @@ function getTaskBoard(taskId, inviteToken) {
     return normalizeTaskBoard(taskId, inviteToken, res);
   }).catch(function (error) {
     console.warn('[groupDiningAdapter] getTaskBoard remote failed', error);
+    if (isAuthError(error)) {
+      throw error;
+    }
     return getFallbackTaskBoard(taskId, inviteToken, error);
   });
 }
@@ -298,6 +319,9 @@ function generateRecommendation(taskId, inviteToken) {
     return normalizeTaskBoard(taskId, inviteToken, res);
   }).catch(function (error) {
     console.warn('[groupDiningAdapter] generateRecommendation remote failed', error);
+    if (isAuthError(error)) {
+      throw error;
+    }
     return getFallbackTaskBoard(taskId, inviteToken, error);
   });
 }

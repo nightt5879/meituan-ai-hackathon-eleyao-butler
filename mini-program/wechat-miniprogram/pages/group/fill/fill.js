@@ -1,5 +1,6 @@
 const themeAdapter = require('../../../services/themeAdapter');
 const groupDiningAdapter = require('../../../services/groupDiningAdapter');
+const userIdentityAdapter = require('../../../services/userIdentityAdapter');
 
 Page({
   data: {
@@ -23,9 +24,17 @@ Page({
 
   onLoad(options) {
     this.syncTheme();
+    const taskId = options && options.taskId ? options.taskId : 'group_mock_task';
+    const inviteToken = options && options.inviteToken ? options.inviteToken : 'group_mock_token';
+
+    if (!userIdentityAdapter.hasSession()) {
+      userIdentityAdapter.requireLoginRedirect('/pages/group/fill/fill?taskId=' + encodeURIComponent(taskId) + '&inviteToken=' + encodeURIComponent(inviteToken));
+      return;
+    }
+
     this.setData({
-      taskId: options && options.taskId ? options.taskId : 'group_mock_task',
-      inviteToken: options && options.inviteToken ? options.inviteToken : 'group_mock_token'
+      taskId,
+      inviteToken
     });
   },
 
@@ -62,6 +71,7 @@ Page({
   },
 
   handleSubmitPreference() {
+    const page = this;
     wx.showLoading({ title: '提交中' });
     groupDiningAdapter.submitPreference(this.data.taskId, this.data.inviteToken, this.data.form).then(function (result) {
       wx.hideLoading();
@@ -74,8 +84,12 @@ Page({
       wx.navigateTo({
         url: result.nextUrl
       });
-    }).catch(function () {
+    }).catch(function (error) {
       wx.hideLoading();
+      if (error && error.statusCode === 401) {
+        userIdentityAdapter.requireLoginRedirect('/pages/group/fill/fill?taskId=' + encodeURIComponent(page.data.taskId) + '&inviteToken=' + encodeURIComponent(page.data.inviteToken));
+        return;
+      }
       wx.showToast({
         title: '提交失败',
         icon: 'none'

@@ -3,24 +3,26 @@
     <view class="brand-block">
       <view class="brand-mark ai-mark">幺</view>
       <view class="brand-name">饿了幺</view>
-      <view class="brand-subtitle">藏在小程序里的 AI 本地生活管家</view>
+      <view class="brand-subtitle">用微信身份隔离你的约饭、推荐和规划数据</view>
     </view>
 
     <view class="login-copy">
       <view class="login-title">先登录一下</view>
       <view class="login-desc">
-        第一阶段使用本地 mock 登录，用来跑通入口和后续问答链路。不会真的访问你的微信资料。
+        登录后后端会为当前微信用户签发 sessionToken，后续多人约饭、单人推荐和周末规划都会绑定到同一个 userId。
       </view>
     </view>
 
     <view class="mvp-note">
       <view class="note-icon">i</view>
-      <view class="note-text">当前为 MVP 演示版本，登录后可体验「今天吃什么」前端闭环。下一阶段会接入 OpenClaw Agent。</view>
+      <view class="note-text">AppSecret 只放在服务器环境变量里，小程序端不会保存 openid、session_key 或密钥。</view>
     </view>
 
+    <view wx:if="{{errorMessage}}" class="login-error">{{errorMessage}}</view>
+
     <button class="login-button" loading="{{isLoading}}" bindtap="handleLogin">
-      微信授权登录
+      微信登录
     </button>
-    <view class="login-policy">登录即代表同意《用户协议》与《隐私政策》</view>
+    <view class="login-policy">登录后才能继续使用需要后端同步的功能。</view>
   </view>
 </view>

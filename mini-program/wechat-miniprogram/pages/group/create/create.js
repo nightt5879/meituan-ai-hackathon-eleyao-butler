@@ -1,5 +1,6 @@
 const themeAdapter = require('../../../services/themeAdapter');
 const groupDiningAdapter = require('../../../services/groupDiningAdapter');
+const userIdentityAdapter = require('../../../services/userIdentityAdapter');
 
 Page({
   data: {
@@ -15,6 +16,9 @@ Page({
 
   onLoad() {
     this.syncTheme();
+    if (!userIdentityAdapter.hasSession()) {
+      userIdentityAdapter.requireLoginRedirect('/pages/group/create/create');
+    }
   },
 
   onShow() {
@@ -52,8 +56,12 @@ Page({
       wx.navigateTo({
         url: result.nextUrl
       });
-    }).catch(function () {
+    }).catch(function (error) {
       wx.hideLoading();
+      if (error && error.statusCode === 401) {
+        userIdentityAdapter.requireLoginRedirect('/pages/group/create/create');
+        return;
+      }
       wx.showToast({
         title: '创建失败',
         icon: 'none'

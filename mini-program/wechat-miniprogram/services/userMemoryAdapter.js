@@ -8,6 +8,8 @@
 // local wx.setStorageSync write. Local storage can remain as a cache
 // so the app still works offline.
 
+const userIdentityAdapter = require('./userIdentityAdapter');
+
 const STORAGE_KEY = 'userMemory';
 const MAX_PREFERENCE_RECORDS = 20;
 
@@ -94,7 +96,7 @@ const defaultMemory = {
 };
 
 function getUserMemory() {
-  const storedMemory = wx.getStorageSync(STORAGE_KEY) || {};
+  const storedMemory = wx.getStorageSync(getStorageKey()) || {};
   return Object.assign({}, defaultMemory, storedMemory, {
     preferences: Object.assign({}, defaultMemory.preferences, storedMemory.preferences || {}),
     lastSlots: Object.assign({}, defaultMemory.lastSlots, storedMemory.lastSlots || {}),
@@ -104,6 +106,11 @@ function getUserMemory() {
     memoryPermissions: normalizeMemoryPermissions(storedMemory.memoryPermissions),
     learnedFoodPreferences: normalizeLearnedFoodPreferences(storedMemory.learnedFoodPreferences)
   });
+}
+
+function getStorageKey() {
+  const userId = userIdentityAdapter.getCurrentUserId();
+  return userId ? STORAGE_KEY + ':' + userId : STORAGE_KEY + ':anonymous';
 }
 
 function normalizeStableFoodPreferences(input) {
@@ -344,7 +351,7 @@ function updateUserMemory(answerOrSlots) {
     updatedAt: new Date().toISOString()
   });
 
-  wx.setStorageSync(STORAGE_KEY, nextMemory);
+  wx.setStorageSync(getStorageKey(), nextMemory);
   return nextMemory;
 }
 
@@ -360,7 +367,7 @@ function saveRecommendationHistory(recommendations) {
     updatedAt: new Date().toISOString()
   });
 
-  wx.setStorageSync(STORAGE_KEY, nextMemory);
+  wx.setStorageSync(getStorageKey(), nextMemory);
   return nextMemory;
 }
 
@@ -381,7 +388,7 @@ function savePreferenceRecord(record, options) {
     updatedAt: nextRecord.createdAt
   });
 
-  wx.setStorageSync(STORAGE_KEY, nextMemory);
+  wx.setStorageSync(getStorageKey(), nextMemory);
   return nextRecord;
 }
 
@@ -397,7 +404,7 @@ function clearPreferenceRecords() {
     updatedAt: new Date().toISOString()
   });
 
-  wx.setStorageSync(STORAGE_KEY, nextMemory);
+  wx.setStorageSync(getStorageKey(), nextMemory);
   return nextMemory;
 }
 
@@ -613,7 +620,7 @@ function saveStableFoodPreferences(preferences) {
     stableFoodPreferences: next,
     updatedAt: next.updatedAt
   });
-  wx.setStorageSync(STORAGE_KEY, nextMemory);
+  wx.setStorageSync(getStorageKey(), nextMemory);
   return next;
 }
 
@@ -633,7 +640,7 @@ function clearStableFoodPreferences() {
     stableFoodPreferences: next,
     updatedAt: next.updatedAt
   });
-  wx.setStorageSync(STORAGE_KEY, nextMemory);
+  wx.setStorageSync(getStorageKey(), nextMemory);
   return next;
 }
 
@@ -656,7 +663,7 @@ function setStableFoodMemoryEnabled(enabled) {
     stableFoodPreferences: next,
     updatedAt: next.updatedAt
   });
-  wx.setStorageSync(STORAGE_KEY, nextMemory);
+  wx.setStorageSync(getStorageKey(), nextMemory);
   return next;
 }
 
@@ -689,7 +696,7 @@ function saveMemoryPermissions(permissions) {
     memoryPermissions: next,
     updatedAt: next.updatedAt
   });
-  wx.setStorageSync(STORAGE_KEY, nextMemory);
+  wx.setStorageSync(getStorageKey(), nextMemory);
   return next;
 }
 
@@ -702,7 +709,7 @@ function resetMemoryPermissions() {
     memoryPermissions: next,
     updatedAt: next.updatedAt
   });
-  wx.setStorageSync(STORAGE_KEY, nextMemory);
+  wx.setStorageSync(getStorageKey(), nextMemory);
   return next;
 }
 
@@ -725,12 +732,13 @@ function clearLearnedFoodPreferences() {
     learnedFoodPreferences: next,
     updatedAt: next.updatedAt
   });
-  wx.setStorageSync(STORAGE_KEY, nextMemory);
+  wx.setStorageSync(getStorageKey(), nextMemory);
   return next;
 }
 
 module.exports = {
   STORAGE_KEY,
+  getStorageKey,
   getUserMemory,
   updateUserMemory,
   saveRecommendationHistory,
