@@ -17,8 +17,10 @@ const userMemoryAdapter = require('./userMemoryAdapter');
 
 const REMOTE_RECOMMEND_PATH = '/api/food/recommend';
 const REMOTE_QUESTION_PLAN_PATH = '/api/food/question-plan';
-const REMOTE_RECOMMEND_TIMEOUT_MS = 15000;
+const REMOTE_STATUS_PATH = '/api/food/status';
+const REMOTE_RECOMMEND_TIMEOUT_MS = 120000;
 const REMOTE_QUESTION_PLAN_TIMEOUT_MS = 9000;
+const REMOTE_STATUS_TIMEOUT_MS = 5000;
 
 let lastRecommendationMeta = {
   source: 'mock',
@@ -536,14 +538,23 @@ async function generateRecommendations(slots, preferences, options) {
     return recommendations;
   } catch (error) {
     const fallbackRecommendations = generateLocalRecommendations(slots, preferences, options);
+    const errorMessage = error && error.message ? error.message : String(error || '');
     setLastRecommendationMeta({
       source: 'mock',
       fallback: true,
-      message: '远端推荐暂不可用，已先用本地推荐。',
-      error: error && error.message ? error.message : String(error || '')
+      message: buildRemoteFallbackMessage(errorMessage),
+      error: errorMessage
     });
     return fallbackRecommendations;
   }
+}
+
+function buildRemoteFallbackMessage(errorMessage) {
+  if (/timeout|timed out|超时/i.test(errorMessage || '')) {
+    return 'OpenClaw 推荐响应超时，已先用本地推荐。';
+  }
+
+  return '远端推荐暂不可用，已先用本地推荐。';
 }
 
 function getLastRecommendationMeta() {
@@ -556,6 +567,98 @@ function setLastRecommendationMeta(meta) {
     fallback: false,
     message: ''
   }, meta || {});
+}
+
+async function getFoodConnectionStatus() {
+  const baseUrl = getFoodRecommendApiBaseUrl();
+
+  if (!baseUrl) {
+    return {
+      state: 'mock',
+      text: '本地推荐模式',
+      detail: '小程序未配置后端 API base URL，所以只会使用本地 mock 推荐。',
+      baseUrl: ''
+    };
+  }
+
+  try {
+    const response = await requestRemoteFoodStatus(baseUrl);
+    return normalizeFoodConnectionStatus(baseUrl, response);
+  } catch (error) {
+    const detail = error && error.message ? error.message : String(error || '');
+    return {
+      state: 'error',
+      text: '后端未连接',
+      detail: 'API base URL: ' + baseUrl + '\n' + detail,
+      baseUrl
+    };
+  }
+}
+
+function requestRemoteFoodStatus(baseUrl) {
+  return new Promise(function (resolve, reject) {
+    wx.request({
+      url: baseUrl + REMOTE_STATUS_PATH,
+      method: 'GET',
+      timeout: REMOTE_STATUS_TIMEOUT_MS,
+      header: {
+        'content-type': 'application/json'
+      },
+      success: function (res) {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve(res.data || {});
+          return;
+        }
+
+        reject(new Error('Food status check failed with status ' + res.statusCode));
+      },
+      fail: function (error) {
+        reject(new Error(error && error.errMsg ? error.errMsg : 'Food status check request failed'));
+      }
+    });
+  });
+}
+
+function normalizeFoodConnectionStatus(baseUrl, response) {
+  const backend = response && response.backend ? response.backend : {};
+  const openclaw = response && response.openclaw ? response.openclaw : {};
+
+  if (backend.ok && openclaw.ok) {
+    return {
+      state: 'connected',
+      text: 'OpenClaw 已连接',
+      detail: [
+        'API base URL: ' + baseUrl,
+        'OpenClaw: connected',
+        'profile: ' + (openclaw.profile || 'unknown'),
+        'agent: ' + (openclaw.agentId || 'unknown'),
+        'session: ' + (openclaw.sessionId || 'unknown')
+      ].join('\n'),
+      baseUrl,
+      checkedAt: backend.checkedAt || ''
+    };
+  }
+
+  if (backend.ok) {
+    return {
+      state: 'backend-only',
+      text: '后端在线 · OpenClaw 未确认',
+      detail: [
+        'API base URL: ' + baseUrl,
+        '后端可访问，但 OpenClaw status 检查未通过。',
+        openclaw.detail || ''
+      ].filter(function (line) { return !!line; }).join('\n'),
+      baseUrl,
+      checkedAt: backend.checkedAt || ''
+    };
+  }
+
+  return {
+    state: 'error',
+    text: '后端状态异常',
+    detail: 'API base URL: ' + baseUrl,
+    baseUrl
+  };
 }
 
 function shouldPrefetchDynamicQuestions(session) {
@@ -1527,6 +1630,7 @@ module.exports = {
   markDynamicQuestionPlanLoading,
   requestDynamicQuestionPlan,
   mergeDynamicQuestionPlan,
+  getFoodConnectionStatus,
   generateRecommendations,
   getLastRecommendationMeta
 };

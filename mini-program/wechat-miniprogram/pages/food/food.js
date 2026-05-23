@@ -54,6 +54,11 @@ Page({
     hasSavedCurrentRecord: false,
     memoryDecision: '',
     progressPercent: 0,
+    connectionStatus: buildConnectionStatusView({
+      state: 'checking',
+      text: '检测 OpenClaw 中',
+      detail: ''
+    }),
 
     // ─── Preference pre-check state ─────────────────────────────────────
     // prefCheckActive   — true while the butler is asking "今天也按这个来吗？"
@@ -94,10 +99,12 @@ Page({
     }
 
     this.startSession();
+    this.refreshConnectionStatus();
   },
 
   onShow() {
     this.syncTheme();
+    this.refreshConnectionStatus();
   },
 
   syncTheme() {
@@ -173,6 +180,32 @@ Page({
           url: '/pages/home/home'
         });
       }
+    });
+  },
+
+  async refreshConnectionStatus() {
+    this.setData({
+      connectionStatus: buildConnectionStatusView({
+        state: 'checking',
+        text: '检测 OpenClaw 中',
+        detail: this.data.connectionStatus.detail || ''
+      })
+    });
+
+    const status = await foodAiAdapter.getFoodConnectionStatus();
+    this.setData({
+      connectionStatus: buildConnectionStatusView(status)
+    });
+  },
+
+  handleConnectionStatusTap() {
+    const status = this.data.connectionStatus || {};
+
+    wx.showModal({
+      title: status.text || '连接状态',
+      content: status.detail || '暂无连接详情',
+      showCancel: false,
+      confirmText: '知道了'
     });
   },
 
@@ -645,6 +678,13 @@ Page({
         : isSameBatch
         ? '暂时没有更多合适方案，我再帮你放宽一点条件试试'
         : '我换了一批，你可以看看有没有更顺眼的方案。',
+      connectionStatus: recommendationMeta.fallback
+        ? buildConnectionStatusView({
+            state: 'degraded',
+            text: 'OpenClaw 推荐未返回',
+            detail: recommendationMeta.error || recommendationMeta.message
+          })
+        : this.data.connectionStatus,
       showAdjustmentOptions: false
     });
   },
@@ -778,6 +818,13 @@ Page({
       isRecommendationLoading: false,
       recommendationBatchIndex: nextBatchIndex,
       recommendationNotice: recommendationMeta.fallback ? recommendationMeta.message : noticeText,
+      connectionStatus: recommendationMeta.fallback
+        ? buildConnectionStatusView({
+            state: 'degraded',
+            text: 'OpenClaw 推荐未返回',
+            detail: recommendationMeta.error || recommendationMeta.message
+          })
+        : this.data.connectionStatus,
       showAdjustmentOptions: false,
       adjustmentManualInput: '',
       adjustmentMessages: this.data.adjustmentMessages.concat(
@@ -942,6 +989,7 @@ Page({
     const currentQuestion = foodAiAdapter.getNextQuestion(session);
     let recommendations = [];
     let recommendationNotice = '';
+    let nextConnectionStatus = this.data.connectionStatus;
     const hasSavedCurrentRecord = this.hasSavedCurrentRecordFlag || this.data.hasSavedCurrentRecord;
 
     if (!currentQuestion) {
@@ -957,6 +1005,20 @@ Page({
 
       const recommendationMeta = foodAiAdapter.getLastRecommendationMeta();
       recommendationNotice = recommendationMeta.fallback ? recommendationMeta.message : '';
+      nextConnectionStatus = recommendationMeta.fallback
+        ? buildConnectionStatusView({
+            state: 'degraded',
+            text: 'OpenClaw 推荐未返回',
+            detail: [
+              this.data.connectionStatus.detail || '',
+              recommendationMeta.error ? '推荐失败原因：' + recommendationMeta.error : ''
+            ].filter(function (line) { return !!line; }).join('\n')
+          })
+        : buildConnectionStatusView({
+            state: 'connected',
+            text: 'OpenClaw 推荐成功',
+            detail: this.data.connectionStatus.detail || '远端 OpenClaw 已成功返回推荐。'
+          });
 
       // Auto-save only lightweight recommendation history when behavior-learning
       // permission allows it. Reusable preference records and long-term memory
@@ -1001,6 +1063,7 @@ Page({
       progressPercent: this.buildProgressPercent(session, currentQuestion),
       recommendationBatchIndex: 0,
       recommendationNotice,
+      connectionStatus: nextConnectionStatus,
       showAdjustmentOptions: false,
       adjustmentMessages: [],
       memoryDecision: !currentQuestion ? '' : this.data.memoryDecision,
@@ -1664,6 +1727,28 @@ function formatAnswerBubbleText(answer, manualText, isTagAnswer) {
 
 function hasUsefulSlotValue(value) {
   return !!value && value !== '待补充' && value !== '未选择';
+}
+
+function buildConnectionStatusView(status) {
+  const safeStatus = status || {};
+  const state = safeStatus.state || 'checking';
+  const textMap = {
+    checking: '检测 OpenClaw 中',
+    connected: 'OpenClaw 已连接',
+    'backend-only': '后端在线 · OpenClaw 未确认',
+    degraded: 'OpenClaw 推荐未返回',
+    mock: '本地推荐模式',
+    error: '后端未连接'
+  };
+
+  return {
+    state,
+    statusClass: 'status-' + state,
+    text: safeStatus.text || textMap[state] || '连接状态未知',
+    detail: safeStatus.detail || '',
+    baseUrl: safeStatus.baseUrl || '',
+    checkedAt: safeStatus.checkedAt || ''
+  };
 }
 
 // Display-only helper. Combines a structured slot value with the user's free-form
