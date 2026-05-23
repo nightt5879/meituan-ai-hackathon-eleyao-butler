@@ -3,9 +3,7 @@ const themeAdapter = require('../../services/themeAdapter');
 
 Page({
   data: {
-    currentTheme: 'warm',
-    themeCards: [],
-    showThemePanel: false,
+    currentTheme: 'bulletin',
     showHistoryPanel: false,
     historyRecords: [],
     hasHistoryRecords: false,
@@ -30,8 +28,7 @@ Page({
   syncTheme() {
     const currentTheme = themeAdapter.getCurrentThemeKey();
     this.setData({
-      currentTheme,
-      themeCards: this.buildThemeCards(currentTheme)
+      currentTheme
     });
   },
 
@@ -41,15 +38,6 @@ Page({
         url: '/pages/login/login'
       });
     }
-  },
-
-  buildThemeCards(currentTheme) {
-    return themeAdapter.themes.map(function (theme) {
-      return Object.assign({}, theme, {
-        isActive: theme.key === currentTheme,
-        cardClass: theme.key === currentTheme ? 'active' : ''
-      });
-    });
   },
 
   refreshPreferenceRecords() {
@@ -111,32 +99,6 @@ Page({
           icon: 'none'
         });
       }
-    });
-  },
-
-  openThemePanel() {
-    this.syncTheme();
-    this.setData({ showThemePanel: true });
-  },
-
-  closeThemePanel() {
-    this.setData({ showThemePanel: false });
-  },
-
-  selectTheme(event) {
-    const themeKey = event.currentTarget.dataset.key;
-    const nextTheme = themeAdapter.saveTheme(themeKey);
-    const theme = themeAdapter.getThemeByKey(nextTheme);
-
-    this.setData({
-      currentTheme: nextTheme,
-      themeCards: this.buildThemeCards(nextTheme),
-      showThemePanel: false
-    });
-
-    wx.showToast({
-      title: '已切换为' + theme.name,
-      icon: 'none'
     });
   },
 

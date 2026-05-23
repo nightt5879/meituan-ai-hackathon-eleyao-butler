@@ -1,193 +1,100 @@
-<view class="page food-page theme-{{currentTheme}}">
-  <view class="custom-food-header">
-    <view class="header-back-button" bindtap="handleBackToHome">‹</view>
-    <view class="header-online-status {{connectionStatus.statusClass}}" bindtap="handleConnectionStatusTap">
-      <view class="header-online-dot"></view>
-      <text class="header-online-text">{{connectionStatus.text}}</text>
+<view class="el-page food-page theme-{{currentTheme}}">
+  <view class="el-bar food-bar">
+    <view class="food-bar-left">
+      <view class="food-status-pill {{connectionStatus.statusClass}}" bindtap="handleConnectionStatusTap">
+        <text class="food-status-dot"></text>
+        <text class="food-status-label">OPENCLAW</text>
+      </view>
     </view>
+    <view class="food-title">今天吃什么</view>
+    <view class="food-bar-right"></view>
   </view>
 
-  <view class="chat-body">
-    <view wx:if="{{!isFinished && currentQuestion}}" class="progress-strip">
-      <view class="progress-copy">
-        <text>第 {{session.questionIndex + 1}}{{session.totalQuestions ? ' / ' + session.totalQuestions : ''}} 题</text>
-        <text wx:if="{{currentQuestion.optional}}" class="optional-hint">可跳过</text>
-      </view>
-      <view class="progress-track">
-        <view class="progress-fill" style="width: {{progressPercent}}%;"></view>
-      </view>
+  <view wx:if="{{prefCheckActive}}" class="food-pref-check">
+    <view class="el-section__head">
+      <view class="el-section__no">PRE</view>
+      <view class="el-section__title">先确认偏好</view>
+      <view class="el-section__rule"></view>
     </view>
-
-    <view class="chat-thread">
-      <view wx:if="{{prefCheckActive}}" class="chat-message butler-message pref-check-message">
-        <view class="message-avatar ai-mark">幺</view>
-        <view class="message-content butler-content">
-          <view class="chat-bubble butler-bubble">{{prefCheckSummary}}</view>
-          <view wx:if="{{prefCheckDisclaimer}}" class="chat-bubble butler-bubble pref-check-disclaimer-bubble">{{prefCheckDisclaimer}}</view>
-          <view class="inline-replies">
-            <view class="quick-list">
-              <view
-                wx:for="{{prefCheckOptions}}"
-                wx:key="action"
-                class="quick-chip pref-check-chip"
-                data-action="{{item.action}}"
-                data-label="{{item.label}}"
-                bindtap="handlePrefCheckOptionTap"
-              >{{item.label}}</view>
-            </view>
-          </view>
-        </view>
-      </view>
-
+    <view class="el-hero el-hero--md">{{prefCheckSummary}}</view>
+    <view wx:if="{{prefCheckDisclaimer}}" class="el-note pref-note">
+      <text class="el-note__tag">NOTE</text>{{prefCheckDisclaimer}}
+    </view>
+    <view class="question-options">
       <view
-        wx:for="{{chatMessages}}"
-        wx:key="id"
-        class="chat-message {{item.messageClass}}"
+        wx:for="{{prefCheckOptions}}"
+        wx:key="action"
+        class="question-option"
+        data-action="{{item.action}}"
+        data-label="{{item.label}}"
+        bindtap="handlePrefCheckOptionTap"
       >
-        <view wx:if="{{item.showAvatar}}" class="message-avatar">{{item.avatarText}}</view>
-        <view class="message-content {{item.contentClass}}">
-          <view class="chat-bubble {{item.bubbleClass}}">
-            {{item.text}}
-          </view>
+        <view class="question-option__no">{{index + 1}}</view>
+        <view class="question-option__body">{{item.label}}</view>
+        <view class="question-option__arrow">→</view>
+      </view>
+    </view>
+  </view>
 
-          <view wx:if="{{item.showQuickReplies && !isFinished}}" class="inline-replies">
-            <view wx:if="{{isTagQuestion}}" class="quick-groups">
-              <view class="tag-group" wx:for="{{tagGroups}}" wx:key="type">
-                <view class="tag-group-title">{{item.title}}</view>
-                <view class="quick-list">
-                  <view
-                    wx:for="{{item.tags}}"
-                    wx:for-item="tag"
-                    wx:key="id"
-                    class="quick-chip tag-chip {{tag.isSelected ? 'selected' : ''}}"
-                    data-id="{{tag.id}}"
-                    data-type="{{tag.type}}"
-                    data-mode="{{item.mode}}"
-                    bindtap="handleTagTap"
-                  >
-                    {{tag.label}}
-                  </view>
-                </view>
-              </view>
-            </view>
+  <view wx:if="{{!isFinished && currentQuestion}}" class="food-question">
+    <view class="question-meta">
+      <text>QUESTION {{session.questionIndex + 1}}{{session.totalQuestions ? ' / ' + session.totalQuestions : ''}}</text>
+      <text wx:if="{{currentQuestion.optional}}">可跳过</text>
+    </view>
 
-            <view wx:else class="quick-list">
-              <view
-                wx:for="{{currentOptions}}"
-                wx:key="value"
-                class="quick-chip option-button {{item.isSelected ? 'selected' : ''}}"
-                data-value="{{item.value}}"
-                bindtap="handleOptionTap"
-              >
-                {{item.value}}
-              </view>
-            </view>
+    <view class="el-segs food-segs">
+      <view class="el-segs__seg {{progressPercent >= 25 ? 'el-segs__seg--ink' : ''}}"></view>
+      <view class="el-segs__seg {{progressPercent >= 50 ? 'el-segs__seg--ink' : ''}}"></view>
+      <view class="el-segs__seg {{progressPercent >= 75 ? 'el-segs__seg--ink' : ''}}"></view>
+      <view class="el-segs__seg {{progressPercent >= 100 ? 'el-segs__seg--ink' : ''}}"></view>
+    </view>
+
+    <view class="el-hero question-title">{{currentQuestion.title}}</view>
+
+    <view wx:if="{{isTagQuestion}}" class="tag-question-groups">
+      <view wx:for="{{tagGroups}}" wx:key="type" wx:for-item="group" class="tag-question-group">
+        <view class="tag-group-title">{{group.title}}</view>
+        <view class="tag-row">
+          <view
+            wx:for="{{group.tags}}"
+            wx:for-item="tag"
+            wx:key="id"
+            class="tag-option {{tag.isSelected ? 'selected' : ''}}"
+            data-id="{{tag.id}}"
+            data-type="{{tag.type}}"
+            data-mode="{{group.mode}}"
+            bindtap="handleTagTap"
+          >
+            {{tag.label}}
           </view>
         </view>
       </view>
-
-      <block wx:if="{{isFinished}}">
-        <view class="chat-message butler-message">
-          <view class="message-avatar ai-mark">幺</view>
-          <view class="chat-bubble butler-bubble">
-            我明白啦，会结合你的场景、预算、距离和偏好，给你 2-3 个可执行方案。
-          </view>
-        </view>
-
-        <view
-          wx:for="{{adjustmentMessages}}"
-          wx:key="id"
-          class="chat-message {{item.messageClass}}"
-        >
-          <view wx:if="{{item.showAvatar}}" class="message-avatar">{{item.avatarText}}</view>
-          <view class="message-content {{item.contentClass}}">
-            <view class="chat-bubble {{item.bubbleClass}}">
-              {{item.text}}
-            </view>
-          </view>
-        </view>
-
-        <view wx:if="{{recommendationNotice}}" class="recommendation-notice">
-          {{recommendationNotice}}
-        </view>
-
-        <view class="recommendation-list">
-          <view class="shop-card {{index === 0 ? 'featured' : ''}}" wx:for="{{recommendations}}" wx:key="id">
-            <view class="shop-header">
-              <view class="shop-title-wrap">
-                <view wx:if="{{index === 0}}" class="shop-rank">首推</view>
-                <view class="shop-name">{{item.name}}</view>
-              </view>
-              <view class="shop-type">{{item.type}}</view>
-            </view>
-            <view class="shop-meta">
-              <view>人均 {{item.perCapita}}</view>
-              <view>{{item.distance}}</view>
-              <view>评分 {{item.rating}}</view>
-            </view>
-            <view class="matched-tags-row">
-              <text class="shop-section-label">匹配点</text>
-              <view class="matched-tags">
-                <text wx:for="{{item.matchedTags}}" wx:for-item="tag" wx:key="*this" class="matched-tag">{{tag}}</text>
-                <text wx:if="{{!item.matchedTags.length}}" class="matched-tag muted">默认推荐</text>
-              </view>
-            </view>
-            <view class="shop-reason"><text class="shop-section-label">为什么推荐</text>{{item.reason}}</view>
-            <view class="shop-risk"><text class="shop-section-label">管家提醒</text>{{item.riskTip}}</view>
-          </view>
-        </view>
-
-        <view wx:if="{{showAdjustmentOptions}}" class="chat-message butler-message adjustment-message">
-          <view class="message-avatar ai-mark">幺</view>
-          <view class="message-content butler-content">
-            <view class="chat-bubble butler-bubble">
-              哪里不满意呀？我可以按这些方向帮你调整：
-            </view>
-            <view class="adjustment-options">
-              <view
-                wx:for="{{adjustmentOptions}}"
-                wx:key="action"
-                class="adjustment-chip"
-                data-action="{{item.action}}"
-                data-label="{{item.label}}"
-                bindtap="handleAdjustmentOptionTap"
-              >
-                {{item.label}}
-              </view>
-            </view>
-            <view class="adjustment-input-row">
-              <input
-                class="adjustment-input"
-                value="{{adjustmentManualInput}}"
-                placeholder="也可以直接告诉我哪里不满意"
-                placeholder-class="manual-placeholder"
-                bindinput="handleAdjustmentManualInput"
-              />
-              <button class="adjustment-submit" bindtap="handleAdjustmentManualSubmit">发送</button>
-            </view>
-          </view>
-        </view>
-      </block>
     </view>
 
-  </view>
-
-  <view wx:if="{{!isFinished && currentQuestion}}" class="reply-dock">
-    <view wx:if="{{session.questionIndex > 0}}" class="reply-top-row">
-      <button wx:if="{{session.questionIndex > 0}}" class="back-button" bindtap="handleGoBack">上一题</button>
+    <view wx:else class="question-options">
+      <view
+        wx:for="{{currentOptions}}"
+        wx:key="value"
+        class="question-option {{item.isSelected ? 'selected' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="handleOptionTap"
+      >
+        <view class="question-option__no">{{index + 1}}</view>
+        <view class="question-option__body">{{item.value}}</view>
+        <view class="question-option__check">{{item.isSelected ? '✓' : ''}}</view>
+      </view>
     </view>
 
     <view class="slot-summary-card">
-      <view class="slot-summary-bar">
-        <view class="slot-summary-text">{{slotSummaryText}}</view>
-        <button class="slot-summary-toggle" bindtap="toggleSlotSummary">
-          {{showSlotSummaryDetail ? '收起' : '查看'}}
-        </button>
+      <view class="slot-summary-bar" bindtap="toggleSlotSummary">
+        <view>
+          <view class="slot-summary-label">已收集</view>
+          <view class="slot-summary-text">{{slotSummaryText}}</view>
+        </view>
+        <button class="slot-summary-toggle">{{showSlotSummaryDetail ? '收起' : '查看'}}</button>
       </view>
-      <view class="slot-summary-hint">当前条件仅用于本次推荐，你可以在结果页选择是否长期记住</view>
 
       <view wx:if="{{showSlotSummaryDetail}}" class="slots-panel">
-        <view class="slots-title">完整需求状态</view>
         <view
           class="slot-row {{item.rowClass}}"
           wx:for="{{summaryFields}}"
@@ -201,16 +108,104 @@
         </view>
       </view>
     </view>
+  </view>
 
+  <view wx:if="{{isFinished}}" class="food-results">
+    <view class="result-hero">
+      <view class="result-kicker">{{slotSummaryText}}</view>
+      <view class="result-tags">
+        <text wx:if="{{connectionStatus.state === 'connected'}}" class="el-chip el-chip--accent result-source-chip">OpenClaw 推荐</text>
+      </view>
+      <view class="el-hero el-hero--md">这几家今天<text class="line-break"></text>都能开伙。</view>
+    </view>
+
+    <view wx:if="{{recommendationNotice}}" class="el-note recommendation-notice">
+      <text class="el-note__tag">NOTE</text>{{recommendationNotice}}
+    </view>
+
+    <view class="recommendation-list">
+      <view class="shop-card {{index === 0 ? 'featured' : ''}}" wx:for="{{recommendations}}" wx:key="id">
+        <view class="shop-head">
+          <view class="shop-rank">{{index === 0 ? 'TOP' : index + 1}}</view>
+          <view class="shop-title-wrap">
+            <view class="shop-name">{{item.name}}</view>
+            <view class="shop-type">{{item.type}}</view>
+          </view>
+        </view>
+
+        <view class="el-stat-grid shop-stats">
+          <view>
+            <view class="el-stat__v">{{item.perCapita}}</view>
+            <view class="el-stat__l">人均</view>
+          </view>
+          <view>
+            <view class="el-stat__v">{{item.distance}}</view>
+            <view class="el-stat__l">距离</view>
+          </view>
+          <view>
+            <view class="el-stat__v">{{item.rating}}</view>
+            <view class="el-stat__l">评分</view>
+          </view>
+          <view>
+            <view class="el-stat__v">{{index === 0 ? '首推' : '备选'}}</view>
+            <view class="el-stat__l">排序</view>
+          </view>
+        </view>
+
+        <view class="matched-tags">
+          <text wx:for="{{item.matchedTags}}" wx:for-item="tag" wx:key="*this" class="el-chip">{{tag}}</text>
+          <text wx:if="{{!item.matchedTags.length}}" class="el-chip">稳妥选择</text>
+        </view>
+
+        <view class="shop-reason">{{item.reason}}</view>
+        <view class="el-note shop-risk">
+          <text class="el-note__tag">NOTE</text>{{item.riskTip}}
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{showAdjustmentOptions}}" class="adjustment-panel">
+      <view class="el-section__head">
+        <view class="el-section__no">ADJ</view>
+        <view class="el-section__title">调整方向</view>
+        <view class="el-section__rule"></view>
+      </view>
+      <view class="tag-row">
+        <view
+          wx:for="{{adjustmentOptions}}"
+          wx:key="action"
+          class="tag-option"
+          data-action="{{item.action}}"
+          data-label="{{item.label}}"
+          bindtap="handleAdjustmentOptionTap"
+        >
+          {{item.label}}
+        </view>
+      </view>
+      <view class="adjustment-input-row">
+        <input
+          class="adjustment-input"
+          value="{{adjustmentManualInput}}"
+          placeholder="也可以直接说哪里不满意"
+          placeholder-class="manual-placeholder"
+          bindinput="handleAdjustmentManualInput"
+        />
+        <button class="adjustment-submit" bindtap="handleAdjustmentManualSubmit">发送</button>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{!isFinished && currentQuestion}}" class="reply-dock">
+    <button wx:if="{{session.questionIndex > 0}}" class="el-btn el-btn--ghost reply-back" bindtap="handleGoBack">上一题</button>
     <view class="input-bar">
       <input
-        class="manual-input chat-input"
+        class="manual-input"
         value="{{manualAnswer}}"
-        placeholder="也可以直接告诉我你的想法"
+        placeholder="我想的是..."
         placeholder-class="manual-placeholder"
         bindinput="handleManualInput"
       />
-      <button class="send-button" bindtap="handleConfirm">发送</button>
+      <button class="el-btn el-btn--primary send-button" bindtap="handleConfirm">发送</button>
     </view>
   </view>
 
@@ -218,8 +213,8 @@
     <view wx:if="{{isFinished && !memoryDecision}}" class="memory-actions">
       <view class="memory-actions-hint">这次的偏好要不要长期记住？长期记忆完全由你决定。</view>
       <view class="memory-actions-row">
-        <button class="memory-keep-button" bindtap="handleSavePreference">记住这个偏好</button>
-        <button class="memory-once-button" bindtap="handleSessionOnly">仅本次使用</button>
+        <button class="el-btn el-btn--primary memory-keep-button" bindtap="handleSavePreference">记住偏好</button>
+        <button class="el-btn el-btn--ghost memory-once-button" bindtap="handleSessionOnly">仅本次</button>
       </view>
     </view>
 
@@ -229,9 +224,10 @@
     </view>
 
     <view class="result-actions">
-      <button class="secondary-action-button" bindtap="handleRefreshRecommendations">换一批</button>
-      <button class="restart-button" bindtap="handleStartAdjustment">调整一下</button>
-      <button class="tertiary-action-button" bindtap="handleStartOver">重新开始</button>
+      <button class="el-btn el-btn--ghost" bindtap="handleRefreshRecommendations">换一批</button>
+      <button class="el-btn el-btn--ghost" bindtap="handleStartAdjustment">调整</button>
+      <button class="el-btn el-btn--ghost" bindtap="handleBackToHome">回到主页</button>
+      <button class="el-btn el-btn--primary" bindtap="handleStartOver">重新开始</button>
     </view>
   </view>
 </view>
