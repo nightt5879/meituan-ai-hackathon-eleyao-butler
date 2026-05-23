@@ -4,26 +4,50 @@
 }
 
 .food-bar {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: var(--s-2);
+  min-height: 152rpx;
+  margin-bottom: var(--s-4);
+  padding: calc(78rpx + env(safe-area-inset-top)) var(--page-x) 18rpx;
+  border-bottom: 1rpx solid var(--hair);
+}
+
+.food-bar-left,
+.food-bar-right {
+  min-width: 0;
+}
+
+.food-bar-left {
+  display: flex;
   justify-content: flex-start;
-  margin-bottom: var(--s-5);
-  border-bottom: 0;
+}
+
+.food-title {
+  color: var(--ink);
+  font-size: var(--t-body);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .food-status-pill {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  max-width: 330rpx;
+  gap: 6rpx;
+  max-width: 224rpx;
   min-width: 0;
-  padding: 6rpx 12rpx;
+  padding: 5rpx 8rpx;
   border: 1rpx solid var(--hair);
   background: var(--card);
 }
 
 .food-status-dot {
   flex-shrink: 0;
-  width: 10rpx;
-  height: 10rpx;
+  width: 8rpx;
+  height: 8rpx;
   border-radius: 50%;
   background: var(--ok);
 }
@@ -47,7 +71,7 @@
 .food-status-label,
 .food-status-text {
   font-family: var(--font-mono);
-  font-size: var(--t-nano);
+  font-size: 18rpx;
   letter-spacing: 1rpx;
   white-space: nowrap;
 }
@@ -57,7 +81,7 @@
 }
 
 .food-status-text {
-  max-width: 240rpx;
+  max-width: 94rpx;
   overflow: hidden;
   color: var(--ink);
   font-weight: 600;
