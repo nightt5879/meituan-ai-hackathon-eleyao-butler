@@ -43,6 +43,12 @@ Page({
     wx.showLoading({ title: '创建中' });
     groupDiningAdapter.createTask(this.data.form).then(function (result) {
       wx.hideLoading();
+      if (result.status !== groupDiningAdapter.REAL_STATUS) {
+        wx.showToast({
+          title: '后端暂不可用',
+          icon: 'none'
+        });
+      }
       wx.navigateTo({
         url: result.nextUrl
       });

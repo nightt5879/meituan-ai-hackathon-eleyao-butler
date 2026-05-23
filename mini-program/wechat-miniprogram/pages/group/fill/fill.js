@@ -12,6 +12,7 @@ Page({
       spicy: '还没选择'
     },
     taskId: 'group_mock_task',
+    inviteToken: 'group_mock_token',
     spicyOptions: [
       { label: '不吃辣', active: false },
       { label: '微辣', active: false },
@@ -23,7 +24,8 @@ Page({
   onLoad(options) {
     this.syncTheme();
     this.setData({
-      taskId: options && options.taskId ? options.taskId : 'group_mock_task'
+      taskId: options && options.taskId ? options.taskId : 'group_mock_task',
+      inviteToken: options && options.inviteToken ? options.inviteToken : 'group_mock_token'
     });
   },
 
@@ -61,8 +63,14 @@ Page({
 
   handleSubmitPreference() {
     wx.showLoading({ title: '提交中' });
-    groupDiningAdapter.submitPreference(this.data.taskId, this.data.form).then(function (result) {
+    groupDiningAdapter.submitPreference(this.data.taskId, this.data.inviteToken, this.data.form).then(function (result) {
       wx.hideLoading();
+      if (result.status !== groupDiningAdapter.REAL_STATUS) {
+        wx.showToast({
+          title: '后端暂不可用',
+          icon: 'none'
+        });
+      }
       wx.navigateTo({
         url: result.nextUrl
       });

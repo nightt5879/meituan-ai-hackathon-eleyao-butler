@@ -104,3 +104,65 @@
   padding-top: 34rpx;
   padding-bottom: 34rpx;
 }
+
+.board-actions {
+  margin-top: 22rpx;
+}
+
+.compact-button {
+  flex: 1;
+  min-width: 0;
+  height: 72rpx;
+  border-radius: 18rpx;
+  font-size: 25rpx;
+  line-height: 72rpx;
+}
+
+.secondary-button {
+  margin: 0;
+  border: 1rpx solid var(--theme-border-strong, rgba(45, 30, 15, 0.14));
+  background: var(--theme-card, #FFFFFF);
+  color: var(--theme-muted, #6B6157);
+  font-weight: 800;
+}
+
+.member-card,
+.candidate-card {
+  margin-bottom: 18rpx;
+}
+
+.member-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 10rpx;
+}
+
+.member-name {
+  min-width: 0;
+  color: var(--theme-text, #1F1A15);
+  font-size: 29rpx;
+  font-weight: 800;
+}
+
+.member-desc {
+  margin-top: 8rpx;
+  color: var(--theme-muted, #6B6157);
+  font-size: 24rpx;
+  line-height: 1.55;
+}
+
+.member-desc.muted {
+  color: var(--theme-subtle, #9A8F83);
+}
+
+.audit-box {
+  margin-top: 16rpx;
+  padding: 16rpx 18rpx;
+  border-radius: 18rpx;
+  background: var(--theme-primary-ghost, #FFF4EA);
+  color: var(--theme-primary-deep, #C75A22);
+  font-size: 23rpx;
+  line-height: 1.55;
+}
