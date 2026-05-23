@@ -1,8 +1,42 @@
 import { searchShops } from "./searchService";
-import type { PreferenceSlots, RankedShop, ShopSearchItem, UserMemory } from "./types";
+import type { GeoPoint, PreferenceSlots, RankedShop, ShopSearchItem, UserMemory } from "./types";
 
-function normalizeList(values: string[] | undefined) {
-  return (values ?? []).map((value) => value.trim()).filter(Boolean);
+function asRecord(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+}
+
+function normalizeList(value: unknown) {
+  const values = typeof value === "string" ? [value] : Array.isArray(value) ? value : [];
+
+  return values.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean);
+}
+
+function normalizeNumber(value: unknown) {
+  const parsed = typeof value === "number" ? value : typeof value === "string" && value.trim() ? Number(value) : Number.NaN;
+
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function normalizeLimit(value: unknown, fallback: number, max: number) {
+  const parsed = normalizeNumber(value);
+
+  if (parsed === undefined) {
+    return fallback;
+  }
+
+  return Math.max(1, Math.min(Math.floor(parsed), max));
+}
+
+function normalizeGeoPoint(value: unknown): GeoPoint | undefined {
+  const record = asRecord(value);
+  const latitude = normalizeNumber(record.latitude);
+  const longitude = normalizeNumber(record.longitude);
+
+  if (latitude === undefined || longitude === undefined) {
+    return undefined;
+  }
+
+  return { latitude, longitude };
 }
 
 function unique(values: string[]) {
@@ -14,7 +48,9 @@ function hasAnyTag(shop: ShopSearchItem, tags: string[]) {
   return tags.filter((tag) => shopTags.includes(tag));
 }
 
-export async function rankShopsByPreference(slots: PreferenceSlots = {}, userMemory: UserMemory = {}, limit = 5) {
+export async function rankShopsByPreference(rawSlots: PreferenceSlots = {}, rawUserMemory: UserMemory = {}, rawLimit = 5) {
+  const slots = asRecord(rawSlots);
+  const userMemory = asRecord(rawUserMemory);
   const tasteTags = normalizeList(slots.tasteTags);
   const needTags = normalizeList(slots.needTags);
   const avoidTags = normalizeList(slots.avoidTags);
@@ -22,13 +58,15 @@ export async function rankShopsByPreference(slots: PreferenceSlots = {}, userMem
   const dislikedTags = normalizeList(userMemory.dislikedTags);
   const favoriteShopIds = normalizeList(userMemory.favoriteShopIds);
   const avoidedShopIds = normalizeList(userMemory.avoidedShopIds);
-  const maxDistanceKm = slots.maxDistanceKm;
+  const budgetMax = normalizeNumber(slots.budgetMax);
+  const maxDistanceKm = normalizeNumber(slots.maxDistanceKm);
+  const limit = normalizeLimit(rawLimit, 5, 20);
 
   const searchResult = await searchShops({
-    center: slots.center,
+    center: normalizeGeoPoint(slots.center),
     radiusKm: maxDistanceKm,
-    categories: slots.categories,
-    maxAvgPrice: slots.budgetMax ? slots.budgetMax + 20 : undefined,
+    categories: normalizeList(slots.categories),
+    maxAvgPrice: budgetMax ? budgetMax + 20 : undefined,
     limit: 100
   });
 
@@ -44,8 +82,8 @@ export async function rankShopsByPreference(slots: PreferenceSlots = {}, userMem
       const dislikedMatches = hasAnyTag(shop, dislikedTags);
       const avoidMatches = hasAnyTag(shop, avoidTags);
 
-      if (slots.budgetMax && shop.avgPrice !== null) {
-        if (shop.avgPrice <= slots.budgetMax) {
+      if (budgetMax && shop.avgPrice !== null) {
+        if (shop.avgPrice <= budgetMax) {
           score += 18;
           rankReasons.push("预算内");
         } else {
@@ -113,7 +151,7 @@ export async function rankShopsByPreference(slots: PreferenceSlots = {}, userMem
     .sort((a, b) => b.score - a.score);
 
   return {
-    items: ranked.slice(0, Math.max(1, Math.min(limit, 20))),
+    items: ranked.slice(0, limit),
     total: ranked.length,
     limit
   };

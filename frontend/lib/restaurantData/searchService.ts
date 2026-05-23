@@ -1,13 +1,55 @@
 import { distanceKm } from "./geo";
 import { loadRestaurantData } from "./loadData";
-import type { DishSearchItem, SearchDishesFilters, SearchShopsQuery, Shop, ShopSearchItem } from "./types";
+import type { DishSearchItem, GeoPoint, SearchDishesFilters, SearchShopsQuery, Shop, ShopSearchItem } from "./types";
 
-function normalizeText(value: string | undefined) {
-  return (value ?? "").trim().toLowerCase();
+function asRecord(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
 }
 
-function includesAll(sourceTags: string[], requiredTags: string[] | undefined) {
-  if (!requiredTags || requiredTags.length === 0) {
+function normalizeText(value: unknown) {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
+}
+
+function normalizeString(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeStringList(value: unknown) {
+  const values = typeof value === "string" ? [value] : Array.isArray(value) ? value : [];
+
+  return values.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean);
+}
+
+function normalizeNumber(value: unknown) {
+  const parsed = typeof value === "number" ? value : typeof value === "string" && value.trim() ? Number(value) : Number.NaN;
+
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function normalizeLimit(value: unknown, fallback: number, max: number) {
+  const parsed = normalizeNumber(value);
+
+  if (parsed === undefined) {
+    return fallback;
+  }
+
+  return Math.max(1, Math.min(Math.floor(parsed), max));
+}
+
+function normalizeGeoPoint(value: unknown): GeoPoint | undefined {
+  const record = asRecord(value);
+  const latitude = normalizeNumber(record.latitude);
+  const longitude = normalizeNumber(record.longitude);
+
+  if (latitude === undefined || longitude === undefined) {
+    return undefined;
+  }
+
+  return { latitude, longitude };
+}
+
+function includesAll(sourceTags: string[], requiredTags: string[]) {
+  if (requiredTags.length === 0) {
     return true;
   }
 
@@ -23,21 +65,28 @@ function matchesKeyword(shop: Shop, keyword: string) {
   return haystack.includes(keyword);
 }
 
-export async function searchShops(query: SearchShopsQuery = {}) {
+export async function searchShops(rawQuery: SearchShopsQuery = {}) {
   const data = await loadRestaurantData();
+  const query = asRecord(rawQuery);
   const keyword = normalizeText(query.keyword);
-  const categories = query.categories ?? [];
-  const limit = Math.max(1, Math.min(query.limit ?? 20, 100));
+  const categories = normalizeStringList(query.categories);
+  const tags = normalizeStringList(query.tags);
+  const sources = normalizeStringList(query.sources);
+  const center = normalizeGeoPoint(query.center);
+  const radiusKm = normalizeNumber(query.radiusKm);
+  const maxAvgPrice = normalizeNumber(query.maxAvgPrice);
+  const regionId = normalizeString(query.regionId);
+  const limit = normalizeLimit(query.limit, 20, 100);
 
   const items: ShopSearchItem[] = data.shops
-    .filter((shop) => !query.regionId || shop.regionId === query.regionId)
+    .filter((shop) => !regionId || shop.regionId === regionId)
     .filter((shop) => categories.length === 0 || categories.includes(shop.category))
-    .filter((shop) => query.sources === undefined || query.sources.includes(shop.source))
-    .filter((shop) => query.maxAvgPrice === undefined || shop.avgPrice === null || shop.avgPrice <= query.maxAvgPrice)
-    .filter((shop) => includesAll(shop.tags, query.tags))
+    .filter((shop) => sources.length === 0 || sources.includes(shop.source))
+    .filter((shop) => maxAvgPrice === undefined || shop.avgPrice === null || shop.avgPrice <= maxAvgPrice)
+    .filter((shop) => includesAll(shop.tags, tags))
     .filter((shop) => matchesKeyword(shop, keyword))
     .map((shop) => {
-      const distance = query.center ? distanceKm(query.center, { latitude: shop.latitude, longitude: shop.longitude }) : undefined;
+      const distance = center ? distanceKm(center, { latitude: shop.latitude, longitude: shop.longitude }) : undefined;
 
       return {
         ...shop,
@@ -45,7 +94,7 @@ export async function searchShops(query: SearchShopsQuery = {}) {
         features: data.featuresByShopId.get(shop.id)
       };
     })
-    .filter((shop) => query.radiusKm === undefined || shop.distanceKm === undefined || shop.distanceKm <= query.radiusKm)
+    .filter((shop) => radiusKm === undefined || shop.distanceKm === undefined || shop.distanceKm <= radiusKm)
     .sort((a, b) => {
       if (a.distanceKm !== undefined || b.distanceKm !== undefined) {
         return (a.distanceKm ?? Number.POSITIVE_INFINITY) - (b.distanceKm ?? Number.POSITIVE_INFINITY);
@@ -77,17 +126,23 @@ export async function getShopDetail(shopId: string) {
   };
 }
 
-export async function searchDishes(filters: SearchDishesFilters = {}) {
+export async function searchDishes(rawFilters: SearchDishesFilters = {}) {
   const data = await loadRestaurantData();
+  const filters = asRecord(rawFilters);
   const keyword = normalizeText(filters.keyword);
-  const limit = Math.max(1, Math.min(filters.limit ?? 20, 100));
+  const shopId = normalizeString(filters.shopId);
+  const tags = normalizeStringList(filters.tags);
+  const spicyLevels = normalizeStringList(filters.spicyLevels);
+  const sources = normalizeStringList(filters.sources);
+  const maxPrice = normalizeNumber(filters.maxPrice);
+  const limit = normalizeLimit(filters.limit, 20, 100);
 
   const items: DishSearchItem[] = data.dishes
-    .filter((dish) => !filters.shopId || dish.shopId === filters.shopId)
-    .filter((dish) => filters.sources === undefined || filters.sources.includes(dish.source))
-    .filter((dish) => filters.maxPrice === undefined || dish.price <= filters.maxPrice)
-    .filter((dish) => filters.spicyLevels === undefined || filters.spicyLevels.includes(dish.spicyLevel))
-    .filter((dish) => includesAll(dish.tags, filters.tags))
+    .filter((dish) => !shopId || dish.shopId === shopId)
+    .filter((dish) => sources.length === 0 || sources.includes(dish.source))
+    .filter((dish) => maxPrice === undefined || dish.price <= maxPrice)
+    .filter((dish) => spicyLevels.length === 0 || spicyLevels.includes(dish.spicyLevel))
+    .filter((dish) => includesAll(dish.tags, tags))
     .filter((dish) => {
       if (!keyword) {
         return true;
