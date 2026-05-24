@@ -92,7 +92,7 @@ export async function searchShops(rawQuery: SearchShopsQuery = {}) {
   const maxAvgPrice = normalizeNumber(query.maxAvgPrice);
   const regionId = normalizeString(query.regionId);
   const scene = normalizeScene(query.scene);
-  const limit = normalizeLimit(query.limit, 20, 100);
+  const limit = normalizeLimit(query.limit, 20, data.shops.length);
 
   const items: ShopSearchItem[] = data.shops
     .filter((shop) => !regionId || shop.regionId === regionId)

@@ -80,7 +80,7 @@ export async function rankShopsByPreference(rawSlots: PreferenceSlots = {}, rawU
     categories: normalizeList(slots.categories),
     maxAvgPrice: budgetMax ? budgetMax + 20 : undefined,
     scene,
-    limit: 100
+    limit: Number.MAX_SAFE_INTEGER
   });
 
   const ranked: RankedShop[] = searchResult.items
