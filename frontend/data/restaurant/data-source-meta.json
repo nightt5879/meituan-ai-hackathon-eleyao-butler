@@ -36,6 +36,12 @@
       "synthetic": true,
       "trustLevel": "low",
       "description": "根据人工填写的类别、标签和代表菜生成的菜品或店铺特征，仅用于推荐服务联调，不得伪装为真实菜单、真实排队或真实环境信息。"
+    },
+    "synthetic_mvp": {
+      "label": "虚拟餐饮数据库 MVP",
+      "synthetic": true,
+      "trustLevel": "low",
+      "description": "基于广州大学城片区空间脚手架生成的虚拟店铺、菜品、特征和场景适配数据。坐标只表示空间约束下的 synthetic 点位，不代表真实商户、真实菜单、真实评分、真实销量、真实排队情况或真实平台数据。"
     }
   },
   "sources": [
@@ -283,6 +289,13 @@
       "title": "根据人工 CSV 代表菜生成的菜品与店铺特征",
       "collectedAt": "2026-05-23",
       "description": "为 30 家人工审核店铺按类别、标签和代表菜生成的菜品 seed 与 shop-feature；不代表真实菜单、真实价格、真实排队或真实环境。"
+    },
+    {
+      "id": "synthetic_mvp_2026_05_24",
+      "source": "synthetic_mvp",
+      "title": "广州大学城虚拟餐饮数据库 MVP seed",
+      "collectedAt": "2026-05-24",
+      "description": "基于广州大学城片区 polygon、校内 anchor 和 manual_sample 周边 jitter 生成的 100 家虚拟店铺、600 个虚拟菜品、100 条虚拟特征与 100 条 scene-fit；仅用于推荐联调和解释链路验证，不代表真实平台或真实商户数据。"
     }
   ]
 }

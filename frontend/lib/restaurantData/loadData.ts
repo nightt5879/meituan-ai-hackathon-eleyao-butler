@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
-import type { DataSourceMetaFile, Dish, Region, RestaurantDataSet, Shop, ShopFeature } from "./types";
+import type { DataSourceMetaFile, Dish, Region, RestaurantDataSet, SceneFit, Shop, ShopFeature } from "./types";
 
 type RegionFile = {
   regions: Region[];
@@ -16,6 +16,10 @@ type DishesFile = {
 
 type FeaturesFile = {
   features: ShopFeature[];
+};
+
+type SceneFitsFile = {
+  sceneFits: SceneFit[];
 };
 
 let cachedData: RestaurantDataSet | null = null;
@@ -35,34 +39,45 @@ export async function loadRestaurantData(options: { fresh?: boolean } = {}): Pro
   }
 
   const baseDir = restaurantDataDir();
-  const [regionFile, shopsFile, dishesFile, featuresFile, sourceMeta] = await Promise.all([
+  const [regionFile, gutShopsFile, syntheticShopsFile, gutDishesFile, syntheticDishesFile, gutFeaturesFile, syntheticFeaturesFile, sceneFitsFile, sourceMeta] = await Promise.all([
     readJsonFile<RegionFile>(path.join(baseDir, "regions", "guangzhou_university_town.json")),
     readJsonFile<ShopsFile>(path.join(baseDir, "shops.gut.seed.json")),
+    readJsonFile<ShopsFile>(path.join(baseDir, "shops.synthetic.seed.json")),
     readJsonFile<DishesFile>(path.join(baseDir, "dishes.gut.seed.json")),
+    readJsonFile<DishesFile>(path.join(baseDir, "dishes.synthetic.seed.json")),
     readJsonFile<FeaturesFile>(path.join(baseDir, "shop-features.gut.seed.json")),
+    readJsonFile<FeaturesFile>(path.join(baseDir, "shop-features.synthetic.seed.json")),
+    readJsonFile<SceneFitsFile>(path.join(baseDir, "scene-fit.synthetic.seed.json")),
     readJsonFile<DataSourceMetaFile>(path.join(baseDir, "data-source-meta.json"))
   ]);
 
-  const shopsById = new Map(shopsFile.shops.map((shop) => [shop.id, shop]));
+  const shops = [...gutShopsFile.shops, ...syntheticShopsFile.shops];
+  const dishes = [...gutDishesFile.dishes, ...syntheticDishesFile.dishes];
+  const features = [...gutFeaturesFile.features, ...syntheticFeaturesFile.features];
+  const sceneFits = sceneFitsFile.sceneFits;
+  const shopsById = new Map(shops.map((shop) => [shop.id, shop]));
   const dishesByShopId = new Map<string, Dish[]>();
 
-  dishesFile.dishes.forEach((dish) => {
+  dishes.forEach((dish) => {
     const current = dishesByShopId.get(dish.shopId) ?? [];
     current.push(dish);
     dishesByShopId.set(dish.shopId, current);
   });
 
-  const featuresByShopId = new Map(featuresFile.features.map((feature) => [feature.shopId, feature]));
+  const featuresByShopId = new Map(features.map((feature) => [feature.shopId, feature]));
+  const sceneFitByShopId = new Map(sceneFits.map((sceneFit) => [sceneFit.shopId, sceneFit]));
 
   cachedData = {
     regions: regionFile.regions,
-    shops: shopsFile.shops,
-    dishes: dishesFile.dishes,
-    features: featuresFile.features,
+    shops,
+    dishes,
+    features,
+    sceneFits,
     sourceMeta,
     shopsById,
     dishesByShopId,
-    featuresByShopId
+    featuresByShopId,
+    sceneFitByShopId
   };
 
   return cachedData;
