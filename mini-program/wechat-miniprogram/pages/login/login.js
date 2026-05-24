@@ -1,16 +1,18 @@
 const themeAdapter = require('../../services/themeAdapter');
+const userIdentityAdapter = require('../../services/userIdentityAdapter');
 
 Page({
   data: {
     isLoading: false,
+    errorMessage: '',
     currentTheme: 'warm'
   },
 
   onLoad() {
     this.syncTheme();
-    if (wx.getStorageSync('isLoggedIn')) {
+    if (userIdentityAdapter.hasSession()) {
       wx.reLaunch({
-        url: '/pages/home/home'
+        url: userIdentityAdapter.consumePendingRedirect('/pages/home/home')
       });
     }
   },
@@ -27,25 +29,39 @@ Page({
 
   handleLogin() {
     this.setData({
-      isLoading: true
+      isLoading: true,
+      errorMessage: ''
     });
 
-    wx.setStorageSync('isLoggedIn', true);
-
     const app = getApp();
-    app.globalData.isLoggedIn = true;
+    const loginPromise = app && typeof app.ensureLogin === 'function'
+      ? app.ensureLogin({ force: true })
+      : userIdentityAdapter.ensureLogin({ force: true });
 
-    wx.reLaunch({
-      url: '/pages/home/home',
-      fail: () => {
-        this.setData({
-          isLoading: false
-        });
-        wx.showToast({
-          title: '进入首页失败，请看 Console',
-          icon: 'none'
-        });
-      }
+    loginPromise.then(() => {
+      wx.reLaunch({
+        url: userIdentityAdapter.consumePendingRedirect('/pages/home/home'),
+        fail: () => {
+          this.setData({
+            isLoading: false
+          });
+          wx.showToast({
+            title: 'open home failed',
+            icon: 'none'
+          });
+        }
+      });
+    }).catch((error) => {
+      const message = error && error.message ? error.message : String(error || '');
+      console.error('[login] wechat login failed', error);
+      this.setData({
+        isLoading: false,
+        errorMessage: message
+      });
+      wx.showToast({
+        title: 'login failed',
+        icon: 'none'
+      });
     });
   }
 });

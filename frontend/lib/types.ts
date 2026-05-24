@@ -14,6 +14,7 @@ export type ManualFields = {
 export type Participant = {
   participant_id: string;
   client_id?: string;
+  submitter_user_id?: string;
   nickname: string;
   raw_preference: string;
   manual_fields: ManualFields;

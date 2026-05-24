@@ -1,5 +1,6 @@
 const themeAdapter = require('../../../services/themeAdapter');
 const groupDiningAdapter = require('../../../services/groupDiningAdapter');
+const userIdentityAdapter = require('../../../services/userIdentityAdapter');
 
 Page({
   data: {
@@ -16,6 +17,11 @@ Page({
     const inviteToken = options && options.inviteToken ? options.inviteToken : 'group_mock_token';
 
     this.syncTheme();
+    if (!userIdentityAdapter.hasSession()) {
+      userIdentityAdapter.requireLoginRedirect('/pages/group/board/board?taskId=' + encodeURIComponent(taskId) + '&inviteToken=' + encodeURIComponent(inviteToken));
+      return;
+    }
+
     this.setData({
       taskId,
       inviteToken
@@ -49,8 +55,12 @@ Page({
         board,
         isLoading: false
       });
-    }).catch(() => {
+    }).catch((error) => {
       wx.hideLoading();
+      if (error && error.statusCode === 401) {
+        userIdentityAdapter.requireLoginRedirect('/pages/group/board/board?taskId=' + encodeURIComponent(this.data.taskId) + '&inviteToken=' + encodeURIComponent(this.data.inviteToken));
+        return;
+      }
       this.setData({
         board: groupDiningAdapter.getFallbackTaskBoard(this.data.taskId, this.data.inviteToken),
         isLoading: false
@@ -74,8 +84,12 @@ Page({
         board,
         isRecommending: false
       });
-    }).catch(() => {
+    }).catch((error) => {
       wx.hideLoading();
+      if (error && error.statusCode === 401) {
+        userIdentityAdapter.requireLoginRedirect('/pages/group/board/board?taskId=' + encodeURIComponent(this.data.taskId) + '&inviteToken=' + encodeURIComponent(this.data.inviteToken));
+        return;
+      }
       wx.showToast({
         title: '推荐失败',
         icon: 'none'
