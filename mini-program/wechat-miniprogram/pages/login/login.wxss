@@ -110,6 +110,17 @@
   text-align: center;
 }
 
+.login-error {
+  margin-bottom: 18rpx;
+  padding: 18rpx 22rpx;
+  border: 1rpx solid #F4B4C8;
+  border-radius: 18rpx;
+  background: #FFF0F5;
+  color: #B4235B;
+  font-size: 24rpx;
+  line-height: 1.45;
+}
+
 .login-tip {
   width: 100%;
   margin-top: 24rpx;

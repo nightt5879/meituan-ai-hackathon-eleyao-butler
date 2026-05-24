@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireMiniProgramUser } from "@/lib/server/requestAuth";
 import {
   generateFoodRecommendationsWithOpenClaw,
   sanitizeFoodRecommendRequest
@@ -8,6 +9,13 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  const startedAt = Date.now();
+  const auth = await requireMiniProgramUser(request);
+
+  if (!auth.ok) {
+    return auth.response;
+  }
+
   let body: unknown;
 
   try {
@@ -20,12 +28,26 @@ export async function POST(request: Request) {
 
   try {
     const result = await generateFoodRecommendationsWithOpenClaw(sanitizedRequest);
-    return NextResponse.json(result);
+    return NextResponse.json({
+      ...result,
+      diagnostics: {
+        durationMs: Date.now() - startedAt
+      }
+    });
   } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    console.error("OpenClaw food recommendation failed", {
+      durationMs: Date.now() - startedAt,
+      detail
+    });
+
     return NextResponse.json(
       {
         error: "OpenClaw recommendation failed.",
-        detail: error instanceof Error ? error.message : String(error)
+        detail,
+        diagnostics: {
+          durationMs: Date.now() - startedAt
+        }
       },
       { status: 502 }
     );

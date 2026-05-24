@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireMiniProgramUser } from "@/lib/server/requestAuth";
 import { getWeekendPlan } from "@/lib/server/weekendPlanner";
 
 export const runtime = "nodejs";
@@ -8,7 +9,13 @@ type RouteContext = {
   params: Promise<{ planId: string }>;
 };
 
-export async function GET(_request: Request, { params }: RouteContext) {
+export async function GET(request: Request, { params }: RouteContext) {
+  const auth = await requireMiniProgramUser(request);
+
+  if (!auth.ok) {
+    return auth.response;
+  }
+
   const { planId } = await params;
   const plan = await getWeekendPlan(planId);
 
@@ -21,6 +28,18 @@ export async function GET(_request: Request, { params }: RouteContext) {
         }
       },
       { status: 404 }
+    );
+  }
+
+  if (plan.ownerUserId !== auth.user.userId) {
+    return NextResponse.json(
+      {
+        error: {
+          code: "WEEKEND_PLAN_FORBIDDEN",
+          message: "Weekend plan belongs to another user."
+        }
+      },
+      { status: 403 }
     );
   }
 

@@ -106,6 +106,7 @@ type WeekendRoute = {
 
 export type WeekendPlanResponse = {
   planId: string;
+  ownerUserId?: string;
   createdAt: string;
   updatedAt: string;
   request: WeekendPlanRequest;
@@ -669,7 +670,7 @@ function generateRoutes(request: WeekendPlanRequest, weather: WeekendWeather): [
   return routes as [WeekendRoute, WeekendRoute, WeekendRoute];
 }
 
-export async function createWeekendPlan(input: unknown): Promise<WeekendPlanResponse> {
+export async function createWeekendPlan(input: unknown, ownerUserId: string): Promise<WeekendPlanResponse> {
   const request = normalizeRequest(input);
   const weather = await fetchPanyuWeather();
   const timestamp = nowIso();
@@ -684,6 +685,7 @@ export async function createWeekendPlan(input: unknown): Promise<WeekendPlanResp
 
     const plan: WeekendPlanResponse = {
       planId,
+      ownerUserId,
       createdAt: timestamp,
       updatedAt: timestamp,
       request,

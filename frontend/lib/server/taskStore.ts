@@ -7,6 +7,7 @@ import type { Conflict, DinnerTask, Participant, ParticipantInput, Recommendatio
 
 type TaskRecord = StoredTaskFields & {
   task_id: string;
+  owner_user_id?: string;
   invite_token_hash?: string;
   participants: Participant[];
   recommendation_state: RecommendationState;
@@ -39,6 +40,7 @@ export type GroupTaskBoard = {
     dinnerTime: string;
     status: RecommendationState["status"];
     sharePath: string;
+    ownerUserId?: string;
     createdAt: string;
     updatedAt: string;
     globalConstraints: DinnerTask["global_constraints"];
@@ -46,6 +48,7 @@ export type GroupTaskBoard = {
   participants: Array<{
     participantId: string;
     clientId?: string;
+    submitterUserId?: string;
     nickname: string;
     rawPreference: string;
     manualFields: {
@@ -124,12 +127,13 @@ function createRecommendationState(status: RecommendationState["status"], dirtyR
   };
 }
 
-function createRecord(taskId: string, input: Partial<StoredTaskFields>, participants: Participant[]): TaskRecord {
+function createRecord(taskId: string, input: Partial<StoredTaskFields>, participants: Participant[], ownerUserId?: string): TaskRecord {
   const fields = normalizeTaskFields(input);
   const timestamp = nowIso();
 
   return {
     task_id: taskId,
+    owner_user_id: ownerUserId,
     ...fields,
     participants,
     recommendation_state: createRecommendationState(participants.length > 0 ? "ready_to_recommend" : "waiting_preferences"),
@@ -210,6 +214,10 @@ function createTaskId() {
 
 function createParticipantIdFromClientId(clientId: string) {
   return `p_client_${createHash("sha256").update(clientId).digest("hex").slice(0, 16)}`;
+}
+
+function createParticipantIdFromUserId(userId: string) {
+  return `p_user_${createHash("sha256").update(userId).digest("hex").slice(0, 16)}`;
 }
 
 function createInviteToken() {
@@ -363,6 +371,7 @@ function toGroupBoard(record: TaskRecord, inviteToken?: string): GroupTaskBoard 
       dinnerTime: record.dinner_time,
       status: record.recommendation_state.status,
       sharePath: buildSharePath(record.task_id, inviteToken),
+      ownerUserId: record.owner_user_id,
       createdAt: record.created_at,
       updatedAt: record.updated_at,
       globalConstraints: payload.task.global_constraints
@@ -370,6 +379,7 @@ function toGroupBoard(record: TaskRecord, inviteToken?: string): GroupTaskBoard 
     participants: payload.participants.map((participant) => ({
       participantId: participant.participant_id,
       clientId: participant.client_id,
+      submitterUserId: participant.submitter_user_id,
       nickname: participant.nickname,
       rawPreference: participant.raw_preference,
       manualFields: {
@@ -420,7 +430,7 @@ export async function createTask(input: Partial<StoredTaskFields>) {
   });
 }
 
-export async function createGroupTask(input: unknown) {
+export async function createGroupTask(input: unknown, ownerUserId: string) {
   return enqueueWrite(async () => {
     const database = await readDatabase();
     let taskId = createTaskId();
@@ -430,7 +440,7 @@ export async function createGroupTask(input: unknown) {
     }
 
     const inviteToken = createInviteToken();
-    const record = createRecord(taskId, normalizeGroupTaskInput(input), []);
+    const record = createRecord(taskId, normalizeGroupTaskInput(input), [], ownerUserId);
     record.invite_token_hash = hashInviteToken(inviteToken);
     database.tasks[taskId] = record;
     await writeDatabase(database);
@@ -507,7 +517,7 @@ export async function addOrUpdateParticipant(taskId: string, input: ParticipantI
   });
 }
 
-export async function addOrUpdateGroupParticipant(taskId: string, inviteToken: string, rawInput: unknown): Promise<GroupTaskResult<GroupTaskBoard>> {
+export async function addOrUpdateGroupParticipant(taskId: string, inviteToken: string, rawInput: unknown, submitterUserId: string): Promise<GroupTaskResult<GroupTaskBoard>> {
   return enqueueWrite(async () => {
     const database = await readDatabase();
     const record = database.tasks[taskId];
@@ -528,13 +538,21 @@ export async function addOrUpdateGroupParticipant(taskId: string, inviteToken: s
 
     const normalizedName = input.nickname.trim() || "我";
     const clientId = input.client_id?.trim();
-    const existing = clientId
-      ? record.participants.find((participant) => participant.client_id === clientId)
-      : record.participants.find((participant) => participant.nickname === normalizedName);
+    const existing = submitterUserId
+      ? record.participants.find((participant) => participant.submitter_user_id === submitterUserId)
+      : clientId
+        ? record.participants.find((participant) => participant.client_id === clientId)
+        : record.participants.find((participant) => participant.nickname === normalizedName);
     const nextParticipant = buildMockParticipant(
       { ...input, nickname: normalizedName, client_id: clientId },
-      existing?.participant_id ?? (clientId ? createParticipantIdFromClientId(clientId) : undefined)
+      existing?.participant_id ??
+        (submitterUserId
+          ? createParticipantIdFromUserId(submitterUserId)
+          : clientId
+            ? createParticipantIdFromClientId(clientId)
+            : undefined)
     );
+    nextParticipant.submitter_user_id = submitterUserId;
 
     record.participants = existing
       ? record.participants.map((participant) => (participant.participant_id === existing.participant_id ? nextParticipant : participant))

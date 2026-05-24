@@ -1,5 +1,6 @@
 const themeAdapter = require('../../services/themeAdapter');
 const weekendPlannerAdapter = require('../../services/weekendPlannerAdapter');
+const userIdentityAdapter = require('../../services/userIdentityAdapter');
 
 const DATE_OPTIONS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 const TIME_MODE_OPTIONS = [
@@ -75,6 +76,9 @@ Page({
   onLoad() {
     this.syncTheme();
     this.refreshFormState(DEFAULT_FORM);
+    if (!userIdentityAdapter.hasSession()) {
+      userIdentityAdapter.requireLoginRedirect('/pages/weekend/weekend');
+    }
   },
 
   onShow() {

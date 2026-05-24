@@ -41,7 +41,7 @@ export async function checkFoodOpenClawStatus(): Promise<FoodOpenClawStatus> {
   if (!configured) {
     return buildStatus({
       checkedAt,
-      ok: gatewayProbe.ok,
+      ok: false,
       configured,
       cliReachable: false,
       gatewayReachable: gatewayProbe.ok,
@@ -73,7 +73,7 @@ export async function checkFoodOpenClawStatus(): Promise<FoodOpenClawStatus> {
     const cliDetail = error instanceof Error ? error.message : String(error);
     return buildStatus({
       checkedAt,
-      ok: gatewayProbe.ok,
+      ok: false,
       configured,
       cliReachable: false,
       gatewayReachable: gatewayProbe.ok,

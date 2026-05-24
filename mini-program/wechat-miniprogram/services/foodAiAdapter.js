@@ -14,6 +14,7 @@
 const tagConfig = require('../data/tasteTags');
 const mockShopData = require('../data/mockShops');
 const userMemoryAdapter = require('./userMemoryAdapter');
+const userIdentityAdapter = require('./userIdentityAdapter');
 
 const REMOTE_RECOMMEND_PATH = '/api/food/recommend';
 const REMOTE_QUESTION_PLAN_PATH = '/api/food/question-plan';
@@ -540,6 +541,10 @@ async function generateRecommendations(slots, preferences, options) {
     });
     return recommendations;
   } catch (error) {
+    if (error && error.statusCode === 401) {
+      throw error;
+    }
+
     const fallbackRecommendations = generateLocalRecommendations(slots, preferences, options);
     const errorMessage = error && error.message ? error.message : String(error || '');
     setLastRecommendationMeta({
@@ -872,6 +877,10 @@ async function requestDynamicQuestionPlan(session) {
   try {
     return await requestRemoteQuestionPlan(baseUrl, payload);
   } catch (error) {
+    if (error && error.statusCode === 401) {
+      throw error;
+    }
+
     return buildLocalDynamicQuestionPlan(session, error);
   }
 }
@@ -968,21 +977,30 @@ function buildLocalDynamicQuestionPlan(session, error) {
 
 function requestRemoteQuestionPlan(baseUrl, payload) {
   return new Promise(function (resolve, reject) {
+    if (!userIdentityAdapter.hasSession()) {
+      const error = new Error('Wechat login required');
+      error.statusCode = 401;
+      reject(error);
+      return;
+    }
+
     wx.request({
       url: baseUrl + REMOTE_QUESTION_PLAN_PATH,
       method: 'POST',
       data: payload,
       timeout: REMOTE_QUESTION_PLAN_TIMEOUT_MS,
-      header: {
+      header: Object.assign({
         'content-type': 'application/json'
-      },
+      }, userIdentityAdapter.getAuthorizationHeader()),
       success: function (res) {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data || {});
           return;
         }
 
-        reject(new Error('Remote food question plan failed with status ' + res.statusCode));
+        const error = new Error('Remote food question plan failed with status ' + res.statusCode);
+        error.statusCode = res.statusCode;
+        reject(error);
       },
       fail: function (error) {
         reject(new Error(error && error.errMsg ? error.errMsg : 'Remote food question plan request failed'));
@@ -1159,21 +1177,33 @@ function buildPermissionPayload(permissions) {
 
 function requestRemoteRecommendations(baseUrl, payload) {
   return new Promise(function (resolve, reject) {
+    if (!userIdentityAdapter.hasSession()) {
+      const error = new Error('Wechat login required');
+      error.statusCode = 401;
+      reject(error);
+      return;
+    }
+
     wx.request({
       url: baseUrl + REMOTE_RECOMMEND_PATH,
       method: 'POST',
       data: payload,
       timeout: REMOTE_RECOMMEND_TIMEOUT_MS,
-      header: {
+      header: Object.assign({
         'content-type': 'application/json'
-      },
+      }, userIdentityAdapter.getAuthorizationHeader()),
       success: function (res) {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data || {});
           return;
         }
 
-        reject(new Error('Remote food recommendation failed with status ' + res.statusCode));
+        const serverDetail = res.data && (res.data.detail || res.data.error)
+          ? ': ' + (res.data.detail || res.data.error)
+          : '';
+        const error = new Error('Remote food recommendation failed with status ' + res.statusCode + serverDetail);
+        error.statusCode = res.statusCode;
+        reject(error);
       },
       fail: function (error) {
         reject(new Error(error && error.errMsg ? error.errMsg : 'Remote food recommendation request failed'));

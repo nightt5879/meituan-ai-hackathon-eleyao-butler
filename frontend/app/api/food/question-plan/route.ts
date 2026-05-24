@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireMiniProgramUser } from "@/lib/server/requestAuth";
 import {
   createFoodQuestionPlan,
   sanitizeFoodQuestionPlanRequest
@@ -8,6 +9,12 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  const auth = await requireMiniProgramUser(request);
+
+  if (!auth.ok) {
+    return auth.response;
+  }
+
   let body: unknown;
 
   try {

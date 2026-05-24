@@ -1,0 +1,63 @@
+import { promises as fs } from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Copy this sample to a local .mjs file before running it with Node.
+// Example: Copy-Item frontend/scripts/import-tencent-poi.mjs.sample frontend/scripts/import-tencent-poi.local.mjs
+
+const key = process.env.TENCENT_LBS_KEY;
+
+if (!key) {
+  console.error("TENCENT_LBS_KEY is required. Set it before running this sample.");
+  process.exit(1);
+}
+
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const frontendRoot = path.resolve(scriptDir, "..");
+const outputPath = path.join(frontendRoot, "data", "restaurant", "import", "shops.tencent.imported.draft.json");
+
+// Tencent nearby boundary is usually lat,lng,radius.
+const boundary = "nearby(23.052500,113.393000,3500)";
+const keyword = encodeURIComponent("餐饮");
+const url = `https://apis.map.qq.com/ws/place/v1/search?keyword=${keyword}&boundary=${encodeURIComponent(boundary)}&page_size=20&page_index=1&key=${encodeURIComponent(key)}`;
+
+try {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`Tencent LBS request failed with HTTP ${response.status}.`);
+  }
+
+  const payload = await response.json();
+
+  if (payload.status !== 0 || !Array.isArray(payload.data)) {
+    throw new Error(`Tencent LBS response was not successful: ${payload.message ?? "unknown error"}.`);
+  }
+
+  const shops = payload.data.map((poi) => ({
+    id: `tencent_${poi.id}`,
+    name: poi.title,
+    category: poi.category,
+    address: poi.address || "",
+    latitude: poi.location?.lat,
+    longitude: poi.location?.lng,
+    avgPrice: null,
+    rating: null,
+    tags: ["tencent_draft"],
+    regionId: "guangzhou_university_town",
+    source: "tencent_poi_draft",
+    sourceId: "tencent_poi_draft",
+    rawPoiId: poi.id,
+    updatedAt: new Date().toISOString().slice(0, 10)
+  }));
+
+  await fs.writeFile(
+    outputPath,
+    `${JSON.stringify({ schemaVersion: 1, importedAt: new Date().toISOString(), warning: "Draft only. Review manually before merging.", shops }, null, 2)}\n`,
+    "utf8"
+  );
+  console.log(`Wrote ${shops.length} Tencent draft shops to ${outputPath}`);
+} catch (error) {
+  console.error(`Tencent POI import sample failed: ${error instanceof Error ? error.message : String(error)}`);
+  process.exit(1);
+}

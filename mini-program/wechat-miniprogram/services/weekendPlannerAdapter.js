@@ -10,6 +10,7 @@ const userIdentityAdapter = requireUserIdentityAdapter();
 
 const ADAPTER_MODE = 'fallback';
 const API_BASE_URL = 'http://meituan.43-110-71-200.sslip.io';
+const API_BASE_STORAGE_KEY = 'MINIPROGRAM_API_BASE_URL';
 const API_PREFIX = '/api/weekend/plans';
 const API_TIMEOUT_MS = 15000;
 const MOCK_DB_STORAGE_KEY = '__WEEKEND_PLANNER_MOCK_DB__';
@@ -504,10 +505,25 @@ function normalizeStatusClass(status, passed, detail) {
 }
 
 function getApiBaseUrl() {
+  const wxApi = getWxApi();
+  if (wxApi && typeof wxApi.getStorageSync === 'function') {
+    try {
+      const storageBaseUrl = wxApi.getStorageSync(API_BASE_STORAGE_KEY);
+      if (storageBaseUrl) {
+        return trimTrailingSlash(storageBaseUrl);
+      }
+    } catch (err) {
+      console.warn('[weekendPlannerAdapter] read api base url failed', err);
+    }
+  }
+
   const app = getAppSafe();
   const globalData = (app && app.globalData) || {};
   const configured = trim(
     globalData.weekendApiBaseUrl ||
+    globalData.authApiBaseUrl ||
+    globalData.groupDiningApiBaseUrl ||
+    globalData.foodRecommendApiBaseUrl ||
     globalData.apiBaseUrl ||
     globalData.backendBaseUrl ||
     globalData.API_BASE_URL
