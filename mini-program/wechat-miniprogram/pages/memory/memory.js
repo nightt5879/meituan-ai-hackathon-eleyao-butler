@@ -18,8 +18,8 @@ const AVOID_OTHER_LABEL = '其他';
 // Tokens splittable by , ，  / and any whitespace.
 const AVOID_SEPARATOR = /[,，/\s]+/;
 
-// Permission rows shown in Section 2. The 7 default-on rows come first;
-// the 2 "稍后开放" rows render with disabled switches at the end.
+// Permission rows shown in Section 2. All rows are currently editable and
+// save immediately through saveMemoryPermissions().
 const PERMISSION_ROWS = [
   { key: 'rememberTastePattern',             title: '口味倾向',           desc: '记录你常选哪类口味/感觉',        disabled: false },
   { key: 'rememberBudgetByMeal',             title: '不同用餐场景的预算', desc: '区分午餐 / 晚餐 / 下午茶等的预算', disabled: false },
@@ -29,8 +29,8 @@ const PERMISSION_ROWS = [
   { key: 'rememberExplorationStyle',         title: '探索新店 or 常吃熟店', desc: '你更爱回头店还是新店',          disabled: false },
   { key: 'rememberAdjustmentPatterns',       title: '调整反馈习惯',       desc: '经常觉得太贵、太远、想换品类',     disabled: false },
   { key: 'rememberDiningReport',             title: '用餐报告与花销估算', desc: '允许管家根据你的推荐记录生成周报/月报，不读取真实支付记录。', disabled: false },
-  { key: 'rememberFrequentArea',             title: '常去区域',           desc: '稍后开放',                         disabled: true  },
-  { key: 'rememberGroupPreference',          title: '群聊偏好',           desc: '稍后开放',                         disabled: true  }
+  { key: 'rememberFrequentArea',             title: '常去区域',           desc: '记录你常用的学校周边、商圈或出发区域', disabled: false },
+  { key: 'rememberGroupPreference',          title: '群聊偏好',           desc: '记录你授权的小团体共同偏好，用于多人约饭折中', disabled: false }
 ];
 
 // Static placeholder rows shown in Section 3. Step 1 has no learning.
@@ -249,9 +249,7 @@ Page({
     });
   },
 
-  // Per-permission switch — saves instantly. Disabled "稍后开放" rows pass
-  // through here too via bindchange, but their `disabled` attribute prevents
-  // the user from triggering this in practice; we still guard server-side.
+  // Per-permission switch — saves instantly.
   handlePermissionRowChange(event) {
     const key = event.currentTarget.dataset.key;
     const isDisabled = !!event.currentTarget.dataset.disabled;

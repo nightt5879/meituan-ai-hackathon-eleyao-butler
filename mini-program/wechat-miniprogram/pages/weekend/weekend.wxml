@@ -1,37 +1,336 @@
 <view class="page weekend-page theme-{{currentTheme}}">
-  <view class="weekend-bar">
-    <button class="weekend-back" bindtap="handleBack">‹</button>
-    <view>
-      <view class="weekend-title">周末规划</view>
-      <view class="weekend-subtitle">页面壳已就位，后续接路线、天气、人流和 Agent 自检。</view>
-    </view>
+  <view class="weekend-header">
+    <view class="weekend-title">周边轻规划</view>
+    <view class="weekend-subtitle">学校周边 / 本地周边 2-4 小时路线，生成后可直接复制邀约。</view>
   </view>
 
-  <view class="hero-card">
-    <view class="hero-mark ai-mark">幺</view>
-    <view class="hero-eyebrow">即将上线 · UI scaffold</view>
-    <view class="hero-title">把 2 小时周末空档，变成一条可执行路线</view>
-    <view class="hero-desc">后续这里会输入时间、地点、预算和兴趣，生成吃喝玩组合方案。</view>
-  </view>
-
-  <view class="input-card">
-    <view class="field-label">想怎么过这个周末？</view>
-    <textarea class="weekend-textarea" placeholder="例如：周六下午想在学校附近轻松逛逛，预算 100 内，不想太累。"></textarea>
-    <button class="primary-button" bindtap="handleCreatePlan">生成周末规划</button>
-  </view>
-
-  <view class="module-list">
-    <view wx:for="{{cards}}" wx:key="title" class="module-card">
-      <view class="module-icon">+</view>
+  <view class="form-panel">
+    <view class="panel-head">
       <view>
-        <view class="module-title">{{item.title}}</view>
-        <view class="module-desc">{{item.desc}}</view>
+        <view class="panel-title">出行偏好</view>
+        <view class="panel-desc">时间、预算、心情和兴趣会一起参与路线自检。</view>
+      </view>
+      <view class="mode-pill">轻路线</view>
+    </view>
+
+    <view class="field">
+      <view class="preference-section-title-row">
+        <view class="preference-section-title-emoji">⏰</view>
+        <view class="field-label field-label-inline">出行时间</view>
+      </view>
+      <view class="date-chip-row">
+        <view
+          wx:for="{{dateOptions}}"
+          wx:key="*this"
+          class="date-chip {{form.dateLabel === item ? 'date-chip-active' : ''}}"
+          data-value="{{item}}"
+          bindtap="handleDateTap"
+        >{{item}}</view>
+      </view>
+      <view class="time-mode-row">
+        <view
+          wx:for="{{timeModeOptions}}"
+          wx:key="value"
+          data-value="{{item.value}}"
+          bindtap="handleTimeModeTap"
+          class="time-mode-chip {{form.timeMode === item.value ? 'time-mode-chip-active' : ''}}"
+        >{{item.label}}</view>
+      </view>
+      <view wx:if="{{form.timeMode === 'range'}}" class="time-range-row">
+        <picker class="time-picker-item" mode="time" value="{{form.startTime}}" bindchange="handleStartTimeChange">
+          <view class="time-picker-card">
+            <view class="time-picker-label">开始时间</view>
+            <view class="time-picker-value">{{form.startTime}}</view>
+          </view>
+        </picker>
+        <picker class="time-picker-item" mode="time" value="{{form.endTime}}" bindchange="handleEndTimeChange">
+          <view class="time-picker-card">
+            <view class="time-picker-label">结束时间</view>
+            <view class="time-picker-value">{{form.endTime}}</view>
+          </view>
+        </picker>
+      </view>
+      <view wx:if="{{form.timeMode === 'allDay'}}" class="all-day-panel">
+        <view class="all-day-title">全天有空</view>
+        <view class="all-day-desc">当天时间都可以，小幺会按半日/轻松路线生成。</view>
       </view>
     </view>
+
+    <view class="field two-column">
+      <view class="field-half">
+        <view class="preference-section-title-row">
+          <view class="preference-section-title-emoji">💰</view>
+          <view class="field-label field-label-inline">预算上限</view>
+        </view>
+        <view class="input-with-unit">
+          <input
+            class="field-input budget-input unit-input"
+            type="number"
+            value="{{form.budgetMax}}"
+            placeholder="120"
+            placeholder-class="bubble-placeholder"
+            data-field="budgetMax"
+            bindinput="handleInput"
+          />
+          <text class="input-unit">元/人</text>
+        </view>
+      </view>
+      <view class="field-half">
+        <view class="preference-section-title-row">
+          <view class="preference-section-title-emoji">📍</view>
+          <view class="field-label field-label-inline">出发起点</view>
+        </view>
+        <input
+          class="field-input start-input"
+          value="{{form.startArea}}"
+          placeholder="学校周边"
+          placeholder-class="bubble-placeholder"
+          data-field="startArea"
+          bindinput="handleInput"
+        />
+      </view>
+    </view>
+
+    <view class="preference-section-card">
+      <view class="preference-section-title-row">
+        <view class="preference-section-title-emoji">😊</view>
+        <view class="preference-section-title">心情</view>
+      </view>
+      <view class="choice-row chip-group">
+        <view
+          wx:for="{{moodOptions}}"
+          wx:key="value"
+          class="choice-chip {{item.active ? 'active-chip' : ''}}"
+          data-field="mood"
+          data-value="{{item.value}}"
+          bindtap="handleSelectOption"
+        >{{item.value}}</view>
+      </view>
+    </view>
+
+    <view class="preference-section-card">
+      <view class="preference-section-title-row">
+        <view class="preference-section-title-emoji">💪</view>
+        <view class="preference-section-title">体力</view>
+      </view>
+      <view class="choice-row chip-group">
+        <view
+          wx:for="{{energyOptions}}"
+          wx:key="value"
+          class="choice-chip {{item.active ? 'active-chip' : ''}}"
+          data-field="energyLevel"
+          data-value="{{item.value}}"
+          bindtap="handleSelectOption"
+        >{{item.value}}</view>
+      </view>
+    </view>
+
+    <view class="preference-section-card">
+      <view class="preference-section-title-row">
+        <view class="preference-section-title-emoji">👥</view>
+        <view class="preference-section-title">同行人</view>
+      </view>
+      <view class="choice-row companion-row chip-group">
+        <view
+          wx:for="{{companionOptions}}"
+          wx:key="value"
+          class="choice-chip compact-chip {{item.active ? 'active-chip' : ''}}"
+          data-field="companions"
+          data-value="{{item.value}}"
+          bindtap="handleSelectOption"
+        >{{item.value}}</view>
+      </view>
+    </view>
+
+    <view class="preference-section-card">
+      <view class="preference-section-title-row">
+        <view class="preference-section-title-emoji">🏷️</view>
+        <view class="preference-section-title">兴趣标签</view>
+      </view>
+      <view class="choice-row chip-group">
+        <view
+          wx:for="{{interestOptions}}"
+          wx:key="value"
+          class="choice-chip interest-chip {{item.active ? 'active-chip' : ''}}"
+          data-value="{{item.value}}"
+          bindtap="handleToggleInterest"
+        >
+          <view class="interest-chip-content">
+            <text class="interest-chip-emoji">{{item.emoji}}</text>
+            <text class="interest-chip-text">{{item.label}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="preference-section-card last-field">
+      <view class="preference-section-title-row">
+        <view class="preference-section-title-emoji">✍️</view>
+        <view class="preference-section-title">一句话补充</view>
+      </view>
+      <view class="textarea-wrap">
+        <textarea
+          class="weekend-textarea"
+          value="{{form.rawText}}"
+          maxlength="200"
+          placeholder=""
+          data-field="rawText"
+          bindinput="handleInput"
+        ></textarea>
+        <view wx:if="{{!form.rawText}}" class="textarea-placeholder">
+          例如：不想排队，想找能坐下来聊天和拍照的地方。
+        </view>
+      </view>
+    </view>
+
+    <button
+      class="primary-button {{isSubmitting ? 'disabled-button' : ''}}"
+      loading="{{isSubmitting}}"
+      disabled="{{isSubmitting}}"
+      bindtap="handleCreatePlan"
+    >{{isSubmitting ? '生成中' : '生成轻路线'}}</button>
   </view>
 
-  <view class="empty-panel">
-    <view class="empty-title">真实规划能力待接入</view>
-    <view class="empty-desc">当前不展示假路线。下一步接入 createPlan / getPlan 后，这里会展示候选路线、自检结果和可复制邀约文案。</view>
+  <view wx:if="{{hasError}}" class="state-panel error-panel">
+    <view class="state-title">生成失败</view>
+    <view class="state-desc">{{errorMessage}}</view>
+  </view>
+
+  <view wx:if="{{isSubmitting}}" class="state-panel loading-panel">
+    <view class="loading-dot"></view>
+    <view>
+      <view class="state-title">正在综合路线</view>
+      <view class="state-desc">天气、预算、体力、返程时间都会一起检查。</view>
+    </view>
+  </view>
+
+  <view wx:if="{{showEmptyState && !isSubmitting}}" class="state-panel empty-panel">
+    <view class="state-title">还没有规划</view>
+    <view class="state-desc">提交后会展示出门路线、折中路线、雨天/低体力备选。</view>
+  </view>
+
+  <view wx:if="{{hasPlan}}" class="result-section">
+    <view wx:if="{{hasBackendNotice}}" class="notice-panel">
+      <view class="notice-title">降级提示</view>
+      <view class="notice-desc">{{backendNotice}}</view>
+    </view>
+
+    <view class="weather-panel {{plan.weather.fallback ? 'fallback-panel' : ''}}">
+      <view class="weather-main">
+        <view>
+          <view class="weather-label">天气摘要</view>
+          <view class="weather-summary">{{plan.weather.summary}}</view>
+        </view>
+        <view class="weather-badge">{{plan.weather.sourceLabel}}</view>
+      </view>
+      <view wx:if="{{plan.weatherNotice}}" class="weather-warning">{{plan.weatherNotice}}</view>
+      <view class="source-row">
+        <view class="source-chip">天气 {{plan.source.weather}}</view>
+        <view class="source-chip">POI {{plan.source.poi}}</view>
+        <view class="source-chip">规划 {{plan.source.planner}}</view>
+      </view>
+    </view>
+
+    <view class="result-head">
+      <view>
+        <view class="panel-title">路线对比</view>
+        <view class="panel-desc">{{plan.routeCountText}} · planId {{plan.planId}}</view>
+      </view>
+      <button class="text-button" bindtap="handleClearResult">重新填写</button>
+    </view>
+
+    <view class="route-list">
+      <view
+        wx:for="{{plan.routes}}"
+        wx:key="id"
+        class="route-card route-{{index}}"
+      >
+        <view class="route-head">
+          <view>
+            <view class="route-type">{{item.typeLabel}}</view>
+            <view class="route-title">{{item.title}}</view>
+          </view>
+        </view>
+        <view class="route-summary">{{item.summary}}</view>
+
+        <view class="stat-grid">
+          <view class="stat-item">
+            <view class="stat-label">预算</view>
+            <view class="stat-value">{{item.estimatedBudgetText}}</view>
+          </view>
+          <view class="stat-item">
+            <view class="stat-label">时长</view>
+            <view class="stat-value">{{item.estimatedDurationText}}</view>
+          </view>
+          <view class="stat-item wide-stat">
+            <view class="stat-label">交通</view>
+            <view class="stat-value">{{item.transport}}</view>
+          </view>
+        </view>
+
+        <view class="route-block">
+          <view class="block-title">时间线</view>
+          <view wx:if="{{item.hasTimeline}}" class="timeline-list">
+            <view
+              wx:for="{{item.timeline}}"
+              wx:for-item="step"
+              wx:for-index="stepIndex"
+              wx:key="id"
+              class="timeline-item"
+            >
+              <view class="timeline-dot-wrap">
+                <view class="timeline-dot"></view>
+                <view wx:if="{{stepIndex < item.timeline.length - 1}}" class="timeline-line"></view>
+              </view>
+              <view class="timeline-card">
+                <view class="timeline-card-head">
+                  <view class="timeline-time">{{step.time}}</view>
+                  <view class="timeline-title">{{step.title}}</view>
+                </view>
+                <view wx:if="{{step.placeName}}" class="timeline-place">{{step.placeName}}</view>
+                <view wx:if="{{step.activity}}" class="timeline-activity">{{step.activity}}</view>
+                <view wx:if="{{step.durationMinutes}}" class="timeline-duration">预计停留 {{step.durationMinutes}} 分钟</view>
+              </view>
+            </view>
+          </view>
+          <view wx:else class="timeline-empty">
+            暂无详细时间线，可根据路线摘要灵活安排。
+          </view>
+        </view>
+
+        <view wx:if="{{item.hasChecks}}" class="route-block">
+          <view class="block-title">自检结果</view>
+          <view class="check-grid">
+            <view
+              wx:for="{{item.selfChecks}}"
+              wx:for-item="check"
+              wx:key="label"
+              class="check-item check-{{check.statusClass}}"
+            >
+              <view class="check-top">
+                <text>{{check.label}}</text>
+                <text class="check-status status-{{check.statusClass}}">{{check.statusText}}</text>
+              </view>
+              <view class="check-detail">{{check.detail}}</view>
+            </view>
+          </view>
+        </view>
+
+        <view wx:if="{{item.hasRisks}}" class="route-block">
+          <view class="block-title">风险提示</view>
+          <view
+            wx:for="{{item.risks}}"
+            wx:for-item="risk"
+            wx:key="*this"
+            class="risk-item"
+          >{{risk}}</view>
+        </view>
+
+        <view class="route-invite-section">
+          <view class="route-invite-text">{{item.inviteText}}</view>
+          <button class="route-invite-button" data-index="{{index}}" bindtap="handleCopyInvite">复制邀约</button>
+        </view>
+      </view>
+    </view>
   </view>
 </view>

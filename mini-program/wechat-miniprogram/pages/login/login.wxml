@@ -9,18 +9,20 @@
     <view class="login-copy">
       <view class="login-title">先登录一下</view>
       <view class="login-desc">
-        第一阶段使用本地 mock 登录，用来跑通入口和后续问答链路。不会真的访问你的微信资料。
+        使用微信登录建立会话后，管家会把周边规划和偏好记录关联到你的账号。
       </view>
     </view>
 
     <view class="mvp-note">
       <view class="note-icon">i</view>
-      <view class="note-text">当前为 MVP 演示版本，登录后可体验「今天吃什么」前端闭环。下一阶段会接入 OpenClaw Agent。</view>
+      <view class="note-text">当前为 MVP 演示版本，登录后可体验「今天吃什么」、多人约饭和周边轻规划。</view>
     </view>
 
-    <button class="login-button" loading="{{isLoading}}" bindtap="handleLogin">
-      微信授权登录
-    </button>
-    <view class="login-policy">登录即代表同意《用户协议》与《隐私政策》</view>
+    <view class="login-actions">
+      <button class="login-button" loading="{{isLoading}}" bindtap="handleLogin">
+        微信授权登录
+      </button>
+      <view class="login-tip">登录即代表同意《用户协议》与《隐私政策》</view>
+    </view>
   </view>
 </view>
