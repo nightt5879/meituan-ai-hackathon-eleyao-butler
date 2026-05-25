@@ -55,7 +55,7 @@ const DEFAULT_FORM = {
 
 Page({
   data: {
-    currentTheme: 'warm',
+    currentTheme: themeAdapter.DEFAULT_THEME_ID,
     form: DEFAULT_FORM,
     dateOptions: [],
     timeModeOptions: [],
@@ -86,9 +86,14 @@ Page({
   },
 
   syncTheme() {
-    this.setData({
-      currentTheme: themeAdapter.getCurrentThemeKey()
-    });
+    const app = getApp();
+
+    if (app && app.syncThemeToPage) {
+      app.syncThemeToPage(this);
+      return;
+    }
+
+    this.setData(themeAdapter.getPageThemeData());
   },
 
   refreshFormState(form, extra) {

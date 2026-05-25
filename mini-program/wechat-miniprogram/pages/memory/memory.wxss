@@ -51,7 +51,7 @@
   border: 1rpx solid var(--theme-border, #F3DDC7);
   border-radius: 22rpx;
   background: var(--theme-card, #FFFDF8);
-  box-shadow: 0 6rpx 18rpx rgba(15, 23, 42, 0.05);
+  box-shadow: var(--theme-shadow-card, 0 18rpx 48rpx rgba(22, 78, 63, 0.10));
 }
 
 .memory-section-title {
@@ -90,15 +90,15 @@
 
 .memory-chip:active {
   background: var(--theme-soft, #FFF1E3);
-  border-color: rgba(255, 138, 61, 0.42);
+  border-color: var(--theme-border-strong, #93E6CD);
 }
 
 .memory-chip.selected {
-  border-color: var(--theme-primary, #FF8A3D);
+  border-color: var(--theme-primary, #5AD8B2);
   background: var(--theme-soft, #FFF1E3);
-  color: var(--theme-primary-deep, #FF8A3D);
+  color: var(--theme-primary-deep, #164E3F);
   font-weight: 700;
-  box-shadow: 0 6rpx 16rpx rgba(255, 138, 61, 0.14);
+  box-shadow: var(--theme-shadow-button, 0 12rpx 30rpx rgba(90, 216, 178, 0.30));
 }
 
 /* Custom avoid/allergy input — sits below the fixed chip row inside the
@@ -170,14 +170,14 @@
 }
 
 .memory-save-button {
-  background: var(--theme-primary, #FF8A3D);
+  background: var(--theme-primary, #5AD8B2);
   color: var(--theme-on-primary, #ffffff);
-  box-shadow: 0 8rpx 22rpx rgba(255, 138, 61, 0.20);
+  box-shadow: var(--theme-shadow-button, 0 12rpx 30rpx rgba(90, 216, 178, 0.30));
 }
 
 .memory-save-button:active {
   opacity: 0.88;
-  box-shadow: 0 4rpx 12rpx rgba(255, 138, 61, 0.16);
+  box-shadow: var(--theme-shadow-button, 0 12rpx 30rpx rgba(90, 216, 178, 0.30));
 }
 
 .memory-clear-button {
@@ -323,7 +323,7 @@
   padding: 6rpx 16rpx;
   border-radius: 999rpx;
   background: var(--theme-soft, #FFF1E3);
-  color: var(--theme-primary-deep, #FF8A3D);
+  color: var(--theme-primary-deep, #164E3F);
   font-size: 21rpx;
   font-weight: 700;
   line-height: 1.35;
@@ -379,113 +379,4 @@
 
 .memory-clear-button-wide {
   flex: 1;
-}
-
-/* Dark theme additions */
-
-.theme-dark .memory-group-title {
-  color: var(--theme-text, #F5F5F5);
-}
-
-.theme-dark .memory-group-hint {
-  color: var(--theme-muted, #B8B8B8);
-}
-
-.theme-dark .permission-divider {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.theme-dark .permission-title {
-  color: var(--theme-text, #F5F5F5);
-}
-
-.theme-dark .permission-desc {
-  color: var(--theme-muted, #B8B8B8);
-}
-
-.theme-dark .permission-pill {
-  background: rgba(255, 255, 255, 0.10);
-  color: var(--theme-muted, #B8B8B8);
-}
-
-.theme-dark .memory-learned-empty {
-  color: var(--theme-muted, #B8B8B8);
-}
-
-.theme-dark .memory-learning-pill {
-  background: rgba(255, 159, 67, 0.18);
-  color: var(--theme-primary, #FF9F43);
-}
-
-.theme-dark .memory-learned-card {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.12);
-}
-
-.theme-dark .memory-learned-label {
-  color: var(--theme-text, #F5F5F5);
-}
-
-.theme-dark .memory-learned-desc {
-  color: var(--theme-muted, #B8B8B8);
-}
-
-.theme-dark .memory-learned-status {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--theme-muted, #B8B8B8);
-}
-
-/* Dark theme variants */
-
-.theme-dark .memory-privacy {
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--theme-muted, #B8B8B8);
-}
-
-.theme-dark .memory-section {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 6rpx 18rpx rgba(0, 0, 0, 0.24);
-}
-
-.theme-dark .memory-chip {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: var(--theme-text, #F5F5F5);
-}
-
-.theme-dark .memory-chip:active {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 159, 67, 0.42);
-}
-
-.theme-dark .memory-chip.selected {
-  background: rgba(255, 159, 67, 0.18);
-  border-color: var(--theme-primary, #FF9F43);
-  color: var(--theme-primary, #FF9F43);
-  box-shadow: 0 8rpx 22rpx rgba(0, 0, 0, 0.30);
-}
-
-.theme-dark .memory-clear-button {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: var(--theme-muted, #B8B8B8);
-}
-
-.theme-dark .memory-clear-button:active {
-  background: rgba(255, 255, 255, 0.12);
-  color: var(--theme-text, #F5F5F5);
-}
-
-.theme-dark .memory-custom-input-row {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.16);
-}
-
-.theme-dark .memory-custom-input {
-  color: var(--theme-text, #F5F5F5);
-}
-
-.theme-dark .memory-custom-placeholder {
-  color: var(--theme-muted, #B8B8B8);
 }

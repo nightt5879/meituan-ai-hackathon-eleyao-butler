@@ -5,7 +5,7 @@ Page({
   data: {
     isLoading: false,
     errorMessage: '',
-    currentTheme: 'warm'
+    currentTheme: themeAdapter.DEFAULT_THEME_ID
   },
 
   onLoad() {
@@ -22,9 +22,14 @@ Page({
   },
 
   syncTheme() {
-    this.setData({
-      currentTheme: themeAdapter.getCurrentThemeKey()
-    });
+    const app = getApp();
+
+    if (app && app.syncThemeToPage) {
+      app.syncThemeToPage(this);
+      return;
+    }
+
+    this.setData(themeAdapter.getPageThemeData());
   },
 
   handleLogin() {

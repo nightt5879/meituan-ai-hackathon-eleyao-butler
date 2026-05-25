@@ -44,7 +44,7 @@ const LEARNED_PLACEHOLDER_ROWS = [
 
 Page({
   data: {
-    currentTheme: 'warm',
+    currentTheme: themeAdapter.DEFAULT_THEME_ID,
     avoidOptions: [],
     spicyOptions: [],
     selectedAvoid: [],
@@ -83,9 +83,14 @@ Page({
   },
 
   syncTheme() {
-    this.setData({
-      currentTheme: themeAdapter.getCurrentThemeKey()
-    });
+    const app = getApp();
+
+    if (app && app.syncThemeToPage) {
+      app.syncThemeToPage(this);
+      return;
+    }
+
+    this.setData(themeAdapter.getPageThemeData());
   },
 
   loadStablePreferences() {

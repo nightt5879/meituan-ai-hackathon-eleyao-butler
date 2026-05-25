@@ -4,7 +4,7 @@ const userIdentityAdapter = require('../../../services/userIdentityAdapter');
 
 Page({
   data: {
-    currentTheme: 'warm',
+    currentTheme: themeAdapter.DEFAULT_THEME_ID,
     taskId: 'group_mock_task',
     inviteToken: 'group_mock_token',
     board: null,
@@ -34,9 +34,14 @@ Page({
   },
 
   syncTheme() {
-    this.setData({
-      currentTheme: themeAdapter.getCurrentThemeKey()
-    });
+    const app = getApp();
+
+    if (app && app.syncThemeToPage) {
+      app.syncThemeToPage(this);
+      return;
+    }
+
+    this.setData(themeAdapter.getPageThemeData());
   },
 
   loadBoard() {

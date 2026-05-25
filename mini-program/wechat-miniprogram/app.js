@@ -1,4 +1,5 @@
 const userIdentityAdapter = require('./services/userIdentityAdapter');
+const themeAdapter = require('./services/themeAdapter');
 
 App({
   globalData: {
@@ -13,10 +14,14 @@ App({
     authApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
     foodRecommendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
     groupDiningApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
-    weekendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io'
+    weekendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
+    currentTheme: themeAdapter.getThemeByKey(themeAdapter.DEFAULT_THEME_ID)
   },
 
   onLaunch() {
+    this.globalData.currentTheme = themeAdapter.getCurrentTheme();
+    themeAdapter.applyNavigationBar(this.globalData.currentTheme.id);
+
     const hasSession = userIdentityAdapter.hasSession();
     this.globalData.isLoggedIn = hasSession;
     this.globalData.authReady = hasSession;
@@ -26,6 +31,54 @@ App({
     if (!hasSession) {
       wx.setStorageSync('isLoggedIn', false);
     }
+  },
+
+  applyTheme(themeId, options) {
+    const safeOptions = options || {};
+    const theme = safeOptions.persist === false
+      ? themeAdapter.getThemeByKey(themeId)
+      : themeAdapter.getThemeByKey(themeAdapter.saveTheme(themeId));
+
+    this.globalData.currentTheme = theme;
+    themeAdapter.applyNavigationBar(theme.id);
+
+    if (safeOptions.syncPages !== false) {
+      this.syncThemeToPages();
+    }
+
+    return theme;
+  },
+
+  getCurrentTheme() {
+    if (!this.globalData.currentTheme) {
+      this.globalData.currentTheme = themeAdapter.getCurrentTheme();
+    }
+
+    return this.globalData.currentTheme;
+  },
+
+  syncThemeToPage(page) {
+    if (!page || !page.setData) {
+      return null;
+    }
+
+    const theme = this.getCurrentTheme();
+    const themeData = themeAdapter.getPageThemeData(theme.id);
+    themeAdapter.applyNavigationBar(theme.id);
+    page.setData(themeData);
+    return themeData;
+  },
+
+  syncThemeToPages() {
+    const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : [];
+    const theme = this.getCurrentTheme();
+    const themeData = themeAdapter.getPageThemeData(theme.id);
+
+    pages.forEach(function (page) {
+      if (page && page.setData) {
+        page.setData(themeData);
+      }
+    });
   },
 
   ensureLogin(options) {

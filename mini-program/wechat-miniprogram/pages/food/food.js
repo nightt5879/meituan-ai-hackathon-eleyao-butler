@@ -51,7 +51,7 @@ Page({
     adjustmentManualInput: '',
     adjustmentMessages: [],
     adjustmentOptions,
-    currentTheme: 'warm',
+    currentTheme: themeAdapter.DEFAULT_THEME_ID,
     hasSavedCurrentRecord: false,
     memoryDecision: '',
     progressPercent: 0,
@@ -109,9 +109,14 @@ Page({
   },
 
   syncTheme() {
-    this.setData({
-      currentTheme: themeAdapter.getCurrentThemeKey()
-    });
+    const app = getApp();
+
+    if (app && app.syncThemeToPage) {
+      app.syncThemeToPage(this);
+      return;
+    }
+
+    this.setData(themeAdapter.getPageThemeData());
   },
 
   startSession() {

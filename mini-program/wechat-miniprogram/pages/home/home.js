@@ -3,7 +3,7 @@ const themeAdapter = require('../../services/themeAdapter');
 
 Page({
   data: {
-    currentTheme: 'warm',
+    currentTheme: themeAdapter.DEFAULT_THEME_ID,
     themeCards: [],
     showThemePanel: false,
     showHistoryPanel: false,
@@ -28,9 +28,13 @@ Page({
   },
 
   syncTheme() {
-    const currentTheme = themeAdapter.getCurrentThemeKey();
+    const app = getApp();
+    const themeData = app && app.syncThemeToPage
+      ? app.syncThemeToPage(this)
+      : themeAdapter.getPageThemeData();
+    const currentTheme = themeData ? themeData.currentTheme : themeAdapter.getCurrentThemeKey();
+
     this.setData({
-      currentTheme,
       themeCards: this.buildThemeCards(currentTheme)
     });
   },
@@ -44,12 +48,7 @@ Page({
   },
 
   buildThemeCards(currentTheme) {
-    return themeAdapter.themes.map(function (theme) {
-      return Object.assign({}, theme, {
-        isActive: theme.key === currentTheme,
-        cardClass: theme.key === currentTheme ? 'active' : ''
-      });
-    });
+    return themeAdapter.getThemeCards(currentTheme);
   },
 
   refreshPreferenceRecords() {
@@ -125,12 +124,14 @@ Page({
 
   selectTheme(event) {
     const themeKey = event.currentTarget.dataset.key;
-    const nextTheme = themeAdapter.saveTheme(themeKey);
-    const theme = themeAdapter.getThemeByKey(nextTheme);
+    const app = getApp();
+    const theme = app && app.applyTheme
+      ? app.applyTheme(themeKey)
+      : themeAdapter.getThemeByKey(themeAdapter.saveTheme(themeKey));
 
     this.setData({
-      currentTheme: nextTheme,
-      themeCards: this.buildThemeCards(nextTheme),
+      currentTheme: theme.id,
+      themeCards: this.buildThemeCards(theme.id),
       showThemePanel: false
     });
 

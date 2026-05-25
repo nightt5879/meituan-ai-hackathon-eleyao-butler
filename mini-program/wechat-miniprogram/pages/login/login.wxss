@@ -74,14 +74,14 @@
   height: 34rpx;
   margin-top: 2rpx;
   border-radius: 50%;
-  background: var(--theme-primary, #E8743A);
+  background: var(--theme-primary, #5AD8B2);
   color: var(--theme-on-primary, #FFFFFF);
   font-size: 22rpx;
   font-weight: 800;
 }
 
 .note-text {
-  color: var(--theme-primary-deep, #C75A22);
+  color: var(--theme-primary-deep, #164E3F);
   font-size: 25rpx;
   line-height: 1.58;
 }
@@ -102,8 +102,8 @@
   height: 88rpx;
   margin: 0 auto;
   border-radius: 999rpx;
-  background: #07C160;
-  color: #FFFFFF;
+  background: var(--theme-primary, #5AD8B2);
+  color: var(--theme-on-primary, #164E3F);
   font-size: 32rpx;
   font-weight: 700;
   line-height: 1.2;
@@ -113,10 +113,10 @@
 .login-error {
   margin-bottom: 18rpx;
   padding: 18rpx 22rpx;
-  border: 1rpx solid #F4B4C8;
+  border: 1rpx solid var(--theme-danger, #B54747);
   border-radius: 18rpx;
-  background: #FFF0F5;
-  color: #B4235B;
+  background: var(--bad-soft, #FFE6E6);
+  color: var(--theme-danger, #B54747);
   font-size: 24rpx;
   line-height: 1.45;
 }
@@ -129,3 +129,4 @@
   line-height: 1.5;
   text-align: center;
 }
+

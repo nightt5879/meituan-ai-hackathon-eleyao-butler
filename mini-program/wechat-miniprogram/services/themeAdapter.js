@@ -1,31 +1,31 @@
-const STORAGE_KEY = 'pageTheme';
+const themeService = require('../utils/theme');
 
-const themes = [
-  {
-    key: 'bulletin',
-    name: '公告板',
-    description: '近白纸面、苔藓绿和编号信息流，适合比赛 demo 现场快速扫读',
-    primary: '#2C5E3F',
-    soft: '#E5EFE7',
-    accent: '#2C5E3F',
-    warn: '#A85A1A'
-  }
-];
+const STORAGE_KEY = themeService.STORAGE_KEY;
+const DEFAULT_THEME_ID = themeService.DEFAULT_THEME_ID;
+const themes = themeService.themes.map(function (theme) {
+  return Object.assign({}, theme, {
+    key: theme.id,
+    primary: theme.colors.primary,
+    soft: theme.colors.backgroundSoft,
+    accent: theme.colors.secondary,
+    warn: theme.colors.warn
+  });
+});
 
 function normalizeTheme(themeKey) {
-  return themes.some(function (theme) {
-    return theme.key === themeKey;
-  }) ? themeKey : 'bulletin';
+  return themeService.normalizeThemeId(themeKey);
 }
 
 function getCurrentThemeKey() {
-  return normalizeTheme(wx.getStorageSync(STORAGE_KEY));
+  return themeService.getSavedThemeId();
+}
+
+function getCurrentTheme() {
+  return themeService.getSavedTheme();
 }
 
 function saveTheme(themeKey) {
-  const nextTheme = normalizeTheme(themeKey);
-  wx.setStorageSync(STORAGE_KEY, nextTheme);
-  return nextTheme;
+  return themeService.saveTheme(themeKey).id;
 }
 
 function getThemeNames() {
@@ -35,22 +35,37 @@ function getThemeNames() {
 }
 
 function getThemeByIndex(index) {
-  return themes[index] || themes[0];
+  return themes[index] || themes[themes.length - 1];
 }
 
 function getThemeByKey(themeKey) {
-  const nextTheme = normalizeTheme(themeKey);
-  return themes.find(function (theme) {
-    return theme.key === nextTheme;
-  }) || themes[0];
+  return themeService.getTheme(themeKey);
+}
+
+function getThemeCards(currentThemeKey) {
+  return themeService.getThemeCards(currentThemeKey);
+}
+
+function getPageThemeData(themeKey) {
+  return themeService.getPageThemeData(themeKey);
+}
+
+function applyNavigationBar(themeKey) {
+  themeService.applyNavigationBar(themeKey);
 }
 
 module.exports = {
   STORAGE_KEY,
+  DEFAULT_THEME_ID,
   themes,
+  normalizeTheme,
   getCurrentThemeKey,
+  getCurrentTheme,
   saveTheme,
   getThemeNames,
   getThemeByIndex,
-  getThemeByKey
+  getThemeByKey,
+  getThemeCards,
+  getPageThemeData,
+  applyNavigationBar
 };
