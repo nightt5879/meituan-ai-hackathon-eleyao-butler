@@ -1,0 +1,725 @@
+{
+  "schemaVersion": 1,
+  "templates": [
+    {
+      "id": "outdoor_lake_easy_loop",
+      "title": "出门轻松版：咖啡 + 中心湖短线 + 甜品收尾",
+      "mode": "outdoor",
+      "slots": [
+        {
+          "id": "start_cafe",
+          "label": "集合开场",
+          "role": "cafe_start",
+          "required": true,
+          "durationMinutes": 45,
+          "poiFilters": {
+            "routeNodeRolesAny": ["cafe_start"],
+            "areaAny": ["school_nearby", "central_lake"],
+            "maxCost": 45,
+            "walkingIntensityAny": ["low"]
+          },
+          "fallbackPoiIds": ["sysu_life_east_gate_cafe_mock", "central_lake_coffee_cart_mock"]
+        },
+        {
+          "id": "lake_walk",
+          "label": "主活动",
+          "role": "park_stop",
+          "required": true,
+          "durationMinutes": 50,
+          "poiFilters": {
+            "routeNodeRolesAny": ["park_stop", "outdoor_walk"],
+            "areaAny": ["central_lake"],
+            "indoor": false,
+            "suitableWeatherAny": ["sunny", "cloudy"]
+          },
+          "fallbackPoiIds": ["central_lake_boardwalk", "central_lake_north_lawn"]
+        },
+        {
+          "id": "dessert_end",
+          "label": "收尾确认",
+          "role": "dessert_end",
+          "required": true,
+          "durationMinutes": 35,
+          "poiFilters": {
+            "routeNodeRolesAny": ["dessert_end", "short_rest"],
+            "maxCost": 35,
+            "walkingIntensityAny": ["low"]
+          },
+          "fallbackPoiIds": ["sysu_life_northwest_dessert_mock", "campus_tea_corner_rainy"]
+        }
+      ],
+      "estimatedDurationMinutes": 150,
+      "estimatedBudget": 95,
+      "transportNote": "学校周边和中心湖之间以步行或短距离骑行为主，低体力时砍掉中心湖半圈。",
+      "routeReason": "天气正常时优先给一条轻量出门路线，有咖啡开场、短步行和可复制的收尾点。",
+      "fallbackReason": "如下雨、体感过热或体力偏低，切到室内咖啡和轻展厅组合。",
+      "inviteCopyTemplate": "这周末从{startArea}出发，走「{title}」：{stopNames}。预计{durationHours}小时，人均约{budget}元，{weatherSummary}。要不要一起？",
+      "checkTemplates": [
+        { "key": "budget", "label": "预算" },
+        { "key": "time_window", "label": "时间窗口" },
+        { "key": "weather", "label": "天气" },
+        { "key": "walking_intensity", "label": "步行强度" },
+        { "key": "return_time", "label": "返程时间" }
+      ],
+      "riskTipTemplates": ["中心湖户外段受雨天和高温影响，必要时缩短为树荫短坐点。", "咖啡和甜品点都是 mock 数据，真实营业需后续接入 POI 后确认。"],
+      "source": "synthetic_weekend_mvp",
+      "sourceId": "weekend_synthetic_mvp_2026_05_25",
+      "synthetic": true,
+      "confidence": 0.67
+    },
+    {
+      "id": "outdoor_campus_river_photo",
+      "title": "出门轻松版：校园河边 + 拍照 + 茶饮",
+      "mode": "outdoor",
+      "slots": [
+        {
+          "id": "meetup",
+          "label": "集合开场",
+          "role": "meetup",
+          "required": true,
+          "durationMinutes": 10,
+          "poiFilters": {
+            "routeNodeRolesAny": ["meetup"],
+            "areaAny": ["school_nearby", "metro_north"]
+          },
+          "fallbackPoiIds": ["metro_north_meetup", "sysu_life_east_gate_cafe_mock"]
+        },
+        {
+          "id": "river_walk",
+          "label": "主活动",
+          "role": "outdoor_walk",
+          "required": true,
+          "durationMinutes": 45,
+          "poiFilters": {
+            "routeNodeRolesAny": ["outdoor_walk", "photo_stop"],
+            "areaAny": ["school_nearby"],
+            "indoor": false,
+            "tagsAny": ["citywalk", "拍照"]
+          },
+          "fallbackPoiIds": ["sysu_riverside_quiet_walk", "sysu_riverside_photo_point"]
+        },
+        {
+          "id": "tea_end",
+          "label": "收尾确认",
+          "role": "dessert_end",
+          "required": true,
+          "durationMinutes": 40,
+          "poiFilters": {
+            "routeNodeRolesAny": ["dessert_end", "short_rest"],
+            "areaAny": ["school_nearby"],
+            "indoor": true,
+            "maxCost": 35
+          },
+          "fallbackPoiIds": ["campus_tea_corner_rainy", "sysu_life_northwest_dessert_mock"]
+        }
+      ],
+      "estimatedDurationMinutes": 125,
+      "estimatedBudget": 55,
+      "transportNote": "以校园周边步行为主，单段控制在 10 到 20 分钟内。",
+      "routeReason": "适合预算低、想拍照但不想把路线排满的周末下午。",
+      "fallbackReason": "天气不稳时保留茶饮和书店咖啡，户外河边段可直接取消。",
+      "inviteCopyTemplate": "找个轻松时间从{startArea}出发，走「{title}」：{stopNames}。约{durationHours}小时，人均约{budget}元，路线偏轻，{weatherSummary}。",
+      "checkTemplates": [
+        { "key": "budget", "label": "预算" },
+        { "key": "time_window", "label": "时间窗口" },
+        { "key": "weather", "label": "天气" },
+        { "key": "walking_intensity", "label": "步行强度" },
+        { "key": "return_time", "label": "返程时间" }
+      ],
+      "riskTipTemplates": ["校园户外段雨天体验下降。", "拍照点位不要超过 2 个，避免路线变成赶场。"],
+      "source": "synthetic_weekend_mvp",
+      "sourceId": "weekend_synthetic_mvp_2026_05_25",
+      "synthetic": true,
+      "confidence": 0.66
+    },
+    {
+      "id": "outdoor_riverside_sunset",
+      "title": "出门轻松版：江边日落 + 低预算野餐",
+      "mode": "outdoor",
+      "slots": [
+        {
+          "id": "metro_start",
+          "label": "集合开场",
+          "role": "transit_start",
+          "required": true,
+          "durationMinutes": 10,
+          "poiFilters": {
+            "routeNodeRolesAny": ["transit_start", "meetup"],
+            "areaAny": ["metro_south", "metro_north"]
+          },
+          "fallbackPoiIds": ["metro_south_meetup", "metro_north_meetup"]
+        },
+        {
+          "id": "sunset_walk",
+          "label": "主活动",
+          "role": "outdoor_walk",
+          "required": true,
+          "durationMinutes": 55,
+          "poiFilters": {
+            "routeNodeRolesAny": ["outdoor_walk", "photo_stop"],
+            "areaAny": ["riverside_greenway"],
+            "tagsAny": ["江边散步", "夜景"],
+            "indoor": false
+          },
+          "fallbackPoiIds": ["riverside_sunset_walk", "riverside_photo_curve"]
+        },
+        {
+          "id": "picnic_rest",
+          "label": "补给收尾",
+          "role": "picnic_stop",
+          "required": false,
+          "durationMinutes": 45,
+          "poiFilters": {
+            "routeNodeRolesAny": ["picnic_stop", "short_rest"],
+            "areaAny": ["riverside_greenway"],
+            "maxCost": 30
+          },
+          "fallbackPoiIds": ["riverside_picnic_low_cost", "riverside_breeze_rest"]
+        }
+      ],
+      "estimatedDurationMinutes": 160,
+      "estimatedBudget": 45,
+      "transportNote": "不做真实骑行或步行导航，江边段只作为轻活动模板，返程建议提前确认。",
+      "routeReason": "适合天气稳定、想看日落或江边吹风的低预算路线。",
+      "fallbackReason": "雨天、高温或低体力时不推荐，切到学校周边室内路线。",
+      "inviteCopyTemplate": "周末傍晚从{startArea}出发，试试「{title}」：{stopNames}。约{durationHours}小时，人均约{budget}元，记得预留返程时间。",
+      "checkTemplates": [
+        { "key": "budget", "label": "预算" },
+        { "key": "time_window", "label": "时间窗口" },
+        { "key": "weather", "label": "天气" },
+        { "key": "walking_intensity", "label": "步行强度" },
+        { "key": "return_time", "label": "返程时间" }
+      ],
+      "riskTipTemplates": ["江边段不适合雨天或强风。", "不提供真实骑行路线，现场交通安全需自行判断。"],
+      "source": "synthetic_weekend_mvp",
+      "sourceId": "weekend_synthetic_mvp_2026_05_25",
+      "synthetic": true,
+      "confidence": 0.63
+    },
+    {
+      "id": "balanced_cafe_gallery_lake",
+      "title": "折中舒适版：咖啡 + 轻展厅 + 中心湖短坐",
+      "mode": "balanced",
+      "slots": [
+        {
+          "id": "cafe_start",
+          "label": "集合开场",
+          "role": "cafe_start",
+          "required": true,
+          "durationMinutes": 50,
+          "poiFilters": {
+            "routeNodeRolesAny": ["cafe_start"],
+            "areaAny": ["school_nearby"],
+            "indoor": true,
+            "maxCost": 45
+          },
+          "fallbackPoiIds": ["campus_bookstore_cafe_mock", "sysu_life_east_gate_cafe_mock"]
+        },
+        {
+          "id": "gallery",
+          "label": "主活动",
+          "role": "gallery_stop",
+          "required": true,
+          "durationMinutes": 65,
+          "poiFilters": {
+            "routeNodeRolesAny": ["gallery_stop", "indoor_backup"],
+            "tagsAny": ["展览", "室内活动"],
+            "indoor": true
+          },
+          "fallbackPoiIds": ["campus_small_gallery_mock", "sysu_east_library_quiet_corner"]
+        },
+        {
+          "id": "lake_buffer",
+          "label": "可选缓冲",
+          "role": "short_rest",
+          "required": false,
+          "durationMinutes": 25,
+          "poiFilters": {
+            "routeNodeRolesAny": ["short_rest", "park_stop"],
+            "areaAny": ["central_lake", "school_nearby"],
+            "walkingIntensityAny": ["low"]
+          },
+          "fallbackPoiIds": ["central_lake_shaded_bench", "sysu_riverside_bench_rest"]
+        }
+      ],
+      "estimatedDurationMinutes": 155,
+      "estimatedBudget": 85,
+      "transportNote": "室内和短户外混合，雨天可把最后一段改成茶饮收尾。",
+      "routeReason": "适合不知道想室内还是户外时的折中方案，路线不会太满。",
+      "fallbackReason": "如果天气异常，保留咖啡和展厅，跳过中心湖短坐。",
+      "inviteCopyTemplate": "我整理了一个折中路线「{title}」：{stopNames}。从{startArea}出发，约{durationHours}小时，人均约{budget}元，不想太累也能走。",
+      "checkTemplates": [
+        { "key": "budget", "label": "预算" },
+        { "key": "time_window", "label": "时间窗口" },
+        { "key": "weather", "label": "天气" },
+        { "key": "walking_intensity", "label": "步行强度" },
+        { "key": "return_time", "label": "返程时间" }
+      ],
+      "riskTipTemplates": ["轻展厅内容可能偏短，适合作为轻活动而不是重目的地。", "户外缓冲点可随天气取消。"],
+      "source": "synthetic_weekend_mvp",
+      "sourceId": "weekend_synthetic_mvp_2026_05_25",
+      "synthetic": true,
+      "confidence": 0.69
+    },
+    {
+      "id": "balanced_science_center_halfday",
+      "title": "折中舒适版：科学中心 + 咖啡缓冲 + 草坪短坐",
+      "mode": "balanced",
+      "slots": [
+        {
+          "id": "science_main",
+          "label": "主活动",
+          "role": "museum_stop",
+          "required": true,
+          "durationMinutes": 90,
+          "poiFilters": {
+            "routeNodeRolesAny": ["museum_stop", "main_activity"],
+            "areaAny": ["science_center"],
+            "tagsAny": ["展览", "博物馆"],
+            "indoor": true
+          },
+          "fallbackPoiIds": ["science_center_indoor_visit"]
+        },
+        {
+          "id": "cafe_buffer",
+          "label": "补给缓冲",
+          "role": "cafe_start",
+          "required": true,
+          "durationMinutes": 35,
+          "poiFilters": {
+            "routeNodeRolesAny": ["cafe_start", "short_rest"],
+            "areaAny": ["science_center"],
+            "indoor": true,
+            "maxCost": 40
+          },
+          "fallbackPoiIds": ["science_center_cafe_buffer_mock"]
+        },
+        {
+          "id": "lawn_optional",
+          "label": "可选短坐",
+          "role": "short_rest",
+          "required": false,
+          "durationMinutes": 25,
+          "poiFilters": {
+            "routeNodeRolesAny": ["short_rest", "park_stop"],
+            "areaAny": ["science_center"]
+          },
+          "fallbackPoiIds": ["science_center_lawn_rest"]
+        }
+      ],
+      "estimatedDurationMinutes": 170,
+      "estimatedBudget": 110,
+      "transportNote": "科学中心区域需要预留往返缓冲，适合半日窗口，不做真实交通换乘规划。",
+      "routeReason": "适合想要一个明确主活动，同时又保留休息点的半日路线。",
+      "fallbackReason": "预算或时间不足时，优先保留室内主活动，取消草坪短坐。",
+      "inviteCopyTemplate": "这周末要不要走「{title}」？从{startArea}出发，安排{stopNames}，约{durationHours}小时，人均约{budget}元。",
+      "checkTemplates": [
+        { "key": "budget", "label": "预算" },
+        { "key": "time_window", "label": "时间窗口" },
+        { "key": "weather", "label": "天气" },
+        { "key": "walking_intensity", "label": "步行强度" },
+        { "key": "return_time", "label": "返程时间" }
+      ],
+      "riskTipTemplates": ["科学中心真实开放和票务需出发前确认。", "时间窗口小于 3 小时时不建议加户外草坪段。"],
+      "source": "synthetic_weekend_mvp",
+      "sourceId": "weekend_synthetic_mvp_2026_05_25",
+      "synthetic": true,
+      "confidence": 0.64
+    },
+    {
+      "id": "balanced_lingnan_culture_lightmeal",
+      "title": "折中舒适版：岭南印象轻逛 + 小吃休息",
+      "mode": "balanced",
+      "slots": [
+        {
+          "id": "culture_walk",
+          "label": "主活动",
+          "role": "culture_walk",
+          "required": true,
+          "durationMinutes": 75,
+          "poiFilters": {
+            "routeNodeRolesAny": ["culture_walk", "photo_stop"],
+            "areaAny": ["lingnan_impression"]
+          },
+          "fallbackPoiIds": ["lingnan_impression_gate_walk"]
+        },
+        {
+          "id": "snack_rest",
+          "label": "补给休息",
+          "role": "light_meal",
+          "required": true,
+          "durationMinutes": 40,
+          "poiFilters": {
+            "routeNodeRolesAny": ["light_meal", "food_stop"],
+            "areaAny": ["lingnan_impression"],
+            "indoor": true,
+            "maxCost": 45
+          },
+          "fallbackPoiIds": ["lingnan_impression_snack_rest"]
+        },
+        {
+          "id": "indoor_buffer",
+          "label": "天气备选",
+          "role": "indoor_backup",
+          "required": false,
+          "durationMinutes": 35,
+          "poiFilters": {
+            "routeNodeRolesAny": ["indoor_backup", "short_rest"],
+            "areaAny": ["lingnan_impression"],
+            "indoor": true
+          },
+          "fallbackPoiIds": ["lingnan_indoor_culture_corner_mock"]
+        }
+      ],
+      "estimatedDurationMinutes": 160,
+      "estimatedBudget": 95,
+      "transportNote": "作为近郊活动模板使用，不做真实门票、营业和交通校验。",
+      "routeReason": "适合想换个地方、拍照和轻逛，但不想做完整攻略的场景。",
+      "fallbackReason": "遇到雨天或时间不足时，只保留室内休息角和小吃补给。",
+      "inviteCopyTemplate": "周末换个地方的话，可以走「{title}」：{stopNames}。从{startArea}出发，约{durationHours}小时，人均约{budget}元。",
+      "checkTemplates": [
+        { "key": "budget", "label": "预算" },
+        { "key": "time_window", "label": "时间窗口" },
+        { "key": "weather", "label": "天气" },
+        { "key": "walking_intensity", "label": "步行强度" },
+        { "key": "return_time", "label": "返程时间" }
+      ],
+      "riskTipTemplates": ["真实开放、票务和活动安排需另行确认。", "雨天不建议把户外轻逛作为唯一主活动。"],
+      "source": "synthetic_weekend_mvp",
+      "sourceId": "weekend_synthetic_mvp_2026_05_25",
+      "synthetic": true,
+      "confidence": 0.62
+    },
+    {
+      "id": "indoor_rainy_cafe_gallery_dessert",
+      "title": "雨天 / 低体力备选：书店咖啡 + 轻展厅 + 甜品",
+      "mode": "indoor_backup",
+      "slots": [
+        {
+          "id": "quiet_cafe",
+          "label": "集合开场",
+          "role": "quiet_stop",
+          "required": true,
+          "durationMinutes": 55,
+          "poiFilters": {
+            "routeNodeRolesAny": ["quiet_stop", "cafe_start"],
+            "areaAny": ["school_nearby"],
+            "indoor": true,
+            "walkingIntensityAny": ["low"]
+          },
+          "fallbackPoiIds": ["campus_bookstore_cafe_mock", "sysu_life_east_gate_cafe_mock"]
+        },
+        {
+          "id": "indoor_gallery",
+          "label": "主活动",
+          "role": "gallery_stop",
+          "required": true,
+          "durationMinutes": 60,
+          "poiFilters": {
+            "routeNodeRolesAny": ["gallery_stop", "indoor_backup"],
+            "areaAny": ["school_nearby"],
+            "indoor": true,
+            "suitableWeatherAny": ["rainy", "hot", "unknown"]
+          },
+          "fallbackPoiIds": ["campus_small_gallery_mock", "sysu_east_library_quiet_corner"]
+        },
+        {
+          "id": "dessert",
+          "label": "收尾确认",
+          "role": "dessert_end",
+          "required": true,
+          "durationMinutes": 35,
+          "poiFilters": {
+            "routeNodeRolesAny": ["dessert_end", "short_rest"],
+            "areaAny": ["school_nearby"],
+            "indoor": true,
+            "maxCost": 35
+          },
+          "fallbackPoiIds": ["campus_tea_corner_rainy", "sysu_life_northwest_dessert_mock"]
+        }
+      ],
+      "estimatedDurationMinutes": 150,
+      "estimatedBudget": 85,
+      "transportNote": "全程学校周边室内为主，适合雨天、热天或低体力。",
+      "routeReason": "天气不可控时优先保证可执行性，减少露天停留和长距离移动。",
+      "fallbackReason": "如果展厅不可用，就退回书店咖啡 + 茶饮的双点短线。",
+      "inviteCopyTemplate": "如果下雨或大家都不想太累，就走「{title}」：{stopNames}。约{durationHours}小时，人均约{budget}元，随时能提前结束。",
+      "checkTemplates": [
+        { "key": "budget", "label": "预算" },
+        { "key": "time_window", "label": "时间窗口" },
+        { "key": "weather", "label": "天气" },
+        { "key": "walking_intensity", "label": "步行强度" },
+        { "key": "return_time", "label": "返程时间" }
+      ],
+      "riskTipTemplates": ["室内座位不保证连续，同行人数多时需备选。", "体验丰富度低于户外版，但稳定性更高。"],
+      "source": "synthetic_weekend_mvp",
+      "sourceId": "weekend_synthetic_mvp_2026_05_25",
+      "synthetic": true,
+      "confidence": 0.7
+    },
+    {
+      "id": "indoor_low_energy_bookstore_tea",
+      "title": "雨天 / 低体力备选：安静放空 + 茶饮短线",
+      "mode": "indoor_backup",
+      "slots": [
+        {
+          "id": "quiet_stop",
+          "label": "安静开场",
+          "role": "quiet_stop",
+          "required": true,
+          "durationMinutes": 55,
+          "poiFilters": {
+            "routeNodeRolesAny": ["quiet_stop", "indoor_backup"],
+            "areaAny": ["school_nearby"],
+            "indoor": true,
+            "walkingIntensityAny": ["low"]
+          },
+          "fallbackPoiIds": ["sysu_east_library_quiet_corner", "campus_bookstore_cafe_mock"]
+        },
+        {
+          "id": "tea_rest",
+          "label": "补给收尾",
+          "role": "short_rest",
+          "required": true,
+          "durationMinutes": 45,
+          "poiFilters": {
+            "routeNodeRolesAny": ["short_rest", "dessert_end"],
+            "areaAny": ["school_nearby", "metro_north"],
+            "indoor": true,
+            "maxCost": 30
+          },
+          "fallbackPoiIds": ["campus_tea_corner_rainy", "metro_north_indoor_mall_rest"]
+        },
+        {
+          "id": "return_buffer",
+          "label": "返程缓冲",
+          "role": "return_buffer",
+          "required": false,
+          "durationMinutes": 20,
+          "poiFilters": {
+            "routeNodeRolesAny": ["return_buffer", "meetup"],
+            "indoor": true
+          },
+          "fallbackPoiIds": ["metro_north_meetup", "metro_south_indoor_waiting_mock"]
+        }
+      ],
+      "estimatedDurationMinutes": 120,
+      "estimatedBudget": 55,
+      "transportNote": "步行最少，优先室内和地铁口附近，不适合追求活动丰富度。",
+      "routeReason": "用于低体力、雨天或临时只想找地方坐一下的场景。",
+      "fallbackReason": "如果其中一个点不可用，直接缩成单点茶饮或书店咖啡。",
+      "inviteCopyTemplate": "低体力版就走「{title}」吧：{stopNames}。从{startArea}出发，约{durationHours}小时，人均约{budget}元，不赶场。",
+      "checkTemplates": [
+        { "key": "budget", "label": "预算" },
+        { "key": "time_window", "label": "时间窗口" },
+        { "key": "weather", "label": "天气" },
+        { "key": "walking_intensity", "label": "步行强度" },
+        { "key": "return_time", "label": "返程时间" }
+      ],
+      "riskTipTemplates": ["路线稳定但惊喜感较低。", "安静场地不适合多人高声聊天。"],
+      "source": "synthetic_weekend_mvp",
+      "sourceId": "weekend_synthetic_mvp_2026_05_25",
+      "synthetic": true,
+      "confidence": 0.68
+    },
+    {
+      "id": "indoor_movie_lightmeal_short",
+      "title": "雨天 / 低体力备选：电影放空 + 轻食",
+      "mode": "indoor_backup",
+      "slots": [
+        {
+          "id": "movie",
+          "label": "主活动",
+          "role": "main_activity",
+          "required": true,
+          "durationMinutes": 105,
+          "poiFilters": {
+            "routeNodeRolesAny": ["main_activity", "indoor_backup"],
+            "areaAny": ["school_nearby"],
+            "typeAny": ["cinema"],
+            "indoor": true
+          },
+          "fallbackPoiIds": ["campus_movie_corner_mock"]
+        },
+        {
+          "id": "light_meal",
+          "label": "补给收尾",
+          "role": "light_meal",
+          "required": true,
+          "durationMinutes": 40,
+          "poiFilters": {
+            "routeNodeRolesAny": ["light_meal", "food_stop"],
+            "areaAny": ["school_nearby", "metro_south"],
+            "indoor": true,
+            "maxCost": 45
+          },
+          "fallbackPoiIds": ["campus_quick_noodle_stop_mock", "metro_south_light_food_mock"]
+        },
+        {
+          "id": "return",
+          "label": "返程缓冲",
+          "role": "return_buffer",
+          "required": false,
+          "durationMinutes": 15,
+          "poiFilters": {
+            "routeNodeRolesAny": ["return_buffer", "meetup"],
+            "areaAny": ["metro_south", "school_nearby"]
+          },
+          "fallbackPoiIds": ["metro_south_meetup", "metro_south_indoor_waiting_mock"]
+        }
+      ],
+      "estimatedDurationMinutes": 170,
+      "estimatedBudget": 95,
+      "transportNote": "路线节奏固定，适合整块时间，不适合只有 1 到 2 小时的窗口。",
+      "routeReason": "适合雨天、热天或想低决策成本放空的同行场景。",
+      "fallbackReason": "如果时间不足，建议切到书店咖啡和茶饮短线。",
+      "inviteCopyTemplate": "雨天不想折腾的话，走「{title}」：{stopNames}。约{durationHours}小时，人均约{budget}元，轻松一点。",
+      "checkTemplates": [
+        { "key": "budget", "label": "预算" },
+        { "key": "time_window", "label": "时间窗口" },
+        { "key": "weather", "label": "天气" },
+        { "key": "walking_intensity", "label": "步行强度" },
+        { "key": "return_time", "label": "返程时间" }
+      ],
+      "riskTipTemplates": ["电影节点是 synthetic mock，不代表真实排片。", "时长较固定，时间窗口紧时不推荐。"],
+      "source": "synthetic_weekend_mvp",
+      "sourceId": "weekend_synthetic_mvp_2026_05_25",
+      "synthetic": true,
+      "confidence": 0.61
+    },
+    {
+      "id": "indoor_mall_entertainment_rainy",
+      "title": "雨天室内轻娱乐版：商场娱乐 + 甜品 + 轻食",
+      "mode": "indoor_backup",
+      "slots": [
+        {
+          "id": "mall_entertainment",
+          "label": "室内主活动",
+          "role": "indoor_entertainment",
+          "required": true,
+          "durationMinutes": 70,
+          "poiFilters": {
+            "routeNodeRolesAny": ["cinema_stop", "arcade_stop", "indoor_entertainment"],
+            "areaAny": ["gogo_xintiandi"],
+            "indoor": true,
+            "suitableWeatherAny": ["rainy", "hot", "unknown"]
+          },
+          "fallbackPoiIds": ["gogo_arcade_light_play", "gogo_soft_screen_cinema"]
+        },
+        {
+          "id": "sweet_buffer",
+          "label": "甜品缓冲",
+          "role": "dessert_end",
+          "required": true,
+          "durationMinutes": 40,
+          "poiFilters": {
+            "routeNodeRolesAny": ["dessert_end", "tea_stop", "short_rest"],
+            "areaAny": ["gogo_xintiandi", "beigang_village"],
+            "indoor": true,
+            "maxCost": 35
+          },
+          "fallbackPoiIds": ["gogo_cloud_dessert_lounge", "beigang_friend_dessert_box"]
+        },
+        {
+          "id": "light_meal",
+          "label": "轻食收尾",
+          "role": "light_meal",
+          "required": true,
+          "durationMinutes": 45,
+          "poiFilters": {
+            "routeNodeRolesAny": ["light_meal", "food_stop"],
+            "areaAny": ["gogo_xintiandi", "campus_commercial_anchors"],
+            "indoor": true,
+            "maxCost": 45
+          },
+          "fallbackPoiIds": ["gogo_light_bowl_corner", "campus_anchor_light_meal_rest"]
+        }
+      ],
+      "estimatedDurationMinutes": 175,
+      "estimatedBudget": 115,
+      "transportNote": "商场室内活动为主，适合雨天、高温或临时不想走远；不做真实商场导航。",
+      "routeReason": "补齐大学城商业区的雨天室内娱乐场景，兼顾可玩性、休息和补给。",
+      "fallbackReason": "如果娱乐点过吵或时间不足，可缩短为甜品 + 轻食双点短线。",
+      "inviteCopyTemplate": "如果下雨或太热，就走「{title}」：{stopNames}。从{startArea}出发，约{durationHours}小时，人均约{budget}元，基本都在室内。",
+      "checkTemplates": [
+        { "key": "budget", "label": "预算" },
+        { "key": "time_window", "label": "时间窗口" },
+        { "key": "weather", "label": "天气" },
+        { "key": "walking_intensity", "label": "步行强度" },
+        { "key": "return_time", "label": "返程时间" }
+      ],
+      "riskTipTemplates": ["室内娱乐节点可能较吵，不适合安静放空。", "影厅和电玩城均为 synthetic 节点，不代表真实排片、真实机器状态或真实营业信息。"],
+      "source": "synthetic_weekend_mvp",
+      "sourceId": "weekend_synthetic_mvp_2026_05_25",
+      "synthetic": true,
+      "confidence": 0.62
+    },
+    {
+      "id": "balanced_friend_social_low_energy",
+      "title": "朋友轻聚低体力版：桌游/故事房 + 茶饮 + 轻食",
+      "mode": "balanced",
+      "slots": [
+        {
+          "id": "social_activity",
+          "label": "朋友主活动",
+          "role": "social_gathering",
+          "required": true,
+          "durationMinutes": 85,
+          "poiFilters": {
+            "routeNodeRolesAny": ["board_game", "mystery_game", "social_gathering"],
+            "areaAny": ["beigang_village", "beiting_village", "nanting_village", "suishi_village"],
+            "indoor": true,
+            "walkingIntensityAny": ["low"]
+          },
+          "fallbackPoiIds": ["beigang_tabletop_room", "beiting_boardgame_loft", "nanting_night_boardgame"]
+        },
+        {
+          "id": "tea_chat",
+          "label": "茶饮聊天",
+          "role": "tea_stop",
+          "required": true,
+          "durationMinutes": 40,
+          "poiFilters": {
+            "routeNodeRolesAny": ["tea_stop", "dessert_end", "short_rest"],
+            "areaAny": ["beigang_village", "beiting_village", "nanting_village", "suishi_village"],
+            "indoor": true,
+            "maxCost": 30
+          },
+          "fallbackPoiIds": ["beigang_night_tea_corner", "beiting_budget_tea_stop", "nanting_tea_chat_corner"]
+        },
+        {
+          "id": "simple_meal",
+          "label": "简餐收尾",
+          "role": "light_meal",
+          "required": true,
+          "durationMinutes": 45,
+          "poiFilters": {
+            "routeNodeRolesAny": ["light_meal", "food_stop"],
+            "areaAny": ["beiting_village", "nanting_village", "suishi_village", "beigang_village"],
+            "indoor": true,
+            "maxCost": 40
+          },
+          "fallbackPoiIds": ["beiting_light_gathering_meal", "nanting_budget_snack_rest", "suishi_light_social_snack"]
+        }
+      ],
+      "estimatedDurationMinutes": 190,
+      "estimatedBudget": 100,
+      "transportNote": "城中村轻社交点位以短距离移动为主，适合朋友低体力轻聚，不做真实步行导航。",
+      "routeReason": "补齐学生周末朋友局：有一个室内主活动，再接茶饮和简餐，路线稳定但不追求景点感。",
+      "fallbackReason": "如果主活动耗时过长，可以只保留茶饮和轻食，变成低预算短聚。",
+      "inviteCopyTemplate": "朋友轻聚可以走「{title}」：{stopNames}。从{startArea}出发，约{durationHours}小时，人均约{budget}元，少走路为主。",
+      "checkTemplates": [
+        { "key": "budget", "label": "预算" },
+        { "key": "time_window", "label": "时间窗口" },
+        { "key": "weather", "label": "天气" },
+        { "key": "walking_intensity", "label": "步行强度" },
+        { "key": "return_time", "label": "返程时间" }
+      ],
+      "riskTipTemplates": ["朋友轻聚节点可能较吵，安静聊天需求需换成咖啡自习类点位。", "城中村 POI 均为 synthetic 规划节点，不代表真实商户或真实营业状态。"],
+      "source": "synthetic_weekend_mvp",
+      "sourceId": "weekend_synthetic_mvp_2026_05_25",
+      "synthetic": true,
+      "confidence": 0.61
+    }
+  ]
+}

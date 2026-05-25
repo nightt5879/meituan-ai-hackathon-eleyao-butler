@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "sourceKinds": {
+    "synthetic_weekend_mvp": {
+      "label": "周末轻规划 synthetic MVP 数据",
+      "synthetic": true,
+      "trustLevel": "low",
+      "description": "基于用户提供的广州大学城锚点、商业区/城中村片区和当前代码内 mock 规划需求整理的虚拟 POI、活动点和路线模板。仅用于周末轻规划联调，不代表真实商户、真实营业状态、真实排队时间、真实评分或生产级旅游攻略。"
+    }
+  },
+  "sources": [
+    {
+      "id": "weekend_synthetic_mvp_2026_05_25",
+      "source": "synthetic_weekend_mvp",
+      "title": "广州大学城周末轻规划 synthetic seed",
+      "collectedAt": "2026-05-25",
+      "description": "第一版周末轻规划数据层，覆盖广州大学城、学校周边、中心湖、江边骑行带、广东科学中心、岭南印象园、生物岛、贝岗湿地、GOGO 新天地、贝岗村、北亭村、南亭村、创智园、青创汇、穗石村和校内商业 anchors 等轻量活动区域。坐标来自需求提供的锚点/片区 polygon 或围绕锚点构造的 mock 活动点。"
+    }
+  ]
+}

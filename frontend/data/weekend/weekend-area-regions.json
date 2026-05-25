@@ -1,0 +1,267 @@
+{
+  "schemaVersion": 1,
+  "regions": [
+    {
+      "id": "guangzhou_university_town_weekend_mvp",
+      "name": "广州大学城周末轻规划 MVP 区域",
+      "city": "广州",
+      "description": "第一阶段仅覆盖广州大学城、学校周边和番禺大学城附近轻量活动点，不扩展到全广州。",
+      "center": {
+        "latitude": 23.0525,
+        "longitude": 113.3865
+      },
+      "validationRadiusKm": 9,
+      "areas": [
+        {
+          "id": "school_nearby",
+          "name": "学校周边",
+          "aliases": ["学校周边", "中大生活区", "中山大学东校园"],
+          "center": {
+            "latitude": 23.061,
+            "longitude": 113.3905
+          },
+          "radiusKm": 2.2
+        },
+        {
+          "id": "metro_south",
+          "name": "大学城南地铁站周边",
+          "aliases": ["大学城南", "大学城南地铁站"],
+          "center": {
+            "latitude": 23.043438,
+            "longitude": 113.400407
+          },
+          "radiusKm": 1.8
+        },
+        {
+          "id": "metro_north",
+          "name": "大学城北地铁站周边",
+          "aliases": ["大学城北", "大学城北地铁站"],
+          "center": {
+            "latitude": 23.05805,
+            "longitude": 113.385623
+          },
+          "radiusKm": 1.8
+        },
+        {
+          "id": "central_lake",
+          "name": "中心湖公园",
+          "aliases": ["中心湖", "中心湖公园"],
+          "center": {
+            "latitude": 23.05083,
+            "longitude": 113.39365
+          },
+          "radiusKm": 1.2,
+          "polygon": [
+            { "latitude": 23.050099, "longitude": 113.390848 },
+            { "latitude": 23.053586, "longitude": 113.392464 },
+            { "latitude": 23.052777, "longitude": 113.395839 },
+            { "latitude": 23.048973, "longitude": 113.396456 },
+            { "latitude": 23.047704, "longitude": 113.394567 },
+            { "latitude": 23.047857, "longitude": 113.391751 }
+          ]
+        },
+        {
+          "id": "riverside_greenway",
+          "name": "江边骑行与野餐带",
+          "aliases": ["江边", "骑行", "野餐点"],
+          "center": {
+            "latitude": 23.04049,
+            "longitude": 113.37271
+          },
+          "radiusKm": 3.2
+        },
+        {
+          "id": "science_center",
+          "name": "广东科学中心附近",
+          "aliases": ["广东科学中心", "科学中心"],
+          "center": {
+            "latitude": 23.039294,
+            "longitude": 113.362563
+          },
+          "radiusKm": 1.5
+        },
+        {
+          "id": "lingnan_impression",
+          "name": "岭南印象园附近",
+          "aliases": ["岭南印象园"],
+          "center": {
+            "latitude": 23.035698,
+            "longitude": 113.405322
+          },
+          "radiusKm": 1.5
+        },
+        {
+          "id": "bio_island",
+          "name": "生物岛附近",
+          "aliases": ["生物岛"],
+          "center": {
+            "latitude": 23.065714,
+            "longitude": 113.374142
+          },
+          "radiusKm": 2
+        },
+        {
+          "id": "beigang_wetland",
+          "name": "贝岗湿地公园附近",
+          "aliases": ["贝岗湿地", "贝岗湿地公园"],
+          "center": {
+            "latitude": 23.073671,
+            "longitude": 113.399447
+          },
+          "radiusKm": 1.5
+        },
+        {
+          "id": "gogo_xintiandi",
+          "name": "GOGO 新天地片区",
+          "aliases": ["GOGO 新天地", "大学城商场", "商场室内"],
+          "center": {
+            "latitude": 23.062367,
+            "longitude": 113.391868
+          },
+          "radiusKm": 0.6,
+          "polygon": [
+            { "latitude": 23.063797, "longitude": 113.391345 },
+            { "latitude": 23.063788, "longitude": 113.392094 },
+            { "latitude": 23.061038, "longitude": 113.392374 },
+            { "latitude": 23.060844, "longitude": 113.391657 }
+          ]
+        },
+        {
+          "id": "beigang_village",
+          "name": "贝岗村片区",
+          "aliases": ["贝岗村", "贝岗城中村", "夜间轻聚"],
+          "center": {
+            "latitude": 23.062278,
+            "longitude": 113.393801
+          },
+          "radiusKm": 0.8,
+          "polygon": [
+            { "latitude": 23.063997, "longitude": 113.392431 },
+            { "latitude": 23.060884, "longitude": 113.392834 },
+            { "latitude": 23.063778, "longitude": 113.394592 },
+            { "latitude": 23.060452, "longitude": 113.395345 }
+          ]
+        },
+        {
+          "id": "beiting_village",
+          "name": "北亭村片区",
+          "aliases": ["北亭村", "北亭城中村", "低预算朋友聚会"],
+          "center": {
+            "latitude": 23.049527,
+            "longitude": 113.374176
+          },
+          "radiusKm": 0.9,
+          "polygon": [
+            { "latitude": 23.048121, "longitude": 113.370672 },
+            { "latitude": 23.045996, "longitude": 113.374717 },
+            { "latitude": 23.05143, "longitude": 113.376753 },
+            { "latitude": 23.052559, "longitude": 113.37456 }
+          ]
+        },
+        {
+          "id": "nanting_village",
+          "name": "南亭村片区",
+          "aliases": ["南亭村", "南亭生活区", "夜间桌游"],
+          "center": {
+            "latitude": 23.036003,
+            "longitude": 113.387862
+          },
+          "radiusKm": 0.9,
+          "polygon": [
+            { "latitude": 23.035209, "longitude": 113.385137 },
+            { "latitude": 23.037719, "longitude": 113.385493 },
+            { "latitude": 23.037333, "longitude": 113.391064 },
+            { "latitude": 23.033749, "longitude": 113.389754 }
+          ]
+        },
+        {
+          "id": "chuangzhi_park",
+          "name": "创智园片区",
+          "aliases": ["创智园", "园区咖啡", "办公生活混合点"],
+          "center": {
+            "latitude": 23.057424,
+            "longitude": 113.387816
+          },
+          "radiusKm": 0.45,
+          "polygon": [
+            { "latitude": 23.058147, "longitude": 113.387875 },
+            { "latitude": 23.057563, "longitude": 113.388769 },
+            { "latitude": 23.057337, "longitude": 113.386958 },
+            { "latitude": 23.05665, "longitude": 113.387663 }
+          ]
+        },
+        {
+          "id": "qingchuanghui",
+          "name": "青创汇片区",
+          "aliases": ["青创汇", "小型园区", "自习聊天"],
+          "center": {
+            "latitude": 23.052336,
+            "longitude": 113.372557
+          },
+          "radiusKm": 0.6,
+          "polygon": [
+            { "latitude": 23.053845, "longitude": 113.372505 },
+            { "latitude": 23.052878, "longitude": 113.374222 },
+            { "latitude": 23.051157, "longitude": 113.372208 },
+            { "latitude": 23.051463, "longitude": 113.371292 }
+          ]
+        },
+        {
+          "id": "suishi_village",
+          "name": "穗石村片区",
+          "aliases": ["穗石村", "穗石生活区", "朋友轻聚"],
+          "center": {
+            "latitude": 23.049378,
+            "longitude": 113.41133
+          },
+          "radiusKm": 0.9,
+          "polygon": [
+            { "latitude": 23.048, "longitude": 113.40845 },
+            { "latitude": 23.05217, "longitude": 113.410511 },
+            { "latitude": 23.050956, "longitude": 113.414965 },
+            { "latitude": 23.046386, "longitude": 113.411394 }
+          ]
+        },
+        {
+          "id": "campus_commercial_anchors",
+          "name": "校内商业与休息 anchors",
+          "aliases": ["校内商业区", "校内休息点", "校内自习"],
+          "center": {
+            "latitude": 23.048746,
+            "longitude": 113.389175
+          },
+          "radiusKm": 5
+        }
+      ],
+      "anchors": [
+        { "id": "metro_south_station", "name": "大学城南地铁站", "latitude": 23.043438, "longitude": 113.400407 },
+        { "id": "metro_north_station", "name": "大学城北地铁站", "latitude": 23.05805, "longitude": 113.385623 },
+        { "id": "sysu_east_library", "name": "中山大学东校园图书馆", "latitude": 23.066729, "longitude": 113.391881 },
+        { "id": "sysu_life_east_gate", "name": "中大生活区东门", "latitude": 23.060516, "longitude": 113.391515 },
+        { "id": "sysu_life_west_gate", "name": "中大生活区西门", "latitude": 23.059119, "longitude": 113.388719 },
+        { "id": "sysu_life_northwest_gate", "name": "中大生活区西北门", "latitude": 23.061824, "longitude": 113.388402 },
+        { "id": "sysu_north_gate", "name": "中大正北门", "latitude": 23.071611, "longitude": 113.392054 },
+        { "id": "sysu_sports_field", "name": "中山大学球场操场", "latitude": 23.064401, "longitude": 113.389704 },
+        { "id": "guangdong_science_center", "name": "广东科学中心", "latitude": 23.039294, "longitude": 113.362563 },
+        { "id": "lingnan_impression_garden", "name": "岭南印象园", "latitude": 23.035698, "longitude": 113.405322 },
+        { "id": "bio_island", "name": "生物岛", "latitude": 23.065714, "longitude": 113.374142 },
+        { "id": "beigang_wetland_park", "name": "贝岗湿地公园", "latitude": 23.073671, "longitude": 113.399447 },
+        { "id": "campus_anchor_01", "name": "校内商业 anchor 01", "latitude": 23.041374, "longitude": 113.372118 },
+        { "id": "campus_anchor_02", "name": "校内商业 anchor 02", "latitude": 23.050576, "longitude": 113.383492 },
+        { "id": "campus_anchor_03", "name": "校内商业 anchor 03", "latitude": 23.053636, "longitude": 113.383072 },
+        { "id": "campus_anchor_04", "name": "校内商业 anchor 04", "latitude": 23.05915, "longitude": 113.3969 },
+        { "id": "campus_anchor_05", "name": "校内商业 anchor 05", "latitude": 23.054588, "longitude": 113.400043 },
+        { "id": "campus_anchor_06", "name": "校内商业 anchor 06", "latitude": 23.050639, "longitude": 113.40174 },
+        { "id": "campus_anchor_07", "name": "校内商业 anchor 07", "latitude": 23.04336, "longitude": 113.387376 },
+        { "id": "campus_anchor_08", "name": "校内商业 anchor 08", "latitude": 23.042713, "longitude": 113.393067 },
+        { "id": "campus_anchor_09", "name": "校内商业 anchor 09", "latitude": 23.039966, "longitude": 113.381655 },
+        { "id": "campus_anchor_10", "name": "校内商业 anchor 10", "latitude": 23.051027, "longitude": 113.40229 }
+      ],
+      "source": "synthetic_weekend_mvp",
+      "sourceId": "weekend_synthetic_mvp_2026_05_25",
+      "synthetic": true,
+      "confidence": 0.72,
+      "updatedAt": "2026-05-25"
+    }
+  ]
+}
