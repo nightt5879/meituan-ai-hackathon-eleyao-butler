@@ -1,15 +1,3 @@
-@import "../group-common.wxss";
-
-/* The shared .page-heading rule applies a translateX(-4rpx) to compensate
-   for the round back button on the left. Without that button on this page,
-   the offset would push the title slightly into the left padding, so we
-   reset it here. Scoped to .create-page-bar so fill / board pages are not
-   affected. */
-.create-page-bar .page-heading {
-  transform: none;
-}
-
-.create-page-bar {
-  margin-bottom: 24rpx;
-}
+@import "../../food/food.wxss";
+@import "../../planner-chat.wxss";
 
