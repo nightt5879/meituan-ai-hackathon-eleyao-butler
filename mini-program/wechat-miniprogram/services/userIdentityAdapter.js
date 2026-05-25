@@ -20,7 +20,10 @@ function getApiBaseUrl() {
   try {
     const app = typeof getApp === 'function' ? getApp({ allowDefault: true }) : null;
     const globalData = app && app.globalData ? app.globalData : {};
-    const configured = globalData.authApiBaseUrl || globalData.groupDiningApiBaseUrl || globalData.foodRecommendApiBaseUrl;
+    const configured = globalData.authApiBaseUrl ||
+      globalData.groupDiningApiBaseUrl ||
+      globalData.foodRecommendApiBaseUrl ||
+      globalData.weekendApiBaseUrl;
     if (configured) {
       return String(configured).replace(/\/$/, '');
     }

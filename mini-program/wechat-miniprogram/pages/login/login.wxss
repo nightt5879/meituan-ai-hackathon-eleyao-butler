@@ -86,30 +86,33 @@
   line-height: 1.58;
 }
 
+.login-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
 .login-button {
-  height: 96rpx;
-  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 360rpx;
+  height: 88rpx;
+  margin: 0 auto;
   border-radius: 999rpx;
   background: #07C160;
   color: #FFFFFF;
   font-size: 32rpx;
   font-weight: 700;
-  line-height: 96rpx;
+  line-height: 1.2;
+  text-align: center;
 }
 
-.login-error {
-  margin-bottom: 18rpx;
-  padding: 18rpx 22rpx;
-  border: 1rpx solid #F4B4C8;
-  border-radius: 18rpx;
-  background: #FFF0F5;
-  color: #B4235B;
-  font-size: 24rpx;
-  line-height: 1.45;
-}
-
-.login-policy {
-  margin-top: 22rpx;
+.login-tip {
+  width: 100%;
+  margin-top: 24rpx;
   color: var(--theme-subtle, #9A8F83);
   font-size: 24rpx;
   line-height: 1.5;

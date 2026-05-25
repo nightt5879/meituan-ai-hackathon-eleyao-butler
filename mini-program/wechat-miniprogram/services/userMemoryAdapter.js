@@ -32,9 +32,8 @@ const defaultStableFoodPreferences = {
 // In Step 1 these settings are STORED ONLY — no behavior-learning code
 // reads them yet. Future steps will gate learning on these flags.
 //
-// behaviorLearningEnabled is the master switch. The 7 default-true keys
-// are stable opt-ins. rememberFrequentArea / rememberGroupPreference are
-// future ("稍后开放") and default to false; the UI also marks them disabled.
+// behaviorLearningEnabled is the master switch. Permission keys default on
+// and can be toggled independently from the 管家记忆 page.
 const defaultMemoryPermissions = {
   behaviorLearningEnabled: true,
   rememberTastePattern: true,

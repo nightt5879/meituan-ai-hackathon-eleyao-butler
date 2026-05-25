@@ -12,7 +12,8 @@ App({
     // Leave empty to use the local mock recommendation fallback only.
     authApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
     foodRecommendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
-    groupDiningApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io'
+    groupDiningApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
+    weekendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io'
   },
 
   onLaunch() {

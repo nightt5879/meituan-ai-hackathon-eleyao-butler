@@ -5,8 +5,8 @@
   </view>
 
   <view class="home-hero">
-    <view class="section-title">今天吃什么？</view>
-    <view class="section-desc">告诉我场景和偏好，<text class="line-break"></text>我帮你挑 2-3 个可执行方案。</view>
+    <view class="section-title">今天需要管家帮什么？</view>
+    <view class="section-desc">从一个人吃什么，到多人约饭和周边规划，<text class="line-break"></text>先给你 2-3 个可执行方案。</view>
   </view>
 
   <view class="utility-row">
@@ -40,10 +40,10 @@
       <view class="secondary-desc">创建任务 · 分享填写 · 生成推荐</view>
     </view>
     <view class="secondary-entry" bindtap="goToWeekend">
-      <view class="entry-badge">待接入</view>
+      <view class="entry-badge">周边 · 时间 · 天气适配</view>
       <view class="secondary-icon weekend-icon">周</view>
-      <view class="secondary-title">周末规划</view>
-      <view class="secondary-desc">一次性约出吃喝玩</view>
+      <view class="secondary-title">周边规划</view>
+      <view class="secondary-desc">按时间、预算和兴趣安排轻路线</view>
     </view>
   </view>
 
