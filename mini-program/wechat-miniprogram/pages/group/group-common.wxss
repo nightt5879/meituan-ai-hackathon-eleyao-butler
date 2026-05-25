@@ -25,7 +25,7 @@
   color: var(--theme-muted, #6B6157);
   font-size: 44rpx;
   line-height: 1;
-  box-shadow: 0 8rpx 22rpx rgba(45, 30, 15, 0.08);
+  box-shadow: var(--theme-shadow-card, 0 18rpx 48rpx rgba(22, 78, 63, 0.10));
 }
 
 .page-back::after {
@@ -59,7 +59,7 @@
   padding: 8rpx 18rpx;
   border-radius: 999rpx;
   background: var(--theme-primary-ghost, #FFF4EA);
-  color: var(--theme-primary-deep, #C75A22);
+  color: var(--theme-primary-deep, #164E3F);
   font-size: 22rpx;
   font-weight: 800;
 }
@@ -68,7 +68,7 @@
   width: 10rpx;
   height: 10rpx;
   border-radius: 50%;
-  background: var(--theme-primary, #E8743A);
+  background: var(--theme-primary, #5AD8B2);
 }
 
 .panel-card {
@@ -189,7 +189,7 @@
 }
 
 .primary-button {
-  background: var(--theme-primary, #E8743A);
+  background: var(--theme-primary, #5AD8B2);
   color: var(--theme-on-primary, #FFFFFF);
 }
 
@@ -230,8 +230,8 @@
 }
 
 .option-cell.active {
-  border-color: var(--theme-primary, #E8743A);
-  background: var(--theme-primary, #E8743A);
+  border-color: var(--theme-primary, #5AD8B2);
+  background: var(--theme-primary, #5AD8B2);
   color: var(--theme-on-primary, #FFFFFF);
 }
 
@@ -274,8 +274,8 @@
 }
 
 .priority-tag.must {
-  background: rgba(255, 138, 61, 0.15);
-  color: #C66218;
+  background: var(--theme-soft, #DDF8EF);
+  color: var(--theme-primary-deep, #164E3F);
 }
 
 .priority-tag.nice {
@@ -287,11 +287,12 @@
 .adjustment-panel {
   margin-top: 14rpx;
   padding: 24rpx;
-  border: 1rpx dashed var(--theme-border, #F3DDC7);
+  border: 1rpx dashed var(--theme-border, #C8F1E4);
   border-radius: 18rpx;
-  background: var(--theme-soft, #FFF1E3);
+  background: var(--theme-soft, #DDF8EF);
 }
 
 .adjustment-panel .field-label {
-  color: #C66218;
+  color: var(--theme-primary-deep, #164E3F);
 }
+
