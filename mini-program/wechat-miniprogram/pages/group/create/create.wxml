@@ -1,70 +1,92 @@
-<view class="page scaffold-page theme-{{currentTheme}}">
-  <view class="page-bar">
-    <button class="page-back" bindtap="handleBack">‹</button>
-    <view class="page-heading">
-      <view class="page-title">发起约饭</view>
-      <view class="page-subtitle">创建一份可分享的多人约饭任务，成员填写后会同步到同一个看板。</view>
+<view class="page food-page planner-chat-page group-create-page theme-{{currentTheme}}">
+  <view class="custom-food-header planner-header">
+    <view class="header-back-button" bindtap="handleBack">‹</view>
+    <view class="header-online-status status-connected planner-status">
+      <view class="header-online-dot"></view>
+      <text class="header-online-text">发起约饭 · 后端联调</text>
     </view>
   </view>
 
-  <view class="status-badge">
-    <view class="status-dot"></view>
-    <text>多人偏好收集 · 后端联调</text>
-  </view>
-
-  <view class="panel-card">
-    <view class="field">
-      <view class="field-label">你的昵称</view>
-      <input class="field-input" value="{{form.creatorName}}" data-field="creatorName" bindinput="handleInput" />
-    </view>
-
-    <view class="field">
-      <view class="field-label">这次想解决什么</view>
-      <textarea
-        class="field-textarea"
-        value="{{form.rawRequest}}"
-        placeholder="例如：周末晚上 5 个人聚餐，1 个吃素，1 个不吃辣，预算想控制在人均 80 以内。"
-        data-field="rawRequest"
-        bindinput="handleInput"
-      ></textarea>
-      <view class="field-hint">后续这里会接 Agent 约束抽取：硬约束、软偏好、冲突点。</view>
-    </view>
-
-    <view class="split-grid">
-      <view class="field last">
-        <view class="field-label">人数</view>
-        <input class="field-input" value="{{form.peopleCount}}" data-field="peopleCount" bindinput="handleInput" />
+  <view class="chat-body planner-body">
+    <view class="chat-thread">
+      <view class="chat-message butler-message">
+        <view class="message-avatar ai-mark">幺</view>
+        <view class="message-content butler-content planner-wide-content">
+          <view class="chat-bubble butler-bubble planner-intro-bubble">
+            先把这次约饭任务建起来。我会生成一条可分享链接，成员填完偏好后再汇总到同一个看板。
+          </view>
+        </view>
       </view>
-      <view class="field last">
-        <view class="field-label">时间</view>
-        <input class="field-input" value="{{form.dinnerTime}}" data-field="dinnerTime" bindinput="handleInput" />
+
+      <view class="planner-form-list">
+        <view class="shop-card planner-card">
+          <view class="planner-card-title">约饭信息</view>
+          <view class="planner-field">
+            <view class="planner-field-label">你的昵称</view>
+            <input class="planner-input" value="{{form.creatorName}}" data-field="creatorName" bindinput="handleInput" />
+          </view>
+
+          <view class="planner-field">
+            <view class="planner-field-label">这次想解决什么</view>
+            <textarea
+              class="planner-textarea"
+              value="{{form.rawRequest}}"
+              placeholder="例如：周末晚上 5 个人聚餐，1 个吃素，1 个不吃辣，预算想控制在人均 80 以内。"
+              placeholder-class="manual-placeholder"
+              data-field="rawRequest"
+              bindinput="handleInput"
+            ></textarea>
+            <view class="planner-helper">后续会接 Agent 抽取硬约束、软偏好和冲突点。</view>
+          </view>
+
+          <view class="planner-two-column planner-field">
+            <view class="planner-column">
+              <view class="planner-field-label">人数</view>
+              <input class="planner-input" value="{{form.peopleCount}}" data-field="peopleCount" bindinput="handleInput" />
+            </view>
+            <view class="planner-column">
+              <view class="planner-field-label">时间</view>
+              <input class="planner-input" value="{{form.dinnerTime}}" data-field="dinnerTime" bindinput="handleInput" />
+            </view>
+          </view>
+        </view>
+
+        <view class="shop-card planner-card">
+          <view class="planner-card-title">集合范围</view>
+          <view class="planner-field">
+            <view class="planner-field-label">地点</view>
+            <input
+              class="planner-input"
+              value="{{form.location}}"
+              placeholder="例如：学校东门 / 地铁站附近"
+              placeholder-class="manual-placeholder"
+              data-field="location"
+              bindinput="handleInput"
+            />
+          </view>
+        </view>
+
+        <view class="shop-card planner-card">
+          <view class="planner-card-title">当前链路</view>
+          <view class="planner-link-tags">
+            <text class="matched-tag">createTask</text>
+            <text class="matched-tag">shareUrl</text>
+            <text class="matched-tag">inviteToken</text>
+            <text class="matched-tag muted">waiting_preferences</text>
+          </view>
+          <view class="planner-helper">创建后会返回 taskId 和 inviteToken，并生成可分享的填写路径。</view>
+        </view>
       </view>
     </view>
   </view>
 
-  <view class="panel-card">
-    <view class="field last">
-      <view class="field-label">地点</view>
-      <input
-        class="field-input"
-        value="{{form.location}}"
-        placeholder="例如：学校东门 / 地铁站附近"
-        data-field="location"
-        bindinput="handleInput"
-      />
+  <view class="reply-dock planner-action-dock">
+    <view class="slot-summary-card">
+      <view class="slot-summary-bar">
+        <view class="slot-summary-text">成员填写后会同步到同一个约饭看板</view>
+      </view>
+      <view class="slot-summary-hint">当前只创建任务和分享入口，不会覆盖成员偏好。</view>
     </view>
+    <button class="planner-primary-button" bindtap="handleCreateTask">生成任务链接，分享到群</button>
   </view>
-
-  <view class="panel-card">
-    <view class="field-label">当前链路</view>
-    <view class="chip-row">
-      <view class="info-chip hard">createTask</view>
-      <view class="info-chip soft">shareUrl</view>
-      <view class="info-chip soft">inviteToken</view>
-      <view class="info-chip">waiting_preferences</view>
-    </view>
-    <view class="field-hint">创建后会返回 taskId 和 inviteToken，并生成可分享的填写路径。</view>
-  </view>
-
-  <button class="primary-button" bindtap="handleCreateTask">生成任务链接，分享到群</button>
 </view>
