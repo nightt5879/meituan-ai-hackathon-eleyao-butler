@@ -115,11 +115,6 @@ function persistIdentity(payload) {
   wx.setStorageSync(IDENTITY_TYPE_STORAGE_KEY, identityType);
   wx.setStorageSync('isLoggedIn', true);
 
-  console.log('[userIdentityAdapter] identity persisted', {
-    hasToken: true,
-    tokenPrefix: sessionToken.slice(0, 8)
-  });
-
   return {
     userId: userId,
     sessionToken: sessionToken,
@@ -164,9 +159,8 @@ function requestBackendSession(code) {
           return;
         }
 
-        const responseError = res.data && res.data.error;
-        const message = responseError && responseError.message
-          ? responseError.message
+        const message = res.data && res.data.error && res.data.error.message
+          ? res.data.error.message
           : 'wechat login failed with status ' + res.statusCode;
         const error = new Error(message);
         error.statusCode = res.statusCode;

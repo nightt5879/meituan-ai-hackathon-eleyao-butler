@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "regions": [
+    {
+      "id": "guangzhou_university_town",
+      "name": "广州大学城",
+      "city": "广州",
+      "description": "广州大学城小谷围岛核心区的餐饮数据层 MVP 区域。当前中心点与半径用于本地数据校验和查询，不代表精确行政边界。",
+      "center": {
+        "latitude": 23.0525,
+        "longitude": 113.393
+      },
+      "radiusKm": 3.5,
+      "validationRadiusKm": 5,
+      "futureExpansion": {
+        "enabled": false,
+        "maxRadiusKm": 20,
+        "notes": "后续可扩展到大学城周边 20km，覆盖番禺万博、琶洲、客村、市桥等方向；扩展前应将 source 与 regionId 拆分清楚。"
+      },
+      "source": "manual_sample",
+      "sourceId": "manual_region_sample_2026_05",
+      "updatedAt": "2026-05-23"
+    }
+  ]
+}

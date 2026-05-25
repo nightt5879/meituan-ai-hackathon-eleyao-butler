@@ -1,0 +1,460 @@
+{
+  "schemaVersion": 1,
+  "source": "synthetic_mvp",
+  "sourceId": "synthetic_mvp_2026_05_24",
+  "synthetic": true,
+  "confidence": 0.45,
+  "spatialSource": "manual_region_scaffold",
+  "description": "广州大学城 synthetic 餐饮 seed 的空间脚手架。polygon 和 anchor 只用于合成点位生成与校验，不是精确行政边界，也不代表真实商户位置。",
+  "businessDistricts": [
+    {
+      "id": "gogo_xintiandi",
+      "name": "GOGO 新天地片区",
+      "type": "polygon",
+      "description": "大学城较完整购物中心，中低端商场，适合生成连锁餐饮、西餐、奶茶、轻食、商场环境较好的饭馆、朋友约饭、周末坐坐。",
+      "polygon": [
+        {
+          "latitude": 23.063797,
+          "longitude": 113.391345
+        },
+        {
+          "latitude": 23.063788,
+          "longitude": 113.392094
+        },
+        {
+          "latitude": 23.061038,
+          "longitude": 113.392374
+        },
+        {
+          "latitude": 23.060844,
+          "longitude": 113.391657
+        }
+      ],
+      "spatialSource": "manual_region_scaffold",
+      "profile": {
+        "recommendedCategories": [
+          "西餐",
+          "奶茶",
+          "咖啡",
+          "轻食",
+          "甜品",
+          "日料",
+          "韩餐",
+          "粤菜"
+        ],
+        "budgetLevels": [
+          "30-50",
+          "50-80",
+          "80+"
+        ],
+        "sceneTags": [
+          "朋友聊天",
+          "多人约饭",
+          "周末规划",
+          "雨天室内"
+        ]
+      }
+    },
+    {
+      "id": "beigang_village",
+      "name": "贝岗村片区",
+      "type": "polygon",
+      "description": "GOGO 旁边城中村，烟火气强，适合生成大排档、烧烤、粥粉面、低价快餐、炸鸡汉堡、小炒、夜宵；预算偏低，环境和噪声风险相对更高。",
+      "polygon": [
+        {
+          "latitude": 23.063997,
+          "longitude": 113.392431
+        },
+        {
+          "latitude": 23.060884,
+          "longitude": 113.392834
+        },
+        {
+          "latitude": 23.063778,
+          "longitude": 113.394592
+        },
+        {
+          "latitude": 23.060452,
+          "longitude": 113.395345
+        }
+      ],
+      "spatialSource": "manual_region_scaffold",
+      "profile": {
+        "recommendedCategories": [
+          "粉面",
+          "快餐",
+          "烧烤",
+          "家常菜",
+          "川湘菜",
+          "奶茶",
+          "火锅"
+        ],
+        "budgetLevels": [
+          "20-30",
+          "30-50",
+          "50-80"
+        ],
+        "sceneTags": [
+          "单人快吃",
+          "夜宵",
+          "低预算",
+          "重口味聚餐"
+        ]
+      }
+    },
+    {
+      "id": "chuangzhi_park",
+      "name": "创智园片区",
+      "type": "polygon",
+      "description": "靠近大学城北地铁站的科技园 / 办公园区，小规模快餐和小饭馆，适合工作日简餐、单人快吃、低中预算、轻食/咖啡。",
+      "polygon": [
+        {
+          "latitude": 23.058147,
+          "longitude": 113.387875
+        },
+        {
+          "latitude": 23.057563,
+          "longitude": 113.388769
+        },
+        {
+          "latitude": 23.057337,
+          "longitude": 113.386958
+        },
+        {
+          "latitude": 23.05665,
+          "longitude": 113.387663
+        }
+      ],
+      "spatialSource": "manual_region_scaffold",
+      "profile": {
+        "recommendedCategories": [
+          "快餐",
+          "咖啡",
+          "轻食",
+          "粉面",
+          "甜品"
+        ],
+        "budgetLevels": [
+          "20-30",
+          "30-50"
+        ],
+        "sceneTags": [
+          "工作日简餐",
+          "单人快吃",
+          "咖啡轻食"
+        ]
+      }
+    },
+    {
+      "id": "beiting_village",
+      "name": "北亭村片区",
+      "type": "polygon",
+      "description": "城中村餐饮区，适合粥粉面、烧烤、大排档、小炒、快餐，也可生成广东式小酒楼/家常酒楼，用于多人聚餐和稍正式约饭。",
+      "polygon": [
+        {
+          "latitude": 23.048121,
+          "longitude": 113.370672
+        },
+        {
+          "latitude": 23.045996,
+          "longitude": 113.374717
+        },
+        {
+          "latitude": 23.05143,
+          "longitude": 113.376753
+        },
+        {
+          "latitude": 23.052559,
+          "longitude": 113.37456
+        }
+      ],
+      "spatialSource": "manual_region_scaffold",
+      "profile": {
+        "recommendedCategories": [
+          "粉面",
+          "粤菜",
+          "家常菜",
+          "烧烤",
+          "快餐",
+          "川湘菜",
+          "潮汕菜",
+          "东北菜"
+        ],
+        "budgetLevels": [
+          "20-30",
+          "30-50",
+          "50-80",
+          "80+"
+        ],
+        "sceneTags": [
+          "单人快吃",
+          "多人约饭",
+          "低预算",
+          "重口味聚餐"
+        ]
+      }
+    },
+    {
+      "id": "qingchuanghui",
+      "name": "广州大学城青创汇片区",
+      "type": "polygon",
+      "description": "小规模园区/办公生活混合点，类似创智园，适合连锁快餐、小饭馆、轻食、咖啡、工作日简餐、单人快吃。",
+      "polygon": [
+        {
+          "latitude": 23.053845,
+          "longitude": 113.372505
+        },
+        {
+          "latitude": 23.052878,
+          "longitude": 113.374222
+        },
+        {
+          "latitude": 23.051157,
+          "longitude": 113.372208
+        },
+        {
+          "latitude": 23.051463,
+          "longitude": 113.371292
+        }
+      ],
+      "spatialSource": "manual_region_scaffold",
+      "profile": {
+        "recommendedCategories": [
+          "快餐",
+          "咖啡",
+          "轻食",
+          "奶茶",
+          "粉面",
+          "甜品"
+        ],
+        "budgetLevels": [
+          "20-30",
+          "30-50"
+        ],
+        "sceneTags": [
+          "工作日简餐",
+          "单人快吃",
+          "咖啡轻食",
+          "雨天室内"
+        ]
+      }
+    },
+    {
+      "id": "nanting_village",
+      "name": "南亭村片区",
+      "type": "polygon",
+      "description": "城中村餐饮区，适合快餐、粥粉面、小炒、烧烤、火锅鸡、鸡煲、夜宵，低到中预算，也可生成少量多人聚餐型店铺。",
+      "polygon": [
+        {
+          "latitude": 23.035209,
+          "longitude": 113.385137
+        },
+        {
+          "latitude": 23.037719,
+          "longitude": 113.385493
+        },
+        {
+          "latitude": 23.037333,
+          "longitude": 113.391064
+        },
+        {
+          "latitude": 23.033749,
+          "longitude": 113.389754
+        }
+      ],
+      "spatialSource": "manual_region_scaffold",
+      "profile": {
+        "recommendedCategories": [
+          "快餐",
+          "粉面",
+          "家常菜",
+          "烧烤",
+          "火锅",
+          "川湘菜",
+          "潮汕菜",
+          "新疆菜",
+          "粤菜"
+        ],
+        "budgetLevels": [
+          "20-30",
+          "30-50",
+          "50-80"
+        ],
+        "sceneTags": [
+          "低预算",
+          "多人约饭",
+          "夜宵",
+          "重口味聚餐"
+        ]
+      }
+    },
+    {
+      "id": "suishi_village",
+      "name": "穗石村片区",
+      "type": "polygon",
+      "description": "大学城东侧城中村餐饮补充区，适合粉面、快餐、小炒、烧烤、大排档、东北菜、家常菜、低预算多人聚餐。",
+      "polygon": [
+        {
+          "latitude": 23.048,
+          "longitude": 113.40845
+        },
+        {
+          "latitude": 23.05217,
+          "longitude": 113.410511
+        },
+        {
+          "latitude": 23.050956,
+          "longitude": 113.414965
+        },
+        {
+          "latitude": 23.046386,
+          "longitude": 113.411394
+        }
+      ],
+      "spatialSource": "manual_region_scaffold",
+      "profile": {
+        "recommendedCategories": [
+          "粉面",
+          "快餐",
+          "烧烤",
+          "东北菜",
+          "家常菜",
+          "川湘菜",
+          "粤菜",
+          "新疆菜"
+        ],
+        "budgetLevels": [
+          "20-30",
+          "30-50",
+          "50-80"
+        ],
+        "sceneTags": [
+          "低预算",
+          "多人约饭",
+          "重口味聚餐"
+        ]
+      }
+    }
+  ],
+  "campusAnchors": {
+    "id": "campus_anchors",
+    "name": "校内 / 高校内部餐饮 anchors",
+    "type": "anchors",
+    "description": "大学内部商业区 / 校内餐饮点位附近的 synthetic 生成锚点。每个点位周围 jitter 120-250 米，不生成城中村大排档或小巷烧烤风格。",
+    "jitterRadiusMeters": {
+      "min": 120,
+      "max": 250
+    },
+    "anchors": [
+      {
+        "id": "campus_anchor_001",
+        "latitude": 23.041374,
+        "longitude": 113.372118
+      },
+      {
+        "id": "campus_anchor_002",
+        "latitude": 23.050576,
+        "longitude": 113.383492
+      },
+      {
+        "id": "campus_anchor_003",
+        "latitude": 23.053636,
+        "longitude": 113.383072
+      },
+      {
+        "id": "campus_anchor_004",
+        "latitude": 23.05915,
+        "longitude": 113.3969
+      },
+      {
+        "id": "campus_anchor_005",
+        "latitude": 23.054588,
+        "longitude": 113.400043
+      },
+      {
+        "id": "campus_anchor_006",
+        "latitude": 23.050639,
+        "longitude": 113.40174
+      },
+      {
+        "id": "campus_anchor_007",
+        "latitude": 23.04336,
+        "longitude": 113.387376
+      },
+      {
+        "id": "campus_anchor_008",
+        "latitude": 23.042713,
+        "longitude": 113.393067
+      },
+      {
+        "id": "campus_anchor_009",
+        "latitude": 23.039966,
+        "longitude": 113.381655
+      },
+      {
+        "id": "campus_anchor_010",
+        "latitude": 23.051027,
+        "longitude": 113.40229
+      }
+    ],
+    "spatialSource": "manual_region_scaffold",
+    "profile": {
+      "recommendedCategories": [
+        "快餐",
+        "奶茶",
+        "咖啡",
+        "轻食",
+        "粉面",
+        "日料",
+        "西餐",
+        "甜品"
+      ],
+      "budgetLevels": [
+        "20-30",
+        "30-50",
+        "50-80"
+      ],
+      "sceneTags": [
+        "校内",
+        "单人快吃",
+        "雨天室内",
+        "周末规划"
+      ]
+    }
+  },
+  "manualSampleJitter": {
+    "id": "manual_sample_jitter",
+    "name": "manual_sample 周边 synthetic jitter 点位",
+    "type": "manual_shop_anchor_jitter",
+    "description": "基于现有 manual_sample 店铺坐标生成的虚拟可选项，坐标带 80-180 米 jitter，不与 manual 店铺完全重合。",
+    "jitterRadiusMeters": {
+      "min": 80,
+      "max": 180
+    },
+    "spatialSource": "manual_region_scaffold",
+    "profile": {
+      "recommendedCategories": [
+        "韩餐",
+        "日料",
+        "西餐",
+        "火锅",
+        "粤菜",
+        "家常菜",
+        "潮汕菜",
+        "新疆菜",
+        "甜品"
+      ],
+      "budgetLevels": [
+        "30-50",
+        "50-80",
+        "80+"
+      ],
+      "sceneTags": [
+        "多人约饭",
+        "朋友聊天",
+        "周末规划"
+      ]
+    }
+  },
+  "updatedAt": "2026-05-24"
+}

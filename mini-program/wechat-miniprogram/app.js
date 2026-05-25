@@ -7,25 +7,19 @@ App({
     authError: '',
     currentUserId: '',
     sessionToken: '',
-    authApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
     // Development / real-device debugging backend origin for the single-person
     // food recommendation flow. Experience build and production still require HTTPS.
     // Leave empty to use the local mock recommendation fallback only.
+    authApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
     foodRecommendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
     groupDiningApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
     weekendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io'
   },
 
   onLaunch() {
-    const hasSession = userIdentityAdapter.hasSession();
-    this.globalData.isLoggedIn = hasSession;
-    this.globalData.authReady = hasSession;
-    this.globalData.authError = '';
+    this.globalData.isLoggedIn = userIdentityAdapter.hasSession();
     this.globalData.currentUserId = userIdentityAdapter.getCurrentUserId();
     this.globalData.sessionToken = userIdentityAdapter.getSessionToken();
-    if (!hasSession) {
-      wx.setStorageSync('isLoggedIn', false);
-    }
   },
 
   ensureLogin(options) {
@@ -37,12 +31,6 @@ App({
       app.globalData.authError = '';
       app.globalData.currentUserId = identity.userId;
       app.globalData.sessionToken = identity.sessionToken;
-
-      console.log('[app] login synced', {
-        hasToken: !!identity.sessionToken,
-        tokenPrefix: identity.sessionToken ? identity.sessionToken.slice(0, 8) : ''
-      });
-
       return identity;
     }).catch(function (error) {
       app.globalData.isLoggedIn = false;

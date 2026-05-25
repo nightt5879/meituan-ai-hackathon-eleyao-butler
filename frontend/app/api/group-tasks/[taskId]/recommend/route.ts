@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireMiniProgramUser } from "@/lib/server/requestAuth";
 import { saveGroupRecommendation } from "@/lib/server/taskStore";
 
 export const runtime = "nodejs";
@@ -9,6 +10,12 @@ type RouteContext = {
 };
 
 export async function POST(request: Request, { params }: RouteContext) {
+  const auth = await requireMiniProgramUser(request);
+
+  if (!auth.ok) {
+    return auth.response;
+  }
+
   const { taskId } = await params;
   let input: unknown;
 

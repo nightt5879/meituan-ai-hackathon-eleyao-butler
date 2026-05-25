@@ -8,7 +8,7 @@
 
 const userIdentityAdapter = requireUserIdentityAdapter();
 
-const ADAPTER_MODE = 'fallback';
+const ADAPTER_MODE = 'api';
 const API_BASE_URL = 'http://meituan.43-110-71-200.sslip.io';
 const API_PREFIX = '/api/weekend/plans';
 const API_TIMEOUT_MS = 15000;
@@ -115,10 +115,6 @@ function apiRequest(method, path, body) {
     }
 
     const sessionToken = getSessionToken();
-    console.log('[weekendPlannerAdapter] auth state', {
-      hasToken: !!sessionToken,
-      tokenPrefix: sessionToken ? sessionToken.slice(0, 8) : ''
-    });
 
     if (!sessionToken) {
       reject(makeError('AUTH_REQUIRED', AUTH_REQUIRED_MESSAGE));

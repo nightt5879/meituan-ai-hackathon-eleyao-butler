@@ -1,5 +1,6 @@
 const userMemoryAdapter = require('../../services/userMemoryAdapter');
 const themeAdapter = require('../../services/themeAdapter');
+const userIdentityAdapter = require('../../services/userIdentityAdapter');
 
 Page({
   data: {
@@ -36,7 +37,7 @@ Page({
   },
 
   ensureLoggedIn() {
-    if (!wx.getStorageSync('isLoggedIn')) {
+    if (!userIdentityAdapter.hasSession()) {
       wx.reLaunch({
         url: '/pages/login/login'
       });
