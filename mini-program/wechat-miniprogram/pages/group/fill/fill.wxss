@@ -4,9 +4,9 @@
   margin-bottom: 24rpx;
   padding: 30rpx;
   border-radius: 30rpx;
-  background: linear-gradient(135deg, var(--theme-primary, #E8743A), var(--theme-primary-deep, #C75A22));
-  color: #FFFFFF;
-  box-shadow: 0 18rpx 42rpx rgba(232, 116, 58, 0.18);
+  background: linear-gradient(135deg, var(--theme-primary, #5AD8B2), var(--theme-secondary, #BDF4E5));
+  color: var(--theme-on-primary, #164E3F);
+  box-shadow: var(--theme-shadow-button, 0 12rpx 30rpx rgba(90, 216, 178, 0.30));
 }
 
 .task-eyebrow {
@@ -69,8 +69,8 @@
 }
 
 .priority-option.active.must {
-  background: rgba(255, 138, 61, 0.16);
-  color: #C66218;
+  background: var(--theme-soft, #DDF8EF);
+  color: var(--theme-primary-deep, #164E3F);
 }
 
 .priority-option.active.nice {
@@ -104,8 +104,8 @@
 }
 
 .option-cell.active {
-  border-color: var(--theme-primary, #E8743A);
-  background: var(--theme-primary, #E8743A);
+  border-color: var(--theme-primary, #5AD8B2);
+  background: var(--theme-primary, #5AD8B2);
   color: var(--theme-on-primary, #FFFFFF);
 }
 
@@ -117,3 +117,4 @@
 .submit-button {
   margin-top: 24rpx;
 }
+

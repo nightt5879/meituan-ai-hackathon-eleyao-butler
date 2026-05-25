@@ -11,9 +11,9 @@
   ],
   "window": {
     "navigationBarTitleText": "饿了幺",
-    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarBackgroundColor": "#5AD8B2",
     "navigationBarTextStyle": "black",
-    "backgroundColor": "#f6f7f9"
+    "backgroundColor": "#EFFFF8"
   },
   "networkTimeout": {
     "request": 120000

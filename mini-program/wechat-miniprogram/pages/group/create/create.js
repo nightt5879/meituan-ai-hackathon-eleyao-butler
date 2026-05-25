@@ -4,7 +4,7 @@ const userIdentityAdapter = require('../../../services/userIdentityAdapter');
 
 Page({
   data: {
-    currentTheme: 'warm',
+    currentTheme: themeAdapter.DEFAULT_THEME_ID,
     form: {
       creatorName: '小幺',
       rawRequest: '',
@@ -26,9 +26,14 @@ Page({
   },
 
   syncTheme() {
-    this.setData({
-      currentTheme: themeAdapter.getCurrentThemeKey()
-    });
+    const app = getApp();
+
+    if (app && app.syncThemeToPage) {
+      app.syncThemeToPage(this);
+      return;
+    }
+
+    this.setData(themeAdapter.getPageThemeData());
   },
 
   handleBack() {
