@@ -57,7 +57,7 @@ Page({
     progressPercent: 0,
     connectionStatus: buildConnectionStatusView({
       state: 'checking',
-      text: 'thinking',
+      text: '检测 OpenClaw 中',
       detail: ''
     }),
 
@@ -188,7 +188,7 @@ Page({
     this.setData({
       connectionStatus: buildConnectionStatusView({
         state: 'checking',
-        text: 'thinking',
+        text: '检测 OpenClaw 中',
         detail: this.data.connectionStatus.detail || ''
       })
     });
@@ -647,7 +647,7 @@ Page({
     });
     const nextBatchIndex = this.data.recommendationBatchIndex + 1;
     this.setData({ isRecommendationLoading: true });
-    wx.showLoading({ title: 'thinking' });
+    wx.showLoading({ title: '生成推荐中' });
 
     let nextRecommendations;
     try {
@@ -685,11 +685,7 @@ Page({
             text: 'OpenClaw 推荐未返回',
             detail: recommendationMeta.error || recommendationMeta.message
           })
-        : buildConnectionStatusView({
-            state: 'connected',
-            text: 'OpenClaw 推荐',
-            detail: this.data.connectionStatus.detail || 'OpenClaw 已成功返回推荐。'
-          }),
+        : this.data.connectionStatus,
       showAdjustmentOptions: false
     });
   },
@@ -794,7 +790,7 @@ Page({
       })
     };
     this.setData({ isRecommendationLoading: true });
-    wx.showLoading({ title: 'thinking' });
+    wx.showLoading({ title: '生成推荐中' });
 
     let nextRecommendations;
     try {
@@ -829,11 +825,7 @@ Page({
             text: 'OpenClaw 推荐未返回',
             detail: recommendationMeta.error || recommendationMeta.message
           })
-        : buildConnectionStatusView({
-            state: 'connected',
-            text: 'OpenClaw 推荐',
-            detail: this.data.connectionStatus.detail || 'OpenClaw 已成功返回推荐。'
-          }),
+        : this.data.connectionStatus,
       showAdjustmentOptions: false,
       adjustmentManualInput: '',
       adjustmentMessages: this.data.adjustmentMessages.concat(
@@ -1003,7 +995,7 @@ Page({
 
     if (!currentQuestion) {
       this.setData({ isRecommendationLoading: true });
-      wx.showLoading({ title: 'thinking' });
+      wx.showLoading({ title: '生成推荐中' });
       try {
         recommendations = await foodAiAdapter.generateRecommendations(session.slots, session.preferences, {
           decisionSheet: session.decisionSheet
@@ -1025,8 +1017,8 @@ Page({
           })
         : buildConnectionStatusView({
             state: 'connected',
-            text: 'OpenClaw 推荐',
-            detail: this.data.connectionStatus.detail || 'OpenClaw 已成功返回推荐。'
+            text: 'OpenClaw 推荐成功',
+            detail: this.data.connectionStatus.detail || '远端 OpenClaw 已成功返回推荐。'
           });
 
       // Auto-save only lightweight recommendation history when behavior-learning
@@ -1742,7 +1734,7 @@ function buildConnectionStatusView(status) {
   const safeStatus = status || {};
   const state = safeStatus.state || 'checking';
   const textMap = {
-    checking: 'thinking',
+    checking: '检测 OpenClaw 中',
     connected: 'OpenClaw 已连接',
     'backend-only': '后端在线 · OpenClaw 未确认',
     degraded: 'OpenClaw 推荐未返回',
