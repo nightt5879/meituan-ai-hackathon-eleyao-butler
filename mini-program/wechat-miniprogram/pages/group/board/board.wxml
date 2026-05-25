@@ -3,98 +3,226 @@
     <button class="page-back" bindtap="handleBack">‹</button>
     <view class="page-heading">
       <view class="page-title">约饭任务看板</view>
-      <view class="page-subtitle">共享成员偏好、冲突识别和推荐结果。</view>
+      <view class="page-subtitle">数据通过 adapter.getTaskBoard 获取；下拉刷新；每 3 秒自动同步一次。</view>
     </view>
+  </view>
+
+  <view wx:if="{{errorMessage}}" class="panel-card">
+    <view class="field-label">加载提示</view>
+    <view class="field-hint">{{errorMessage}}</view>
+  </view>
+
+  <view wx:if="{{!hasInitialized && !errorMessage}}" class="panel-card">
+    <view class="field-label">加载中…</view>
+    <view class="field-hint">正在通过 adapter 取最新看板数据。</view>
   </view>
 
   <view wx:if="{{board}}" class="panel-card progress-card">
     <view class="progress-head">
       <view>
-        <view class="progress-title">{{board.task.title || '多人约饭'}}</view>
-        <view class="progress-desc">{{board.submittedCount}} / {{board.expectedCount}} 已提交 · {{board.message}}</view>
+        <view class="progress-title">{{board.task.title || '偏好收集中'}}</view>
+        <view class="progress-desc">{{board.submittedCount}} / {{board.expectedCount}} 已提交 · 还差 {{board.pendingCount}} 人{{board.recommendationState.dirtyReason === 'adjustment_requested' ? ' · 有成员希望调整' : (board.recommendationState.dirtyReason ? ' · 推荐已过期' : '')}}</view>
       </view>
-      <view class="progress-pill">{{board.status === 'remote_ok' ? '后端在线' : '本地兜底'}}</view>
+      <view class="progress-pill">{{statusLabel}}</view>
     </view>
     <view class="progress-track">
       <view class="progress-fill" style="width: {{board.progressPercent}}%;"></view>
     </view>
-    <view class="chip-row board-actions">
-      <button class="secondary-button compact-button" bindtap="handleRefresh" loading="{{isLoading}}">刷新</button>
-      <button class="primary-button compact-button" bindtap="handleGenerateRecommendation" loading="{{isRecommending}}">生成推荐</button>
+    <view class="avatar-row">
+      <view class="empty-avatar">幺</view>
+      <view wx:for="{{board.participants}}" wx:key="id" class="empty-avatar">{{item.visibility === 'private' ? '匿' : (item.nickname || '友')}}</view>
     </view>
   </view>
 
-  <view wx:if="{{board && board.members.length}}" class="board-section">
+  <view wx:if="{{board}}" wx:for="{{steps}}" wx:for-item="step" wx:key="key" class="board-section">
     <view class="section-head">
       <view class="section-dot"></view>
       <view>
-        <view class="section-title-small">成员偏好</view>
-        <view class="section-desc-small">来自同一个 taskId + inviteToken 的共享状态。</view>
+        <view class="section-title-small">{{step.title}}</view>
+        <view class="section-desc-small">{{step.desc}}</view>
       </view>
     </view>
-    <view wx:for="{{board.members}}" wx:key="participantId" wx:for-item="member" class="panel-card member-card">
-      <view class="member-head">
-        <view class="member-name">{{member.nickname}}</view>
-        <view class="progress-pill">{{member.manualFields.budgetMax ? member.manualFields.budgetMax + ' 元内' : '预算未填'}}</view>
+
+    <block wx:if="{{step.key === 'participants'}}">
+      <view wx:if="{{board.participants.length}}" class="panel-card">
+        <view wx:for="{{board.participants}}" wx:for-item="member" wx:key="id" class="field">
+          <view wx:if="{{member.visibility === 'private'}}" class="field-label">匿名成员已提交</view>
+          <view wx:else class="field-label">
+            {{member.nickname}}
+            <text wx:if="{{member.visibility === 'nickname_only'}}" class="field-hint" style="margin-left:8rpx;">· 偏好仅用于推荐</text>
+          </view>
+
+          <block wx:if="{{member.visibility === 'public'}}">
+            <view class="field-hint">{{member.rawPreference || '（未填写自由偏好）'}}</view>
+            <view wx:if="{{member.availabilitySummary}}" class="field-hint">可参与：{{member.availabilitySummary}}</view>
+            <view class="chip-row">
+              <view wx:if="{{member.budgetTag}}" class="info-chip">预算 {{member.budgetTag}}</view>
+              <view wx:elif="{{member.manualFields.budgetMax}}" class="info-chip">预算 ≤ {{member.manualFields.budgetMax}}</view>
+              <view wx:if="{{member.spicyLabel}}" class="info-chip">{{member.spicyLabel}}</view>
+              <view wx:for="{{member.dietaryRestrictions}}" wx:for-item="dt" wx:key="*this" class="info-chip hard">{{dt}}</view>
+              <view wx:for="{{member.cuisinePreferences}}" wx:for-item="cp" wx:key="*this" class="info-chip soft">想吃 {{cp}}</view>
+              <view wx:for="{{member.extractedConstraints.hardConstraints}}" wx:for-item="hc" wx:key="*this" class="info-chip hard">{{hc}}</view>
+              <view wx:for="{{member.extractedConstraints.softPreferences}}" wx:for-item="sp" wx:key="*this" class="info-chip soft">{{sp}}</view>
+            </view>
+          </block>
+        </view>
       </view>
-      <view class="member-desc">{{member.rawPreference}}</view>
-      <view class="chip-row">
-        <view wx:if="{{member.manualFields.spicyPreference}}" class="info-chip soft">{{member.manualFields.spicyPreference}}</view>
-        <view wx:if="{{member.manualFields.leaveBefore}}" class="info-chip hard">{{member.manualFields.leaveBefore}} 前离开</view>
+      <view wx:else class="empty-panel section-empty">
+        <view class="empty-title">还没有成员提交</view>
+        <view class="empty-desc">把分享链接发给朋友，他们填好后这里会出现真实数据。</view>
       </view>
+    </block>
+
+    <block wx:if="{{step.key === 'conflicts'}}">
+      <view wx:if="{{board.conflicts.length}}" class="panel-card">
+        <view wx:for="{{board.conflicts}}" wx:for-item="conflict" wx:key="description" class="field">
+          <view class="field-label">{{conflict.type}} · {{conflict.severity}}</view>
+          <view class="field-hint">{{conflict.description}}</view>
+          <view class="field-hint">建议：{{conflict.resolutionStrategy}}</view>
+        </view>
+      </view>
+      <view wx:else class="empty-panel section-empty">
+        <view class="empty-title">暂无冲突</view>
+        <view class="empty-desc">成员偏好相近，或还没有足够数据触发冲突识别。</view>
+      </view>
+    </block>
+
+    <block wx:if="{{step.key === 'recommendation'}}">
+      <view wx:if="{{board.recommendationResult}}" class="panel-card">
+        <view class="field">
+          <view class="field-label">最终推荐 · {{board.recommendationResult.finalChoice.name}}</view>
+          <view class="field-hint">{{board.recommendationResult.finalChoice.reason}}</view>
+          <view wx:if="{{board.recommendationResult.finalChoice.risks.length}}" class="chip-row">
+            <view wx:for="{{board.recommendationResult.finalChoice.risks}}" wx:for-item="risk" wx:key="*this" class="info-chip hard">{{risk}}</view>
+          </view>
+          <view wx:if="{{board.recommendationResult.finalChoice.backup}}" class="field-hint">备选：{{board.recommendationResult.finalChoice.backup}}</view>
+        </view>
+
+        <view wx:if="{{board.recommendationResult.groupMessage}}" class="field">
+          <view class="field-label">群里发这条</view>
+          <view class="field-hint">{{board.recommendationResult.groupMessage}}</view>
+          <button class="primary-button" bindtap="handleCopyGroupMessage">复制群消息</button>
+        </view>
+
+        <view wx:if="{{board.recommendationResult.candidates.length}}" class="field">
+          <view class="field-label">全部候选 ({{board.recommendationResult.candidates.length}})</view>
+          <view wx:for="{{board.recommendationResult.candidates}}" wx:for-item="cand" wx:key="id" class="field">
+            <view class="field-label">{{cand.name}} · 人均 ¥{{cand.avgPrice}} · {{cand.walkMinutes}} 分钟</view>
+            <view class="field-hint">{{cand.reason}}</view>
+            <view class="chip-row">
+              <view wx:for="{{cand.tags}}" wx:for-item="t" wx:key="*this" class="info-chip">{{t}}</view>
+            </view>
+            <view class="chip-row">
+              <view class="info-chip {{cand.audit.passed ? 'soft' : 'hard'}}">自检 {{cand.audit.passed ? '通过' : '存在风险'}}</view>
+              <view wx:if="{{cand.audit.hardRules.spicy === 'risk' || cand.audit.hardRules.spicy === 'fail'}}" class="info-chip hard">辣度可能不合</view>
+              <view wx:if="{{cand.audit.hardRules.budget === 'risk' || cand.audit.hardRules.budget === 'fail'}}" class="info-chip hard">预算偏紧</view>
+              <view wx:if="{{cand.audit.hardRules.distance === 'risk' || cand.audit.hardRules.distance === 'fail'}}" class="info-chip hard">距离稍远</view>
+            </view>
+
+            <view wx:if="{{cand.matchedNeeds.length}}" class="field-hint">满足：</view>
+            <view wx:if="{{cand.matchedNeeds.length}}" class="chip-row">
+              <view wx:for="{{cand.matchedNeeds}}" wx:for-item="mn" wx:key="*this" class="info-chip soft">{{mn}}</view>
+            </view>
+            <view wx:if="{{cand.unmetNeeds.length}}" class="field-hint">可能牺牲：</view>
+            <view wx:if="{{cand.unmetNeeds.length}}" class="chip-row">
+              <view wx:for="{{cand.unmetNeeds}}" wx:for-item="un" wx:key="*this" class="info-chip hard">{{un}}</view>
+            </view>
+            <view wx:if="{{cand.tradeoffSummary}}" class="field-hint">取舍：{{cand.tradeoffSummary}}</view>
+            <view wx:if="{{cand.tradeoffs.length}}" class="chip-row">
+              <view wx:for="{{cand.tradeoffs}}" wx:for-item="to" wx:key="nickname" class="info-chip hard">{{to.nickname}}：{{to.reason}}</view>
+            </view>
+
+            <view wx:if="{{cand.memberScoreList.length}}" class="chip-row">
+              <view wx:for="{{cand.memberScoreList}}" wx:for-item="ms" wx:key="nickname" class="info-chip soft">{{ms.nickname}}：{{ms.score}}</view>
+            </view>
+            <view wx:if="{{cand.audit.llmExplanation}}" class="field-hint">自检说明：{{cand.audit.llmExplanation}}</view>
+
+            <button class="primary-button" data-candidate-id="{{cand.id}}" data-candidate-name="{{cand.name}}" bindtap="handleOpenAdjustmentPanel">对这家不满意</button>
+
+            <view wx:if="{{adjustmentTargetCandidate.id === cand.id}}" class="adjustment-panel">
+              <view class="field-label">告诉管家哪里不合适</view>
+              <view class="field-hint">提交后管家会标记这家有人不满意，发起人可以选择重新生成推荐。</view>
+
+              <view class="field">
+                <view class="field-label">你的昵称（匿名时可留空）</view>
+                <input class="field-input" value="{{adjustmentNickname}}" placeholder="例如：阿酒" bindinput="handleAdjustmentNicknameInput" />
+              </view>
+
+              <view class="field">
+                <view class="field-label">这条反馈谁能看</view>
+                <view class="option-grid">
+                  <view
+                    wx:for="{{adjustmentVisibilityOptions}}"
+                    wx:key="value"
+                    class="option-cell {{adjustmentVisibility === item.value ? 'active' : ''}}"
+                    data-value="{{item.value}}"
+                    bindtap="handleSelectAdjustmentVisibility"
+                  >{{item.label}}</view>
+                </view>
+              </view>
+
+              <view class="field">
+                <view class="field-label">不满意原因</view>
+                <view class="option-grid">
+                  <view
+                    wx:for="{{adjustmentReasons}}"
+                    wx:key="value"
+                    class="option-cell {{adjustmentReasonType === item.value ? 'active' : ''}}"
+                    data-value="{{item.value}}"
+                    bindtap="handleSelectAdjustmentReason"
+                  >{{item.label}}</view>
+                </view>
+              </view>
+
+              <view class="field last">
+                <view class="field-label">补充说明（选填）</view>
+                <textarea
+                  class="field-textarea"
+                  value="{{adjustmentNote}}"
+                  placeholder="例如：刚刚说错了，我对辣过敏"
+                  bindinput="handleAdjustmentNoteInput"
+                ></textarea>
+              </view>
+
+              <button class="primary-button" loading="{{isSubmittingAdjustment}}" disabled="{{isSubmittingAdjustment}}" bindtap="handleSubmitAdjustmentRequest">提交反馈</button>
+              <button class="primary-button" bindtap="handleCloseAdjustmentPanel">取消</button>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="empty-panel section-empty">
+        <view class="empty-title">还没生成推荐</view>
+        <view class="empty-desc">点下面「生成推荐」会调用 adapter.generateRecommendation。</view>
+      </view>
+    </block>
+  </view>
+
+  <view wx:if="{{board.adjustmentRequestCount > 0}}" class="panel-card">
+    <view class="field-label">收到的调整请求 · {{board.adjustmentRequestCount}} 条</view>
+    <view class="field-hint">有成员对当前候选不满意。下方按 reasonType 汇总；点上方「生成推荐」会清空这些反馈并重新出方案。</view>
+    <view wx:for="{{board.adjustmentRequests}}" wx:for-item="req" wx:key="id" class="field">
+      <view class="field-label">
+        <text wx:if="{{req.visibility === 'private'}}">匿名成员</text>
+        <text wx:else>{{req.nickname || '某成员'}}</text>
+        · {{req.reasonLabel}}
+      </view>
+      <view class="field-hint">针对：{{req.candidateName}}</view>
+      <view wx:if="{{req.note}}" class="field-hint">补充：{{req.note}}</view>
     </view>
   </view>
 
-  <view wx:if="{{board && !board.members.length}}" class="empty-panel section-empty">
-    <view class="empty-title">还没有成员提交</view>
-    <view class="empty-desc">把创建页返回的 fill 路径发给成员，提交后这里会刷新出共享偏好。</view>
+  <view class="panel-card">
+    <view class="field-label">Adapter 调用</view>
+    <view class="chip-row">
+      <view class="info-chip hard">getTaskBoard(taskId, inviteToken)</view>
+      <view class="info-chip soft">submitPreference</view>
+      <view class="info-chip">generateRecommendation</view>
+      <view class="info-chip">submitAdjustmentRequest</view>
+    </view>
+    <view class="field-hint">所有数据均经 adapter；页面不直接 wx.request。Mock fallback 可在 services/groupDiningAdapter.js 切换真实接口。</view>
   </view>
 
-  <view wx:if="{{board && board.conflicts.length}}" class="board-section">
-    <view class="section-head">
-      <view class="section-dot"></view>
-      <view>
-        <view class="section-title-small">冲突识别</view>
-        <view class="section-desc-small">预算、忌口、时间和聊天氛围会作为硬检查。</view>
-      </view>
-    </view>
-    <view wx:for="{{board.conflicts}}" wx:key="description" wx:for-item="conflict" class="panel-card member-card">
-      <view class="member-head">
-        <view class="member-name">{{conflict.type}}</view>
-        <view class="progress-pill">{{conflict.severity}}</view>
-      </view>
-      <view class="member-desc">{{conflict.description}}</view>
-      <view class="member-desc muted">{{conflict.resolution_strategy}}</view>
-    </view>
-  </view>
-
-  <view wx:if="{{board && board.recommendations.length}}" class="board-section">
-    <view class="section-head">
-      <view class="section-dot"></view>
-      <view>
-        <view class="section-title-small">候选方案</view>
-        <view class="section-desc-small">已生成 2-3 个可执行候选，方便大家快速对比。</view>
-      </view>
-    </view>
-    <view wx:for="{{board.recommendations}}" wx:key="restaurant_id" wx:for-item="candidate" class="panel-card candidate-card">
-      <view class="member-head">
-        <view class="member-name">{{candidate.name}}</view>
-        <view class="progress-pill">{{candidate.category}}</view>
-      </view>
-      <view class="member-desc">人均 {{candidate.avg_price}} 元 · {{candidate.distance_m}} 米 · 评分 {{candidate.rating}}</view>
-      <view class="chip-row">
-        <view wx:for="{{candidate.tags}}" wx:key="*this" class="info-chip soft">{{item}}</view>
-      </view>
-      <view class="member-desc">{{candidate.reason}}</view>
-      <view wx:if="{{candidate.audit}}" class="audit-box">自检：{{candidate.audit.llm_explanation}}</view>
-    </view>
-  </view>
-
-  <view wx:if="{{board && board.finalChoice}}" class="panel-card board-section">
-    <view class="section-title-small">首推：{{board.finalChoice.name}}</view>
-    <view class="member-desc">{{board.finalChoice.reason}}</view>
-    <view class="audit-box">{{board.groupMessage}}</view>
-  </view>
-
+  <button class="primary-button" loading="{{isRecommending}}" disabled="{{!taskId || isRecommending}}" bindtap="handleGenerateRecommendation">生成推荐</button>
+  <button class="primary-button" loading="{{isLoading}}" disabled="{{!taskId || isLoading}}" bindtap="handleRefresh">手动刷新</button>
   <button class="primary-button" bindtap="handleBackHome">回到首页</button>
 </view>
