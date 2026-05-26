@@ -1,10 +1,14 @@
-<view class="page scaffold-page theme-{{currentTheme}}">
-  <view class="page-bar">
-    <button class="page-back" bindtap="handleBack">‹</button>
-    <view class="page-heading">
-      <view class="page-title">填一下你的偏好</view>
-      <view class="page-subtitle">点几个标签就行；不写也能交，管家会兜底。</view>
+<view class="page scaffold-page fill-scaffold theme-{{currentTheme}}">
+  <view class="group-safe-header" style="padding-top: {{statusBarHeight}}px;">
+    <view class="group-safe-nav" style="height: {{navBarHeight}}px; padding-right: {{navRightPadding}}px; --nav-title-side: {{navTitleSidePadding}}px;">
+      <view class="group-nav-back-hit" hover-class="group-nav-back-active" bindtap="handleBack" aria-label="返回">
+        <view class="group-nav-back-button">
+          <text class="group-nav-back-icon">‹</text>
+        </view>
+      </view>
+      <view class="group-safe-title">填写偏好</view>
     </view>
+    <view class="group-safe-subtitle">点几个标签就行；不写也能交，管家会兜底。</view>
   </view>
 
   <view wx:if="{{errorMessage}}" class="panel-card">
@@ -19,10 +23,12 @@
 
   <view wx:elif="{{taskSummary}}" class="task-brief">
     <view class="task-eyebrow">{{taskSummary.creatorName || '发起人'}} 邀请你 · 多人约饭</view>
-    <view class="task-title">{{taskSummary.rawRequest || taskSummary.title}}</view>
+    <view class="task-title">{{taskSummary.title}}</view>
+    <view class="task-desc">{{taskSummary.summary}}</view>
     <view class="task-meta">
       <text wx:if="{{taskSummary.expectedPeopleCount}}">{{taskSummary.expectedPeopleCount}} 人</text>
-      <text>{{taskSummary.submittedCount}}/{{taskSummary.expectedPeopleCount}} 已提交</text>
+      <text wx:if="{{taskSummary.expectedPeopleCount}}">{{taskSummary.submittedCount}}/{{taskSummary.expectedPeopleCount}} 已提交</text>
+      <text wx:else>{{taskSummary.submittedCount}} 人已提交</text>
       <text wx:if="{{taskSummary.dinnerTime && taskSummary.dinnerTime !== '待商量'}}">{{taskSummary.dinnerTime}}</text>
       <text wx:if="{{taskSummary.locationText && taskSummary.locationText !== '待商量'}}">{{taskSummary.locationText}}</text>
     </view>
@@ -37,14 +43,17 @@
   <view class="panel-card">
     <view class="field">
       <view class="field-label">你的昵称</view>
-      <input class="field-input" value="{{form.nickname}}" placeholder="例如：阿酒" data-field="nickname" bindinput="handleInput" />
+      <input class="field-input" value="{{form.nickname}}" placeholder="例如：阿酒" placeholder-class="field-placeholder" data-field="nickname" bindinput="handleInput" />
     </view>
   </view>
 
-  <view class="panel-card">
-    <view class="field">
-      <view class="field-heading">
-        <view class="field-label">可参与时间 · 选哪几天</view>
+  <view class="planner-card group-time-card">
+    <view class="planner-card-title">⏰ 可参与时间</view>
+    <view class="planner-card-desc">选择可参加的日期和大致时间段。</view>
+
+    <view class="time-priority-grid">
+      <view class="time-priority-item">
+        <view class="field-label">日期优先级</view>
         <view class="priority-toggle">
           <view
             wx:for="{{priorityOptions}}"
@@ -56,21 +65,8 @@
           >{{item.label}}</view>
         </view>
       </view>
-      <view class="field-hint">可多选，选「随时」会清空其他选择。</view>
-      <view class="option-grid">
-        <view
-          wx:for="{{dayChips}}"
-          wx:key="value"
-          class="option-cell {{item.active ? 'active' : ''}}"
-          data-value="{{item.value}}"
-          bindtap="handleToggleDay"
-        >{{item.value}}</view>
-      </view>
-    </view>
-
-    <view class="field">
-      <view class="field-heading">
-        <view class="field-label">可参与时间 · 选哪几个时段</view>
+      <view class="time-priority-item">
+        <view class="field-label">时间优先级</view>
         <view class="priority-toggle">
           <view
             wx:for="{{priorityOptions}}"
@@ -82,19 +78,52 @@
           >{{item.label}}</view>
         </view>
       </view>
-      <view class="field-hint">精确到小时，可多选。</view>
-      <view class="option-grid hour-grid">
+    </view>
+
+    <view class="planner-field">
+      <view class="planner-chip-list scroll-row">
         <view
-          wx:for="{{hourChips}}"
+          wx:for="{{dayChips}}"
           wx:key="value"
-          class="option-cell {{item.active ? 'active' : ''}}"
+          class="planner-chip {{item.active ? 'selected' : ''}}"
           data-value="{{item.value}}"
-          bindtap="handleToggleHour"
+          bindtap="handleToggleDay"
         >{{item.value}}</view>
       </view>
     </view>
 
-    <view class="field last">
+    <view class="planner-field">
+      <view class="planner-chip-list">
+        <view
+          wx:for="{{timeModeOptions}}"
+          wx:key="value"
+          class="planner-chip {{form.timeMode === item.value ? 'selected' : ''}}"
+          data-value="{{item.value}}"
+          bindtap="handleTimeModeTap"
+        >{{item.label}}</view>
+      </view>
+    </view>
+
+    <view wx:if="{{form.timeMode === 'specified'}}" class="planner-two-column planner-field">
+      <picker class="planner-column" mode="time" value="{{form.startTime}}" bindchange="handleStartTimeChange">
+        <view class="planner-picker-card">
+          <view class="planner-picker-label">开始时间</view>
+          <view class="planner-picker-value">{{form.startTime}}</view>
+        </view>
+      </picker>
+      <picker class="planner-column" mode="time" value="{{form.endTime}}" bindchange="handleEndTimeChange">
+        <view class="planner-picker-card">
+          <view class="planner-picker-label">结束时间</view>
+          <view class="planner-picker-value">{{form.endTime}}</view>
+        </view>
+      </picker>
+    </view>
+
+    <view wx:if="{{form.timeMode === 'allDay'}}" class="planner-note planner-field">
+      当天时间都可以，管家会按大家的可参与日期合并。
+    </view>
+
+    <view class="field last custom-field-block">
       <view class="field-heading">
         <view class="field-label">时间补充（选填）</view>
         <view class="priority-toggle">
@@ -109,10 +138,11 @@
         </view>
       </view>
       <input
-        class="field-input"
-        value="{{form.availableTimeText}}"
-        placeholder="例如：周五 19:00 后可以，但 21:30 前要走"
-        data-field="availableTimeText"
+        class="field-input preference-custom-input"
+        value="{{form.timeCustomText}}"
+        placeholder="还有其他时间要求可以补充，例如周五晚一点也可以"
+        placeholder-class="field-placeholder"
+        data-field="timeCustomText"
         bindinput="handleInput"
       />
     </view>
@@ -121,7 +151,7 @@
   <view class="panel-card">
     <view class="field last">
       <view class="field-heading">
-        <view class="field-label">忌口 / 过敏</view>
+        <view class="field-label">🚫 忌口 / 过敏</view>
         <view class="priority-toggle">
           <view
             wx:for="{{priorityOptions}}"
@@ -138,7 +168,7 @@
         <view
           wx:for="{{dietaryChips}}"
           wx:key="value"
-          class="option-cell {{item.active ? 'active' : ''}}"
+          class="option-cell {{item.active ? 'active' : ''}} {{item.wide ? 'wide' : ''}}"
           data-value="{{item.value}}"
           bindtap="handleToggleDietary"
         >{{item.value}}</view>
@@ -149,7 +179,7 @@
   <view class="panel-card">
     <view class="field last">
       <view class="field-heading">
-        <view class="field-label">想吃的品类</view>
+        <view class="field-label">🍽️ 想吃的品类</view>
         <view class="priority-toggle">
           <view
             wx:for="{{priorityOptions}}"
@@ -166,7 +196,7 @@
         <view
           wx:for="{{cuisineChips}}"
           wx:key="value"
-          class="option-cell {{item.active ? 'active' : ''}}"
+          class="option-cell {{item.active ? 'active' : ''}} {{item.wide ? 'wide' : ''}}"
           data-value="{{item.value}}"
           bindtap="handleToggleCuisine"
         >{{item.value}}</view>
@@ -175,9 +205,9 @@
   </view>
 
   <view class="panel-card">
-    <view class="field">
+    <view class="field last">
       <view class="field-heading">
-        <view class="field-label">预算</view>
+        <view class="field-label">💰 预算</view>
         <view class="priority-toggle">
           <view
             wx:for="{{priorityOptions}}"
@@ -193,16 +223,18 @@
         <view
           wx:for="{{budgetChips}}"
           wx:key="value"
-          class="option-cell {{item.active ? 'active' : ''}}"
+          class="option-cell {{item.active ? 'active' : ''}} {{item.wide ? 'wide' : ''}}"
           data-value="{{item.value}}"
           bindtap="handleSelectBudget"
         >{{item.value}}</view>
       </view>
     </view>
+  </view>
 
+  <view class="panel-card">
     <view class="field last">
       <view class="field-heading">
-        <view class="field-label">辣度</view>
+        <view class="field-label">🌶️ 辣度</view>
         <view class="priority-toggle">
           <view
             wx:for="{{priorityOptions}}"
@@ -218,7 +250,7 @@
         <view
           wx:for="{{spicyChips}}"
           wx:key="value"
-          class="option-cell {{item.active ? 'active' : ''}}"
+          class="option-cell {{item.active ? 'active' : ''}} {{item.wide ? 'wide' : ''}}"
           data-value="{{item.value}}"
           bindtap="handleSelectSpicy"
         >{{item.label}}</view>
@@ -227,81 +259,77 @@
   </view>
 
   <view class="panel-card">
-    <view class="field">
-      <view class="field-heading">
-        <view class="field-label">想补充的（选填）</view>
-        <view class="priority-toggle">
-          <view
-            wx:for="{{priorityOptions}}"
-            wx:key="value"
-            class="priority-option {{form.requirementPriority.preference === item.value ? 'active' : ''}} {{item.value}}"
-            data-field="preference"
-            data-value="{{item.value}}"
-            bindtap="handleSelectPriority"
-          >{{item.label}}</view>
-        </view>
-      </view>
-      <textarea
-        class="field-textarea"
-        value="{{form.rawPreference}}"
-        placeholder="点下面的提示，或者自己写。例如：周五晚上想吃点暖和的，预算 50 以下。"
-        data-field="rawPreference"
-        bindinput="handleInput"
-      ></textarea>
-    </view>
     <view class="field last">
-      <view class="field-label">提示词（点一下会拼到上面）</view>
-      <view class="option-grid">
-        <view
-          wx:for="{{promptChips}}"
-          wx:key="*this"
-          class="option-cell"
-          data-value="{{item}}"
-          bindtap="handlePromptChipTap"
-        >{{item}}</view>
-      </view>
-    </view>
-  </view>
-
-  <view class="panel-card">
-    <view class="field last">
-      <view class="field-label">这条偏好谁能看</view>
-      <view class="field-hint">隐私优先；匿名提交也会用于推荐计算。</view>
-      <view class="option-grid">
+      <view class="field-label">👀 这条偏好谁能看</view>
+      <view class="field-hint">选择这条偏好在多人约饭中的展示方式</view>
+      <view class="privacy-option-list">
         <view
           wx:for="{{visibilityChips}}"
           wx:key="value"
-          class="option-cell {{item.active ? 'active' : ''}}"
+          class="privacy-option {{item.active ? 'active' : ''}}"
           data-value="{{item.value}}"
           bindtap="handleSelectVisibility"
-        >{{item.label}}</view>
+        >
+          <view class="privacy-copy">
+            <view class="privacy-title">
+              <text wx:if="{{item.value === 'public'}}">公开，大家都能看</text>
+              <text wx:elif="{{item.value === 'nickname_only'}}">只显示昵称</text>
+              <text wx:else>匿名，仅用于推荐</text>
+            </view>
+            <view class="privacy-desc">
+              <text wx:if="{{item.value === 'public'}}">适合不敏感的共同偏好</text>
+              <text wx:elif="{{item.value === 'nickname_only'}}">其他人只能看到你的昵称和选择</text>
+              <text wx:else>不展示给其他成员，只参与推荐计算</text>
+            </view>
+          </view>
+          <view class="privacy-check {{item.active ? 'checked' : ''}}">✓</view>
+        </view>
       </view>
     </view>
   </view>
 
   <view class="panel-card">
     <view class="field">
-      <view class="field-label">还有其他必须满足的吗？<text class="priority-tag must">必须满足</text></view>
+      <view class="field-label">📝 还有其他必须满足的吗？<text class="priority-tag must">必须满足</text></view>
       <view class="field-hint">用逗号或空格分隔。例如：要有素食、不在医院附近。</view>
       <textarea
         class="field-textarea"
         value="{{form.customHardRequirement}}"
         placeholder="例如：要有素食，必须能停车"
+        placeholder-class="field-placeholder"
         data-field="customHardRequirement"
         bindinput="handleInput"
       ></textarea>
     </view>
 
-    <view class="field last">
-      <view class="field-label">还有其他希望的吗？<text class="priority-tag nice">希望有</text></view>
+    <view class="field">
+      <view class="field-label">📝 还有其他希望的吗？<text class="priority-tag nice">希望有</text></view>
       <view class="field-hint">这些不一定满足，但管家会尽量考虑。</view>
       <textarea
         class="field-textarea"
         value="{{form.customSoftPreference}}"
         placeholder="例如：能拍照，靠窗座位"
+        placeholder-class="field-placeholder"
         data-field="customSoftPreference"
         bindinput="handleInput"
       ></textarea>
+    </view>
+
+    <view class="field last">
+      <view class="prompt-head">
+        <view class="field-label prompt-title">快捷提示词</view>
+        <view class="field-hint prompt-subtitle">点一下，自动拼到「希望有」里。</view>
+      </view>
+      <view class="prompt-chip-grid">
+        <view
+          wx:for="{{promptChips}}"
+          wx:key="*this"
+          class="prompt-chip-item"
+          hover-class="prompt-chip-pressed"
+          data-value="{{item}}"
+          bindtap="handlePromptChipTap"
+        >{{item}}</view>
+      </view>
     </view>
   </view>
 

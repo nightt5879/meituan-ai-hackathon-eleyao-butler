@@ -1,15 +1,62 @@
 @import "../group-common.wxss";
 
-/* The shared .page-heading rule applies a translateX(-4rpx) to compensate
-   for the round back button on the left. Without that button on this page,
-   the offset would push the title slightly into the left padding, so we
-   reset it here. Scoped to .create-page-bar so fill / board pages are not
-   affected. */
-.create-page-bar .page-heading {
+.create-scaffold {
+  padding-top: 0;
+}
+
+.create-hero {
+  margin-bottom: 22rpx;
+}
+
+.create-nav-row {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-left: 0;
+}
+
+.create-heading {
+  position: absolute;
+  left: var(--nav-title-side, 48px);
+  right: var(--nav-title-side, 48px);
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transform: none;
 }
 
-.create-page-bar {
-  margin-bottom: 24rpx;
+.create-back {
+  border: 1rpx solid var(--theme-border, rgba(45, 30, 15, 0.08));
+  border-radius: 999rpx;
+  background: var(--theme-card, rgba(255, 255, 255, 0.88));
+  color: var(--theme-text, #1F1A15);
+  box-shadow: var(--theme-shadow-card, 0 14rpx 34rpx rgba(22, 78, 63, 0.10));
 }
 
+.create-back-active {
+  opacity: 0.86;
+}
+
+.create-back-icon {
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.create-hero-subtitle {
+  margin-top: 4rpx;
+  padding-left: 72rpx;
+  padding-right: 24rpx;
+  color: var(--theme-muted, #6B6157);
+  font-size: 23rpx;
+  line-height: 1.45;
+}
+
+.theme-night .create-back,
+.theme-black-pink .create-back {
+  border-color: var(--theme-border, rgba(255, 255, 255, 0.12));
+  background: var(--theme-card, rgba(30, 41, 59, 0.92));
+  color: var(--theme-text, #F8FAFC);
+}

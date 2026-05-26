@@ -12,7 +12,7 @@
   <view class="utility-row">
     <button class="utility-chip" bindtap="openThemePanel">
       <text class="utility-icon">◐</text>
-      <text>主题</text>
+      <text>主题换装</text>
     </button>
     <button class="utility-chip" bindtap="openHistoryPanel">
       <text class="utility-icon">↺</text>
@@ -74,8 +74,8 @@
     <view class="bottom-panel theme-panel" catchtap="noop">
       <view class="panel-header">
         <view>
-          <view class="panel-title">选个主题</view>
-          <view class="panel-desc">换个心情。主题会同时影响首页、AI 头像、推荐卡片和聊天气泡。</view>
+          <view class="panel-title">主题换装</view>
+          <view class="panel-desc">选择后会同步影响首页、问答、多人约饭、周边规划和管家记忆。</view>
         </view>
         <button class="panel-close" bindtap="closeThemePanel">×</button>
       </view>
@@ -104,7 +104,7 @@
           <view class="theme-card-footer">
             <view>
               <view class="theme-name">{{item.name}}</view>
-              <view class="theme-key">{{item.key}}</view>
+              <view class="theme-key">{{item.description}}</view>
             </view>
             <view class="theme-check {{item.isActive ? 'checked' : ''}}">✓</view>
           </view>

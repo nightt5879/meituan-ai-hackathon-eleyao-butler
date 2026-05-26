@@ -1,6 +1,11 @@
 <view class="page food-page theme-{{currentTheme}}">
-  <view class="custom-food-header">
-    <view class="header-back-button" bindtap="handleBackToHome">‹</view>
+  <view class="custom-food-header" style="padding-top: {{statusBarHeight}}px;">
+    <view class="food-nav-row" style="height: {{navBarHeight}}px; padding-right: {{navRightPadding}}px; --nav-title-side: {{navTitleSidePadding}}px;">
+      <view class="header-back-hit" bindtap="handleBackToHome" aria-label="返回">
+        <view class="header-back-button">‹</view>
+      </view>
+      <view class="food-nav-title">今天吃什么</view>
+    </view>
     <view class="header-online-status {{connectionStatus.statusClass}}" bindtap="handleConnectionStatusTap">
       <view class="header-online-dot"></view>
       <text class="header-online-text">{{connectionStatus.text}}</text>

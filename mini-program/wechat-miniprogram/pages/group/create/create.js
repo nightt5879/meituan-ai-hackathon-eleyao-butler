@@ -1,12 +1,20 @@
 const themeAdapter = require('../../../services/themeAdapter');
 const groupDiningAdapter = require('../../../services/groupDiningAdapter');
 const userIdentityAdapter = require('../../../services/userIdentityAdapter');
+const navMetrics = require('../../../utils/navMetrics');
 
 const PEOPLE_PRESETS = ['2', '3', '4', '5', '6', '8', '10'];
 
 Page({
   data: {
     currentTheme: themeAdapter.DEFAULT_THEME_ID,
+    statusBarHeight: 0,
+    navBarHeight: 44,
+    navRightPadding: 16,
+    navTitleSidePadding: 48,
+    customNavTotalHeight: 44,
+    menuButtonTop: 0,
+    menuButtonHeight: 32,
     isSubmitting: false,
     peopleOptions: [],
     selectedPeople: '5',
@@ -15,6 +23,7 @@ Page({
   },
 
   onLoad() {
+    this.initNavMetrics();
     this.syncTheme();
     if (!userIdentityAdapter.hasSession()) {
       userIdentityAdapter.requireLoginRedirect('/pages/group/create/create');
@@ -38,8 +47,24 @@ Page({
     this.setData(themeAdapter.getPageThemeData());
   },
 
+  initNavMetrics() {
+    this.setData(navMetrics.getCustomNavMetrics());
+  },
+
   handleBack() {
-    wx.navigateBack();
+    const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : [];
+
+    if (pages.length > 1) {
+      wx.navigateBack();
+      return;
+    }
+
+    wx.redirectTo({
+      url: '/pages/home/home',
+      fail: function () {
+        wx.reLaunch({ url: '/pages/home/home' });
+      }
+    });
   },
 
   refreshPeopleOptions(selected) {
@@ -103,8 +128,17 @@ Page({
       wx.hideLoading();
       const board = result.board || {};
       const task = board.task || result.task || {
-        title: peopleNumber + ' 人聚餐'
+        title: '多人约饭偏好收集中',
+        displayTitle: '多人约饭偏好收集中',
+        displaySummary: '发起人邀请你填写约饭偏好',
+        expectedPeopleCount: peopleNumber
       };
+      const expectedPeopleCount = resolvePositiveCount([
+        task.expectedPeopleCount,
+        board.expectedCount,
+        result.expectedPeopleCount,
+        peopleNumber
+      ]);
       if (result.status !== groupDiningAdapter.REAL_STATUS) {
         wx.showToast({
           title: '后端暂不可用',
@@ -116,9 +150,12 @@ Page({
         createdTask: {
           taskId: result.taskId,
           inviteToken: result.inviteToken || '',
+          fillPath: result.nextUrl || result.sharePath || ('/pages/group/fill/fill?taskId=' + encodeURIComponent(result.taskId || '') + '&inviteToken=' + encodeURIComponent(result.inviteToken || '')),
           sharePath: result.sharePath || result.nextUrl || '',
           boardUrl: result.boardUrl || ('/pages/group/board/board?taskId=' + encodeURIComponent(result.taskId || '') + '&inviteToken=' + encodeURIComponent(result.inviteToken || '')),
-          task: task
+          task: task,
+          expectedPeopleCount: expectedPeopleCount,
+          submittedCount: board.submittedCount || 0
         }
       });
       wx.showToast({ title: '任务已生成', icon: 'success' });
@@ -136,16 +173,13 @@ Page({
     });
   },
 
-  handleCopySharePath() {
+  handleFillPreference() {
     const created = this.data.createdTask;
-    if (!created || !created.sharePath) {
+    if (!created) {
       return;
     }
-    wx.setClipboardData({
-      data: created.sharePath,
-      success: function () {
-        wx.showToast({ title: '已复制分享路径', icon: 'none' });
-      }
+    wx.navigateTo({
+      url: created.fillPath || created.sharePath || ('/pages/group/fill/fill?taskId=' + encodeURIComponent(created.taskId || '') + '&inviteToken=' + encodeURIComponent(created.inviteToken || ''))
     });
   },
 
@@ -169,10 +203,20 @@ Page({
     if (!created) {
       return { title: '一起约个饭吧', path: '/pages/group/create/create' };
     }
-    const task = created.task || {};
     return {
-      title: '邀请你一起约饭：' + (task.title || '一次多人约饭'),
+      title: '邀请你填写约饭偏好',
       path: created.sharePath || '/pages/group/create/create'
     };
   }
 });
+
+function resolvePositiveCount(values) {
+  for (let i = 0; i < values.length; i += 1) {
+    const match = String(values[i] || '').match(/\d+/);
+    const count = match ? Number(match[0]) : 0;
+    if (count > 0) {
+      return count;
+    }
+  }
+  return 0;
+}

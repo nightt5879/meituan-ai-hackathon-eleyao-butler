@@ -65,7 +65,7 @@
         </view>
         <switch
           checked="{{behaviorLearningEnabled}}"
-          color="#FF8A3D"
+          color="{{switchColor}}"
           bindchange="handleMasterPermissionChange"
         />
       </view>
@@ -86,7 +86,7 @@
         </view>
         <switch
           checked="{{item.checked}}"
-          color="#FF8A3D"
+          color="{{switchColor}}"
           disabled="{{item.disabled}}"
           data-key="{{item.key}}"
           data-disabled="{{item.disabled}}"
@@ -131,7 +131,7 @@
         </view>
         <switch
           checked="{{memoryEnabled}}"
-          color="#FF8A3D"
+          color="{{switchColor}}"
           bindchange="handleToggleMemory"
         />
       </view>

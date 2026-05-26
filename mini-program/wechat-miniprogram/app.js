@@ -1,4 +1,5 @@
 const userIdentityAdapter = require('./services/userIdentityAdapter');
+const themeAdapter = require('./services/themeAdapter');
 
 App({
   globalData: {
@@ -7,6 +8,7 @@ App({
     authError: '',
     currentUserId: '',
     sessionToken: '',
+    currentTheme: themeAdapter.DEFAULT_THEME_ID,
     // Development / real-device debugging backend origin for the single-person
     // food recommendation flow. Experience build and production still require HTTPS.
     // Leave empty to use the local mock recommendation fallback only.
@@ -20,6 +22,40 @@ App({
     this.globalData.isLoggedIn = userIdentityAdapter.hasSession();
     this.globalData.currentUserId = userIdentityAdapter.getCurrentUserId();
     this.globalData.sessionToken = userIdentityAdapter.getSessionToken();
+    this.applyTheme(themeAdapter.getCurrentThemeKey(), { silent: true });
+  },
+
+  getCurrentTheme() {
+    return themeAdapter.getThemeByKey(this.globalData.currentTheme || themeAdapter.getCurrentThemeKey());
+  },
+
+  applyTheme(themeId, options) {
+    const opts = options || {};
+    const nextThemeId = opts.silent ? themeAdapter.normalizeThemeId(themeId) : themeAdapter.saveTheme(themeId);
+    const themeData = themeAdapter.getPageThemeData(nextThemeId);
+
+    this.globalData.currentTheme = themeData.currentTheme;
+    themeAdapter.applyNavigationBar(themeData.currentTheme);
+
+    const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : [];
+    pages.forEach((page) => {
+      this.syncThemeToPage(page, themeData.currentTheme);
+    });
+
+    return themeData.theme;
+  },
+
+  syncThemeToPage(page, themeId) {
+    if (!page || typeof page.setData !== 'function') {
+      return;
+    }
+
+    const currentTheme = themeAdapter.normalizeThemeId(themeId || this.globalData.currentTheme || themeAdapter.getCurrentThemeKey());
+    const themeData = themeAdapter.getPageThemeData(currentTheme);
+
+    this.globalData.currentTheme = themeData.currentTheme;
+    themeAdapter.applyNavigationBar(themeData.currentTheme);
+    page.setData(themeData);
   },
 
   ensureLogin(options) {

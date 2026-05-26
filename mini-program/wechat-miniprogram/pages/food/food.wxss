@@ -11,49 +11,79 @@
   top: 0;
   z-index: 2;
   box-sizing: border-box;
-  min-height: 168rpx;
-  padding-top: calc(92rpx + env(safe-area-inset-top));
-  padding-left: 32rpx;
-  padding-right: 180rpx;
-  padding-bottom: 32rpx;
+  padding-left: 24rpx;
+  padding-right: 24rpx;
+  padding-bottom: 18rpx;
   border-bottom: 1rpx solid var(--theme-border, #F3DDC7);
   background: var(--theme-card, #FFFDF8);
 }
 
-.header-back-button {
+.food-nav-row {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.header-back-hit {
   position: absolute;
-  left: 32rpx;
-  top: calc(92rpx + env(safe-area-inset-top));
+  left: 0;
+  top: 50%;
+  z-index: 2;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 72rpx;
-  height: 72rpx;
+  width: 64rpx;
+  height: 64rpx;
+  transform: translateY(-50%);
+}
+
+.header-back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52rpx;
+  height: 52rpx;
   margin: 0;
   padding: 0;
-  border: none;
+  border: 1rpx solid var(--theme-border, rgba(45, 30, 15, 0.08));
   border-radius: 50%;
-  background: var(--theme-card, #ffffff);
-  box-shadow: 0 8rpx 24rpx rgba(16, 24, 40, 0.08);
+  background: var(--theme-card, rgba(255, 255, 255, 0.88));
+  box-shadow: 0 8rpx 22rpx rgba(16, 24, 40, 0.08);
   color: var(--theme-text, #1F2937);
-  font-size: 52rpx;
-  font-weight: 500;
-  line-height: 72rpx;
-  z-index: 2;
+  font-size: 28rpx;
+  font-weight: 600;
+  line-height: 52rpx;
+}
+
+.food-nav-title {
+  position: absolute;
+  left: var(--nav-title-side, 48px);
+  right: var(--nav-title-side, 48px);
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--theme-text, #1F2937);
+  font-size: 34rpx;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .header-online-status {
-  position: absolute;
-  left: 50%;
-  top: calc(110rpx + env(safe-area-inset-top));
-  transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8rpx;
-  max-width: 360rpx;
+  max-width: 100%;
+  margin-top: 4rpx;
   white-space: nowrap;
-  z-index: 1;
 }
 
 .header-online-status.status-connected .header-online-dot {
@@ -746,22 +776,47 @@
 }
 
 /* Dark theme: dark frosted glass instead of bright white panels. */
+.theme-night .quick-chip,
+.theme-night .tag-chip,
+.theme-night .adjustment-chip,
+.theme-black-pink .quick-chip,
+.theme-black-pink .tag-chip,
+.theme-black-pink .adjustment-chip,
 .theme-dark .quick-chip,
 .theme-dark .tag-chip,
 .theme-dark .adjustment-chip {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.16);
+  color: var(--theme-chip-text, #F5F5F5);
   box-shadow: 0 6rpx 18rpx rgba(0, 0, 0, 0.22), inset 0 1rpx 0 rgba(255, 255, 255, 0.08);
 }
 
+.theme-night .header-back-button,
+.theme-black-pink .header-back-button,
+.theme-dark .header-back-button {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--theme-text, #F5F5F5);
+}
+
+.theme-night .quick-chip.selected,
+.theme-night .tag-chip.selected,
+.theme-black-pink .quick-chip.selected,
+.theme-black-pink .tag-chip.selected,
 .theme-dark .quick-chip.selected,
 .theme-dark .tag-chip.selected {
-  background: rgba(255, 159, 67, 0.18);
+  background: var(--theme-primary-ghost, rgba(255, 159, 67, 0.18));
   border-color: var(--theme-primary, #FF9F43);
-  color: var(--theme-primary, #FF9F43);
+  color: var(--theme-primary-deep, #FF9F43);
   box-shadow: 0 8rpx 22rpx rgba(0, 0, 0, 0.28), inset 0 1rpx 0 rgba(255, 255, 255, 0.10);
 }
 
+.theme-night .quick-chip:active,
+.theme-night .tag-chip:active,
+.theme-night .adjustment-chip:active,
+.theme-black-pink .quick-chip:active,
+.theme-black-pink .tag-chip:active,
+.theme-black-pink .adjustment-chip:active,
 .theme-dark .quick-chip:active,
 .theme-dark .tag-chip:active,
 .theme-dark .adjustment-chip:active {
@@ -935,42 +990,56 @@
 }
 
 /* Dark-theme variants for the new components */
+.theme-night .shop-section-label,
+.theme-black-pink .shop-section-label,
 .theme-dark .shop-section-label {
-  background: rgba(255, 159, 67, 0.18);
-  color: var(--theme-primary, #FF9F43);
+  background: var(--theme-primary-ghost, rgba(255, 159, 67, 0.18));
+  color: var(--theme-primary-deep, #FF9F43);
 }
 
+.theme-night .tertiary-action-button,
+.theme-black-pink .tertiary-action-button,
 .theme-dark .tertiary-action-button {
   border-color: rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.06);
   color: var(--theme-muted, #B8B8B8);
 }
 
+.theme-night .tertiary-action-button:active,
+.theme-black-pink .tertiary-action-button:active,
 .theme-dark .tertiary-action-button:active {
   background: rgba(255, 255, 255, 0.12);
   color: var(--theme-text, #F5F5F5);
 }
 
+.theme-night .memory-actions,
+.theme-black-pink .memory-actions,
 .theme-dark .memory-actions {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(255, 255, 255, 0.12);
   box-shadow: 0 8rpx 22rpx rgba(0, 0, 0, 0.30);
 }
 
+.theme-night .memory-once-button,
+.theme-black-pink .memory-once-button,
 .theme-dark .memory-once-button {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.18);
   color: var(--theme-muted, #B8B8B8);
 }
 
+.theme-night .memory-once-button:active,
+.theme-black-pink .memory-once-button:active,
 .theme-dark .memory-once-button:active {
   background: rgba(255, 255, 255, 0.12);
   color: var(--theme-text, #F5F5F5);
 }
 
+.theme-night .memory-decision-note,
+.theme-black-pink .memory-decision-note,
 .theme-dark .memory-decision-note {
-  background: rgba(255, 159, 67, 0.16);
-  color: var(--theme-primary, #FF9F43);
+  background: var(--theme-primary-ghost, rgba(255, 159, 67, 0.16));
+  color: var(--theme-primary-deep, #FF9F43);
 }
 
 /* ─── Preference pre-check ──────────────────────────────────────────────
@@ -995,6 +1064,8 @@
   -webkit-font-smoothing: antialiased;
 }
 
+.theme-night .pref-check-disclaimer-bubble,
+.theme-black-pink .pref-check-disclaimer-bubble,
 .theme-dark .pref-check-disclaimer-bubble {
   background: rgba(255, 255, 255, 0.06);
   color: var(--theme-muted, #B8B8B8);
