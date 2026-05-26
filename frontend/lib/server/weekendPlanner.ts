@@ -2,6 +2,9 @@ import { randomUUID } from "crypto";
 import { promises as fs } from "fs";
 import path from "path";
 
+import { matchWeekendRoutes } from "../weekendData/matchService";
+import type { WeekendRouteMatch, WeekendWeatherCondition, WeekendWeatherLike } from "../weekendData/types";
+
 const PANYU_LATITUDE = 22.9387;
 const PANYU_LONGITUDE = 113.3785;
 const DEFAULT_BUDGET_MAX = 120;
@@ -27,6 +30,14 @@ type WeekendPlanRequest = {
 type WeatherStatus = "available" | "unavailable";
 type CheckStatus = "pass" | "risk" | "fail";
 type WalkingIntensity = "low" | "medium" | "high";
+type WeekendRouteType = "outdoor" | "balanced" | "indoor_backup";
+
+type WeekendRouteCheck = {
+  key: "budget" | "time_window" | "weather" | "walking_intensity" | "return_time";
+  label: string;
+  status: CheckStatus;
+  detail: string;
+};
 
 type WeekendWeather = {
   status: WeatherStatus;
@@ -73,9 +84,13 @@ type WeekendPlace = {
 
 type WeekendRoute = {
   routeId: string;
-  routeType: "outdoor" | "balanced" | "indoor_backup";
+  id?: string;
+  templateId?: string;
+  routeType: WeekendRouteType;
   title: string;
   summary: string;
+  routeReason?: string;
+  fallbackReason?: string;
   estimatedBudget: number;
   estimatedDurationMinutes: number;
   walkingIntensity: WalkingIntensity;
@@ -94,14 +109,12 @@ type WeekendRoute = {
     walkMinutes: number;
   }>;
   transport: string;
-  selfChecks: Array<{
-    key: "budget" | "time_window" | "weather" | "walking_intensity" | "return_time";
-    label: string;
-    status: CheckStatus;
-    detail: string;
-  }>;
+  selfChecks: WeekendRouteCheck[];
+  checks?: WeekendRouteCheck[];
   risks: string[];
+  riskTips?: string[];
   inviteText: string;
+  inviteCopy?: string;
 };
 
 export type WeekendPlanResponse = {
@@ -114,8 +127,8 @@ export type WeekendPlanResponse = {
   routes: [WeekendRoute, WeekendRoute, WeekendRoute];
   source: {
     weather: "open-meteo-real" | "fallback-conservative";
-    poi: "mock-school-area";
-    planner: "rules-v1";
+    poi: "mock-school-area" | "weekend-synthetic-mvp";
+    planner: "rules-v1" | "weekend-data-rules-v1";
   };
 };
 
@@ -313,6 +326,96 @@ function normalizeRequest(input: unknown): WeekendPlanRequest {
     companions: stringField(payload.companions, "自己"),
     interests,
     rawText: stringField(payload.rawText ?? payload.raw_text, "")
+  };
+}
+
+function uniqueStrings(values: string[]) {
+  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
+}
+
+function deriveWeekendDataInterestTags(request: WeekendPlanRequest, weather: WeekendWeather) {
+  const text = [request.mood, request.companions, request.rawText, ...request.interests].filter(Boolean).join(" ");
+  const tags: string[] = [];
+
+  if (/聊天|朋友|多人|同学|轻聚|聚会/.test(text)) {
+    tags.push("朋友", "聊天", "安静聊天", "茶饮", "桌游", "剧本杀");
+  }
+
+  if (/轻松|放空|不累|少走|低体力|坐坐|休息/.test(text)) {
+    tags.push("少走路", "适合放空", "室内休息点");
+  }
+
+  if (/室内|雨|热|晒|空调/.test(text) || weather.isRainy || weather.isHot || weather.fallback) {
+    tags.push("雨天友好", "室内活动", "室内休息点");
+  }
+
+  if (/出门|散步|走走|户外|公园|江边|citywalk|骑行/.test(text)) {
+    tags.push("citywalk", "散步", "户外活动", "公园", "江边散步");
+  }
+
+  if (/咖啡|甜品|奶茶|茶饮|轻食|小吃/.test(text)) {
+    tags.push("咖啡", "甜品", "奶茶", "茶饮", "轻食", "小吃");
+  }
+
+  if (/电影|电玩|电玩城|娱乐|商场/.test(text)) {
+    tags.push("电影", "电玩城", "轻娱乐", "购物");
+  }
+
+  return uniqueStrings(tags);
+}
+
+function mapWeekendDataWeatherCondition(weather: WeekendWeather): WeekendWeatherCondition {
+  if (weather.fallback || weather.status === "unavailable") {
+    return "unknown";
+  }
+
+  if (weather.isRainy) {
+    return "rainy";
+  }
+
+  if (weather.isHot) {
+    return "hot";
+  }
+
+  if (weather.weatherCode === 0 || /晴|sunny/i.test(weather.weatherText ?? "")) {
+    return "sunny";
+  }
+
+  if ([1, 2, 3, 45, 48].includes(weather.weatherCode ?? -1) || /云|阴|cloud/i.test(weather.weatherText ?? "")) {
+    return "cloudy";
+  }
+
+  return "unknown";
+}
+
+function createWeekendDataWeather(weather: WeekendWeather): WeekendWeatherLike {
+  const condition = mapWeekendDataWeatherCondition(weather);
+  const isConservative = condition === "unknown";
+
+  return {
+    summary: weather.summary,
+    condition,
+    weatherText: weather.weatherText,
+    status: weather.status,
+    isRainy: isConservative ? false : weather.isRainy,
+    isHot: isConservative ? false : weather.isHot,
+    fallback: weather.fallback
+  };
+}
+
+function createWeekendDataRequest(request: WeekendPlanRequest, weather: WeekendWeather) {
+  const derivedTags = deriveWeekendDataInterestTags(request, weather);
+
+  return {
+    timeWindow: request.timeWindow,
+    budgetMax: request.budgetMax,
+    startArea: request.startArea,
+    mood: request.mood,
+    energyLevel: request.energyLevel,
+    companions: request.companions,
+    interests: request.interests,
+    interestTags: uniqueStrings([...request.interests, ...derivedTags]),
+    rawText: [request.rawText, request.mood, request.companions].filter(Boolean).join(" ")
   };
 }
 
@@ -657,6 +760,51 @@ function createRoute(mode: WeekendRoute["routeType"], request: WeekendPlanReques
   };
 }
 
+function mapMatchedWeekendRoute(route: WeekendRouteMatch): WeekendRoute {
+  const riskTips = route.riskTips.length > 0 ? route.riskTips : [route.fallbackReason].filter(Boolean);
+
+  return {
+    routeId: route.id || route.templateId,
+    id: route.id,
+    templateId: route.templateId,
+    routeType: route.mode,
+    title: route.title,
+    summary: route.routeReason,
+    routeReason: route.routeReason,
+    fallbackReason: route.fallbackReason,
+    estimatedBudget: route.estimatedBudget,
+    estimatedDurationMinutes: route.estimatedDurationMinutes,
+    walkingIntensity: route.walkingIntensity,
+    timeline: route.timeline,
+    places: route.stops.map((stop, index) => ({
+      name: stop.name,
+      category: stop.type,
+      indoor: stop.indoor,
+      estimatedCost: stop.cost,
+      walkMinutes: index === route.stops.length - 1 ? 0 : 10
+    })),
+    transport: route.transportNote,
+    selfChecks: route.checks,
+    checks: route.checks,
+    risks: riskTips,
+    riskTips,
+    inviteText: route.inviteCopy,
+    inviteCopy: route.inviteCopy
+  };
+}
+
+function withRouteAliases(route: WeekendRoute): WeekendRoute {
+  return {
+    ...route,
+    id: route.id ?? route.routeId,
+    routeReason: route.routeReason ?? route.summary,
+    fallbackReason: route.fallbackReason ?? route.summary,
+    checks: route.checks ?? route.selfChecks,
+    riskTips: route.riskTips ?? route.risks,
+    inviteCopy: route.inviteCopy ?? route.inviteText
+  };
+}
+
 function generateRoutes(request: WeekendPlanRequest, weather: WeekendWeather): [WeekendRoute, WeekendRoute, WeekendRoute] {
   const modes: WeekendRoute["routeType"][] = weather.isRainy || weather.isHot || weather.fallback || energyRank(request.energyLevel) === 1 ? ["balanced", "outdoor", "indoor_backup"] : ["outdoor", "balanced", "indoor_backup"];
   const routes = modes.map((mode) => createRoute(mode, request, weather));
@@ -667,7 +815,56 @@ function generateRoutes(request: WeekendPlanRequest, weather: WeekendWeather): [
     routes.push(backup);
   }
 
-  return routes as [WeekendRoute, WeekendRoute, WeekendRoute];
+  return routes.map(withRouteAliases) as [WeekendRoute, WeekendRoute, WeekendRoute];
+}
+
+async function generateWeekendDataRoutes(request: WeekendPlanRequest, weather: WeekendWeather) {
+  try {
+    const matchedRoutes = await matchWeekendRoutes({
+      request: createWeekendDataRequest(request, weather),
+      weather: createWeekendDataWeather(weather),
+      limit: 3
+    });
+    const routes = matchedRoutes.map(mapMatchedWeekendRoute).slice(0, 3);
+
+    if (routes.length > 0) {
+      if (routes.length < 3) {
+        const legacyRoutes = generateRoutes(request, weather);
+        const routeTypes = new Set(routes.map((route) => route.routeType));
+
+        for (const legacyRoute of legacyRoutes) {
+          if (routes.length >= 3) break;
+          if (!routeTypes.has(legacyRoute.routeType)) {
+            routes.push(legacyRoute);
+            routeTypes.add(legacyRoute.routeType);
+          }
+        }
+
+        for (const legacyRoute of legacyRoutes) {
+          if (routes.length >= 3) break;
+          routes.push(legacyRoute);
+        }
+      }
+
+      return {
+        routes: routes.slice(0, 3) as [WeekendRoute, WeekendRoute, WeekendRoute],
+        source: {
+          poi: "weekend-synthetic-mvp" as const,
+          planner: "weekend-data-rules-v1" as const
+        }
+      };
+    }
+  } catch (error) {
+    console.warn("[weekendPlanner] weekendData route matching failed; using legacy mock fallback.", error);
+  }
+
+  return {
+    routes: generateRoutes(request, weather),
+    source: {
+      poi: "mock-school-area" as const,
+      planner: "rules-v1" as const
+    }
+  };
 }
 
 export async function createWeekendPlan(input: unknown, ownerUserId: string): Promise<WeekendPlanResponse> {
@@ -683,6 +880,8 @@ export async function createWeekendPlan(input: unknown, ownerUserId: string): Pr
       planId = createPlanId();
     }
 
+    const routeGeneration = await generateWeekendDataRoutes(request, weather);
+
     const plan: WeekendPlanResponse = {
       planId,
       ownerUserId,
@@ -690,11 +889,10 @@ export async function createWeekendPlan(input: unknown, ownerUserId: string): Pr
       updatedAt: timestamp,
       request,
       weather,
-      routes: generateRoutes(request, weather),
+      routes: routeGeneration.routes,
       source: {
         weather: weather.fallback ? "fallback-conservative" : "open-meteo-real",
-        poi: "mock-school-area",
-        planner: "rules-v1"
+        ...routeGeneration.source
       }
     };
 
