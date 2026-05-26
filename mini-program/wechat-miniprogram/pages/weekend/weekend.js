@@ -1,6 +1,7 @@
 const themeAdapter = require('../../services/themeAdapter');
 const weekendPlannerAdapter = require('../../services/weekendPlannerAdapter');
 const userIdentityAdapter = require('../../services/userIdentityAdapter');
+const navMetrics = require('../../utils/navMetrics');
 
 const DATE_OPTIONS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
 const TIME_MODE_OPTIONS = [
@@ -55,7 +56,12 @@ const DEFAULT_FORM = {
 
 Page({
   data: {
-    currentTheme: 'warm',
+    currentTheme: themeAdapter.DEFAULT_THEME_ID,
+    statusBarHeight: 0,
+    navBarHeight: 44,
+    navRightPadding: 16,
+    navTitleSidePadding: 48,
+    customNavTotalHeight: 44,
     form: DEFAULT_FORM,
     dateOptions: [],
     timeModeOptions: [],
@@ -74,6 +80,7 @@ Page({
   },
 
   onLoad() {
+    this.initNavMetrics();
     this.syncTheme();
     if (!userIdentityAdapter.hasSession()) {
       userIdentityAdapter.requireLoginRedirect('/pages/weekend/weekend');
@@ -87,9 +94,18 @@ Page({
   },
 
   syncTheme() {
-    this.setData({
-      currentTheme: themeAdapter.getCurrentThemeKey()
-    });
+    const app = getApp();
+
+    if (app && app.syncThemeToPage) {
+      app.syncThemeToPage(this);
+      return;
+    }
+
+    this.setData(themeAdapter.getPageThemeData());
+  },
+
+  initNavMetrics() {
+    this.setData(navMetrics.getCustomNavMetrics());
   },
 
   refreshFormState(form, extra) {

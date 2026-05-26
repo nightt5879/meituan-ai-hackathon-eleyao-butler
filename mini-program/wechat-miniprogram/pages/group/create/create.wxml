@@ -1,11 +1,16 @@
-<view class="page scaffold-page theme-{{currentTheme}}">
-  <!-- Native navigation bar already provides the back arrow; keep this as a
-       slim title container so the create page matches the 1.0 group flow. -->
-  <view class="page-bar create-page-bar">
-    <view class="page-heading">
-      <view class="page-title">发起约饭</view>
-      <view class="page-subtitle">选一下人数就能生成任务链接，朋友点开就能填偏好。</view>
+<view class="page scaffold-page create-scaffold theme-{{currentTheme}}">
+  <view class="create-hero" style="padding-top: {{statusBarHeight}}px;">
+    <view class="create-nav-row" style="height: {{navBarHeight}}px; padding-right: {{navRightPadding}}px; --nav-title-side: {{navTitleSidePadding}}px;">
+      <view class="group-nav-back-hit" hover-class="group-nav-back-active" bindtap="handleBack" aria-label="返回">
+        <view class="group-nav-back-button create-back">
+          <text class="group-nav-back-icon create-back-icon">‹</text>
+        </view>
+      </view>
+      <view class="page-heading create-heading">
+        <view class="page-title">{{createdTask ? '任务已生成' : '发起约饭'}}</view>
+      </view>
     </view>
+    <view class="create-hero-subtitle">{{createdTask ? '现在可以分享到群里，或直接查看偏好收集进度。' : '选一下人数就能生成任务链接，朋友点开就能填偏好。'}}</view>
   </view>
 
   <view class="status-badge">
@@ -35,6 +40,7 @@
         type="number"
         value="{{customPeopleInput}}"
         placeholder="例如 12"
+        placeholder-class="field-placeholder"
         bindinput="handleCustomPeopleInput"
       />
     </view>
@@ -48,23 +54,19 @@
   <button wx:if="{{!createdTask}}" class="primary-button" loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="handleCreateTask">生成任务链接</button>
 
   <view wx:if="{{createdTask}}" class="panel-card">
-    <view class="field-label">任务已生成</view>
-    <view class="field-hint">任务标题：{{createdTask.task.title}}</view>
-    <view class="field-hint">taskId：{{createdTask.taskId}}</view>
-    <view class="field-hint">邀请 token：{{createdTask.inviteToken}}</view>
-    <view class="field-hint" style="word-break: break-all;">分享路径：{{createdTask.sharePath}}</view>
+    <view class="field-label">{{createdTask.task.displayTitle || '多人约饭偏好收集中'}}</view>
+    <view class="field-hint">{{createdTask.task.displaySummary || '发起人邀请大家填写约饭偏好'}}</view>
     <view class="chip-row">
-      <view class="info-chip hard">createTask</view>
-      <view class="info-chip soft">sharePath</view>
-      <view class="info-chip soft">inviteToken</view>
-      <view class="info-chip">waiting_preferences</view>
+      <view class="info-chip">{{createdTask.expectedPeopleCount}} 人</view>
+      <view class="info-chip soft">{{createdTask.submittedCount}}/{{createdTask.expectedPeopleCount}} 已提交</view>
+      <view class="info-chip">点击填写偏好</view>
     </view>
   </view>
 
   <view wx:if="{{createdTask}}" class="button-stack">
+    <button class="primary-button" bindtap="handleFillPreference">我也填写偏好</button>
     <button class="primary-button" open-type="share">分享到群里</button>
     <button class="primary-button" bindtap="handleViewBoard">查看任务看板</button>
-    <button class="primary-button" bindtap="handleCopySharePath">复制分享路径</button>
     <button class="primary-button" bindtap="handleCreateAnother">再发起一个</button>
   </view>
 </view>

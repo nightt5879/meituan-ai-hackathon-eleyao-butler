@@ -20,8 +20,12 @@
   <view wx:if="{{board}}" class="panel-card progress-card">
     <view class="progress-head">
       <view>
-        <view class="progress-title">{{board.task.title || '偏好收集中'}}</view>
-        <view class="progress-desc">{{board.submittedCount}} / {{board.expectedCount}} 已提交 · 还差 {{board.pendingCount}} 人{{board.recommendationState.dirtyReason === 'adjustment_requested' ? ' · 有成员希望调整' : (board.recommendationState.dirtyReason ? ' · 推荐已过期' : '')}}</view>
+        <view class="progress-title">{{board.task.displayTitle || '多人约饭偏好收集中'}}</view>
+        <view class="progress-desc">
+          <text wx:if="{{board.expectedCount}}">{{board.expectedCount}} 人 · {{board.submittedCount}}/{{board.expectedCount}} 已提交 · 还差 {{board.pendingCount}} 人</text>
+          <text wx:else>{{board.submittedCount}} 人已提交</text>
+          <text>{{board.recommendationState.dirtyReason === 'adjustment_requested' ? ' · 有成员希望调整' : (board.recommendationState.dirtyReason ? ' · 推荐已过期' : '')}}</text>
+        </view>
       </view>
       <view class="progress-pill">{{statusLabel}}</view>
     </view>
@@ -145,7 +149,7 @@
 
               <view class="field">
                 <view class="field-label">你的昵称（匿名时可留空）</view>
-                <input class="field-input" value="{{adjustmentNickname}}" placeholder="例如：阿酒" bindinput="handleAdjustmentNicknameInput" />
+                <input class="field-input" value="{{adjustmentNickname}}" placeholder="例如：阿酒" placeholder-class="field-placeholder" bindinput="handleAdjustmentNicknameInput" />
               </view>
 
               <view class="field">
@@ -180,6 +184,7 @@
                   class="field-textarea"
                   value="{{adjustmentNote}}"
                   placeholder="例如：刚刚说错了，我对辣过敏"
+                  placeholder-class="field-placeholder"
                   bindinput="handleAdjustmentNoteInput"
                 ></textarea>
               </view>

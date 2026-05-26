@@ -3,6 +3,7 @@ const userMemoryAdapter = require('../../services/userMemoryAdapter');
 const tagConfig = require('../../data/tasteTags');
 const themeAdapter = require('../../services/themeAdapter');
 const userIdentityAdapter = require('../../services/userIdentityAdapter');
+const navMetrics = require('../../utils/navMetrics');
 
 const emptySelectedTags = {
   taste: [],
@@ -51,7 +52,12 @@ Page({
     adjustmentManualInput: '',
     adjustmentMessages: [],
     adjustmentOptions,
-    currentTheme: 'warm',
+    currentTheme: themeAdapter.DEFAULT_THEME_ID,
+    statusBarHeight: 0,
+    navBarHeight: 44,
+    navRightPadding: 16,
+    navTitleSidePadding: 48,
+    customNavTotalHeight: 44,
     hasSavedCurrentRecord: false,
     memoryDecision: '',
     progressPercent: 0,
@@ -90,6 +96,7 @@ Page({
   },
 
   onLoad() {
+    this.initNavMetrics();
     this.syncTheme();
 
     if (!userIdentityAdapter.hasSession()) {
@@ -109,9 +116,18 @@ Page({
   },
 
   syncTheme() {
-    this.setData({
-      currentTheme: themeAdapter.getCurrentThemeKey()
-    });
+    const app = getApp();
+
+    if (app && app.syncThemeToPage) {
+      app.syncThemeToPage(this);
+      return;
+    }
+
+    this.setData(themeAdapter.getPageThemeData());
+  },
+
+  initNavMetrics() {
+    this.setData(navMetrics.getCustomNavMetrics());
   },
 
   startSession() {

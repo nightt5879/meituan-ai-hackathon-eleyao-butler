@@ -94,6 +94,51 @@ function parsePeopleCount(value) {
   return match ? Number(match[0]) : 1;
 }
 
+function parseExpectedCount(value) {
+  if (typeof value === 'number' && isFinite(value)) {
+    return value > 0 ? Math.floor(value) : 0;
+  }
+
+  const match = String(value || '').match(/\d+/);
+  return match ? Number(match[0]) : 0;
+}
+
+function firstPositiveCount(values) {
+  for (let i = 0; i < values.length; i += 1) {
+    const count = parseExpectedCount(values[i]);
+    if (count > 0) {
+      return count;
+    }
+  }
+  return 0;
+}
+
+function firstKnownCount(values, fallback) {
+  for (let i = 0; i < values.length; i += 1) {
+    const value = values[i];
+    if (value === undefined || value === null || value === '') {
+      continue;
+    }
+    if (typeof value === 'number' && isFinite(value) && value >= 0) {
+      return Math.floor(value);
+    }
+    const match = String(value).match(/\d+/);
+    if (match) {
+      return Number(match[0]);
+    }
+  }
+  return fallback;
+}
+
+function firstArray(values) {
+  for (let i = 0; i < values.length; i += 1) {
+    if (Array.isArray(values[i])) {
+      return values[i];
+    }
+  }
+  return [];
+}
+
 function parseBudget(value) {
   const match = String(value || '').match(/\d+/);
   return match ? Number(match[0]) : 0;
@@ -115,6 +160,60 @@ function spicyPreference(value) {
   }
 
   return 'any';
+}
+
+function spicyDisplayLabel(value) {
+  const labels = {
+    no_spicy: '不吃辣',
+    mild: '微辣',
+    medium: '中辣',
+    spicy: '能吃辣',
+    any: '辣度都可以'
+  };
+
+  return labels[value] || '';
+}
+
+function hasDemoTaskText(value) {
+  const text = String(value || '');
+  if (!text) {
+    return false;
+  }
+
+  return /明晚|18:30|学校.?附近|别太吵|三个人|三人/.test(text) ||
+    (/人均\s*100/.test(text) && /适合聊天/.test(text));
+}
+
+function cleanUserTaskText(value) {
+  const text = String(value || '').trim();
+  return hasDemoTaskText(text) ? '' : text;
+}
+
+function isCountOnlyTitle(title) {
+  return /^\d+\s*人\s*(聚餐|约饭|吃饭|多人约饭)?$/.test(String(title || '').trim());
+}
+
+function normalizeTaskForDisplay(taskId, task, board, expectedCount) {
+  const safeTask = task || {};
+  const safeBoard = board || {};
+  const cleanRawRequest = cleanUserTaskText(safeTask.rawRequest || safeTask.raw_request || safeBoard.rawRequest || safeBoard.raw_request || '');
+  const cleanTitle = cleanUserTaskText(safeTask.title || safeTask.name || '');
+  const displayTitle = cleanRawRequest || (!isCountOnlyTitle(cleanTitle) ? cleanTitle : '') || '多人约饭偏好收集中';
+  const cleanLocation = cleanUserTaskText(safeTask.locationText || safeTask.location_text || safeTask.location || safeBoard.locationText || safeBoard.location_text || '');
+  const cleanDinnerTime = cleanUserTaskText(safeTask.dinnerTime || safeTask.dinner_time || safeBoard.dinnerTime || safeBoard.dinner_time || '');
+
+  return Object.assign({}, safeTask, {
+    taskId: safeTask.taskId || safeTask.task_id || taskId,
+    title: displayTitle,
+    displayTitle: displayTitle,
+    displaySummary: cleanRawRequest || '发起人邀请你填写约饭偏好',
+    rawRequest: cleanRawRequest,
+    locationText: cleanLocation,
+    dinnerTime: cleanDinnerTime,
+    expectedPeopleCount: expectedCount,
+    creatorName: safeTask.creatorName || safeTask.creator_name || '',
+    status: safeTask.status || safeBoard.status || 'waiting_preferences'
+  });
 }
 
 // ─── Fallback task record persistence ──────────────────────────────────────
@@ -157,33 +256,45 @@ function readFallbackTaskRecord(taskId) {
 }
 
 function buildFallbackBoardFromRecord(taskId, inviteToken, record) {
-  const expectedCount = record && record.expectedPeopleCount > 0 ? record.expectedPeopleCount : 0;
+  const expectedCount = parseExpectedCount(record && record.expectedPeopleCount);
+  const rawParticipants = Array.isArray(record && record.participants)
+    ? record.participants
+    : (Array.isArray(record && record.submissions) ? record.submissions : []);
+  const participants = rawParticipants.map(normalizeMember);
+  const submittedCount = participants.length;
+  const taskStatus = expectedCount > 0 && submittedCount >= expectedCount
+    ? 'ready_to_recommend'
+    : 'waiting_preferences';
   const task = {
     taskId: taskId,
-    title: expectedCount > 0 ? expectedCount + ' 人聚餐' : '多人约饭任务',
+    title: '多人约饭偏好收集中',
+    displayTitle: '多人约饭偏好收集中',
+    displaySummary: '发起人邀请你填写约饭偏好',
     expectedPeopleCount: expectedCount,
     creatorName: (record && record.creatorName) || '',
-    rawRequest: (record && record.rawRequest) || '',
-    locationText: (record && record.locationText) || '',
-    dinnerTime: (record && record.dinnerTime) || '',
-    status: 'waiting_preferences'
+    rawRequest: cleanUserTaskText((record && record.rawRequest) || ''),
+    locationText: cleanUserTaskText((record && record.locationText) || ''),
+    dinnerTime: cleanUserTaskText((record && record.dinnerTime) || ''),
+    status: taskStatus
   };
   return {
     taskId: taskId,
     inviteToken: inviteToken,
     expectedCount: expectedCount,
-    submittedCount: 0,
-    pendingCount: expectedCount,
-    progressPercent: 0,
-    members: [],
-    participants: [],
+    submittedCount: submittedCount,
+    pendingCount: Math.max(0, expectedCount - submittedCount),
+    progressPercent: expectedCount > 0 ? Math.min(100, Math.round((submittedCount / expectedCount) * 100)) : 0,
+    members: participants,
+    participants: participants,
+    submissions: participants,
+    preferences: participants,
     conflicts: [],
     recommendations: [],
     recommendationResult: null,
     finalChoice: null,
     groupMessage: '',
     recommendationState: {
-      status: 'waiting_preferences',
+      status: taskStatus,
       hasGenerated: false,
       updatedAt: '',
       dirtyReason: ''
@@ -207,9 +318,9 @@ function createFallbackTask(payload, error) {
   const record = {
     expectedPeopleCount: expected > 0 ? expected : 1,
     creatorName: safe.creatorName || safe.creator_name || '小幺',
-    rawRequest: safe.rawRequest || safe.raw_request || '',
-    locationText: safe.locationText || safe.location || safe.location_text || '',
-    dinnerTime: safe.dinnerTime || safe.dinner_time || '',
+    rawRequest: cleanUserTaskText(safe.rawRequest || safe.raw_request || ''),
+    locationText: cleanUserTaskText(safe.locationText || safe.location || safe.location_text || ''),
+    dinnerTime: cleanUserTaskText(safe.dinnerTime || safe.dinner_time || ''),
     createdAt: new Date().toISOString()
   };
   saveFallbackTaskRecord(taskId, record);
@@ -234,16 +345,90 @@ function createFallbackTask(payload, error) {
   };
 }
 
+function buildFallbackParticipant(inviteToken, payload) {
+  const data = buildPreferenceRequestData(inviteToken, payload);
+  const participantId = data.clientId || ('local_participant_' + Date.now().toString(36));
+  const submittedAt = new Date().toISOString();
+
+  return Object.assign({}, data, {
+    id: participantId,
+    participantId: participantId,
+    submittedAt: submittedAt,
+    updatedAt: submittedAt,
+    extractedConstraints: {
+      hardConstraints: data.hardRequirements.slice(),
+      softPreferences: data.softPreferences.slice()
+    }
+  });
+}
+
+function isSameFallbackParticipant(current, next) {
+  const safeCurrent = current || {};
+  const currentClientId = safeCurrent.clientId || safeCurrent.client_id || '';
+  const currentParticipantId = safeCurrent.participantId || safeCurrent.participant_id || safeCurrent.id || '';
+  const nextClientId = next.clientId || next.client_id || '';
+  const nextParticipantId = next.participantId || next.participant_id || next.id || '';
+
+  if (nextClientId && currentClientId && currentClientId === nextClientId) {
+    return true;
+  }
+
+  if (nextParticipantId && currentParticipantId && currentParticipantId === nextParticipantId) {
+    return true;
+  }
+
+  return !!(next.nickname && safeCurrent.nickname && safeCurrent.nickname === next.nickname);
+}
+
+function upsertFallbackParticipant(participants, nextParticipant) {
+  const list = Array.isArray(participants) ? participants.slice() : [];
+  let replaced = false;
+  const next = list.map(function (item) {
+    if (isSameFallbackParticipant(item, nextParticipant)) {
+      replaced = true;
+      return nextParticipant;
+    }
+    return item;
+  });
+
+  if (!replaced) {
+    next.push(nextParticipant);
+  }
+
+  return next;
+}
+
 function submitFallbackPreference(taskId, inviteToken, payload, error) {
   const safeTaskId = taskId || 'group_mock_task';
   const safeToken = inviteToken || 'group_mock_token';
+  const currentRecord = readFallbackTaskRecord(safeTaskId) || {
+    expectedPeopleCount: 0,
+    creatorName: '',
+    createdAt: new Date().toISOString()
+  };
+  const participant = buildFallbackParticipant(safeToken, payload || {});
+  const participants = upsertFallbackParticipant(
+    currentRecord.participants || currentRecord.submissions || [],
+    participant
+  );
+  const nextRecord = Object.assign({}, currentRecord, {
+    participants: participants,
+    submissions: participants,
+    updatedAt: new Date().toISOString()
+  });
+  saveFallbackTaskRecord(safeTaskId, nextRecord);
+  const board = buildFallbackBoardFromRecord(safeTaskId, safeToken, nextRecord);
+  board.status = STATUS;
+  board.errorMessage = error ? error.message : '';
+  board.message = '成员偏好已暂存到本地 mock task';
 
   return {
     status: STATUS,
     taskId: safeTaskId,
     inviteToken: safeToken,
     nextUrl: '/pages/group/board/board?taskId=' + encodeURIComponent(safeTaskId) + '&inviteToken=' + encodeURIComponent(safeToken),
-    payload: payload || {},
+    board: board,
+    payload: participant,
     errorMessage: error ? error.message : '',
     message: '成员偏好提交后端暂不可用，已使用本地 mock fallback'
   };
@@ -287,6 +472,101 @@ function submitFallbackAdjustmentRequest(taskId, inviteToken, payload, error) {
   return board;
 }
 
+function firstText(values) {
+  for (let i = 0; i < values.length; i += 1) {
+    const text = String(values[i] || '').trim();
+    if (text) {
+      return text;
+    }
+  }
+  return '';
+}
+
+function normalizeTimeMode(value) {
+  return value === 'allDay' ? 'allDay' : 'specified';
+}
+
+function normalizeCustomTexts(source, payload, availability) {
+  const raw = source || {};
+  const safePayload = payload || {};
+  const safeAvailability = availability || {};
+
+  return {
+    time: firstText([
+      raw.time,
+      raw.timeCustomText,
+      raw.time_custom_text,
+      safePayload.timeCustomText,
+      safePayload.time_custom_text,
+      safeAvailability.timeCustomText,
+      safeAvailability.time_custom_text
+    ]),
+    restriction: firstText([
+      raw.restriction,
+      raw.restrictionCustomText,
+      raw.restriction_custom_text,
+      raw.dietary,
+      raw.dietaryCustomText,
+      safePayload.restrictionCustomText,
+      safePayload.restriction_custom_text
+    ]),
+    cuisine: firstText([
+      raw.cuisine,
+      raw.cuisineCustomText,
+      raw.cuisine_custom_text,
+      safePayload.cuisineCustomText,
+      safePayload.cuisine_custom_text
+    ]),
+    budget: firstText([
+      raw.budget,
+      raw.budgetCustomText,
+      raw.budget_custom_text,
+      safePayload.budgetCustomText,
+      safePayload.budget_custom_text
+    ]),
+    spice: firstText([
+      raw.spice,
+      raw.spiceCustomText,
+      raw.spice_custom_text,
+      raw.spicy,
+      raw.spicyCustomText,
+      safePayload.spiceCustomText,
+      safePayload.spice_custom_text,
+      safePayload.spicyCustomText,
+      safePayload.spicy_custom_text
+    ]),
+    extra: firstText([
+      raw.extra,
+      raw.extraCustomText,
+      raw.extra_custom_text,
+      safePayload.extraCustomText,
+      safePayload.extra_custom_text
+    ])
+  };
+}
+
+function buildCustomSummaryList(customTexts) {
+  const safe = customTexts || {};
+  const configs = [
+    { key: 'time', label: '时间补充' },
+    { key: 'restriction', label: '忌口补充' },
+    { key: 'cuisine', label: '品类补充' },
+    { key: 'budget', label: '预算补充' },
+    { key: 'spice', label: '辣度补充' },
+    { key: 'extra', label: '其他补充' }
+  ];
+
+  return configs.map(function (item) {
+    return {
+      key: item.key,
+      label: item.label,
+      value: String(safe[item.key] || '').trim()
+    };
+  }).filter(function (item) {
+    return !!item.value;
+  });
+}
+
 function normalizeMember(member) {
   const safe = member || {};
   const manualFields = safe.manualFields || safe.manual_fields || {};
@@ -298,6 +578,10 @@ function normalizeMember(member) {
     ? (availability.availableHours || availability.available_hours).slice()
     : [];
   const availableTimeText = availability.availableTimeText || availability.available_time_text || '';
+  const customTexts = normalizeCustomTexts(safe.customTexts || safe.custom_texts, safe, availability);
+  const timeMode = normalizeTimeMode(availability.timeMode || availability.time_mode || safe.timeMode || safe.time_mode);
+  const startTime = availability.startTime || availability.start_time || safe.startTime || safe.start_time || '';
+  const endTime = availability.endTime || availability.end_time || safe.endTime || safe.end_time || '';
 
   // Surface both snake_case and camelCase extractedConstraints — the board
   // WXML reads .extractedConstraints.hardConstraints / .softPreferences.
@@ -311,27 +595,41 @@ function normalizeMember(member) {
 
   const spicyEnum = safe.spicyPreference || safe.spicy_preference
                  || manualFields.spicyPreference || manualFields.spicy_preference || '';
+  const participantId = safe.participantId || safe.participant_id || '';
+  const clientId = safe.clientId || safe.client_id || '';
+  const nickname = safe.nickname || '匿名成员';
 
   return {
-    id: safe.participantId || safe.participant_id || safe.id || '',
-    participantId: safe.participantId || safe.participant_id || '',
-    clientId: safe.clientId || safe.client_id || '',
-    nickname: safe.nickname || '匿名成员',
+    id: participantId || clientId || safe.id || nickname,
+    participantId: participantId,
+    clientId: clientId,
+    nickname: nickname,
     visibility: safe.visibility || 'public',
     rawPreference: safe.rawPreference || safe.raw_preference || '',
     // New explicit-priority surfaces that board.wxml reads directly.
     availability: {
       availableDays: availableDays,
       availableHours: availableHours,
-      availableTimeText: availableTimeText
+      availableTimeText: availableTimeText,
+      timeCustomText: customTexts.time,
+      timeMode: timeMode,
+      startTime: startTime,
+      endTime: endTime
     },
-    availabilitySummary: buildAvailabilitySummary(availableDays, availableHours, availableTimeText),
+    availabilitySummary: buildAvailabilitySummary(availableDays, availableHours, availableTimeText, {
+      timeMode: timeMode,
+      startTime: startTime,
+      endTime: endTime
+    }),
+    customTexts: customTexts,
+    customSummaryList: buildCustomSummaryList(customTexts),
     dietaryRestrictions: Array.isArray(safe.dietaryRestrictions || safe.dietary_restrictions)
       ? (safe.dietaryRestrictions || safe.dietary_restrictions).slice() : [],
     cuisinePreferences: Array.isArray(safe.cuisinePreferences || safe.cuisine_preferences)
       ? (safe.cuisinePreferences || safe.cuisine_preferences).slice() : [],
     budgetTag: safe.budgetTag || safe.budget_tag || '',
     spicyPreference: spicyEnum,
+    spicyLabel: spicyDisplayLabel(spicyEnum),
     hardRequirements: Array.isArray(safe.hardRequirements || safe.hard_requirements)
       ? (safe.hardRequirements || safe.hard_requirements).slice() : [],
     softPreferences: Array.isArray(safe.softPreferences || safe.soft_preferences)
@@ -351,19 +649,34 @@ function normalizeMember(member) {
   };
 }
 
-function buildAvailabilitySummary(days, hours, freeText) {
+function buildAvailabilitySummary(days, hours, freeText, timeInfo) {
   const parts = [];
-  if (Array.isArray(days) && days.length) {
-    parts.push(days.slice(0, 4).join('、') + (days.length > 4 ? '…' : ''));
+  const safeTime = timeInfo || {};
+  const hasStructuredTime = !!(safeTime.timeMode || safeTime.startTime || safeTime.endTime);
+  const dayText = Array.isArray(days) && days.length
+    ? days.slice(0, 4).join('、') + (days.length > 4 ? '…' : '')
+    : '';
+  let timeText = '';
+
+  if (hasStructuredTime) {
+    timeText = normalizeTimeMode(safeTime.timeMode) === 'allDay'
+      ? '全天有空'
+      : ((safeTime.startTime || '14:00') + '-' + (safeTime.endTime || '17:00'));
   }
-  if (Array.isArray(hours) && hours.length) {
+
+  if (dayText && timeText) {
+    parts.push(dayText + ' ' + timeText);
+  } else if (dayText) {
+    parts.push(dayText);
+  } else if (timeText) {
+    parts.push(timeText);
+  }
+
+  if (!hasStructuredTime && Array.isArray(hours) && hours.length) {
     parts.push(hours.slice(0, 4).join('、') + (hours.length > 4 ? '…' : ''));
   }
-  if (freeText) {
-    if (parts.length) {
-      return parts.join(' · ') + ' · ' + freeText;
-    }
-    return freeText;
+  if (!hasStructuredTime && freeText) {
+    parts.push(freeText);
   }
   return parts.join(' · ');
 }
@@ -371,14 +684,42 @@ function buildAvailabilitySummary(days, hours, freeText) {
 function normalizeTaskBoard(taskId, inviteToken, data) {
   const board = data.board || data;
   const task = board.task || {};
-  const participants = (board.participants || task.participants || []).map(normalizeMember);
+  const rawParticipants = firstArray([
+    board.participants,
+    task.participants,
+    board.submissions,
+    task.submissions,
+    board.preferences,
+    task.preferences
+  ]);
+  const participants = rawParticipants.map(normalizeMember);
   const recommendationResult = board.recommendationResult || board.recommendation_result || null;
   const rawCandidates = recommendationResult
     ? recommendationResult.candidates || []
     : board.recommendations || task.candidates || [];
   const candidates = rawCandidates.map(normalizeCandidate);
-  const expectedCount = task.expectedPeopleCount || task.expected_people_count || board.expectedCount || 0;
-  const submittedCount = participants.length;
+  const expectedCount = firstPositiveCount([
+    task.expectedPeopleCount,
+    task.expected_people_count,
+    task.targetCount,
+    task.target_count,
+    task.peopleCount,
+    task.people_count,
+    board.expectedCount,
+    board.expected_count,
+    board.targetCount,
+    board.target_count,
+    board.peopleCount,
+    board.people_count
+  ]);
+  const knownSubmittedCount = firstKnownCount([
+    board.submittedCount,
+    board.submitted_count,
+    task.submittedCount,
+    task.submitted_count
+  ], participants.length);
+  const submittedCount = Math.max(participants.length, knownSubmittedCount);
+  const normalizedTask = normalizeTaskForDisplay(taskId, task, board, expectedCount);
 
   const finalChoiceRaw = recommendationResult
     ? recommendationResult.finalChoice || recommendationResult.final_choice
@@ -415,14 +756,14 @@ function normalizeTaskBoard(taskId, inviteToken, data) {
     finalChoice: finalChoice,
     groupMessage: recommendationResult ? recommendationResult.groupMessage || recommendationResult.group_message || '' : task.group_message || '',
     recommendationState: {
-      status: recommendationStateRaw.status || task.status || 'waiting_preferences',
+      status: recommendationStateRaw.status || normalizedTask.status || 'waiting_preferences',
       hasGenerated: !!(recommendationStateRaw.hasGenerated || recommendationStateRaw.has_generated || finalChoice),
       updatedAt: recommendationStateRaw.updatedAt || recommendationStateRaw.updated_at || '',
       dirtyReason: recommendationStateRaw.dirtyReason || recommendationStateRaw.dirty_reason || ''
     },
     adjustmentRequests: adjustmentRequests,
     adjustmentRequestCount: adjustmentRequests.length,
-    task: task,
+    task: normalizedTask,
     message: '已连接真实多人约饭后端'
   };
 }
@@ -520,12 +861,25 @@ function normalizeAdjustmentRequest(r) {
 function createTask(payload) {
   const safePayload = payload || {};
   const data = {
-    creatorName: safePayload.creatorName || safePayload.creator_name || '小幺',
-    rawRequest: safePayload.rawRequest || safePayload.raw_request || '',
-    locationText: safePayload.locationText || safePayload.location || safePayload.location_text || '',
-    expectedPeopleCount: parsePeopleCount(safePayload.peopleCount || safePayload.expectedPeopleCount || safePayload.expected_people_count),
-    dinnerTime: safePayload.dinnerTime || safePayload.dinner_time || ''
+    expectedPeopleCount: parsePeopleCount(safePayload.peopleCount || safePayload.expectedPeopleCount || safePayload.expected_people_count)
   };
+  const creatorName = safePayload.creatorName || safePayload.creator_name || '';
+  const rawRequest = cleanUserTaskText(safePayload.rawRequest || safePayload.raw_request || '');
+  const locationText = cleanUserTaskText(safePayload.locationText || safePayload.location || safePayload.location_text || '');
+  const dinnerTime = cleanUserTaskText(safePayload.dinnerTime || safePayload.dinner_time || '');
+
+  if (creatorName) {
+    data.creatorName = creatorName;
+  }
+  if (rawRequest) {
+    data.rawRequest = rawRequest;
+  }
+  if (locationText) {
+    data.locationText = locationText;
+  }
+  if (dinnerTime) {
+    data.dinnerTime = dinnerTime;
+  }
 
   return request({
     path: '/api/group-tasks',
@@ -556,7 +910,7 @@ function createTask(payload) {
   });
 }
 
-function submitPreference(taskId, inviteToken, payload) {
+function buildPreferenceRequestData(inviteToken, payload) {
   const safePayload = payload || {};
   // Accept BOTH the old field names (spicy / budget / leaveBefore) and the
   // new ones (spicyPreference / budgetTag / availability.*). Read new fields
@@ -567,7 +921,11 @@ function submitPreference(taskId, inviteToken, payload) {
   const availability = safePayload.availability || {};
   const availableDays = Array.isArray(availability.availableDays) ? availability.availableDays.slice() : [];
   const availableHours = Array.isArray(availability.availableHours) ? availability.availableHours.slice() : [];
-  const availableTimeText = (availability.availableTimeText || '').toString();
+  const customTexts = normalizeCustomTexts(safePayload.customTexts || safePayload.custom_texts, safePayload, availability);
+  const availableTimeText = customTexts.time || (availability.availableTimeText || availability.available_time_text || '').toString();
+  const timeMode = normalizeTimeMode(availability.timeMode || availability.time_mode || safePayload.timeMode || safePayload.time_mode);
+  const startTime = availability.startTime || availability.start_time || safePayload.startTime || safePayload.start_time || '14:00';
+  const endTime = availability.endTime || availability.end_time || safePayload.endTime || safePayload.end_time || '17:00';
   // Legacy manual_fields shape — keep populated so the existing backend
   // contract still receives spicy / budget / leaveBefore.
   const manualFields = {
@@ -579,27 +937,45 @@ function submitPreference(taskId, inviteToken, payload) {
     manualFields.budgetMax = budgetValue;
   }
 
-  const data = {
+  return {
     inviteToken: inviteToken,
     clientId: getClientId(),
     nickname: safePayload.nickname || '匿名成员',
     visibility: safePayload.visibility || 'public',
     rawPreference: safePayload.rawPreference || safePayload.raw_preference || '',
-    // New explicit-priority fields the upgraded fill page sends.
     dietaryRestrictions: Array.isArray(safePayload.dietaryRestrictions) ? safePayload.dietaryRestrictions.slice() : [],
     cuisinePreferences: Array.isArray(safePayload.cuisinePreferences) ? safePayload.cuisinePreferences.slice() : [],
     budgetTag: budgetTag,
     spicyPreference: spicyEnum,
+    timeMode: timeMode,
+    startTime: startTime,
+    endTime: endTime,
+    timeCustomText: customTexts.time,
+    restrictionCustomText: customTexts.restriction,
+    cuisineCustomText: customTexts.cuisine,
+    budgetCustomText: customTexts.budget,
+    spiceCustomText: customTexts.spice,
+    extraCustomText: customTexts.extra,
+    customTexts: customTexts,
     hardRequirements: Array.isArray(safePayload.hardRequirements) ? safePayload.hardRequirements.slice() : [],
     softPreferences: Array.isArray(safePayload.softPreferences) ? safePayload.softPreferences.slice() : [],
     requirementPriorities: Object.assign({}, safePayload.requirementPriorities || {}),
     availability: {
       availableDays: availableDays,
       availableHours: availableHours,
-      availableTimeText: availableTimeText
+      timeMode: timeMode,
+      startTime: startTime,
+      endTime: endTime,
+      availableTimeText: availableTimeText,
+      timeCustomText: customTexts.time
     },
     manualFields: manualFields
   };
+}
+
+function submitPreference(taskId, inviteToken, payload) {
+  const safePayload = payload || {};
+  const data = buildPreferenceRequestData(inviteToken, safePayload);
 
   return request({
     path: '/api/group-tasks/' + encodeURIComponent(taskId || 'group_mock_task') + '/participants',

@@ -68,6 +68,11 @@ Page({
   onShow() {
     this.syncTheme();
     if (this.data.taskId) {
+      if (this.data.hasInitialized) {
+        this.loadBoard({ silent: true }).catch(function () {});
+      } else if (!this.data.isLoading) {
+        this.loadBoard({ initial: true }).catch(function () {});
+      }
       this.startPolling();
     }
   },

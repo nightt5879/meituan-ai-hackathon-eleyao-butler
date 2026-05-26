@@ -2,13 +2,14 @@ const themeAdapter = require('../../../services/themeAdapter');
 const groupDiningAdapter = require('../../../services/groupDiningAdapter');
 const userIdentityAdapter = require('../../../services/userIdentityAdapter');
 const userMemoryAdapter = require('../../../services/userMemoryAdapter');
+const navMetrics = require('../../../utils/navMetrics');
 
-const DAY_CHIPS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日', '随时'];
-const HOUR_CHIPS = [
-  '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00',
-  '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'
+const DAY_CHIPS = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+const TIME_MODE_OPTIONS = [
+  { value: 'specified', label: '指定时段' },
+  { value: 'allDay', label: '全天有空' }
 ];
-const DIETARY_CHIPS = ['不吃辣', '不吃香菜', '不吃葱蒜', '不吃海鲜', '不吃牛羊肉', '素食', '过敏', '无忌口'];
+const DIETARY_CHIPS = ['不吃辣', '不吃香菜', '不吃葱蒜', '不吃海鲜', '不吃牛羊肉', '素食', '无忌口'];
 const CUISINE_CHIPS = ['粤菜', '川湘', '火锅', '烧烤', '日料', '韩餐', '面食', '茶餐厅', '轻食', '奶茶/甜品', '都可以'];
 const BUDGET_CHIPS = ['30 以内', '30-50', '50-80', '80-120', '都可以'];
 const SPICY_CHIPS = [
@@ -45,9 +46,7 @@ const AVOID_TO_DIETARY = {
   '香菜': '不吃香菜',
   '葱蒜': '不吃葱蒜',
   '海鲜': '不吃海鲜',
-  '牛羊肉': '不吃牛羊肉',
-  '花生': '过敏',
-  '乳制品': '过敏'
+  '牛羊肉': '不吃牛羊肉'
 };
 const SPICY_LEVEL_TO_ENUM = {
   '不吃辣': 'no_spicy',
@@ -60,6 +59,11 @@ const SPICY_LEVEL_TO_ENUM = {
 Page({
   data: {
     currentTheme: themeAdapter.DEFAULT_THEME_ID,
+    statusBarHeight: 0,
+    navBarHeight: 44,
+    navRightPadding: 16,
+    navTitleSidePadding: 48,
+    customNavTotalHeight: 44,
     taskId: 'group_mock_task',
     inviteToken: 'group_mock_token',
     taskSummary: null,
@@ -71,18 +75,26 @@ Page({
       visibility: 'public',
       availableDays: [],
       availableHours: [],
-      availableTimeText: '',
+      timeMode: 'specified',
+      startTime: '14:00',
+      endTime: '17:00',
+      timeCustomText: '',
       dietaryRestrictions: [],
       cuisinePreferences: [],
       budgetTag: '',
       spicyPreference: '',
       rawPreference: '',
+      restrictionCustomText: '',
+      cuisineCustomText: '',
+      budgetCustomText: '',
+      spiceCustomText: '',
+      extraCustomText: '',
       requirementPriority: Object.assign({}, DEFAULT_REQUIREMENT_PRIORITY),
       customHardRequirement: '',
       customSoftPreference: ''
     },
     dayChips: [],
-    hourChips: [],
+    timeModeOptions: TIME_MODE_OPTIONS,
     dietaryChips: [],
     cuisineChips: [],
     budgetChips: [],
@@ -95,6 +107,7 @@ Page({
   },
 
   onLoad(query) {
+    this.initNavMetrics();
     this.syncTheme();
     const taskId = query && query.taskId ? query.taskId : 'group_mock_task';
     const inviteToken = query && query.inviteToken ? query.inviteToken : 'group_mock_token';
@@ -128,7 +141,23 @@ Page({
   },
 
   handleBack() {
-    wx.navigateBack();
+    const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : [];
+
+    if (pages.length > 1) {
+      wx.navigateBack();
+      return;
+    }
+
+    wx.redirectTo({
+      url: '/pages/home/home',
+      fail: function () {
+        wx.reLaunch({ url: '/pages/home/home' });
+      }
+    });
+  },
+
+  initNavMetrics() {
+    this.setData(navMetrics.getCustomNavMetrics());
   },
 
   loadTaskSummary() {
@@ -140,15 +169,20 @@ Page({
     this.setData({ isLoadingTask: true, errorMessage: '' });
     groupDiningAdapter.getTaskBoard(taskId, this.data.inviteToken).then(function (board) {
       const task = board.task || {};
+      const expectedPeopleCount = resolvePositiveCount([
+        task.expectedPeopleCount,
+        board.expectedCount
+      ]);
       page.setData({
         isLoadingTask: false,
         taskSummary: {
-          title: task.title || '一次多人约饭',
+          title: task.displayTitle || '多人约饭偏好收集中',
+          summary: task.displaySummary || '发起人邀请你填写约饭偏好',
           creatorName: task.creatorName || '',
           rawRequest: task.rawRequest || '',
           locationText: task.locationText || '',
           dinnerTime: task.dinnerTime || '',
-          expectedPeopleCount: task.expectedPeopleCount || board.expectedCount || 0,
+          expectedPeopleCount: expectedPeopleCount,
           submittedCount: board.submittedCount || 0
         }
       });
@@ -168,7 +202,7 @@ Page({
     const form = this.data.form;
     this.setData({
       dayChips: DAY_CHIPS.map(buildToggleChip(form.availableDays)),
-      hourChips: HOUR_CHIPS.map(buildToggleChip(form.availableHours)),
+      timeModeOptions: TIME_MODE_OPTIONS,
       dietaryChips: DIETARY_CHIPS.map(buildToggleChip(form.dietaryRestrictions)),
       cuisineChips: CUISINE_CHIPS.map(buildToggleChip(form.cuisinePreferences)),
       budgetChips: BUDGET_CHIPS.map(buildSingleChip(form.budgetTag)),
@@ -196,18 +230,42 @@ Page({
 
   handleToggleDay(event) {
     const value = event.currentTarget.dataset.value;
+    if (!value) {
+      return;
+    }
     const form = Object.assign({}, this.data.form);
-    form.availableDays = toggleWithExclusive(form.availableDays, value, '随时');
+    form.availableDays = toggleValue(form.availableDays, value).filter(function (day) {
+      return day !== '随时';
+    });
     this.setData({ form });
     this.rebuildAllChips();
   },
 
-  handleToggleHour(event) {
+  handleTimeModeTap(event) {
     const value = event.currentTarget.dataset.value;
+    if (value !== 'specified' && value !== 'allDay') {
+      return;
+    }
     const form = Object.assign({}, this.data.form);
-    form.availableHours = toggleValue(form.availableHours, value);
+    form.timeMode = value;
     this.setData({ form });
     this.rebuildAllChips();
+  },
+
+  handleStartTimeChange(event) {
+    const form = Object.assign({}, this.data.form);
+    form.startTime = event.detail.value || '14:00';
+    form.timeMode = 'specified';
+    this.setData({ form });
+    this.rebuildPreview();
+  },
+
+  handleEndTimeChange(event) {
+    const form = Object.assign({}, this.data.form);
+    form.endTime = event.detail.value || '17:00';
+    form.timeMode = 'specified';
+    this.setData({ form });
+    this.rebuildPreview();
   },
 
   handleToggleDietary(event) {
@@ -268,9 +326,9 @@ Page({
       return;
     }
     const form = Object.assign({}, this.data.form);
-    const current = (form.rawPreference || '').trim();
+    const current = (form.customSoftPreference || '').trim();
     if (current.indexOf(text) < 0) {
-      form.rawPreference = current ? current + '，' + text : text;
+      form.customSoftPreference = current ? current + '，' + text : text;
     }
     this.setData({ form });
     this.rebuildPreview();
@@ -311,9 +369,9 @@ Page({
     }
     if (unmapped.length) {
       const note = '不吃' + unmapped.join('、');
-      const current = (form.rawPreference || '').trim();
+      const current = (form.restrictionCustomText || '').trim();
       if (current.indexOf(note) < 0) {
-        form.rawPreference = current ? current + '；' + note : note;
+        form.restrictionCustomText = current ? current + '；' + note : note;
       }
     }
     if (spicyLevel && SPICY_LEVEL_TO_ENUM[spicyLevel]) {
@@ -354,6 +412,10 @@ Page({
       wx.showToast({ title: '先填一下昵称', icon: 'none' });
       return;
     }
+    if (form.timeMode !== 'allDay' && !isValidTimeRange(form.startTime, form.endTime)) {
+      wx.showToast({ title: '结束时间要晚于开始时间', icon: 'none' });
+      return;
+    }
 
     const page = this;
     const payload = {
@@ -363,7 +425,28 @@ Page({
       availability: {
         availableDays: form.availableDays,
         availableHours: form.availableHours,
-        availableTimeText: form.availableTimeText
+        timeMode: form.timeMode,
+        startTime: form.startTime,
+        endTime: form.endTime,
+        availableTimeText: form.timeCustomText,
+        timeCustomText: form.timeCustomText
+      },
+      timeMode: form.timeMode,
+      startTime: form.startTime,
+      endTime: form.endTime,
+      timeCustomText: form.timeCustomText,
+      restrictionCustomText: form.restrictionCustomText,
+      cuisineCustomText: form.cuisineCustomText,
+      budgetCustomText: form.budgetCustomText,
+      spiceCustomText: form.spiceCustomText,
+      extraCustomText: form.extraCustomText,
+      customTexts: {
+        time: form.timeCustomText,
+        restriction: form.restrictionCustomText,
+        cuisine: form.cuisineCustomText,
+        budget: form.budgetCustomText,
+        spice: form.spiceCustomText,
+        extra: form.extraCustomText
       },
       dietaryRestrictions: form.dietaryRestrictions,
       cuisinePreferences: form.cuisinePreferences,
@@ -406,20 +489,24 @@ Page({
 function buildToggleChip(selectedList) {
   const selected = selectedList || [];
   return function (value) {
-    return { value: value, active: selected.indexOf(value) >= 0 };
+    return { value: value, active: selected.indexOf(value) >= 0, wide: isWideChoice(value) };
   };
 }
 
 function buildSingleChip(selectedValue) {
   return function (value) {
-    return { value: value, active: selectedValue === value };
+    return { value: value, active: selectedValue === value, wide: isWideChoice(value) };
   };
 }
 
 function buildSingleChipWithValue(selectedValue) {
   return function (option) {
-    return { label: option.label, value: option.value, active: selectedValue === option.value };
+    return { label: option.label, value: option.value, active: selectedValue === option.value, wide: isWideChoice(option.label) || option.value === 'any' };
   };
+}
+
+function isWideChoice(value) {
+  return value === '都可以' || value === '无忌口';
 }
 
 function toggleWithExclusive(list, value, exclusive) {
@@ -491,37 +578,36 @@ function buildSoftPreferences(form) {
 
 function buildRequirementBuckets(form) {
   const buckets = { hard: [], soft: [] };
-  const days = form.availableDays || [];
-  const hours = form.availableHours || [];
-  const timeText = (form.availableTimeText || '').trim();
+  const timeSummary = buildTimeSummary(form);
+  const timeCustomText = (form.timeCustomText || '').trim();
 
-  if (days.length && days.indexOf('随时') < 0) {
-    addByPriority(buckets, priorityOf(form, 'days'), '可参与 · ' + days.join('/'));
+  if (timeSummary) {
+    addByPriority(buckets, priorityOf(form, 'hours'), '可参与 · ' + timeSummary);
   }
-  if (hours.length) {
-    const display = hours.slice(0, 3).join('/') + (hours.length > 3 ? '…' : '');
-    addByPriority(buckets, priorityOf(form, 'hours'), '时段 · ' + display);
-  }
-  if (timeText) {
-    addByPriority(buckets, priorityOf(form, 'timeText'), timeText);
+  if (timeCustomText) {
+    addByPriority(buckets, priorityOf(form, 'timeText'), '时间补充：' + compactRequirementText(timeCustomText));
   }
   (form.dietaryRestrictions || []).forEach(function (tag) {
     if (tag && tag !== '无忌口') {
       addByPriority(buckets, priorityOf(form, 'dietary'), tag);
     }
   });
+  addModuleCustomText(buckets, form, 'dietary', '忌口补充', form.restrictionCustomText);
   (form.cuisinePreferences || []).forEach(function (cuisine) {
     if (cuisine && cuisine !== '都可以') {
       addByPriority(buckets, priorityOf(form, 'cuisine'), '想吃 ' + cuisine);
     }
   });
+  addModuleCustomText(buckets, form, 'cuisine', '品类补充', form.cuisineCustomText);
   if (form.budgetTag && form.budgetTag !== '都可以') {
     addByPriority(buckets, priorityOf(form, 'budget'), '预算 ' + form.budgetTag);
   }
+  addModuleCustomText(buckets, form, 'budget', '预算补充', form.budgetCustomText);
   const spicyText = spicyRequirementText(form.spicyPreference);
   if (spicyText) {
     addByPriority(buckets, priorityOf(form, 'spicy'), spicyText);
   }
+  addModuleCustomText(buckets, form, 'spicy', '辣度补充', form.spiceCustomText);
 
   const matchedPrompts = [];
   const text = String(form.rawPreference || '');
@@ -535,6 +621,7 @@ function buildRequirementBuckets(form) {
   if (freeText) {
     addByPriority(buckets, priorityOf(form, 'preference'), '补充：' + compactRequirementText(freeText));
   }
+  addModuleCustomText(buckets, form, 'preference', '其他补充', form.extraCustomText);
 
   splitCustomText(form.customHardRequirement).forEach(function (item) {
     buckets.hard.push(item);
@@ -547,6 +634,28 @@ function buildRequirementBuckets(form) {
     hard: uniqueList(buckets.hard),
     soft: uniqueList(buckets.soft)
   };
+}
+
+function buildTimeSummary(form) {
+  const days = form.availableDays || [];
+  const dayText = days.length ? days.join('、') : '';
+  const mode = form.timeMode === 'allDay' ? 'allDay' : 'specified';
+  const rangeText = mode === 'allDay'
+    ? '全天有空'
+    : ((form.startTime || '14:00') + '-' + (form.endTime || '17:00'));
+
+  if (dayText && rangeText) {
+    return dayText + ' ' + rangeText;
+  }
+  return dayText || rangeText;
+}
+
+function addModuleCustomText(buckets, form, priorityKey, label, value) {
+  const text = String(value || '').trim();
+  if (!text) {
+    return;
+  }
+  addByPriority(buckets, priorityOf(form, priorityKey), label + '：' + compactRequirementText(text));
 }
 
 function addByPriority(buckets, priority, text) {
@@ -602,4 +711,29 @@ function splitCustomText(text) {
     .filter(function (item) {
       return item.length > 0;
     });
+}
+
+function isValidTimeRange(startTime, endTime) {
+  const start = timeToMinutes(startTime);
+  const end = timeToMinutes(endTime);
+  return start >= 0 && end > start;
+}
+
+function timeToMinutes(value) {
+  const match = String(value || '').match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) {
+    return -1;
+  }
+  return Number(match[1]) * 60 + Number(match[2]);
+}
+
+function resolvePositiveCount(values) {
+  for (let i = 0; i < values.length; i += 1) {
+    const match = String(values[i] || '').match(/\d+/);
+    const count = match ? Number(match[0]) : 0;
+    if (count > 0) {
+      return count;
+    }
+  }
+  return 0;
 }
