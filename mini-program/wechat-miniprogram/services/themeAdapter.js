@@ -114,3 +114,54 @@ module.exports = {
   getThemeByIndex,
   getThemeByKey
 };
+
+function getPageThemeData(themeKey) {
+  var key = themeKey;
+
+  try {
+    if (!key && typeof getCurrentThemeKey === 'function') {
+      key = getCurrentThemeKey();
+    }
+
+    if (!key && typeof getCurrentTheme === 'function') {
+      var currentTheme = getCurrentTheme();
+      key = currentTheme && (currentTheme.key || currentTheme.id);
+    }
+  } catch (error) {
+    key = '';
+  }
+
+  key = key || 'mint-green';
+
+  var theme = null;
+
+  try {
+    if (typeof themes !== 'undefined' && Array.isArray(themes)) {
+      for (var i = 0; i < themes.length; i += 1) {
+        var item = themes[i];
+        if (item && (item.key === key || item.id === key)) {
+          theme = item;
+          break;
+        }
+      }
+
+      if (!theme && themes.length) {
+        theme = themes[0];
+        key = theme.key || theme.id || key;
+      }
+    }
+  } catch (error) {
+    theme = null;
+  }
+
+  return {
+    currentTheme: key,
+    theme: theme || {},
+    pageTheme: theme || {},
+    themeData: theme || {}
+  };
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports.getPageThemeData = getPageThemeData;
+}
