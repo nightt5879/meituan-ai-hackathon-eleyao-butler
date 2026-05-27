@@ -1,6 +1,7 @@
 const themeAdapter = require('../../../services/themeAdapter');
 const groupDiningAdapter = require('../../../services/groupDiningAdapter');
 const userIdentityAdapter = require('../../../services/userIdentityAdapter');
+const navMetrics = require('../../../utils/navMetrics');
 
 const STATUS_LABELS = {
   waiting_preferences: '收集中',
@@ -14,6 +15,11 @@ const POLL_INTERVAL_MS = 3000;
 Page({
   data: {
     currentTheme: themeAdapter.DEFAULT_THEME_ID,
+    statusBarHeight: 0,
+    navBarHeight: 44,
+    navRightPadding: 16,
+    navTitleSidePadding: 48,
+    customNavTotalHeight: 44,
     taskId: 'group_mock_task',
     inviteToken: 'group_mock_token',
     board: null,
@@ -52,6 +58,7 @@ Page({
     const taskId = options && options.taskId ? options.taskId : 'group_mock_task';
     const inviteToken = options && options.inviteToken ? options.inviteToken : 'group_mock_token';
 
+    this.initNavMetrics();
     this.syncTheme();
     if (!userIdentityAdapter.hasSession()) {
       userIdentityAdapter.requireLoginRedirect('/pages/group/board/board?taskId=' + encodeURIComponent(taskId) + '&inviteToken=' + encodeURIComponent(inviteToken));
@@ -135,8 +142,12 @@ Page({
         hasInitialized: true,
         errorMessage: ''
       });
-      if (!opts.silent && board.status !== groupDiningAdapter.REAL_STATUS) {
-        wx.showToast({ title: '后端暂不可用', icon: 'none' });
+      if (!opts.silent) {
+        if (board.status === groupDiningAdapter.MOCK_STATUS) {
+          wx.showToast({ title: '当前为体验模式，数据为模拟数据', icon: 'none' });
+        } else if (board.status !== groupDiningAdapter.REAL_STATUS) {
+          wx.showToast({ title: '网络暂不可用，已切换为体验数据', icon: 'none' });
+        }
       }
       return board;
     }).catch(function (error) {
@@ -174,9 +185,14 @@ Page({
     const page = this;
     groupDiningAdapter.generateRecommendation(this.data.taskId, this.data.inviteToken).then(function (board) {
       wx.hideLoading();
-      if (board.status !== groupDiningAdapter.REAL_STATUS) {
+      if (board.status === groupDiningAdapter.MOCK_STATUS) {
         wx.showToast({
-          title: '推荐失败，已回退',
+          title: '当前为体验模式，数据为模拟数据',
+          icon: 'none'
+        });
+      } else if (board.status !== groupDiningAdapter.REAL_STATUS) {
+        wx.showToast({
+          title: '网络暂不可用，已切换为体验数据',
           icon: 'none'
         });
       }
@@ -341,7 +357,23 @@ Page({
   },
 
   handleBack() {
-    wx.navigateBack();
+    const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : [];
+
+    if (pages.length > 1) {
+      wx.navigateBack();
+      return;
+    }
+
+    wx.redirectTo({
+      url: '/pages/home/home',
+      fail: function () {
+        wx.reLaunch({ url: '/pages/home/home' });
+      }
+    });
+  },
+
+  initNavMetrics() {
+    this.setData(navMetrics.getCustomNavMetrics());
   }
 });
 

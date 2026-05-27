@@ -1,0 +1,881 @@
+diff --git a/mini-program/wechat-miniprogram/app.js b/mini-program/wechat-miniprogram/app.js
+index 1f3f9cc..2c91aed 100644
+--- a/mini-program/wechat-miniprogram/app.js
++++ b/mini-program/wechat-miniprogram/app.js
+@@ -15,7 +15,15 @@ App({
+     authApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
+     foodRecommendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
+     groupDiningApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
+-    weekendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io'
++    weekendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
++    // Group dining adapter mode: 'auto' | 'real' | 'mock'.
++    // - 'auto'  : try real backend first; fall back to local mock on failure.
++    // - 'real'  : real backend only; surface errors to the page.
++    // - 'mock'  : skip wx.request entirely; always serve the local fallback
++    //             data so the feature works without HTTPS / online backend.
++    // Priority at read time (in adapter): storage 'MINIPROGRAM_API_MODE'
++    // overrides this globalData value, which overrides the 'auto' default.
++    groupDiningMode: 'auto'
+   },
+ 
+   onLaunch() {
+@@ -23,6 +31,26 @@ App({
+     this.globalData.currentUserId = userIdentityAdapter.getCurrentUserId();
+     this.globalData.sessionToken = userIdentityAdapter.getSessionToken();
+     this.applyTheme(themeAdapter.getCurrentThemeKey(), { silent: true });
++
++    // Auto-select a safe group dining mode based on the runtime build channel.
++    // Experience (trial) and production (release) versions cannot reach the
++    // current HTTP backend, so default them to 'mock' to keep the feature
++    // usable. Developer tools / preview keep 'auto' so real-backend
++    // integration can still be tested. A storage override
++    // ('MINIPROGRAM_API_MODE') still wins inside the adapter.
++    try {
++      const accountInfo = typeof wx.getAccountInfoSync === 'function'
++        ? wx.getAccountInfoSync()
++        : null;
++      const envVersion = accountInfo
++        && accountInfo.miniProgram
++        && accountInfo.miniProgram.envVersion;
++      if (envVersion === 'trial' || envVersion === 'release') {
++        this.globalData.groupDiningMode = 'mock';
++      }
++    } catch (error) {
++      console.warn('[app] detect envVersion failed', error);
++    }
+   },
+ 
+   getCurrentTheme() {
+diff --git a/mini-program/wechat-miniprogram/pages/food/food.js b/mini-program/wechat-miniprogram/pages/food/food.js
+index cd1e902..2bd1968 100644
+--- a/mini-program/wechat-miniprogram/pages/food/food.js
++++ b/mini-program/wechat-miniprogram/pages/food/food.js
+@@ -24,6 +24,48 @@ const adjustmentOptions = [
+   { label: '忌口没说清', action: 'avoid' }
+ ];
+ 
++// Normalize per-capita price for display on shop cards. Tolerates:
++//   - numbers (e.g. 48)                         → "人均 48元"
++//   - "48"                                      → "人均 48元"
++//   - "48元" / "48 元/人" / "48 yuan/person"      → "人均 48元"
++//   - "人均 48元" (already formatted)             → "人均 48元" (no double prefix)
++//   - undefined / null / "" / non-numeric junk  → "人均待确认"
++// Render-time only — never mutates the raw .perCapita value so adapters,
++// history persistence, and any future consumer keep the original payload.
++function formatAveragePrice(value) {
++  if (value === undefined || value === null || value === '') {
++    return '人均待确认';
++  }
++  const raw = String(value).trim();
++  if (!raw) {
++    return '人均待确认';
++  }
++  if (raw.indexOf('人均') >= 0 && raw.indexOf('元') >= 0) {
++    return raw;
++  }
++  const match = raw.match(/\d+(?:\.\d+)?/);
++  if (match) {
++    return '人均 ' + match[0] + '元';
++  }
++  const cleaned = raw.replace(/yuan\/person|yuan|元\/人|\/person|person/gi, '').trim();
++  return cleaned ? '人均 ' + cleaned + '元' : '人均待确认';
++}
++
++// Add a derived perCapitaDisplay field to each recommendation so WXML can
++// render the normalized "人均 xx元" string directly. The original perCapita
++// field is preserved on every item.
++function decorateRecommendationsForDisplay(list) {
++  if (!Array.isArray(list)) {
++    return [];
++  }
++  return list.map(function (item) {
++    const safe = item || {};
++    return Object.assign({}, safe, {
++      perCapitaDisplay: formatAveragePrice(safe.perCapita)
++    });
++  });
++}
++
+ Page({
+   data: {
+     session: foodAiAdapter.createInitialSession(),
+@@ -676,6 +718,7 @@ Page({
+           decisionSheet: this.data.session.decisionSheet
+         }
+       );
++      nextRecommendations = decorateRecommendationsForDisplay(nextRecommendations);
+     } finally {
+       wx.hideLoading();
+     }
+@@ -817,6 +860,7 @@ Page({
+           decisionSheet: this.data.session.decisionSheet
+         })
+       );
++      nextRecommendations = decorateRecommendationsForDisplay(nextRecommendations);
+     } finally {
+       wx.hideLoading();
+     }
+@@ -1016,6 +1060,7 @@ Page({
+         recommendations = await foodAiAdapter.generateRecommendations(session.slots, session.preferences, {
+           decisionSheet: session.decisionSheet
+         });
++        recommendations = decorateRecommendationsForDisplay(recommendations);
+       } finally {
+         wx.hideLoading();
+       }
+diff --git a/mini-program/wechat-miniprogram/pages/food/food.wxml b/mini-program/wechat-miniprogram/pages/food/food.wxml
+index f17cbf6..28bbdbc 100644
+--- a/mini-program/wechat-miniprogram/pages/food/food.wxml
++++ b/mini-program/wechat-miniprogram/pages/food/food.wxml
+@@ -126,7 +126,7 @@
+               <view class="shop-type">{{item.type}}</view>
+             </view>
+             <view class="shop-meta">
+-              <view>人均 {{item.perCapita}}</view>
++              <view>{{item.perCapitaDisplay}}</view>
+               <view>{{item.distance}}</view>
+               <view>评分 {{item.rating}}</view>
+             </view>
+diff --git a/mini-program/wechat-miniprogram/pages/group/board/board.js b/mini-program/wechat-miniprogram/pages/group/board/board.js
+index e2ba65f..a1adac7 100644
+--- a/mini-program/wechat-miniprogram/pages/group/board/board.js
++++ b/mini-program/wechat-miniprogram/pages/group/board/board.js
+@@ -1,6 +1,7 @@
+ const themeAdapter = require('../../../services/themeAdapter');
+ const groupDiningAdapter = require('../../../services/groupDiningAdapter');
+ const userIdentityAdapter = require('../../../services/userIdentityAdapter');
++const navMetrics = require('../../../utils/navMetrics');
+ 
+ const STATUS_LABELS = {
+   waiting_preferences: '收集中',
+@@ -14,6 +15,11 @@ const POLL_INTERVAL_MS = 3000;
+ Page({
+   data: {
+     currentTheme: themeAdapter.DEFAULT_THEME_ID,
++    statusBarHeight: 0,
++    navBarHeight: 44,
++    navRightPadding: 16,
++    navTitleSidePadding: 48,
++    customNavTotalHeight: 44,
+     taskId: 'group_mock_task',
+     inviteToken: 'group_mock_token',
+     board: null,
+@@ -52,6 +58,7 @@ Page({
+     const taskId = options && options.taskId ? options.taskId : 'group_mock_task';
+     const inviteToken = options && options.inviteToken ? options.inviteToken : 'group_mock_token';
+ 
++    this.initNavMetrics();
+     this.syncTheme();
+     if (!userIdentityAdapter.hasSession()) {
+       userIdentityAdapter.requireLoginRedirect('/pages/group/board/board?taskId=' + encodeURIComponent(taskId) + '&inviteToken=' + encodeURIComponent(inviteToken));
+@@ -135,8 +142,12 @@ Page({
+         hasInitialized: true,
+         errorMessage: ''
+       });
+-      if (!opts.silent && board.status !== groupDiningAdapter.REAL_STATUS) {
+-        wx.showToast({ title: '后端暂不可用', icon: 'none' });
++      if (!opts.silent) {
++        if (board.status === groupDiningAdapter.MOCK_STATUS) {
++          wx.showToast({ title: '当前为体验模式，数据为模拟数据', icon: 'none' });
++        } else if (board.status !== groupDiningAdapter.REAL_STATUS) {
++          wx.showToast({ title: '网络暂不可用，已切换为体验数据', icon: 'none' });
++        }
+       }
+       return board;
+     }).catch(function (error) {
+@@ -174,9 +185,14 @@ Page({
+     const page = this;
+     groupDiningAdapter.generateRecommendation(this.data.taskId, this.data.inviteToken).then(function (board) {
+       wx.hideLoading();
+-      if (board.status !== groupDiningAdapter.REAL_STATUS) {
++      if (board.status === groupDiningAdapter.MOCK_STATUS) {
++        wx.showToast({
++          title: '当前为体验模式，数据为模拟数据',
++          icon: 'none'
++        });
++      } else if (board.status !== groupDiningAdapter.REAL_STATUS) {
+         wx.showToast({
+-          title: '推荐失败，已回退',
++          title: '网络暂不可用，已切换为体验数据',
+           icon: 'none'
+         });
+       }
+@@ -341,7 +357,23 @@ Page({
+   },
+ 
+   handleBack() {
+-    wx.navigateBack();
++    const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : [];
++
++    if (pages.length > 1) {
++      wx.navigateBack();
++      return;
++    }
++
++    wx.redirectTo({
++      url: '/pages/home/home',
++      fail: function () {
++        wx.reLaunch({ url: '/pages/home/home' });
++      }
++    });
++  },
++
++  initNavMetrics() {
++    this.setData(navMetrics.getCustomNavMetrics());
+   }
+ });
+ 
+diff --git a/mini-program/wechat-miniprogram/pages/group/board/board.wxml b/mini-program/wechat-miniprogram/pages/group/board/board.wxml
+index ac96256..62f3488 100644
+--- a/mini-program/wechat-miniprogram/pages/group/board/board.wxml
++++ b/mini-program/wechat-miniprogram/pages/group/board/board.wxml
+@@ -1,10 +1,14 @@
+-<view class="page scaffold-page theme-{{currentTheme}}">
+-  <view class="page-bar">
+-    <button class="page-back" bindtap="handleBack">‹</button>
+-    <view class="page-heading">
+-      <view class="page-title">约饭任务看板</view>
+-      <view class="page-subtitle">数据通过 adapter.getTaskBoard 获取；下拉刷新；每 3 秒自动同步一次。</view>
++<view class="page scaffold-page board-scaffold theme-{{currentTheme}}">
++  <view class="group-safe-header" style="padding-top: {{statusBarHeight}}px;">
++    <view class="group-safe-nav" style="height: {{navBarHeight}}px; padding-right: {{navRightPadding}}px; --nav-title-side: {{navTitleSidePadding}}px;">
++      <view class="group-nav-back-hit" hover-class="group-nav-back-active" bindtap="handleBack" aria-label="返回">
++        <view class="group-nav-back-button">
++          <text class="group-nav-back-icon">‹</text>
++        </view>
++      </view>
++      <view class="group-safe-title">约饭看板</view>
+     </view>
++    <view class="group-safe-subtitle">下拉刷新或保持在页面，每几秒会自动同步最新状态。</view>
+   </view>
+ 
+   <view wx:if="{{errorMessage}}" class="panel-card">
+diff --git a/mini-program/wechat-miniprogram/pages/group/board/board.wxss b/mini-program/wechat-miniprogram/pages/group/board/board.wxss
+index e932f1a..2b7a374 100644
+--- a/mini-program/wechat-miniprogram/pages/group/board/board.wxss
++++ b/mini-program/wechat-miniprogram/pages/group/board/board.wxss
+@@ -1,5 +1,9 @@
+ @import "../group-common.wxss";
+ 
++.board-scaffold {
++  padding-top: 0;
++}
++
+ .progress-card {
+   margin-bottom: 28rpx;
+ }
+diff --git a/mini-program/wechat-miniprogram/pages/group/create/create.js b/mini-program/wechat-miniprogram/pages/group/create/create.js
+index f2a2929..b9bd1d7 100644
+--- a/mini-program/wechat-miniprogram/pages/group/create/create.js
++++ b/mini-program/wechat-miniprogram/pages/group/create/create.js
+@@ -139,9 +139,14 @@ Page({
+         result.expectedPeopleCount,
+         peopleNumber
+       ]);
+-      if (result.status !== groupDiningAdapter.REAL_STATUS) {
++      if (result.status === groupDiningAdapter.MOCK_STATUS) {
+         wx.showToast({
+-          title: '后端暂不可用',
++          title: '当前为体验模式，数据为模拟数据',
++          icon: 'none'
++        });
++      } else if (result.status !== groupDiningAdapter.REAL_STATUS) {
++        wx.showToast({
++          title: '网络暂不可用，已切换为体验数据',
+           icon: 'none'
+         });
+       }
+diff --git a/mini-program/wechat-miniprogram/pages/group/fill/fill.js b/mini-program/wechat-miniprogram/pages/group/fill/fill.js
+index 7285ae3..dd25b8a 100644
+--- a/mini-program/wechat-miniprogram/pages/group/fill/fill.js
++++ b/mini-program/wechat-miniprogram/pages/group/fill/fill.js
+@@ -462,9 +462,14 @@ Page({
+     groupDiningAdapter.submitPreference(this.data.taskId, this.data.inviteToken, payload).then(function (result) {
+       wx.hideLoading();
+       page.setData({ isSubmitting: false });
+-      if (result.status !== groupDiningAdapter.REAL_STATUS) {
++      if (result.status === groupDiningAdapter.MOCK_STATUS) {
+         wx.showToast({
+-          title: '后端暂不可用',
++          title: '当前为体验模式，数据为模拟数据',
++          icon: 'none'
++        });
++      } else if (result.status !== groupDiningAdapter.REAL_STATUS) {
++        wx.showToast({
++          title: '网络暂不可用，已切换为体验数据',
+           icon: 'none'
+         });
+       }
+diff --git a/mini-program/wechat-miniprogram/pages/group/fill/fill.wxml b/mini-program/wechat-miniprogram/pages/group/fill/fill.wxml
+index b0579af..2b95384 100644
+--- a/mini-program/wechat-miniprogram/pages/group/fill/fill.wxml
++++ b/mini-program/wechat-miniprogram/pages/group/fill/fill.wxml
+@@ -173,6 +173,18 @@
+           bindtap="handleToggleDietary"
+         >{{item.value}}</view>
+       </view>
++
++      <view class="custom-field-block">
++        <view class="field-label">忌口补充（选填）</view>
++        <input
++          class="field-input preference-custom-input"
++          value="{{form.restrictionCustomText}}"
++          placeholder="还有其他忌口或过敏可以补充，例如芒果过敏、不吃动物内脏"
++          placeholder-class="field-placeholder"
++          data-field="restrictionCustomText"
++          bindinput="handleInput"
++        />
++      </view>
+     </view>
+   </view>
+ 
+@@ -201,6 +213,18 @@
+           bindtap="handleToggleCuisine"
+         >{{item.value}}</view>
+       </view>
++
++      <view class="custom-field-block">
++        <view class="field-label">品类补充（选填）</view>
++        <input
++          class="field-input preference-custom-input"
++          value="{{form.cuisineCustomText}}"
++          placeholder="还想吃什么可以补充，例如云南菜、东南亚菜"
++          placeholder-class="field-placeholder"
++          data-field="cuisineCustomText"
++          bindinput="handleInput"
++        />
++      </view>
+     </view>
+   </view>
+ 
+@@ -228,6 +252,18 @@
+           bindtap="handleSelectBudget"
+         >{{item.value}}</view>
+       </view>
++
++      <view class="custom-field-block">
++        <view class="field-label">预算补充（选填）</view>
++        <input
++          class="field-input preference-custom-input"
++          value="{{form.budgetCustomText}}"
++          placeholder="还有预算要求可以补充，例如人均 60 左右"
++          placeholder-class="field-placeholder"
++          data-field="budgetCustomText"
++          bindinput="handleInput"
++        />
++      </view>
+     </view>
+   </view>
+ 
+@@ -255,6 +291,18 @@
+           bindtap="handleSelectSpicy"
+         >{{item.label}}</view>
+       </view>
++
++      <view class="custom-field-block">
++        <view class="field-label">辣度补充（选填）</view>
++        <input
++          class="field-input preference-custom-input"
++          value="{{form.spiceCustomText}}"
++          placeholder="还有辣度要求可以补充，例如只能微辣、最好不辣"
++          placeholder-class="field-placeholder"
++          data-field="spiceCustomText"
++          bindinput="handleInput"
++        />
++      </view>
+     </view>
+   </view>
+ 
+diff --git a/mini-program/wechat-miniprogram/services/groupDiningAdapter.js b/mini-program/wechat-miniprogram/services/groupDiningAdapter.js
+index 8849f1d..9531be3 100644
+--- a/mini-program/wechat-miniprogram/services/groupDiningAdapter.js
++++ b/mini-program/wechat-miniprogram/services/groupDiningAdapter.js
+@@ -1,9 +1,79 @@
+ const DEFAULT_API_BASE_URL = 'http://meituan.43-110-71-200.sslip.io';
+-const STATUS = 'pending_integration';
++// Status taxonomy used by adapter return values:
++//   REAL_STATUS     ('remote_ok')          — real backend returned a 2xx response.
++//   MOCK_STATUS     ('mock_ok')            — mock mode short-circuit; the adapter
++//                                            intentionally skipped wx.request and
++//                                            served local data. Pages should treat
++//                                            this as a normal success and inform
++//                                            the user it is experience-mode data.
++//   FALLBACK_STATUS ('pending_integration')— auto mode tried the real backend,
++//                                            failed (network / HTTP /5xx / ...),
++//                                            and silently served local fallback
++//                                            data. Pages may show a "网络暂不可用"
++//                                            notice.
++// STATUS is kept as an alias of FALLBACK_STATUS for backward compatibility.
+ const REAL_STATUS = 'remote_ok';
++const MOCK_STATUS = 'mock_ok';
++const FALLBACK_STATUS = 'pending_integration';
++const STATUS = FALLBACK_STATUS;
+ const CLIENT_ID_STORAGE_KEY = 'groupDiningClientId';
+ const API_BASE_STORAGE_KEY = 'MINIPROGRAM_API_BASE_URL';
++const API_MODE_STORAGE_KEY = 'MINIPROGRAM_API_MODE';
++const VALID_MODES = { auto: true, real: true, mock: true };
+ const userIdentityAdapter = require('./userIdentityAdapter');
++
++// Resolve the current group dining adapter mode at call time. Priority:
++//   1. wx storage key 'MINIPROGRAM_API_MODE' (lets a dev override on device)
++//   2. app.globalData.groupDiningMode (set in app.js; envVersion-aware)
++//   3. 'auto' default (existing real-then-fallback behaviour)
++// Any unrecognised value also falls back to 'auto' to stay safe.
++function getCurrentMode() {
++  try {
++    const stored = wx.getStorageSync(API_MODE_STORAGE_KEY);
++    if (stored && VALID_MODES[stored]) {
++      return stored;
++    }
++  } catch (error) {
++    console.warn('[groupDiningAdapter] read api mode from storage failed', error);
++  }
++
++  try {
++    const app = typeof getApp === 'function' ? getApp() : null;
++    const mode = app && app.globalData && app.globalData.groupDiningMode;
++    if (mode && VALID_MODES[mode]) {
++      return mode;
++    }
++  } catch (error) {
++    console.warn('[groupDiningAdapter] read api mode from globalData failed', error);
++  }
++
++  return 'auto';
++}
++
++function mockSuccess(result, message) {
++  if (!result) {
++    return result;
++  }
++  result.status = MOCK_STATUS;
++  if (message) {
++    result.message = message;
++  }
++  return result;
++}
++
++function mockBoard(board, message) {
++  if (!board) {
++    return board;
++  }
++  board.status = MOCK_STATUS;
++  if (message) {
++    board.message = message;
++  }
++  // Mock mode is an intentional success, not a backend failure. Clear any
++  // residual error string the fallback builder may have set.
++  board.errorMessage = '';
++  return board;
++}
+ const ADJUSTMENT_REASON_LABELS = {
+   cannot_eat: '吃不了',
+   over_budget: '超预算',
+@@ -398,7 +468,12 @@ function upsertFallbackParticipant(participants, nextParticipant) {
+   return next;
+ }
+ 
+-function submitFallbackPreference(taskId, inviteToken, payload, error) {
++// Write-only helper extracted from submitFallbackPreference. Persists the
++// current member's preference to the local fallback store, deduplicating on
++// clientId (and participantId / nickname as secondary keys). Safe to call
++// from any code path — mock, auto, or auto-recover — without changing the
++// caller's return value, since this only mutates wx storage.
++function persistFallbackParticipant(taskId, inviteToken, payload) {
+   const safeTaskId = taskId || 'group_mock_task';
+   const safeToken = inviteToken || 'group_mock_token';
+   const currentRecord = readFallbackTaskRecord(safeTaskId) || {
+@@ -417,18 +492,135 @@ function submitFallbackPreference(taskId, inviteToken, payload, error) {
+     updatedAt: new Date().toISOString()
+   });
+   saveFallbackTaskRecord(safeTaskId, nextRecord);
+-  const board = buildFallbackBoardFromRecord(safeTaskId, safeToken, nextRecord);
++  return {
++    taskId: safeTaskId,
++    inviteToken: safeToken,
++    record: nextRecord,
++    participant: participant
++  };
++}
++
++// Seed a local task record on the first real-backend createTask success so
++// that subsequent getTaskBoard / submitPreference fallbacks can still surface
++// the chosen people count even before any participant has submitted. Will
++// NOT overwrite an existing local record (e.g. one already containing
++// participants), so it is safe to call on every createTask success.
++function seedLocalTaskRecord(taskId, payload) {
++  if (!taskId) {
++    return null;
++  }
++  const existing = readFallbackTaskRecord(taskId);
++  if (existing) {
++    return existing;
++  }
++  const safe = payload || {};
++  const expected = parsePeopleCount(
++    safe.peopleCount || safe.expectedPeopleCount || safe.expected_people_count
++  );
++  const record = {
++    expectedPeopleCount: expected > 0 ? expected : 1,
++    creatorName: safe.creatorName || safe.creator_name || '',
++    rawRequest: cleanUserTaskText(safe.rawRequest || safe.raw_request || ''),
++    locationText: cleanUserTaskText(safe.locationText || safe.location || safe.location_text || ''),
++    dinnerTime: cleanUserTaskText(safe.dinnerTime || safe.dinner_time || ''),
++    createdAt: new Date().toISOString()
++  };
++  saveFallbackTaskRecord(taskId, record);
++  return record;
++}
++
++// Merge any locally-cached participants for this task into the board the
++// real backend returned. Deduplicates by clientId → participantId → nickname.
++// Recomputes submittedCount / pendingCount / progressPercent. If the real
++// backend returned no expectedCount but local has one, use local's. If the
++// merged submittedCount is 0, also clears conflicts so we never show stub
++// conflict rows on a board that has no submissions yet.
++function mergeBoardWithLocalParticipants(remoteBoard, taskId, inviteToken) {
++  if (!remoteBoard || !taskId) {
++    return remoteBoard;
++  }
++  const localRecord = readFallbackTaskRecord(taskId);
++  if (!localRecord) {
++    return remoteBoard;
++  }
++  const localParticipants = Array.isArray(localRecord.participants)
++    ? localRecord.participants
++    : (Array.isArray(localRecord.submissions) ? localRecord.submissions : []);
++
++  const remoteParticipants = Array.isArray(remoteBoard.participants)
++    ? remoteBoard.participants.slice()
++    : [];
++
++  const seen = {};
++  remoteParticipants.forEach(function (p) {
++    const cid = p && (p.clientId || p.client_id);
++    const pid = p && (p.participantId || p.participant_id || p.id);
++    const nick = p && p.nickname;
++    if (cid) { seen['cid:' + cid] = true; }
++    if (pid) { seen['pid:' + pid] = true; }
++    if (nick) { seen['nick:' + nick] = true; }
++  });
++
++  let added = 0;
++  localParticipants.forEach(function (lp) {
++    const cid = lp && (lp.clientId || lp.client_id);
++    const pid = lp && (lp.participantId || lp.participant_id || lp.id);
++    const nick = lp && lp.nickname;
++    if ((cid && seen['cid:' + cid])
++      || (pid && seen['pid:' + pid])
++      || (nick && seen['nick:' + nick])) {
++      return;
++    }
++    remoteParticipants.push(normalizeMember(lp));
++    added++;
++  });
++
++  // Always re-derive counts so the badge "X 人 · Y/X 已提交" matches the
++  // participants array, regardless of whether anything was added.
++  const remoteExpected = remoteBoard.expectedCount || 0;
++  const localExpected = parseExpectedCount(localRecord.expectedPeopleCount);
++  const expectedCount = remoteExpected > 0 ? remoteExpected : localExpected;
++  const submittedCount = remoteParticipants.length;
++
++  if (added > 0) {
++    remoteBoard.participants = remoteParticipants;
++    remoteBoard.members = remoteParticipants;
++    remoteBoard.submissions = remoteParticipants;
++  }
++  remoteBoard.expectedCount = expectedCount;
++  remoteBoard.submittedCount = submittedCount;
++  remoteBoard.pendingCount = Math.max(0, expectedCount - submittedCount);
++  remoteBoard.progressPercent = expectedCount > 0
++    ? Math.min(100, Math.round((submittedCount / expectedCount) * 100))
++    : 0;
++  if (remoteBoard.task) {
++    remoteBoard.task.expectedPeopleCount = expectedCount;
++  }
++
++  // Stub conflicts from an empty real board would be misleading once we know
++  // submittedCount is 0. Suppress them so the UI shows the friendly empty
++  // state ("暂无冲突，等待更多成员…") instead of e.g. "atmosphere · low".
++  if (submittedCount === 0 && Array.isArray(remoteBoard.conflicts) && remoteBoard.conflicts.length) {
++    remoteBoard.conflicts = [];
++  }
++
++  return remoteBoard;
++}
++
++function submitFallbackPreference(taskId, inviteToken, payload, error) {
++  const persisted = persistFallbackParticipant(taskId, inviteToken, payload || {});
++  const board = buildFallbackBoardFromRecord(persisted.taskId, persisted.inviteToken, persisted.record);
+   board.status = STATUS;
+   board.errorMessage = error ? error.message : '';
+   board.message = '成员偏好已暂存到本地 mock task';
+ 
+   return {
+     status: STATUS,
+-    taskId: safeTaskId,
+-    inviteToken: safeToken,
+-    nextUrl: '/pages/group/board/board?taskId=' + encodeURIComponent(safeTaskId) + '&inviteToken=' + encodeURIComponent(safeToken),
++    taskId: persisted.taskId,
++    inviteToken: persisted.inviteToken,
++    nextUrl: '/pages/group/board/board?taskId=' + encodeURIComponent(persisted.taskId) + '&inviteToken=' + encodeURIComponent(persisted.inviteToken),
+     board: board,
+-    payload: participant,
++    payload: persisted.participant,
+     errorMessage: error ? error.message : '',
+     message: '成员偏好提交后端暂不可用，已使用本地 mock fallback'
+   };
+@@ -734,6 +926,12 @@ function normalizeTaskBoard(taskId, inviteToken, data) {
+ 
+   const recommendationStateRaw = board.recommendationState || board.recommendation_state || {};
+ 
++  // Real backend stubs sometimes return synthetic conflict rows (e.g.
++  // "atmosphere · low") even when no one has submitted yet. Suppress them
++  // when submittedCount is 0 so the board shows the empty-state hint instead
++  // of misleading fake conflicts. Real conflicts surface again as soon as
++  // at least one member has actually submitted.
++  const rawConflicts = (board.conflicts || task.conflicts || []).map(normalizeConflict);
+   return {
+     status: REAL_STATUS,
+     taskId: task.taskId || task.task_id || taskId,
+@@ -745,7 +943,7 @@ function normalizeTaskBoard(taskId, inviteToken, data) {
+     progressPercent: expectedCount > 0 ? Math.min(100, Math.round((submittedCount / expectedCount) * 100)) : 0,
+     members: participants,
+     participants: participants,
+-    conflicts: (board.conflicts || task.conflicts || []).map(normalizeConflict),
++    conflicts: submittedCount > 0 ? rawConflicts : [],
+     recommendations: candidates,
+     recommendationResult: recommendationResult ? {
+       candidates: candidates,
+@@ -860,6 +1058,15 @@ function normalizeAdjustmentRequest(r) {
+ 
+ function createTask(payload) {
+   const safePayload = payload || {};
++  const mode = getCurrentMode();
++
++  if (mode === 'mock') {
++    return Promise.resolve(mockSuccess(
++      createFallbackTask(safePayload, null),
++      '当前为体验模式，已使用本地模拟数据'
++    ));
++  }
++
+   const data = {
+     expectedPeopleCount: parsePeopleCount(safePayload.peopleCount || safePayload.expectedPeopleCount || safePayload.expected_people_count)
+   };
+@@ -890,6 +1097,18 @@ function createTask(payload) {
+     const inviteToken = res.inviteToken || '';
+     const sharePath = res.sharePath || '/pages/group/fill/fill?taskId=' + encodeURIComponent(taskId) + '&inviteToken=' + encodeURIComponent(inviteToken);
+ 
++    // Auto mode seeds a local task record so subsequent submitPreference /
++    // getTaskBoard can fall back / merge even if the real backend later goes
++    // away or returns stub data. Real mode keeps the local store untouched.
++    if (mode === 'auto') {
++      seedLocalTaskRecord(taskId, safePayload);
++    }
++
++    let board = normalizeTaskBoard(taskId, inviteToken, res.board || res);
++    if (mode === 'auto') {
++      board = mergeBoardWithLocalParticipants(board, taskId, inviteToken);
++    }
++
+     return {
+       status: REAL_STATUS,
+       taskId: taskId,
+@@ -897,7 +1116,7 @@ function createTask(payload) {
+       sharePath: sharePath,
+       nextUrl: sharePath,
+       boardUrl: '/pages/group/board/board?taskId=' + encodeURIComponent(taskId) + '&inviteToken=' + encodeURIComponent(inviteToken),
+-      board: normalizeTaskBoard(taskId, inviteToken, res.board || res),
++      board: board,
+       payload: data,
+       message: '多人约饭任务已创建'
+     };
+@@ -906,6 +1125,9 @@ function createTask(payload) {
+     if (isAuthError(error)) {
+       throw error;
+     }
++    if (mode === 'real') {
++      throw error;
++    }
+     return createFallbackTask(safePayload, error);
+   });
+ }
+@@ -975,6 +1197,24 @@ function buildPreferenceRequestData(inviteToken, payload) {
+ 
+ function submitPreference(taskId, inviteToken, payload) {
+   const safePayload = payload || {};
++  const mode = getCurrentMode();
++
++  if (mode === 'mock') {
++    return Promise.resolve(mockSuccess(
++      submitFallbackPreference(taskId, inviteToken, safePayload, null),
++      '当前为体验模式，偏好已暂存到本地模拟数据'
++    ));
++  }
++
++  // Auto mode pre-cache: write this member's preference to the local store
++  // BEFORE we call the real backend. This way even if the real backend
++  // returns 2xx but doesn't actually persist participants (stub /
++  // misconfigured / temporarily wiped), getTaskBoard can still merge the
++  // submission back in. Real mode skips the local store entirely.
++  if (mode === 'auto') {
++    persistFallbackParticipant(taskId, inviteToken, safePayload);
++  }
++
+   const data = buildPreferenceRequestData(inviteToken, safePayload);
+ 
+   return request({
+@@ -982,7 +1222,10 @@ function submitPreference(taskId, inviteToken, payload) {
+     method: 'POST',
+     data: data
+   }).then(function (res) {
+-    const board = normalizeTaskBoard(taskId, inviteToken, res);
++    let board = normalizeTaskBoard(taskId, inviteToken, res);
++    if (mode === 'auto') {
++      board = mergeBoardWithLocalParticipants(board, taskId, inviteToken);
++    }
+ 
+     return {
+       status: REAL_STATUS,
+@@ -998,25 +1241,57 @@ function submitPreference(taskId, inviteToken, payload) {
+     if (isAuthError(error)) {
+       throw error;
+     }
++    if (mode === 'real') {
++      throw error;
++    }
+     return submitFallbackPreference(taskId, inviteToken, safePayload, error);
+   });
+ }
+ 
+ function getTaskBoard(taskId, inviteToken) {
++  const mode = getCurrentMode();
++
++  if (mode === 'mock') {
++    return Promise.resolve(mockBoard(
++      getFallbackTaskBoard(taskId, inviteToken, null),
++      '当前为体验模式，看板使用本地模拟数据'
++    ));
++  }
++
+   return request({
+     path: '/api/group-tasks/' + encodeURIComponent(taskId || 'group_mock_task') + '?inviteToken=' + encodeURIComponent(inviteToken || '')
+   }).then(function (res) {
+-    return normalizeTaskBoard(taskId, inviteToken, res);
++    let board = normalizeTaskBoard(taskId, inviteToken, res);
++    // Auto mode merges any locally-cached submissions back into the real
++    // board. If the real backend is fully working, dedupe makes this a
++    // no-op. If the real backend missed a submission (stub / partial), the
++    // local cache surfaces it so the user sees their own preference.
++    if (mode === 'auto') {
++      board = mergeBoardWithLocalParticipants(board, taskId, inviteToken);
++    }
++    return board;
+   }).catch(function (error) {
+     console.warn('[groupDiningAdapter] getTaskBoard remote failed', error);
+     if (isAuthError(error)) {
+       throw error;
+     }
++    if (mode === 'real') {
++      throw error;
++    }
+     return getFallbackTaskBoard(taskId, inviteToken, error);
+   });
+ }
+ 
+ function generateRecommendation(taskId, inviteToken) {
++  const mode = getCurrentMode();
++
++  if (mode === 'mock') {
++    return Promise.resolve(mockBoard(
++      getFallbackTaskBoard(taskId, inviteToken, null),
++      '当前为体验模式，推荐使用本地模拟数据'
++    ));
++  }
++
+   return request({
+     path: '/api/group-tasks/' + encodeURIComponent(taskId || 'group_mock_task') + '/recommend',
+     method: 'POST',
+@@ -1024,18 +1299,34 @@ function generateRecommendation(taskId, inviteToken) {
+       inviteToken: inviteToken
+     }
+   }).then(function (res) {
+-    return normalizeTaskBoard(taskId, inviteToken, res);
++    let board = normalizeTaskBoard(taskId, inviteToken, res);
++    if (mode === 'auto') {
++      board = mergeBoardWithLocalParticipants(board, taskId, inviteToken);
++    }
++    return board;
+   }).catch(function (error) {
+     console.warn('[groupDiningAdapter] generateRecommendation remote failed', error);
+     if (isAuthError(error)) {
+       throw error;
+     }
++    if (mode === 'real') {
++      throw error;
++    }
+     return getFallbackTaskBoard(taskId, inviteToken, error);
+   });
+ }
+ 
+ function submitAdjustmentRequest(taskId, inviteToken, payload) {
+   const safePayload = payload || {};
++  const mode = getCurrentMode();
++
++  if (mode === 'mock') {
++    return Promise.resolve(mockBoard(
++      submitFallbackAdjustmentRequest(taskId, inviteToken, safePayload, null),
++      '当前为体验模式，反馈已暂存到本地模拟数据'
++    ));
++  }
++
+   const data = {
+     inviteToken: inviteToken,
+     clientId: getClientId(),
+@@ -1053,22 +1344,33 @@ function submitAdjustmentRequest(taskId, inviteToken, payload) {
+     method: 'POST',
+     data: data
+   }).then(function (res) {
+-    return normalizeTaskBoard(taskId, inviteToken, res);
++    let board = normalizeTaskBoard(taskId, inviteToken, res);
++    if (mode === 'auto') {
++      board = mergeBoardWithLocalParticipants(board, taskId, inviteToken);
++    }
++    return board;
+   }).catch(function (error) {
+     console.warn('[groupDiningAdapter] submitAdjustmentRequest remote failed', error);
+     if (isAuthError(error)) {
+       throw error;
+     }
++    if (mode === 'real') {
++      throw error;
++    }
+     return submitFallbackAdjustmentRequest(taskId, inviteToken, safePayload, error);
+   });
+ }
+ 
+ module.exports = {
+   API_BASE_URL: DEFAULT_API_BASE_URL,
++  API_MODE_STORAGE_KEY,
+   REAL_STATUS,
++  MOCK_STATUS,
++  FALLBACK_STATUS,
+   STATUS,
+   ADJUSTMENT_REASON_LABELS,
+   getApiBaseUrl,
++  getCurrentMode,
+   createTask,
+   submitPreference,
+   getTaskBoard,
+@@ -1077,5 +1379,8 @@ module.exports = {
+   createFallbackTask,
+   submitFallbackPreference,
+   getFallbackTaskBoard,
+-  submitFallbackAdjustmentRequest
++  submitFallbackAdjustmentRequest,
++  persistFallbackParticipant,
++  seedLocalTaskRecord,
++  mergeBoardWithLocalParticipants
+ };

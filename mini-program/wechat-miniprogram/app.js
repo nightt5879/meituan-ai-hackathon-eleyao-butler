@@ -15,7 +15,15 @@ App({
     authApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
     foodRecommendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
     groupDiningApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
-    weekendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io'
+    weekendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
+    // Group dining adapter mode: 'auto' | 'real' | 'mock'.
+    // - 'auto'  : try real backend first; fall back to local mock on failure.
+    // - 'real'  : real backend only; surface errors to the page.
+    // - 'mock'  : skip wx.request entirely; always serve the local fallback
+    //             data so the feature works without HTTPS / online backend.
+    // Priority at read time (in adapter): storage 'MINIPROGRAM_API_MODE'
+    // overrides this globalData value, which overrides the 'auto' default.
+    groupDiningMode: 'auto'
   },
 
   onLaunch() {
@@ -23,6 +31,26 @@ App({
     this.globalData.currentUserId = userIdentityAdapter.getCurrentUserId();
     this.globalData.sessionToken = userIdentityAdapter.getSessionToken();
     this.applyTheme(themeAdapter.getCurrentThemeKey(), { silent: true });
+
+    // Auto-select a safe group dining mode based on the runtime build channel.
+    // Experience (trial) and production (release) versions cannot reach the
+    // current HTTP backend, so default them to 'mock' to keep the feature
+    // usable. Developer tools / preview keep 'auto' so real-backend
+    // integration can still be tested. A storage override
+    // ('MINIPROGRAM_API_MODE') still wins inside the adapter.
+    try {
+      const accountInfo = typeof wx.getAccountInfoSync === 'function'
+        ? wx.getAccountInfoSync()
+        : null;
+      const envVersion = accountInfo
+        && accountInfo.miniProgram
+        && accountInfo.miniProgram.envVersion;
+      if (envVersion === 'trial' || envVersion === 'release') {
+        this.globalData.groupDiningMode = 'mock';
+      }
+    } catch (error) {
+      console.warn('[app] detect envVersion failed', error);
+    }
   },
 
   getCurrentTheme() {

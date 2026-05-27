@@ -126,7 +126,7 @@
               <view class="shop-type">{{item.type}}</view>
             </view>
             <view class="shop-meta">
-              <view>人均 {{item.perCapita}}</view>
+              <view>{{item.perCapitaDisplay}}</view>
               <view>{{item.distance}}</view>
               <view>评分 {{item.rating}}</view>
             </view>

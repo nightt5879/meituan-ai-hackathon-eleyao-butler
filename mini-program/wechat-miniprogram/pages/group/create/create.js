@@ -139,9 +139,14 @@ Page({
         result.expectedPeopleCount,
         peopleNumber
       ]);
-      if (result.status !== groupDiningAdapter.REAL_STATUS) {
+      if (result.status === groupDiningAdapter.MOCK_STATUS) {
         wx.showToast({
-          title: '后端暂不可用',
+          title: '当前为体验模式，数据为模拟数据',
+          icon: 'none'
+        });
+      } else if (result.status !== groupDiningAdapter.REAL_STATUS) {
+        wx.showToast({
+          title: '网络暂不可用，已切换为体验数据',
           icon: 'none'
         });
       }
