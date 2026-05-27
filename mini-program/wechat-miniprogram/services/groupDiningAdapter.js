@@ -1,9 +1,79 @@
 const DEFAULT_API_BASE_URL = 'http://meituan.43-110-71-200.sslip.io';
-const STATUS = 'pending_integration';
+// Status taxonomy used by adapter return values:
+//   REAL_STATUS     ('remote_ok')          — real backend returned a 2xx response.
+//   MOCK_STATUS     ('mock_ok')            — mock mode short-circuit; the adapter
+//                                            intentionally skipped wx.request and
+//                                            served local data. Pages should treat
+//                                            this as a normal success and inform
+//                                            the user it is experience-mode data.
+//   FALLBACK_STATUS ('pending_integration')— auto mode tried the real backend,
+//                                            failed (network / HTTP /5xx / ...),
+//                                            and silently served local fallback
+//                                            data. Pages may show a "网络暂不可用"
+//                                            notice.
+// STATUS is kept as an alias of FALLBACK_STATUS for backward compatibility.
 const REAL_STATUS = 'remote_ok';
+const MOCK_STATUS = 'mock_ok';
+const FALLBACK_STATUS = 'pending_integration';
+const STATUS = FALLBACK_STATUS;
 const CLIENT_ID_STORAGE_KEY = 'groupDiningClientId';
 const API_BASE_STORAGE_KEY = 'MINIPROGRAM_API_BASE_URL';
+const API_MODE_STORAGE_KEY = 'MINIPROGRAM_API_MODE';
+const VALID_MODES = { auto: true, real: true, mock: true };
 const userIdentityAdapter = require('./userIdentityAdapter');
+
+// Resolve the current group dining adapter mode at call time. Priority:
+//   1. wx storage key 'MINIPROGRAM_API_MODE' (lets a dev override on device)
+//   2. app.globalData.groupDiningMode (set in app.js; envVersion-aware)
+//   3. 'auto' default (existing real-then-fallback behaviour)
+// Any unrecognised value also falls back to 'auto' to stay safe.
+function getCurrentMode() {
+  try {
+    const stored = wx.getStorageSync(API_MODE_STORAGE_KEY);
+    if (stored && VALID_MODES[stored]) {
+      return stored;
+    }
+  } catch (error) {
+    console.warn('[groupDiningAdapter] read api mode from storage failed', error);
+  }
+
+  try {
+    const app = typeof getApp === 'function' ? getApp() : null;
+    const mode = app && app.globalData && app.globalData.groupDiningMode;
+    if (mode && VALID_MODES[mode]) {
+      return mode;
+    }
+  } catch (error) {
+    console.warn('[groupDiningAdapter] read api mode from globalData failed', error);
+  }
+
+  return 'auto';
+}
+
+function mockSuccess(result, message) {
+  if (!result) {
+    return result;
+  }
+  result.status = MOCK_STATUS;
+  if (message) {
+    result.message = message;
+  }
+  return result;
+}
+
+function mockBoard(board, message) {
+  if (!board) {
+    return board;
+  }
+  board.status = MOCK_STATUS;
+  if (message) {
+    board.message = message;
+  }
+  // Mock mode is an intentional success, not a backend failure. Clear any
+  // residual error string the fallback builder may have set.
+  board.errorMessage = '';
+  return board;
+}
 const ADJUSTMENT_REASON_LABELS = {
   cannot_eat: '吃不了',
   over_budget: '超预算',
@@ -398,7 +468,12 @@ function upsertFallbackParticipant(participants, nextParticipant) {
   return next;
 }
 
-function submitFallbackPreference(taskId, inviteToken, payload, error) {
+// Write-only helper extracted from submitFallbackPreference. Persists the
+// current member's preference to the local fallback store, deduplicating on
+// clientId (and participantId / nickname as secondary keys). Safe to call
+// from any code path — mock, auto, or auto-recover — without changing the
+// caller's return value, since this only mutates wx storage.
+function persistFallbackParticipant(taskId, inviteToken, payload) {
   const safeTaskId = taskId || 'group_mock_task';
   const safeToken = inviteToken || 'group_mock_token';
   const currentRecord = readFallbackTaskRecord(safeTaskId) || {
@@ -417,18 +492,135 @@ function submitFallbackPreference(taskId, inviteToken, payload, error) {
     updatedAt: new Date().toISOString()
   });
   saveFallbackTaskRecord(safeTaskId, nextRecord);
-  const board = buildFallbackBoardFromRecord(safeTaskId, safeToken, nextRecord);
+  return {
+    taskId: safeTaskId,
+    inviteToken: safeToken,
+    record: nextRecord,
+    participant: participant
+  };
+}
+
+// Seed a local task record on the first real-backend createTask success so
+// that subsequent getTaskBoard / submitPreference fallbacks can still surface
+// the chosen people count even before any participant has submitted. Will
+// NOT overwrite an existing local record (e.g. one already containing
+// participants), so it is safe to call on every createTask success.
+function seedLocalTaskRecord(taskId, payload) {
+  if (!taskId) {
+    return null;
+  }
+  const existing = readFallbackTaskRecord(taskId);
+  if (existing) {
+    return existing;
+  }
+  const safe = payload || {};
+  const expected = parsePeopleCount(
+    safe.peopleCount || safe.expectedPeopleCount || safe.expected_people_count
+  );
+  const record = {
+    expectedPeopleCount: expected > 0 ? expected : 1,
+    creatorName: safe.creatorName || safe.creator_name || '',
+    rawRequest: cleanUserTaskText(safe.rawRequest || safe.raw_request || ''),
+    locationText: cleanUserTaskText(safe.locationText || safe.location || safe.location_text || ''),
+    dinnerTime: cleanUserTaskText(safe.dinnerTime || safe.dinner_time || ''),
+    createdAt: new Date().toISOString()
+  };
+  saveFallbackTaskRecord(taskId, record);
+  return record;
+}
+
+// Merge any locally-cached participants for this task into the board the
+// real backend returned. Deduplicates by clientId → participantId → nickname.
+// Recomputes submittedCount / pendingCount / progressPercent. If the real
+// backend returned no expectedCount but local has one, use local's. If the
+// merged submittedCount is 0, also clears conflicts so we never show stub
+// conflict rows on a board that has no submissions yet.
+function mergeBoardWithLocalParticipants(remoteBoard, taskId, inviteToken) {
+  if (!remoteBoard || !taskId) {
+    return remoteBoard;
+  }
+  const localRecord = readFallbackTaskRecord(taskId);
+  if (!localRecord) {
+    return remoteBoard;
+  }
+  const localParticipants = Array.isArray(localRecord.participants)
+    ? localRecord.participants
+    : (Array.isArray(localRecord.submissions) ? localRecord.submissions : []);
+
+  const remoteParticipants = Array.isArray(remoteBoard.participants)
+    ? remoteBoard.participants.slice()
+    : [];
+
+  const seen = {};
+  remoteParticipants.forEach(function (p) {
+    const cid = p && (p.clientId || p.client_id);
+    const pid = p && (p.participantId || p.participant_id || p.id);
+    const nick = p && p.nickname;
+    if (cid) { seen['cid:' + cid] = true; }
+    if (pid) { seen['pid:' + pid] = true; }
+    if (nick) { seen['nick:' + nick] = true; }
+  });
+
+  let added = 0;
+  localParticipants.forEach(function (lp) {
+    const cid = lp && (lp.clientId || lp.client_id);
+    const pid = lp && (lp.participantId || lp.participant_id || lp.id);
+    const nick = lp && lp.nickname;
+    if ((cid && seen['cid:' + cid])
+      || (pid && seen['pid:' + pid])
+      || (nick && seen['nick:' + nick])) {
+      return;
+    }
+    remoteParticipants.push(normalizeMember(lp));
+    added++;
+  });
+
+  // Always re-derive counts so the badge "X 人 · Y/X 已提交" matches the
+  // participants array, regardless of whether anything was added.
+  const remoteExpected = remoteBoard.expectedCount || 0;
+  const localExpected = parseExpectedCount(localRecord.expectedPeopleCount);
+  const expectedCount = remoteExpected > 0 ? remoteExpected : localExpected;
+  const submittedCount = remoteParticipants.length;
+
+  if (added > 0) {
+    remoteBoard.participants = remoteParticipants;
+    remoteBoard.members = remoteParticipants;
+    remoteBoard.submissions = remoteParticipants;
+  }
+  remoteBoard.expectedCount = expectedCount;
+  remoteBoard.submittedCount = submittedCount;
+  remoteBoard.pendingCount = Math.max(0, expectedCount - submittedCount);
+  remoteBoard.progressPercent = expectedCount > 0
+    ? Math.min(100, Math.round((submittedCount / expectedCount) * 100))
+    : 0;
+  if (remoteBoard.task) {
+    remoteBoard.task.expectedPeopleCount = expectedCount;
+  }
+
+  // Stub conflicts from an empty real board would be misleading once we know
+  // submittedCount is 0. Suppress them so the UI shows the friendly empty
+  // state ("暂无冲突，等待更多成员…") instead of e.g. "atmosphere · low".
+  if (submittedCount === 0 && Array.isArray(remoteBoard.conflicts) && remoteBoard.conflicts.length) {
+    remoteBoard.conflicts = [];
+  }
+
+  return remoteBoard;
+}
+
+function submitFallbackPreference(taskId, inviteToken, payload, error) {
+  const persisted = persistFallbackParticipant(taskId, inviteToken, payload || {});
+  const board = buildFallbackBoardFromRecord(persisted.taskId, persisted.inviteToken, persisted.record);
   board.status = STATUS;
   board.errorMessage = error ? error.message : '';
   board.message = '成员偏好已暂存到本地 mock task';
 
   return {
     status: STATUS,
-    taskId: safeTaskId,
-    inviteToken: safeToken,
-    nextUrl: '/pages/group/board/board?taskId=' + encodeURIComponent(safeTaskId) + '&inviteToken=' + encodeURIComponent(safeToken),
+    taskId: persisted.taskId,
+    inviteToken: persisted.inviteToken,
+    nextUrl: '/pages/group/board/board?taskId=' + encodeURIComponent(persisted.taskId) + '&inviteToken=' + encodeURIComponent(persisted.inviteToken),
     board: board,
-    payload: participant,
+    payload: persisted.participant,
     errorMessage: error ? error.message : '',
     message: '成员偏好提交后端暂不可用，已使用本地 mock fallback'
   };
@@ -734,6 +926,12 @@ function normalizeTaskBoard(taskId, inviteToken, data) {
 
   const recommendationStateRaw = board.recommendationState || board.recommendation_state || {};
 
+  // Real backend stubs sometimes return synthetic conflict rows (e.g.
+  // "atmosphere · low") even when no one has submitted yet. Suppress them
+  // when submittedCount is 0 so the board shows the empty-state hint instead
+  // of misleading fake conflicts. Real conflicts surface again as soon as
+  // at least one member has actually submitted.
+  const rawConflicts = (board.conflicts || task.conflicts || []).map(normalizeConflict);
   return {
     status: REAL_STATUS,
     taskId: task.taskId || task.task_id || taskId,
@@ -745,7 +943,7 @@ function normalizeTaskBoard(taskId, inviteToken, data) {
     progressPercent: expectedCount > 0 ? Math.min(100, Math.round((submittedCount / expectedCount) * 100)) : 0,
     members: participants,
     participants: participants,
-    conflicts: (board.conflicts || task.conflicts || []).map(normalizeConflict),
+    conflicts: submittedCount > 0 ? rawConflicts : [],
     recommendations: candidates,
     recommendationResult: recommendationResult ? {
       candidates: candidates,
@@ -860,6 +1058,15 @@ function normalizeAdjustmentRequest(r) {
 
 function createTask(payload) {
   const safePayload = payload || {};
+  const mode = getCurrentMode();
+
+  if (mode === 'mock') {
+    return Promise.resolve(mockSuccess(
+      createFallbackTask(safePayload, null),
+      '当前为体验模式，已使用本地模拟数据'
+    ));
+  }
+
   const data = {
     expectedPeopleCount: parsePeopleCount(safePayload.peopleCount || safePayload.expectedPeopleCount || safePayload.expected_people_count)
   };
@@ -890,6 +1097,18 @@ function createTask(payload) {
     const inviteToken = res.inviteToken || '';
     const sharePath = res.sharePath || '/pages/group/fill/fill?taskId=' + encodeURIComponent(taskId) + '&inviteToken=' + encodeURIComponent(inviteToken);
 
+    // Auto mode seeds a local task record so subsequent submitPreference /
+    // getTaskBoard can fall back / merge even if the real backend later goes
+    // away or returns stub data. Real mode keeps the local store untouched.
+    if (mode === 'auto') {
+      seedLocalTaskRecord(taskId, safePayload);
+    }
+
+    let board = normalizeTaskBoard(taskId, inviteToken, res.board || res);
+    if (mode === 'auto') {
+      board = mergeBoardWithLocalParticipants(board, taskId, inviteToken);
+    }
+
     return {
       status: REAL_STATUS,
       taskId: taskId,
@@ -897,13 +1116,16 @@ function createTask(payload) {
       sharePath: sharePath,
       nextUrl: sharePath,
       boardUrl: '/pages/group/board/board?taskId=' + encodeURIComponent(taskId) + '&inviteToken=' + encodeURIComponent(inviteToken),
-      board: normalizeTaskBoard(taskId, inviteToken, res.board || res),
+      board: board,
       payload: data,
       message: '多人约饭任务已创建'
     };
   }).catch(function (error) {
     console.warn('[groupDiningAdapter] createTask remote failed', error);
     if (isAuthError(error)) {
+      throw error;
+    }
+    if (mode === 'real') {
       throw error;
     }
     return createFallbackTask(safePayload, error);
@@ -975,6 +1197,24 @@ function buildPreferenceRequestData(inviteToken, payload) {
 
 function submitPreference(taskId, inviteToken, payload) {
   const safePayload = payload || {};
+  const mode = getCurrentMode();
+
+  if (mode === 'mock') {
+    return Promise.resolve(mockSuccess(
+      submitFallbackPreference(taskId, inviteToken, safePayload, null),
+      '当前为体验模式，偏好已暂存到本地模拟数据'
+    ));
+  }
+
+  // Auto mode pre-cache: write this member's preference to the local store
+  // BEFORE we call the real backend. This way even if the real backend
+  // returns 2xx but doesn't actually persist participants (stub /
+  // misconfigured / temporarily wiped), getTaskBoard can still merge the
+  // submission back in. Real mode skips the local store entirely.
+  if (mode === 'auto') {
+    persistFallbackParticipant(taskId, inviteToken, safePayload);
+  }
+
   const data = buildPreferenceRequestData(inviteToken, safePayload);
 
   return request({
@@ -982,7 +1222,10 @@ function submitPreference(taskId, inviteToken, payload) {
     method: 'POST',
     data: data
   }).then(function (res) {
-    const board = normalizeTaskBoard(taskId, inviteToken, res);
+    let board = normalizeTaskBoard(taskId, inviteToken, res);
+    if (mode === 'auto') {
+      board = mergeBoardWithLocalParticipants(board, taskId, inviteToken);
+    }
 
     return {
       status: REAL_STATUS,
@@ -998,18 +1241,41 @@ function submitPreference(taskId, inviteToken, payload) {
     if (isAuthError(error)) {
       throw error;
     }
+    if (mode === 'real') {
+      throw error;
+    }
     return submitFallbackPreference(taskId, inviteToken, safePayload, error);
   });
 }
 
 function getTaskBoard(taskId, inviteToken) {
+  const mode = getCurrentMode();
+
+  if (mode === 'mock') {
+    return Promise.resolve(mockBoard(
+      getFallbackTaskBoard(taskId, inviteToken, null),
+      '当前为体验模式，看板使用本地模拟数据'
+    ));
+  }
+
   return request({
     path: '/api/group-tasks/' + encodeURIComponent(taskId || 'group_mock_task') + '?inviteToken=' + encodeURIComponent(inviteToken || '')
   }).then(function (res) {
-    return normalizeTaskBoard(taskId, inviteToken, res);
+    let board = normalizeTaskBoard(taskId, inviteToken, res);
+    // Auto mode merges any locally-cached submissions back into the real
+    // board. If the real backend is fully working, dedupe makes this a
+    // no-op. If the real backend missed a submission (stub / partial), the
+    // local cache surfaces it so the user sees their own preference.
+    if (mode === 'auto') {
+      board = mergeBoardWithLocalParticipants(board, taskId, inviteToken);
+    }
+    return board;
   }).catch(function (error) {
     console.warn('[groupDiningAdapter] getTaskBoard remote failed', error);
     if (isAuthError(error)) {
+      throw error;
+    }
+    if (mode === 'real') {
       throw error;
     }
     return getFallbackTaskBoard(taskId, inviteToken, error);
@@ -1017,6 +1283,15 @@ function getTaskBoard(taskId, inviteToken) {
 }
 
 function generateRecommendation(taskId, inviteToken) {
+  const mode = getCurrentMode();
+
+  if (mode === 'mock') {
+    return Promise.resolve(mockBoard(
+      getFallbackTaskBoard(taskId, inviteToken, null),
+      '当前为体验模式，推荐使用本地模拟数据'
+    ));
+  }
+
   return request({
     path: '/api/group-tasks/' + encodeURIComponent(taskId || 'group_mock_task') + '/recommend',
     method: 'POST',
@@ -1024,10 +1299,17 @@ function generateRecommendation(taskId, inviteToken) {
       inviteToken: inviteToken
     }
   }).then(function (res) {
-    return normalizeTaskBoard(taskId, inviteToken, res);
+    let board = normalizeTaskBoard(taskId, inviteToken, res);
+    if (mode === 'auto') {
+      board = mergeBoardWithLocalParticipants(board, taskId, inviteToken);
+    }
+    return board;
   }).catch(function (error) {
     console.warn('[groupDiningAdapter] generateRecommendation remote failed', error);
     if (isAuthError(error)) {
+      throw error;
+    }
+    if (mode === 'real') {
       throw error;
     }
     return getFallbackTaskBoard(taskId, inviteToken, error);
@@ -1036,6 +1318,15 @@ function generateRecommendation(taskId, inviteToken) {
 
 function submitAdjustmentRequest(taskId, inviteToken, payload) {
   const safePayload = payload || {};
+  const mode = getCurrentMode();
+
+  if (mode === 'mock') {
+    return Promise.resolve(mockBoard(
+      submitFallbackAdjustmentRequest(taskId, inviteToken, safePayload, null),
+      '当前为体验模式，反馈已暂存到本地模拟数据'
+    ));
+  }
+
   const data = {
     inviteToken: inviteToken,
     clientId: getClientId(),
@@ -1053,10 +1344,17 @@ function submitAdjustmentRequest(taskId, inviteToken, payload) {
     method: 'POST',
     data: data
   }).then(function (res) {
-    return normalizeTaskBoard(taskId, inviteToken, res);
+    let board = normalizeTaskBoard(taskId, inviteToken, res);
+    if (mode === 'auto') {
+      board = mergeBoardWithLocalParticipants(board, taskId, inviteToken);
+    }
+    return board;
   }).catch(function (error) {
     console.warn('[groupDiningAdapter] submitAdjustmentRequest remote failed', error);
     if (isAuthError(error)) {
+      throw error;
+    }
+    if (mode === 'real') {
       throw error;
     }
     return submitFallbackAdjustmentRequest(taskId, inviteToken, safePayload, error);
@@ -1065,10 +1363,14 @@ function submitAdjustmentRequest(taskId, inviteToken, payload) {
 
 module.exports = {
   API_BASE_URL: DEFAULT_API_BASE_URL,
+  API_MODE_STORAGE_KEY,
   REAL_STATUS,
+  MOCK_STATUS,
+  FALLBACK_STATUS,
   STATUS,
   ADJUSTMENT_REASON_LABELS,
   getApiBaseUrl,
+  getCurrentMode,
   createTask,
   submitPreference,
   getTaskBoard,
@@ -1077,5 +1379,8 @@ module.exports = {
   createFallbackTask,
   submitFallbackPreference,
   getFallbackTaskBoard,
-  submitFallbackAdjustmentRequest
+  submitFallbackAdjustmentRequest,
+  persistFallbackParticipant,
+  seedLocalTaskRecord,
+  mergeBoardWithLocalParticipants
 };

@@ -1,5 +1,9 @@
 @import "../group-common.wxss";
 
+.board-scaffold {
+  padding-top: 0;
+}
+
 .progress-card {
   margin-bottom: 28rpx;
 }

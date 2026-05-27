@@ -1,10 +1,14 @@
-<view class="page scaffold-page theme-{{currentTheme}}">
-  <view class="page-bar">
-    <button class="page-back" bindtap="handleBack">‹</button>
-    <view class="page-heading">
-      <view class="page-title">约饭任务看板</view>
-      <view class="page-subtitle">数据通过 adapter.getTaskBoard 获取；下拉刷新；每 3 秒自动同步一次。</view>
+<view class="page scaffold-page board-scaffold theme-{{currentTheme}}">
+  <view class="group-safe-header" style="padding-top: {{statusBarHeight}}px;">
+    <view class="group-safe-nav" style="height: {{navBarHeight}}px; padding-right: {{navRightPadding}}px; --nav-title-side: {{navTitleSidePadding}}px;">
+      <view class="group-nav-back-hit" hover-class="group-nav-back-active" bindtap="handleBack" aria-label="返回">
+        <view class="group-nav-back-button">
+          <text class="group-nav-back-icon">‹</text>
+        </view>
+      </view>
+      <view class="group-safe-title">约饭看板</view>
     </view>
+    <view class="group-safe-subtitle">下拉刷新或保持在页面，每几秒会自动同步最新状态。</view>
   </view>
 
   <view wx:if="{{errorMessage}}" class="panel-card">

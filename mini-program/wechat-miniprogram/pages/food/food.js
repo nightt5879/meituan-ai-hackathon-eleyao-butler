@@ -24,6 +24,48 @@ const adjustmentOptions = [
   { label: '忌口没说清', action: 'avoid' }
 ];
 
+// Normalize per-capita price for display on shop cards. Tolerates:
+//   - numbers (e.g. 48)                         → "人均 48元"
+//   - "48"                                      → "人均 48元"
+//   - "48元" / "48 元/人" / "48 yuan/person"      → "人均 48元"
+//   - "人均 48元" (already formatted)             → "人均 48元" (no double prefix)
+//   - undefined / null / "" / non-numeric junk  → "人均待确认"
+// Render-time only — never mutates the raw .perCapita value so adapters,
+// history persistence, and any future consumer keep the original payload.
+function formatAveragePrice(value) {
+  if (value === undefined || value === null || value === '') {
+    return '人均待确认';
+  }
+  const raw = String(value).trim();
+  if (!raw) {
+    return '人均待确认';
+  }
+  if (raw.indexOf('人均') >= 0 && raw.indexOf('元') >= 0) {
+    return raw;
+  }
+  const match = raw.match(/\d+(?:\.\d+)?/);
+  if (match) {
+    return '人均 ' + match[0] + '元';
+  }
+  const cleaned = raw.replace(/yuan\/person|yuan|元\/人|\/person|person/gi, '').trim();
+  return cleaned ? '人均 ' + cleaned + '元' : '人均待确认';
+}
+
+// Add a derived perCapitaDisplay field to each recommendation so WXML can
+// render the normalized "人均 xx元" string directly. The original perCapita
+// field is preserved on every item.
+function decorateRecommendationsForDisplay(list) {
+  if (!Array.isArray(list)) {
+    return [];
+  }
+  return list.map(function (item) {
+    const safe = item || {};
+    return Object.assign({}, safe, {
+      perCapitaDisplay: formatAveragePrice(safe.perCapita)
+    });
+  });
+}
+
 Page({
   data: {
     session: foodAiAdapter.createInitialSession(),
@@ -676,6 +718,7 @@ Page({
           decisionSheet: this.data.session.decisionSheet
         }
       );
+      nextRecommendations = decorateRecommendationsForDisplay(nextRecommendations);
     } finally {
       wx.hideLoading();
     }
@@ -817,6 +860,7 @@ Page({
           decisionSheet: this.data.session.decisionSheet
         })
       );
+      nextRecommendations = decorateRecommendationsForDisplay(nextRecommendations);
     } finally {
       wx.hideLoading();
     }
@@ -1016,6 +1060,7 @@ Page({
         recommendations = await foodAiAdapter.generateRecommendations(session.slots, session.preferences, {
           decisionSheet: session.decisionSheet
         });
+        recommendations = decorateRecommendationsForDisplay(recommendations);
       } finally {
         wx.hideLoading();
       }

@@ -173,6 +173,18 @@
           bindtap="handleToggleDietary"
         >{{item.value}}</view>
       </view>
+
+      <view class="custom-field-block">
+        <view class="field-label">忌口补充（选填）</view>
+        <input
+          class="field-input preference-custom-input"
+          value="{{form.restrictionCustomText}}"
+          placeholder="还有其他忌口或过敏可以补充，例如芒果过敏、不吃动物内脏"
+          placeholder-class="field-placeholder"
+          data-field="restrictionCustomText"
+          bindinput="handleInput"
+        />
+      </view>
     </view>
   </view>
 
@@ -201,6 +213,18 @@
           bindtap="handleToggleCuisine"
         >{{item.value}}</view>
       </view>
+
+      <view class="custom-field-block">
+        <view class="field-label">品类补充（选填）</view>
+        <input
+          class="field-input preference-custom-input"
+          value="{{form.cuisineCustomText}}"
+          placeholder="还想吃什么可以补充，例如云南菜、东南亚菜"
+          placeholder-class="field-placeholder"
+          data-field="cuisineCustomText"
+          bindinput="handleInput"
+        />
+      </view>
     </view>
   </view>
 
@@ -228,6 +252,18 @@
           bindtap="handleSelectBudget"
         >{{item.value}}</view>
       </view>
+
+      <view class="custom-field-block">
+        <view class="field-label">预算补充（选填）</view>
+        <input
+          class="field-input preference-custom-input"
+          value="{{form.budgetCustomText}}"
+          placeholder="还有预算要求可以补充，例如人均 60 左右"
+          placeholder-class="field-placeholder"
+          data-field="budgetCustomText"
+          bindinput="handleInput"
+        />
+      </view>
     </view>
   </view>
 
@@ -254,6 +290,18 @@
           data-value="{{item.value}}"
           bindtap="handleSelectSpicy"
         >{{item.label}}</view>
+      </view>
+
+      <view class="custom-field-block">
+        <view class="field-label">辣度补充（选填）</view>
+        <input
+          class="field-input preference-custom-input"
+          value="{{form.spiceCustomText}}"
+          placeholder="还有辣度要求可以补充，例如只能微辣、最好不辣"
+          placeholder-class="field-placeholder"
+          data-field="spiceCustomText"
+          bindinput="handleInput"
+        />
       </view>
     </view>
   </view>
