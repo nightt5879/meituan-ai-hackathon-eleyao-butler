@@ -14,9 +14,9 @@
       <text class="utility-icon">◐</text>
       <text>主题换装</text>
     </button>
-    <button class="utility-chip" bindtap="openHistoryPanel">
-      <text class="utility-icon">↺</text>
-      <text>偏好记录</text>
+    <button class="utility-chip" bindtap="openFavoritesPanel">
+      <text class="utility-icon">★</text>
+      <text>店铺收藏</text>
     </button>
   </view>
 
@@ -58,7 +58,7 @@
 
   <view class="recent-block">
     <view class="recent-head">
-      <text>最近一次推荐</text>
+      <text>偏好记录</text>
       <text class="recent-link" bindtap="openHistoryPanel">全部记录 ›</text>
     </view>
     <view class="recent-card" bindtap="openHistoryPanel">
@@ -73,7 +73,7 @@
   <view wx:if="{{showThemePanel}}" class="panel-mask" bindtap="closeThemePanel">
     <view class="bottom-panel theme-panel" catchtap="noop">
       <view class="panel-header">
-        <view>
+        <view class="panel-header-copy">
           <view class="panel-title">主题换装</view>
           <view class="panel-desc">选择后会同步影响首页、问答、多人约饭、周边规划和管家记忆。</view>
         </view>
@@ -116,7 +116,7 @@
   <view wx:if="{{showHistoryPanel}}" class="panel-mask" bindtap="closeHistoryPanel">
     <view class="bottom-panel history-panel" catchtap="noop">
       <view class="panel-header">
-        <view>
+        <view class="panel-header-copy">
           <view class="panel-title">偏好记录</view>
           <view class="panel-desc">已选择「记住这个偏好」的最近 5 次会留在这里，方便继续调整。</view>
         </view>
@@ -133,9 +133,36 @@
         <view wx:for="{{historyRecords}}" wx:key="id" class="history-item">
           <view class="history-index">{{item.indexText}}</view>
           <view class="history-copy">
-            <view class="history-names">{{item.names}}</view>
+            <view class="history-names">{{item.title}}</view>
             <view class="history-summary">{{item.summary}}</view>
             <view class="history-time">{{item.time}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{showFavoritesPanel}}" class="panel-mask" bindtap="closeFavoritesPanel">
+    <view class="bottom-panel favorites-panel" catchtap="noop">
+      <view class="panel-header">
+        <view class="panel-header-copy">
+          <view class="panel-title">店铺收藏</view>
+          <view class="panel-desc">在推荐卡片右上角点星星收藏，喜欢的店铺会留在这里。</view>
+        </view>
+        <button class="panel-close" bindtap="closeFavoritesPanel">×</button>
+      </view>
+
+      <view wx:if="{{!hasFavoriteShops}}" class="favorites-empty">
+        <view class="favorites-empty-title">还没有收藏的店铺</view>
+        <view class="favorites-empty-desc">在推荐卡片右上角点星星收藏喜欢的店铺</view>
+      </view>
+      <view wx:else class="favorites-list">
+        <view wx:for="{{favoriteShops}}" wx:key="favoritedAt" class="fav-item">
+          <view class="fav-name">{{item.name}}</view>
+          <view class="fav-detail-row">
+            <text wx:if="{{item.perCapitaDisplay}}" class="fav-meta">{{item.perCapitaDisplay}}</text>
+            <text wx:if="{{item.distance}}" class="fav-meta">{{item.distance}}</text>
+            <text wx:if="{{item.matchedTags && item.matchedTags.length}}" class="fav-tag">{{item.matchedTags[0]}}</text>
           </view>
         </view>
       </view>

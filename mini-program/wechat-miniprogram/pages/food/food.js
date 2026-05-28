@@ -8,6 +8,7 @@ const navMetrics = require('../../utils/navMetrics');
 const emptySelectedTags = {
   taste: [],
   need: [],
+  temporaryAvoid: [],
   avoid: [],
   spicyLevel: []
 };
@@ -23,6 +24,41 @@ const adjustmentOptions = [
   { label: '想换个品类', action: 'category' },
   { label: '忌口没说清', action: 'avoid' }
 ];
+
+const prefModificationOptions = [
+  { label: '想吃', action: 'branch-preference' },
+  { label: '口味/感觉', action: 'taste-feeling' },
+  { label: '这次不想吃', action: 'temporary-avoid' },
+  { label: '忌口', action: 'restriction' },
+  { label: '辣度', action: 'spice' },
+  { label: '预算', action: 'budget' },
+  { label: '距离', action: 'distance' },
+  { label: '用餐场景', action: 'meal-purpose' },
+  { label: '其他补充', action: 'notes' }
+];
+
+const prefModificationOrder = [
+  'meal-purpose',
+  'branch-preference',
+  'taste-feeling',
+  'temporary-avoid',
+  'restriction',
+  'spice',
+  'budget',
+  'distance',
+  'notes'
+];
+
+const userNotesQuestion = {
+  id: 'user-notes',
+  kind: 'choice',
+  slot: 'userNotes',
+  label: '其他补充',
+  title: '还有什么想补充的吗？',
+  optional: true,
+  allowEmpty: true,
+  options: ['没有补充']
+};
 
 // Normalize per-capita price for display on shop cards. Tolerates:
 //   - numbers (e.g. 48)                         → "人均 48元"
@@ -64,6 +100,19 @@ function decorateRecommendationsForDisplay(list) {
       perCapitaDisplay: formatAveragePrice(safe.perCapita)
     });
   });
+}
+
+// Real preference history only. The food "recent preference" pre-check card
+// may surface ONLY when a genuine profile exists — long-term memory, stable
+// 管家记忆 settings, or authorized behavior records (source 'memory' /
+// 'stable' / 'record'). The V0 MOCK_PREFERENCE_PROFILE (source === 'mock')
+// must never trigger it, so a cache-cleared / brand-new user is never shown
+// fabricated "recent" history.
+function hasRealPreferenceProfile(profile) {
+  if (!profile || profile.isMock || profile.source === 'mock') {
+    return false;
+  }
+  return userMemoryAdapter.hasUsefulPreferenceProfile(profile);
 }
 
 Page({
@@ -110,31 +159,41 @@ Page({
     }),
 
     // ─── Preference pre-check state ─────────────────────────────────────
-    // prefCheckActive   — true while the butler is asking "今天也按这个来吗？"
-    // prefCheckSummary  — the visible summary line, e.g. "我看到你最近常选：…"
-    // prefCheckDisclaimer — present only when the profile source is the V0 mock
-    // prefCheckOptions  — chip rows shown under the pre-check butler bubble
+    // prefCheckActive   — true after mealPurpose when a real matching record exists.
+    // prefCheckChips    — structured preference chips from that record.
     // pendingPrefill    — non-null after the user opts in; carries autoAnswerIds
-    //                     which questions should be auto-filled from the profile.
-    //                     mealPurpose / branch-specific questions are NEVER in it.
+    //                     which questions should be auto-filled from the record.
     // autoAnsweredIndexes — answer-array indexes that were auto-filled (hidden
     //                     from the chat thread).
     // chatPreamble      — extra bubbles inserted ahead of session.answers,
     //                     used for the "好，已应用：…" confirmation after
     //                     the user picks a pre-check option.
     prefCheckActive: false,
+    prefCheckTitle: '',
     prefCheckSummary: '',
+    prefCheckPrompt: '',
+    prefCheckChips: [],
     prefCheckDisclaimer: '',
+    // Structured label/value rows of the reused preference, shown in both the
+    // pre-check card and the "部分修改" panel so the user can see exactly what
+    // is being carried over (用餐场景 / 想吃 / 口味 / 忌口 / 辣度 / 预算 / 距离 …).
+    prefSummaryRows: [],
+    // Number of toggleable rows currently marked 要修改 — drives the
+    // enabled/disabled state of the "确定修改这些" button.
+    prefModifyCount: 0,
     prefCheckOptions: [
-      { label: '按这个来',     action: 'use-all' },
-      { label: '换口味',       action: 'change-taste' },
-      { label: '预算变了',     action: 'change-budget' },
-      { label: '想走远一点',   action: 'change-distance' },
-      { label: '不用历史偏好', action: 'skip' }
+      { label: '全都按这个来', action: 'use-all' },
+      { label: '这次不用历史偏好', action: 'skip' },
+      { label: '部分修改', action: 'partial' }
     ],
+    prefModifyActive: false,
+    prefModifyOptions: prefModificationOptions,
+    selectedPrefModifyActions: [],
+    prefModificationActions: [],
     pendingPrefill: null,
     autoAnsweredIndexes: [],
-    chatPreamble: []
+    chatPreamble: [],
+    favoriteShops: []
   },
 
   onLoad() {
@@ -155,6 +214,16 @@ Page({
   onShow() {
     this.syncTheme();
     this.refreshConnectionStatus();
+    const recs = this.data.recommendations;
+    if (recs && recs.length) {
+      const favorites = loadFavoriteShops();
+      this.setData({
+        recommendations: recs.map(function (item) {
+          return Object.assign({}, item, { isFavorited: isShopFavorited(item, favorites) });
+        }),
+        favoriteShops: favorites
+      });
+    }
   },
 
   syncTheme() {
@@ -175,56 +244,22 @@ Page({
   startSession() {
     const session = foodAiAdapter.createInitialSession();
     this.hasSavedCurrentRecordFlag = false;
-
-    // Read the effective preference profile. V0: mock fallback is on by
-    // default so the pre-check is testable on a fresh install. Disable with
-    // { useMock: false } when real data is wired up.
-    const profile = userMemoryAdapter.getEffectivePreferenceProfile();
-
-    if (userMemoryAdapter.hasUsefulPreferenceProfile(profile)) {
-      this._activeProfile = profile;
-      const isMock = profile.source === 'mock';
-      this.setData({
-        session,
-        hasSavedCurrentRecord: false,
-        prefCheckActive: true,
-        prefCheckSummary: this.buildPrefCheckSummary(profile),
-        prefCheckDisclaimer: isMock
-          ? '当前为模拟偏好，仅用于本次推荐；真实接入时需经用户授权。'
-          : '',
-        pendingPrefill: null,
-        autoAnsweredIndexes: [],
-        chatPreamble: [],
-        currentQuestion: null,
-        currentOptions: [],
-        tagGroups: [],
-        isTagQuestion: false,
-        showManualInput: false,
-        isFinished: false,
-        chatMessages: [],
-        slotSummaryText: '',
-        summaryFields: [],
-        slotItems: [],
-        recommendations: [],
-        isRecommendationLoading: false,
-        progressPercent: 0,
-        memoryDecision: '',
-        recommendationBatchIndex: 0,
-        recommendationNotice: '',
-        showAdjustmentOptions: false,
-        adjustmentMessages: [],
-        adjustmentManualInput: ''
-      });
-      return;
-    }
-
-    // No usable profile → existing normal flow, untouched.
     this._activeProfile = null;
+    this._pendingProfileAfterMealPurpose = null;
+    this._skipPreferenceCheckForScenario = '';
+    this._emptyPrefNoticeScenario = '';
     this.setData({
       hasSavedCurrentRecord: false,
       prefCheckActive: false,
+      prefCheckTitle: '',
       prefCheckSummary: '',
+      prefCheckPrompt: '',
+      prefCheckChips: [],
       prefCheckDisclaimer: '',
+      prefModifyActive: false,
+      prefModifyOptions: this.formatPrefModifyOptions([]),
+      selectedPrefModifyActions: [],
+      prefModificationActions: [],
       pendingPrefill: null,
       autoAnsweredIndexes: [],
       chatPreamble: []
@@ -324,6 +359,7 @@ Page({
         const hasTagSelection =
           this.data.selectedTags.taste.length > 0 ||
           this.data.selectedTags.need.length > 0 ||
+          this.data.selectedTags.temporaryAvoid.length > 0 ||
           this.data.selectedTags.avoid.length > 0 ||
           this.data.selectedTags.spicyLevel.length > 0;
         if (!hasTagSelection && !manualAnswer) {
@@ -410,6 +446,9 @@ Page({
   restartSession() {
     this.hasSavedCurrentRecordFlag = false;
     this._activeProfile = null;
+    this._pendingProfileAfterMealPurpose = null;
+    this._skipPreferenceCheckForScenario = '';
+    this._emptyPrefNoticeScenario = '';
     this.setData({
       manualInputs: {},
       selectionHistory: [],
@@ -423,8 +462,15 @@ Page({
       hasSavedCurrentRecord: false,
       memoryDecision: '',
       prefCheckActive: false,
+      prefCheckTitle: '',
       prefCheckSummary: '',
+      prefCheckPrompt: '',
+      prefCheckChips: [],
       prefCheckDisclaimer: '',
+      prefModifyActive: false,
+      prefModifyOptions: this.formatPrefModifyOptions([]),
+      selectedPrefModifyActions: [],
+      prefModificationActions: [],
       pendingPrefill: null,
       autoAnsweredIndexes: [],
       chatPreamble: []
@@ -479,59 +525,445 @@ Page({
     });
   },
 
-  // ─── Preference pre-check helpers ───────────────────────────────────────
+  toggleFavoriteShop(e) {
+    const idx = Number(e.currentTarget.dataset.index);
+    const recommendations = this.data.recommendations;
+    const shop = recommendations[idx];
+    if (!shop) {
+      return;
+    }
 
-  buildPrefCheckSummary(profile) {
-    const parts = [];
-    if (profile.taste) {
-      parts.push(profile.taste);
+    const favorites = loadFavoriteShops();
+    const key = buildFavoriteShopKey(shop);
+    const existingIndex = favorites.findIndex(function (f) {
+      return buildFavoriteShopKey(f) === key;
+    });
+
+    let newFavorited;
+    if (existingIndex >= 0) {
+      favorites.splice(existingIndex, 1);
+      newFavorited = false;
+    } else {
+      favorites.unshift(buildFavoriteObject(shop));
+      newFavorited = true;
     }
-    if (profile.budget) {
-      parts.push(String(profile.budget).replace(/\s+/g, ''));
-    }
-    if (profile.distance) {
-      parts.push(String(profile.distance).replace(/\s+/g, ''));
-    }
-    if (!parts.length) {
-      return '我看到你之前留过一些偏好。今天也按这个来吗？';
-    }
-    return '我看到你最近常选：' + parts.join(' / ') + '。今天也按这个来吗？';
+
+    saveFavoriteShops(favorites);
+
+    this.setData({
+      recommendations: recommendations.map(function (item, i) {
+        return i === idx ? Object.assign({}, item, { isFavorited: newFavorited }) : item;
+      })
+    });
   },
 
-  // Tapped one of the pre-check chips. Decides which questions to auto-fill
-  // (if any) and hands control back to the normal question flow.
+  // ─── Preference pre-check helpers ───────────────────────────────────────
+
+  buildPrefCheckTitle(profile) {
+    return '我找到你上次「' + (profile.mealPurpose || '这类场景') + '」的偏好：';
+  },
+
+  buildPrefCheckChips(profile) {
+    const chips = [];
+    const addChip = function (label) {
+      if (label && chips.indexOf(label) < 0) {
+        chips.push(label);
+      }
+    };
+
+    addChip(profile.mealPurpose);
+    splitPreferenceText(profile.branchPreference).forEach(addChip);
+    (profile.tasteTags || []).forEach(addChip);
+    (profile.needTags || []).forEach(addChip);
+    (profile.temporaryAvoidTags || []).forEach(addChip);
+    (profile.avoidTags || []).forEach(addChip);
+    addChip(profile.spicyLevel);
+    addChip(formatCompactPreferenceValue(profile.budget));
+    addChip(formatCompactPreferenceValue(profile.distance));
+    addChip(profile.userNotes);
+
+    return chips;
+  },
+
+  // Build labeled rows of the reused preference for on-screen display.
+  // Each row carries a stable `key` and the matching modify-action so the
+  // row-level keep/modify toggle can drive startHistoryPreferenceFlow without
+  // relying on display labels. `toggleable: false` rows (用餐场景 — already
+  // chosen this session) are shown for context but cannot be marked to modify.
+  // Empty / 未选择 fields are skipped so the table stays compact. Rows default
+  // to keep === true (reuse the value).
+  buildPrefSummaryRows(profile) {
+    const safe = profile || {};
+    const joinTags = function (list) {
+      return (list || []).filter(function (tag) { return !!tag; }).join('、');
+    };
+    // One row per fine-grained field, each mapping to exactly ONE modify
+    // action. When a single field is marked 要修改, prefModificationActions
+    // carries just that action; getVisibleTagGroupTypes() then renders only
+    // that field's group inside its question, so the user is asked only the
+    // field they picked — never its neighbours in the same grouped question.
+    const defs = [
+      { key: 'mealScene', label: '用餐场景', value: safe.mealPurpose, action: '', toggleable: false },
+      { key: 'cravings', label: '想吃', value: joinTags(splitPreferenceText(safe.branchPreference)), action: 'branch-preference', toggleable: true },
+      { key: 'taste', label: '口味/感觉', value: joinTags((safe.tasteTags || []).concat(safe.needTags || [])), action: 'taste-feeling', toggleable: true },
+      { key: 'tempAvoid', label: '这次不想吃', value: joinTags(safe.temporaryAvoidTags), action: 'temporary-avoid', toggleable: true },
+      { key: 'taboo', label: '忌口', value: joinTags(safe.avoidTags), action: 'restriction', toggleable: true },
+      { key: 'spiceLevel', label: '辣度', value: safe.spicyLevel, action: 'spice', toggleable: true },
+      { key: 'budget', label: '预算', value: formatCompactPreferenceValue(safe.budget), action: 'budget', toggleable: true },
+      { key: 'distance', label: '距离', value: formatCompactPreferenceValue(safe.distance), action: 'distance', toggleable: true },
+      { key: 'notes', label: '其他补充', value: safe.userNotes, action: 'notes', toggleable: true }
+    ];
+
+    return defs.map(function (def) {
+      const text = String(def.value == null ? '' : def.value).trim();
+      return Object.assign({}, def, { value: text, keep: true });
+    }).filter(function (def) {
+      return def.value && def.value !== '未选择';
+    });
+  },
+
+  // Modify-action keys for rows the user toggled to "要修改", ordered by
+  // prefModificationOrder so downstream re-asking is deterministic.
+  collectUnselectedActions() {
+    const rows = this.data.prefSummaryRows || [];
+    const actions = [];
+    rows.forEach(function (row) {
+      if (!row || !row.toggleable || row.keep !== false) {
+        return;
+      }
+      // Each row maps to exactly one action; the `row.actions` array form is
+      // kept only as a tolerant fallback for any future multi-action row.
+      const rowActions = row.actions || (row.action ? [row.action] : []);
+      rowActions.forEach(function (action) {
+        if (action && actions.indexOf(action) < 0) {
+          actions.push(action);
+        }
+      });
+    });
+    return this.sortPrefModificationActions(actions);
+  },
+
+  // Flip a single row between 保留 (keep/reuse) and 要修改 (re-ask this field).
+  handlePrefRowToggle(event) {
+    const key = event.currentTarget.dataset.key;
+    if (!key) {
+      return;
+    }
+    let modifyCount = 0;
+    const rows = (this.data.prefSummaryRows || []).map(function (row) {
+      if (row.key === key && row.toggleable) {
+        return Object.assign({}, row, { keep: !row.keep });
+      }
+      return row;
+    });
+    rows.forEach(function (row) {
+      if (row.toggleable && row.keep === false) {
+        modifyCount += 1;
+      }
+    });
+    this.setData({ prefSummaryRows: rows, prefModifyCount: modifyCount });
+  },
+
+  // Tapped one of the pre-check actions after a real scene-matched record.
   handlePrefCheckOptionTap(event) {
     const action = event.currentTarget.dataset.action;
     const label = event.currentTarget.dataset.label;
     const profile = this._activeProfile || null;
-    let pendingPrefill = null;
-    let replyText = '';
 
     if (action === 'use-all') {
-      pendingPrefill = { autoAnswerIds: ['tag-preferences', 'avoid-preferences', 'budget', 'distance'] };
-      replyText = this.buildPrefillReplyText(profile, pendingPrefill.autoAnswerIds);
-    } else if (action === 'change-taste') {
-      // Keep budget + distance; ask taste / category fresh.
-      pendingPrefill = { autoAnswerIds: ['budget', 'distance'] };
-      replyText = '好，预算和距离先按上次的，口味重新挑一下。';
-    } else if (action === 'change-budget') {
-      // Keep taste preferences + distance; ask budget fresh.
-      pendingPrefill = { autoAnswerIds: ['tag-preferences', 'avoid-preferences', 'distance'] };
-      replyText = '好，口味和距离先按上次的，预算我们再聊。';
-    } else if (action === 'change-distance') {
-      // Keep taste + budget; ask distance fresh.
-      pendingPrefill = { autoAnswerIds: ['tag-preferences', 'avoid-preferences', 'budget'] };
-      replyText = '好，口味和预算先按上次的，距离重新选一下。';
-    } else {
-      // skip — fully fresh flow.
-      pendingPrefill = null;
-      replyText = '好的，这次我们从头来一次。';
-      this._activeProfile = null;
+      this.startHistoryPreferenceFlow([], label, this.buildPrefillReplyText(profile, []));
+      return;
     }
 
-    const chatPreamble = [
+    if (action === 'partial') {
+      this.setData({
+        prefCheckActive: false,
+        prefModifyActive: true,
+        prefSummaryRows: this.buildPrefSummaryRows(profile),
+        prefModifyCount: 0,
+        prefModifyOptions: this.formatPrefModifyOptions([]),
+        selectedPrefModifyActions: [],
+        chatPreamble: this.data.chatPreamble.concat(
+          this.buildChatMessagePair(label, '好的，我把你上次的偏好带进来了。', 'prefcheck-partial')
+        )
+      });
+      return;
+    }
+
+    this._activeProfile = null;
+    this._skipPreferenceCheckForScenario = (this.data.session.slots || {}).mealPurpose || '';
+
+    this.setData({
+      prefCheckActive: false,
+      prefCheckTitle: '',
+      prefCheckSummary: '',
+      prefCheckPrompt: '',
+      prefCheckChips: [],
+      prefCheckDisclaimer: '',
+      prefModifyActive: false,
+      prefModifyOptions: this.formatPrefModifyOptions([]),
+      selectedPrefModifyActions: [],
+      prefModificationActions: [],
+      pendingPrefill: null,
+      chatPreamble: this.data.chatPreamble.concat(
+        this.buildChatMessagePair(label, '好的，这次不用历史偏好，我们从当前场景继续。', 'prefcheck-skip')
+      )
+    });
+
+    this.updateQuestionState(this.data.session);
+  },
+
+  handlePrefModifyOptionTap(event) {
+    const action = event.currentTarget.dataset.action;
+    const selected = this.data.selectedPrefModifyActions.slice();
+    const index = selected.indexOf(action);
+
+    if (index >= 0) {
+      selected.splice(index, 1);
+    } else {
+      selected.push(action);
+    }
+
+    this.setData({
+      selectedPrefModifyActions: selected,
+      prefModifyOptions: this.formatPrefModifyOptions(selected)
+    });
+  },
+
+  // "确定修改这些" — re-ask ONLY the rows the user toggled to 要修改, via the
+  // dedicated exact-field flow. Disabled in the UI when nothing is unselected;
+  // this guard is a safety net.
+  handlePrefModifyConfirm() {
+    const selected = this.collectUnselectedActions();
+
+    if (!selected.length) {
+      wx.showToast({ title: '点行右侧的「保留」标记要修改的项，或点「直接按这些推荐」', icon: 'none' });
+      return;
+    }
+
+    this.startModifyOnlyFlow(
+      selected,
+      '修改这些',
+      '好的，只调整：' + this.formatPrefActionLabels(selected) + '，其他沿用上次偏好。'
+    );
+  },
+
+  // "直接按这些推荐" — if nothing is marked, go straight to recommendations
+  // with the kept profile; if some rows are marked, ask only those first.
+  handlePrefUseAllFromModify() {
+    const profile = this._activeProfile || null;
+    const selected = this.collectUnselectedActions();
+
+    if (!selected.length) {
+      this.startModifyOnlyFlow([], '直接按这些推荐', this.buildPrefillReplyText(profile, []));
+      return;
+    }
+
+    this.startModifyOnlyFlow(
+      selected,
+      '直接按这些推荐',
+      '好的，先补充：' + this.formatPrefActionLabels(selected) + '，其余沿用上次偏好。'
+    );
+  },
+
+  // Dedicated, exact-field modification flow. Builds a session whose question
+  // list contains ONLY the single-field questions for the selected actions, so
+  // unselected fields can never be rendered. Kept fields are filled from the
+  // profile up front (applyProfileToSession) and never appear as questions.
+  // The normal new-user flow and the pre-check "全都按这个来" path are untouched.
+  startModifyOnlyFlow(modificationActions, userLabel, replyText) {
+    const profile = this._activeProfile || null;
+    const actions = this.sortPrefModificationActions(modificationActions);
+
+    if (!profile) {
+      this.setData({ prefCheckActive: false, prefModifyActive: false, pendingPrefill: null });
+      this.updateQuestionState(this.data.session);
+      return;
+    }
+
+    const baseSession = this.applyProfileToSession(this.data.session, profile);
+    const mealPurpose = (baseSession.slots || {}).mealPurpose;
+    const modifyQuestions = actions.map(function (action) {
+      return foodAiAdapter.buildModifyQuestion(action, mealPurpose);
+    }).filter(function (question) { return !!question; });
+
+    const session = Object.assign({}, baseSession, {
+      resolvedQuestions: modifyQuestions,
+      totalQuestions: modifyQuestions.length,
+      questionIndex: 0,
+      answers: [],
+      // Block dynamic-question prefetch during the modify sub-flow.
+      dynamicQuestionPlan: { requested: true, status: 'done', source: 'modify-only' }
+    });
+
+    this._skipPreferenceCheckForScenario = profile.mealPurpose || '';
+
+    this.setData({
+      session,
+      prefCheckActive: false,
+      prefCheckTitle: '',
+      prefCheckSummary: '',
+      prefCheckPrompt: '',
+      prefCheckChips: [],
+      prefCheckDisclaimer: '',
+      prefModifyActive: false,
+      prefModifyCount: 0,
+      prefModificationActions: actions,
+      pendingPrefill: null,
+      autoAnsweredIndexes: [],
+      selectedOptions: [],
+      selectedTags: this.cloneSelectedTags(emptySelectedTags),
+      manualInputs: {},
+      manualAnswer: '',
+      chatPreamble: this.data.chatPreamble.concat(
+        this.buildChatMessagePair(userLabel, replyText, 'prefmodify-' + Date.now())
+      )
+    });
+
+    this.updateQuestionState(session);
+  },
+
+  formatPrefModifyOptions(selectedActions) {
+    const selected = selectedActions || [];
+    return prefModificationOptions.map(function (item) {
+      return Object.assign({}, item, {
+        isSelected: selected.indexOf(item.action) >= 0
+      });
+    });
+  },
+
+  sortPrefModificationActions(actions) {
+    const selected = actions || [];
+    return prefModificationOrder.filter(function (action) {
+      return selected.indexOf(action) >= 0;
+    });
+  },
+
+  formatPrefActionLabels(actions) {
+    const labelMap = {};
+    prefModificationOptions.forEach(function (item) {
+      labelMap[item.action] = item.label;
+    });
+    return (actions || []).map(function (action) {
+      return labelMap[action] || action;
+    }).join('、');
+  },
+
+  startHistoryPreferenceFlow(modificationActions, userLabel, replyText) {
+    const profile = this._activeProfile || null;
+    const actions = this.sortPrefModificationActions(modificationActions);
+
+    if (!profile) {
+      this.setData({
+        prefCheckActive: false,
+        prefModifyActive: false,
+        pendingPrefill: null
+      });
+      this.updateQuestionState(this.data.session);
+      return;
+    }
+
+    const modifiesMealPurpose = actions.indexOf('meal-purpose') >= 0;
+    const pendingPrefill = {
+      autoAnswerIds: this.buildHistoryAutoAnswerIds(actions)
+    };
+    const chatPreamble = this.data.chatPreamble.concat(
+      this.buildChatMessagePair(userLabel, replyText, 'prefcheck-apply-' + Date.now())
+    );
+
+    this._skipPreferenceCheckForScenario = profile.mealPurpose || '';
+
+    if (modifiesMealPurpose) {
+      const initialSession = foodAiAdapter.createInitialSession();
+      this._pendingProfileAfterMealPurpose = profile;
+      this.setData({
+        session: initialSession,
+        prefCheckActive: false,
+        prefCheckTitle: '',
+        prefCheckSummary: '',
+        prefCheckPrompt: '',
+        prefCheckChips: [],
+        prefModifyActive: false,
+        prefModifyOptions: this.formatPrefModifyOptions([]),
+        selectedPrefModifyActions: [],
+        prefModificationActions: actions,
+        pendingPrefill,
+        autoAnsweredIndexes: [],
+        manualInputs: {},
+        manualAnswer: '',
+        selectedOptions: [],
+        selectedTags: this.cloneSelectedTags(emptySelectedTags),
+        selectionHistory: [],
+        answerHistory: [],
+        chatPreamble
+      });
+      this.updateQuestionState(initialSession);
+      return;
+    }
+
+    let session = this.applyProfileToSession(this.data.session, profile);
+    if (actions.indexOf('notes') >= 0) {
+      session = this.appendUserNotesQuestion(session);
+    }
+
+    this.setData({
+      session,
+      prefCheckActive: false,
+      prefCheckTitle: '',
+      prefCheckSummary: '',
+      prefCheckPrompt: '',
+      prefCheckChips: [],
+      prefModifyActive: false,
+      prefModifyOptions: this.formatPrefModifyOptions([]),
+      selectedPrefModifyActions: [],
+      prefModificationActions: actions,
+      pendingPrefill,
+      chatPreamble
+    });
+
+    this.updateQuestionState(session);
+  },
+
+  buildHistoryAutoAnswerIds(modificationActions) {
+    const actions = modificationActions || [];
+    const autoAnswerIds = [];
+
+    // Reuse (auto-answer) branchPreference unless the user marked 想吃 to modify.
+    if (actions.indexOf('branch-preference') < 0) {
+      autoAnswerIds.push('branchPreference');
+    }
+    if (actions.indexOf('taste-feeling') < 0 && actions.indexOf('temporary-avoid') < 0) {
+      autoAnswerIds.push('tag-preferences');
+    }
+    if (actions.indexOf('restriction') < 0 && actions.indexOf('spice') < 0) {
+      autoAnswerIds.push('avoid-preferences');
+    }
+    if (actions.indexOf('budget') < 0) {
+      autoAnswerIds.push('budget');
+    }
+    if (actions.indexOf('distance') < 0) {
+      autoAnswerIds.push('distance');
+    }
+
+    return autoAnswerIds;
+  },
+
+  buildPrefillReplyText(profile, autoAnswerIds) {
+    if (!profile) {
+      return '好，已使用上次的偏好。';
+    }
+    const tokens = this.buildPrefCheckChips(profile);
+    if (!tokens.length) {
+      return '好，已使用上次的偏好。';
+    }
+    return '好，已沿用：' + tokens.join(' · ') + '。';
+  },
+
+  buildChatMessagePair(userText, butlerText, baseId) {
+    const id = baseId || ('prefcheck-' + Date.now());
+    return [
       {
-        id: 'prefcheck-user',
+        id: id + '-user',
         role: 'user',
         messageClass: 'user-message',
         bubbleClass: 'user-bubble',
@@ -539,10 +971,10 @@ Page({
         showAvatar: false,
         avatarText: '',
         showQuickReplies: false,
-        text: label
+        text: userText
       },
       {
-        id: 'prefcheck-butler',
+        id: id + '-butler',
         role: 'butler',
         messageClass: 'butler-message',
         bubbleClass: 'butler-bubble',
@@ -550,40 +982,52 @@ Page({
         showAvatar: true,
         avatarText: '幺',
         showQuickReplies: false,
-        text: replyText
+        text: butlerText
       }
     ];
-
-    this.setData({
-      prefCheckActive: false,
-      prefCheckSummary: '',
-      prefCheckDisclaimer: '',
-      pendingPrefill,
-      chatPreamble
-    });
-
-    // Render the first real question, then attempt prefill.
-    this.updateQuestionState(this.data.session);
   },
 
-  buildPrefillReplyText(profile, autoAnswerIds) {
-    if (!profile) {
-      return '好，已使用上次的偏好。';
+  applyProfileToSession(session, profile) {
+    const safeSession = session || foodAiAdapter.createInitialSession();
+    const safeProfile = profile || {};
+    const slots = Object.assign({}, safeSession.slots || {}, {
+      mealPurpose: (safeSession.slots && safeSession.slots.mealPurpose) || safeProfile.mealPurpose || '',
+      branchPreference: safeProfile.branchPreference || ((safeSession.slots || {}).branchPreference || ''),
+      budget: safeProfile.budget || ((safeSession.slots || {}).budget || ''),
+      distance: safeProfile.distance || ((safeSession.slots || {}).distance || ''),
+      userNotes: safeProfile.userNotes || ((safeSession.slots || {}).userNotes || '')
+    });
+    const preferences = Object.assign(clonePagePreferences(safeSession.preferences), {
+      tasteTags: (safeProfile.tasteTags || []).slice(),
+      needTags: (safeProfile.needTags || []).slice(),
+      temporaryAvoidTags: (safeProfile.temporaryAvoidTags || []).slice(),
+      avoidTags: (safeProfile.avoidTags || []).slice(),
+      spicyLevel: safeProfile.spicyLevel || ''
+    });
+
+    return Object.assign({}, safeSession, {
+      slots,
+      preferences
+    });
+  },
+
+  appendUserNotesQuestion(session) {
+    if (!session || !session.resolvedQuestions) {
+      return session;
     }
-    const tokens = [];
-    if (autoAnswerIds.indexOf('tag-preferences') >= 0 && profile.taste) {
-      tokens.push(profile.taste);
+    const hasNotesQuestion = session.resolvedQuestions.some(function (question) {
+      return question.id === userNotesQuestion.id;
+    });
+
+    if (hasNotesQuestion) {
+      return session;
     }
-    if (autoAnswerIds.indexOf('budget') >= 0 && profile.budget) {
-      tokens.push(String(profile.budget).replace(/\s+/g, ''));
-    }
-    if (autoAnswerIds.indexOf('distance') >= 0 && profile.distance) {
-      tokens.push(String(profile.distance).replace(/\s+/g, ''));
-    }
-    if (!tokens.length) {
-      return '好，已使用上次的偏好。';
-    }
-    return '好，已应用：' + tokens.join(' · ') + '。剩下的我们再聊一下。';
+
+    const resolvedQuestions = session.resolvedQuestions.concat([userNotesQuestion]);
+    return Object.assign({}, session, {
+      resolvedQuestions,
+      totalQuestions: resolvedQuestions.length
+    });
   },
 
   // After updateQuestionState renders a new currentQuestion, try to silently
@@ -600,12 +1044,15 @@ Page({
       return;
     }
     const autoAnswerIds = pendingPrefill.autoAnswerIds || [];
-    if (autoAnswerIds.indexOf(currentQuestion.id) < 0) {
+    const questionKey = currentQuestion.slot || currentQuestion.id;
+    if (autoAnswerIds.indexOf(currentQuestion.id) < 0 && autoAnswerIds.indexOf(questionKey) < 0) {
       return;
     }
 
     const answer = this.synthesizePrefillAnswer(currentQuestion, profile);
-    const remainingIds = autoAnswerIds.filter(function (id) { return id !== currentQuestion.id; });
+    const remainingIds = autoAnswerIds.filter(function (id) {
+      return id !== currentQuestion.id && id !== questionKey;
+    });
     const nextPendingPrefill = remainingIds.length
       ? Object.assign({}, pendingPrefill, { autoAnswerIds: remainingIds })
       : null;
@@ -630,20 +1077,29 @@ Page({
 
   // Build a payload for foodAiAdapter.answerQuestion from the profile.
   // Returns null if the profile cannot answer this question safely.
-  // mealPurpose and branch-specific questions are never auto-answered.
+  // mealPurpose is never auto-answered; branch preference can be reused when it matches.
   synthesizePrefillAnswer(currentQuestion, profile) {
     if (!profile || !currentQuestion) { return null; }
 
     if (currentQuestion.id === 'tag-preferences') {
       const tasteTags = (profile.tasteTags || []).slice();
       const needTags = (profile.needTags || []).slice();
-      if (!tasteTags.length && !needTags.length) { return null; }
+      const temporaryAvoidTags = (profile.temporaryAvoidTags || []).slice();
+      if (!tasteTags.length && !needTags.length && !temporaryAvoidTags.length && currentQuestion.allowEmpty) {
+        return {
+          preferences: {
+            tasteTags: [],
+            needTags: [],
+            temporaryAvoidTags: []
+          }
+        };
+      }
+      if (!tasteTags.length && !needTags.length && !temporaryAvoidTags.length) { return null; }
       return {
         preferences: {
           tasteTags: tasteTags,
           needTags: needTags,
-          avoidTags: [],
-          spicyLevel: ''
+          temporaryAvoidTags: temporaryAvoidTags
         }
       };
     }
@@ -651,34 +1107,64 @@ Page({
     if (currentQuestion.id === 'avoid-preferences') {
       const avoidTags = (profile.avoidTags || []).slice();
       const spicyLevel = profile.spicyLevel || '';
+      if (!avoidTags.length && !spicyLevel && currentQuestion.allowEmpty) {
+        return {
+          preferences: {
+            avoidTags: [],
+            spicyLevel: ''
+          }
+        };
+      }
       if (!avoidTags.length && !spicyLevel) { return null; }
       return {
         preferences: {
-          tasteTags: [],
-          needTags: [],
           avoidTags: avoidTags,
           spicyLevel: spicyLevel
         }
       };
     }
 
-    // Budget / distance — kind 'choice'. Only accept if the stored value
-    // EXACTLY matches one of the current question's options.
+    if (currentQuestion.slot === 'branchPreference') {
+      const value = String(profile.branchPreference || '');
+      const matchedValue = this.matchQuestionOption(value, currentQuestion.options || []);
+      if (matchedValue) { return matchedValue; }
+      // Kept field: reuse the stored value as-is so the question advances
+      // (answerChoiceQuestion accepts any non-empty value) instead of being
+      // shown to the user. Fall back to 未选择 only when nothing was stored.
+      if (value) { return value; }
+      return currentQuestion.allowEmpty ? '未选择' : null;
+    }
+
+    // Budget / distance — kind 'choice'. Prefer an exact option match, but
+    // fall back to the stored value so a KEPT field is always auto-answered
+    // (answerChoiceQuestion accepts any non-empty value and advances) rather
+    // than being shown to the user.
     if (currentQuestion.id === 'budget' || currentQuestion.slot === 'budget') {
       const value = String(profile.budget || '');
       if (!value) { return null; }
-      if ((currentQuestion.options || []).indexOf(value) < 0) { return null; }
-      return value;
+      return this.matchQuestionOption(value, currentQuestion.options || []) || value;
     }
 
     if (currentQuestion.id === 'distance' || currentQuestion.slot === 'distance') {
       const value = String(profile.distance || '');
       if (!value) { return null; }
-      if ((currentQuestion.options || []).indexOf(value) < 0) { return null; }
-      return value;
+      return this.matchQuestionOption(value, currentQuestion.options || []) || value;
+    }
+
+    if (currentQuestion.id === 'user-notes') {
+      return profile.userNotes || '没有补充';
     }
 
     return null;
+  },
+
+  matchQuestionOption(value, options) {
+    const normalizedValue = normalizeComparableText(value);
+    const matched = (options || []).find(function (option) {
+      return normalizeComparableText(option) === normalizedValue;
+    });
+
+    return matched || null;
   },
 
   toggleSlotSummary() {
@@ -719,6 +1205,7 @@ Page({
         }
       );
       nextRecommendations = decorateRecommendationsForDisplay(nextRecommendations);
+      nextRecommendations = decorateWithFavoriteStatus(nextRecommendations);
     } finally {
       wx.hideLoading();
     }
@@ -861,6 +1348,7 @@ Page({
         })
       );
       nextRecommendations = decorateRecommendationsForDisplay(nextRecommendations);
+      nextRecommendations = decorateWithFavoriteStatus(nextRecommendations);
     } finally {
       wx.hideLoading();
     }
@@ -953,6 +1441,7 @@ Page({
   submitAnswer(answer) {
     const prevIndex = this.data.session.questionIndex;
     const prevSession = this.data.session;
+    const currentQuestion = this.data.currentQuestion;
     const session = foodAiAdapter.answerQuestion(prevSession, answer);
     let answerHistory = this.data.answerHistory;
 
@@ -961,8 +1450,144 @@ Page({
       answerHistory[prevIndex] = cloneAnswerForHistory(answer);
     }
 
+    if (session !== prevSession && currentQuestion && currentQuestion.id === 'mealPurpose') {
+      if (this.handleMealPurposeAnswered(session, prevIndex, answerHistory)) {
+        return;
+      }
+    }
+
     this.updateQuestionState(session, prevIndex, answerHistory);
     this.prefetchDynamicQuestions(session);
+  },
+
+  handleMealPurposeAnswered(session, savedFromIndex, answerHistory) {
+    const scenario = session && session.slots ? session.slots.mealPurpose : '';
+    const pendingProfile = this._pendingProfileAfterMealPurpose;
+
+    if (pendingProfile) {
+      this._pendingProfileAfterMealPurpose = null;
+      let nextSession = this.applyProfileToSession(session, pendingProfile);
+      if ((this.data.prefModificationActions || []).indexOf('notes') >= 0) {
+        nextSession = this.appendUserNotesQuestion(nextSession);
+      }
+      this.updateQuestionState(nextSession, savedFromIndex, answerHistory);
+      return true;
+    }
+
+    if (!scenario || this._skipPreferenceCheckForScenario === scenario) {
+      return false;
+    }
+
+    const record = this.findLatestRealPreferenceRecordForScenario(scenario);
+    if (!record) {
+      this._activeProfile = null;
+      // No reusable preference for this scene — say so once (per scene) instead
+      // of silently jumping into questions, then fall through to the normal flow.
+      if (this._emptyPrefNoticeScenario !== scenario) {
+        this._emptyPrefNoticeScenario = scenario;
+        this.setData({
+          chatPreamble: this.data.chatPreamble.concat([{
+            id: 'prefcheck-empty-' + Date.now(),
+            role: 'butler',
+            messageClass: 'butler-message',
+            bubbleClass: 'butler-bubble',
+            contentClass: 'butler-content',
+            showAvatar: true,
+            avatarText: '幺',
+            showQuickReplies: false,
+            text: '还没有可沿用的偏好，我会先问你几个问题。'
+          }])
+        });
+      }
+      return false;
+    }
+
+    const profile = this.normalizePreferenceRecordProfile(record, scenario);
+    const selectionHistory = this.data.selectionHistory.slice();
+    selectionHistory[savedFromIndex] = {
+      selectedOptions: this.data.selectedOptions.slice(),
+      selectedTags: this.cloneSelectedTags(this.data.selectedTags)
+    };
+
+    this._activeProfile = profile;
+    this.setData({
+      session,
+      currentQuestion: null,
+      currentOptions: [],
+      tagGroups: [],
+      isTagQuestion: false,
+      showManualInput: false,
+      selectedOptions: [],
+      selectedTags: this.cloneSelectedTags(emptySelectedTags),
+      answerHistory,
+      selectionHistory,
+      manualAnswer: '',
+      isFinished: false,
+      chatMessages: this.buildChatMessages(session, null),
+      slotSummaryText: this.buildSlotSummaryText(session.slots, session.preferences),
+      summaryFields: this.buildSummaryFields(session),
+      slotItems: this.formatSlotItems(session.slots, session.preferences, session.decisionSheet),
+      prefCheckActive: true,
+      prefCheckTitle: this.buildPrefCheckTitle(profile),
+      prefCheckSummary: '',
+      prefCheckPrompt: '这次要沿用这些偏好吗？',
+      prefCheckChips: this.buildPrefCheckChips(profile),
+      prefSummaryRows: this.buildPrefSummaryRows(profile),
+      prefModifyCount: 0,
+      prefCheckDisclaimer: '',
+      prefModifyActive: false,
+      prefModifyOptions: this.formatPrefModifyOptions([]),
+      selectedPrefModifyActions: [],
+      prefModificationActions: [],
+      pendingPrefill: null,
+      progressPercent: this.buildProgressPercent(session, null)
+    });
+    return true;
+  },
+
+  findLatestRealPreferenceRecordForScenario(scenario) {
+    const records = userMemoryAdapter.getPreferenceRecords();
+
+    for (let index = 0; index < records.length; index += 1) {
+      const record = records[index] || {};
+      if (this.isRealPreferenceRecordForScenario(record, scenario)) {
+        return record;
+      }
+    }
+
+    return null;
+  },
+
+  isRealPreferenceRecordForScenario(record, scenario) {
+    if (!record || record.isMock || record.source === 'mock' || record.source === 'demo' || record.source === 'default') {
+      return false;
+    }
+    if (record.mealPurpose !== scenario) {
+      return false;
+    }
+    return !!(
+      record.budget &&
+      record.distance &&
+      ((record.tasteTags || []).length || (record.needTags || []).length)
+    );
+  },
+
+  normalizePreferenceRecordProfile(record, scenario) {
+    const manualInputs = record.manualInputs || {};
+    return {
+      source: 'record',
+      mealPurpose: record.mealPurpose || scenario,
+      branchPreference: record.branchPreference || '',
+      taste: (record.tasteTags || []).concat(record.needTags || []).join('、'),
+      tasteTags: (record.tasteTags || []).slice(),
+      needTags: (record.needTags || []).slice(),
+      temporaryAvoidTags: (record.temporaryAvoidTags || []).slice(),
+      avoidTags: (record.avoidTags || []).slice(),
+      spicyLevel: record.spicyLevel || '',
+      budget: record.budget || '',
+      distance: record.distance || '',
+      userNotes: record.userNotes || manualInputs['user-notes'] || ''
+    };
   },
 
   prefetchDynamicQuestions(session) {
@@ -1061,6 +1686,7 @@ Page({
           decisionSheet: session.decisionSheet
         });
         recommendations = decorateRecommendationsForDisplay(recommendations);
+        recommendations = decorateWithFavoriteStatus(recommendations);
       } finally {
         wx.hideLoading();
       }
@@ -1202,7 +1828,33 @@ Page({
 
   getQuestionBubbleText(question, session) {
     if (question.id === 'mealPurpose' && !(session.answers || []).length) {
-      return '今天我来帮你快速定一餐～先告诉我，你现在想解决什么吃饭场景？';
+      return '这次是什么用餐场景？';
+    }
+
+    // In modify mode a grouped tag question can render only one of its groups
+    // (via getVisibleTagGroupTypes). Show a prompt matching the visible group
+    // so it isn't misleading — e.g. only 这次不想吃 shown under a 口味/感觉 title.
+    if (question && question.kind === 'tag') {
+      const visibleTypes = this.getVisibleTagGroupTypes(question);
+      if (visibleTypes && visibleTypes.length) {
+        const titleByType = {
+          taste: '这次想吃什么口味/感觉？',
+          need: '这次想吃什么口味/感觉？',
+          temporaryAvoid: '这次有什么不想吃的吗？',
+          avoid: '有什么忌口吗？',
+          spicyLevel: '辣度有什么要求吗？'
+        };
+        const titles = [];
+        visibleTypes.forEach(function (type) {
+          const text = titleByType[type];
+          if (text && titles.indexOf(text) < 0) {
+            titles.push(text);
+          }
+        });
+        if (titles.length === 1) {
+          return titles[0];
+        }
+      }
     }
 
     return question.title;
@@ -1218,7 +1870,14 @@ Page({
   },
 
   formatTagGroups(question, selectedTags) {
-    return (question.groups || []).map(function (group) {
+    const visibleTypes = this.getVisibleTagGroupTypes(question);
+    const groups = visibleTypes
+      ? (question.groups || []).filter(function (group) {
+          return visibleTypes.indexOf(group.type) >= 0;
+        })
+      : (question.groups || []);
+
+    return groups.map(function (group) {
       const selectedIds = selectedTags[group.type] || [];
 
       return {
@@ -1232,6 +1891,38 @@ Page({
         })
       };
     });
+  },
+
+  getVisibleTagGroupTypes(question) {
+    const actions = this.data.prefModificationActions || [];
+
+    if (!question || !actions.length) {
+      return null;
+    }
+
+    if (question.id === 'tag-preferences') {
+      const types = [];
+      if (actions.indexOf('taste-feeling') >= 0) {
+        types.push('taste', 'need');
+      }
+      if (actions.indexOf('temporary-avoid') >= 0) {
+        types.push('temporaryAvoid');
+      }
+      return types.length ? types : null;
+    }
+
+    if (question.id === 'avoid-preferences') {
+      const types = [];
+      if (actions.indexOf('restriction') >= 0) {
+        types.push('avoid');
+      }
+      if (actions.indexOf('spice') >= 0) {
+        types.push('spicyLevel');
+      }
+      return types.length ? types : null;
+    }
+
+    return null;
   },
 
   jumpToQuestionById(questionId, jumpOptions) {
@@ -1554,35 +2245,74 @@ Page({
 
   buildPreferencesFromSelectedTags(question, manualAnswer) {
     const selectedTags = this.data.selectedTags;
-    const tasteTags = tagConfig.getLabelsByIds(selectedTags.taste);
-    const needTags = tagConfig.getLabelsByIds(selectedTags.need);
-    const avoidTags = tagConfig.getLabelsByIds(selectedTags.avoid);
+    const visibleTypes = this.getVisibleTagGroupTypes(question);
+    const questionTypes = ((question && question.groups) || []).map(function (group) { return group.type; });
+    // A field is included only if THIS question actually has a group for it
+    // (and, when a visibility filter is active, that group is visible). This
+    // works for both the grouped questions and the single-field modify
+    // questions, so mergePreferencePatch preserves every field this question
+    // does not ask about.
+    const asksType = function (type) {
+      if (questionTypes.indexOf(type) < 0) {
+        return false;
+      }
+      return !visibleTypes || visibleTypes.indexOf(type) >= 0;
+    };
+    const tasteTags = asksType('taste') ? this.getTagLabelsForQuestion(question, 'taste', selectedTags.taste) : [];
+    const needTags = asksType('need') ? this.getTagLabelsForQuestion(question, 'need', selectedTags.need) : [];
+    const temporaryAvoidTags = asksType('temporaryAvoid')
+      ? this.getTagLabelsForQuestion(question, 'temporaryAvoid', selectedTags.temporaryAvoid)
+      : [];
+    const avoidTags = asksType('avoid') ? this.getTagLabelsForQuestion(question, 'avoid', selectedTags.avoid) : [];
+    const spicyLevel = asksType('spicyLevel')
+      ? this.getTagLabelsForQuestion(question, 'spicyLevel', selectedTags.spicyLevel)[0] || ''
+      : '';
     const manualTags = String(manualAnswer || '').split(/[、,，/ ]+/).filter(function (item) {
       return !!item;
     });
+    const preferences = {};
 
-    if (question && question.id === 'tag-preferences') {
-      manualTags.forEach(function (tag) {
-        if (needTags.indexOf(tag) < 0) {
-          needTags.push(tag);
-        }
+    // Route free-text manual tags into the most relevant field this question asks.
+    manualTags.forEach(function (tag) {
+      if (asksType('temporaryAvoid') && !asksType('taste') && !asksType('need') && !asksType('avoid')) {
+        if (temporaryAvoidTags.indexOf(tag) < 0) { temporaryAvoidTags.push(tag); }
+      } else if (asksType('avoid') && !asksType('taste') && !asksType('need')) {
+        if (avoidTags.indexOf(tag) < 0) { avoidTags.push(tag); }
+      } else if (asksType('need')) {
+        if (needTags.indexOf(tag) < 0) { needTags.push(tag); }
+      } else if (asksType('taste')) {
+        if (tasteTags.indexOf(tag) < 0) { tasteTags.push(tag); }
+      }
+    });
+
+    if (asksType('taste')) { preferences.tasteTags = tasteTags; }
+    if (asksType('need')) { preferences.needTags = needTags; }
+    if (asksType('temporaryAvoid')) { preferences.temporaryAvoidTags = temporaryAvoidTags; }
+    if (asksType('avoid')) { preferences.avoidTags = avoidTags; }
+    if (asksType('spicyLevel')) { preferences.spicyLevel = spicyLevel || ''; }
+
+    return preferences;
+  },
+
+  getTagLabelsForQuestion(question, type, ids) {
+    const matchedGroup = ((question && question.groups) || []).find(function (group) {
+      return group.type === type;
+    });
+    const tags = matchedGroup ? matchedGroup.tags || [] : [];
+    const labels = [];
+
+    (ids || []).forEach(function (id) {
+      const matchedTag = tags.find(function (tag) {
+        return tag.id === id;
       });
-    }
+      const fallbackLabel = tagConfig.getLabelsByIds([id])[0] || '';
+      const label = matchedTag ? matchedTag.label : fallbackLabel;
+      if (label) {
+        labels.push(label);
+      }
+    });
 
-    if (question && question.id === 'avoid-preferences') {
-      manualTags.forEach(function (tag) {
-        if (avoidTags.indexOf(tag) < 0) {
-          avoidTags.push(tag);
-        }
-      });
-    }
-
-    return {
-      tasteTags,
-      needTags,
-      avoidTags,
-      spicyLevel: tagConfig.getLabelsByIds(selectedTags.spicyLevel)[0] || ''
-    };
+    return labels;
   },
 
   toggleAvoidTag(currentValues, tagId, selectedIndex) {
@@ -1606,6 +2336,7 @@ Page({
     return {
       taste: (selectedTags.taste || []).slice(),
       need: (selectedTags.need || []).slice(),
+      temporaryAvoid: (selectedTags.temporaryAvoid || []).slice(),
       avoid: (selectedTags.avoid || []).slice(),
       spicyLevel: (selectedTags.spicyLevel || []).slice()
     };
@@ -1660,6 +2391,10 @@ Page({
         value: (safePreferences.needTags || []).join('、')
       },
       {
+        label: '这次不想吃',
+        value: (safePreferences.temporaryAvoidTags || []).join('、')
+      },
+      {
         label: '忌口',
         value: (safePreferences.avoidTags || []).join('、')
       },
@@ -1674,6 +2409,10 @@ Page({
       {
         label: '距离',
         value: slots.distance || ''
+      },
+      {
+        label: '其他补充',
+        value: slots.userNotes || ''
       }
     ];
   },
@@ -1720,6 +2459,10 @@ Page({
         value: (safePreferences.needTags || []).join('、') || '未选择'
       },
       {
+        label: '这次不想吃',
+        value: (safePreferences.temporaryAvoidTags || []).join('、') || '未选择'
+      },
+      {
         label: '忌口',
         value: (safePreferences.avoidTags || []).join('、') || '未选择'
       },
@@ -1734,6 +2477,10 @@ Page({
       {
         label: '距离',
         value: slots.distance || '待补充'
+      },
+      {
+        label: '其他补充',
+        value: slots.userNotes || '未填写'
       }
     ];
     const dynamicItems = decisionSheet && Array.isArray(decisionSheet.dynamic)
@@ -1758,22 +2505,14 @@ Page({
       branchPreference: slots.branchPreference || '',
       tasteTags: (preferences.tasteTags || []).slice(),
       needTags: (preferences.needTags || []).slice(),
+      temporaryAvoidTags: (preferences.temporaryAvoidTags || []).slice(),
       avoidTags: (preferences.avoidTags || []).slice(),
       spicyLevel: preferences.spicyLevel || '',
       budget: slots.budget || '',
       distance: slots.distance || '',
+      userNotes: slots.userNotes || '',
       manualInputs: Object.assign({}, this.data.manualInputs || {}),
-      recommendations: (recommendations || []).slice(0, 3).map(function (item) {
-        return {
-          id: item.id || '',
-          name: item.name || '',
-          type: item.type || item.category || '',
-          price: item.price || item.perCapita || '',
-          distanceText: item.distanceText || item.distance || '',
-          distanceMeters: item.distanceMeters || ''
-        };
-      }),
-      summaryText: buildPreferenceRecordSummary(slots, this.data.manualInputs || {})
+      summaryText: buildPreferenceRecordSummary(slots, preferences, this.data.manualInputs || {})
     };
   }
 });
@@ -1789,6 +2528,20 @@ function formatAnswerBubbleText(answer, manualText, isTagAnswer) {
 
 function hasUsefulSlotValue(value) {
   return !!value && value !== '待补充' && value !== '未选择';
+}
+
+function splitPreferenceText(text) {
+  return String(text || '').split(/[、,，/ ]+/).filter(function (item) {
+    return !!item && item !== '都可以' && item !== '未选择';
+  });
+}
+
+function formatCompactPreferenceValue(value) {
+  return String(value || '').replace(/\s+/g, '');
+}
+
+function normalizeComparableText(value) {
+  return String(value || '').replace(/\s+/g, '');
 }
 
 function buildConnectionStatusView(status) {
@@ -1832,8 +2585,19 @@ function combineWithManualNote(structuredValue, manualText) {
   return structuredValue + '；补充：' + note;
 }
 
-function buildPreferenceRecordSummary(slots, manualInputs) {
-  const baseTokens = [slots.mealPurpose, slots.branchPreference, slots.budget, slots.distance]
+function buildPreferenceRecordSummary(slots, preferences, manualInputs) {
+  const safePreferences = preferences || {};
+  const baseTokens = [
+    slots.mealPurpose,
+    slots.branchPreference,
+    (safePreferences.tasteTags || []).concat(safePreferences.needTags || []).join('、'),
+    (safePreferences.temporaryAvoidTags || []).join('、'),
+    (safePreferences.avoidTags || []).join('、'),
+    safePreferences.spicyLevel,
+    slots.budget,
+    slots.distance,
+    slots.userNotes
+  ]
     .filter(function (item) { return hasUsefulSlotValue(item); });
   const safeManualInputs = manualInputs || {};
   const manualNotes = Object.keys(safeManualInputs).map(function (id) {
@@ -1859,13 +2623,16 @@ function buildSummaryField(question, index, currentIndex, slots, preferences, ma
     label = '就餐场景';
     value = slots.mealPurpose || '待补充';
   } else if (question.id === 'tag-preferences') {
-    label = '口味偏好';
+    label = '口味/感觉';
     value = buildTasteSummaryValue(preferences) || '未选择';
     isTagField = true;
   } else if (question.id === 'avoid-preferences') {
     label = '忌口';
     value = buildAvoidSummaryValue(preferences) || '未选择';
     isTagField = true;
+  } else if (question.id === 'user-notes') {
+    label = '其他补充';
+    value = slots.userNotes || '未填写';
   } else if (question.slot === 'branchPreference') {
     label = question.label || '就餐偏好';
     value = slots.branchPreference || '待补充';
@@ -1920,7 +2687,10 @@ function getDynamicSummaryValue(decisionSheet, question) {
 
 function buildTasteSummaryValue(preferences) {
   const safePreferences = preferences || {};
-  return (safePreferences.tasteTags || []).concat(safePreferences.needTags || []).join('、');
+  return (safePreferences.tasteTags || [])
+    .concat(safePreferences.needTags || [])
+    .concat(safePreferences.temporaryAvoidTags || [])
+    .join('、');
 }
 
 function buildAvoidSummaryValue(preferences) {
@@ -1963,6 +2733,7 @@ function clonePagePreferences(preferences) {
   return {
     tasteTags: (safePreferences.tasteTags || []).slice(),
     needTags: (safePreferences.needTags || []).slice(),
+    temporaryAvoidTags: (safePreferences.temporaryAvoidTags || []).slice(),
     avoidTags: (safePreferences.avoidTags || []).slice(),
     spicyLevel: safePreferences.spicyLevel || ''
   };
@@ -2026,10 +2797,15 @@ var MEAL_PURPOSE_KEYWORD_MAP = {
   '晚餐': '晚餐',
   '下午茶': '下午茶',
   '夜宵': '夜宵',
-  '随便吃点': '随便吃点',
-  '轻食': '轻食/减脂',
-  '减脂': '轻食/减脂',
-  '没想法': '没想法'
+  '一个人': '一个人随便吃',
+  '随便吃': '一个人随便吃',
+  '随便吃点': '一个人随便吃',
+  '朋友': '和朋友一起吃',
+  '一起吃': '和朋友一起吃',
+  '快餐': '工作日快餐',
+  '工作日': '工作日快餐',
+  '周末': '周末放松吃',
+  '放松': '周末放松吃'
 };
 var MEAL_PURPOSE_KEYWORDS = Object.keys(MEAL_PURPOSE_KEYWORD_MAP);
 
@@ -2045,4 +2821,54 @@ function detectMealPurposeFromText(text) {
     }
   }
   return null;
+}
+
+function loadFavoriteShops() {
+  try {
+    return wx.getStorageSync('yelema_favorite_shops') || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveFavoriteShops(shops) {
+  try {
+    wx.setStorageSync('yelema_favorite_shops', shops || []);
+  } catch (e) {}
+}
+
+function buildFavoriteShopKey(shop) {
+  const name = String(shop.name || '').trim();
+  const addr = String(shop.address || '').trim();
+  if (addr) { return name + '|' + addr; }
+  return name + '|' + String(shop.type || '').trim();
+}
+
+function isShopFavorited(shop, favorites) {
+  const key = buildFavoriteShopKey(shop);
+  return (favorites || []).some(function (f) {
+    return buildFavoriteShopKey(f) === key;
+  });
+}
+
+function buildFavoriteObject(shop) {
+  const obj = { favoritedAt: new Date().toISOString() };
+  if (shop.name) { obj.name = shop.name; }
+  if (shop.type) { obj.type = shop.type; }
+  if (shop.address) { obj.address = shop.address; }
+  if (shop.perCapita !== undefined && shop.perCapita !== null && shop.perCapita !== '') {
+    obj.perCapita = shop.perCapita;
+  }
+  if (shop.perCapitaDisplay) { obj.perCapitaDisplay = shop.perCapitaDisplay; }
+  if (shop.distance) { obj.distance = shop.distance; }
+  if (shop.reason) { obj.reason = shop.reason; }
+  if (shop.matchedTags && shop.matchedTags.length) { obj.matchedTags = shop.matchedTags.slice(); }
+  return obj;
+}
+
+function decorateWithFavoriteStatus(list) {
+  const favorites = loadFavoriteShops();
+  return (list || []).map(function (item) {
+    return Object.assign({}, item, { isFavorited: isShopFavorited(item, favorites) });
+  });
 }
