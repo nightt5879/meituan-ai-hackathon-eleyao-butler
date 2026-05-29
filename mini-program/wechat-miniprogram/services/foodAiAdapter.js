@@ -284,6 +284,20 @@ const modifySpiceQuestion = {
   ]
 };
 
+// Notes / 其他补充 question for the modify flow. Mirrors the page-side
+// userNotesQuestion (same id/slot) so the answer lands in the userNotes slot
+// and existing answer handling stays consistent.
+const modifyNotesQuestion = {
+  id: 'user-notes',
+  kind: 'choice',
+  slot: 'userNotes',
+  label: '其他补充',
+  title: '还有什么想补充的吗？',
+  optional: true,
+  allowEmpty: true,
+  options: ['没有补充']
+};
+
 const budgetOptionsByMealPurpose = {
   '早餐': ['10 元以内', '10-20 元', '20-30 元', '30 元以上'],
   '午餐': ['20 元以内', '20-40 元', '40-60 元', '60 元以上'],
@@ -330,19 +344,32 @@ function resolveBranchQuestions(mealPurpose) {
   return [mealPurposeQuestion].concat(branchQs).concat(trailingQs);
 }
 
+// Find the scenario's own branch-preference question from the normal flow, so
+// modifying "想吃" reuses the same question/options the user would have seen
+// (early breakfast-type, supper-type, etc.) instead of a generic one.
+function findBranchPreferenceQuestion(mealPurpose) {
+  const branchQs = branchQuestionsMap[mealPurpose] || [];
+  for (let index = 0; index < branchQs.length; index += 1) {
+    if (branchQs[index] && branchQs[index].slot === 'branchPreference') {
+      return branchQs[index];
+    }
+  }
+  return null;
+}
+
 // Map a single modify-action key to the one question that asks exactly that
-// field. Used only by the row-level modification flow; budget depends on the
-// meal scene for its options.
+// field. Used only by the row-level modification flow; budget and branch
+// preference depend on the meal scene for their options.
 function buildModifyQuestion(action, mealPurpose) {
   switch (action) {
-    case 'branch-preference': return cuisineQuestion;
+    case 'branch-preference': return findBranchPreferenceQuestion(mealPurpose) || cuisineQuestion;
     case 'taste-feeling': return modifyTasteFeelingQuestion;
     case 'temporary-avoid': return modifyTemporaryAvoidQuestion;
     case 'restriction': return modifyRestrictionQuestion;
     case 'spice': return modifySpiceQuestion;
     case 'budget': return createBudgetQuestion(mealPurpose);
     case 'distance': return distanceQuestion;
-    case 'notes': return userNotesQuestion;
+    case 'notes': return modifyNotesQuestion;
     default: return null;
   }
 }
