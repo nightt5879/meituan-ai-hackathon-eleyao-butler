@@ -114,8 +114,10 @@ const cuisineQuestion = {
 // Branch-specific questions keyed by mealPurpose value.
 // '没想法' has no branch questions — goes straight to common questions.
 const branchQuestionsMap = {
+  // 早餐 uses a shortened chain (Scenario → Breakfast Type → Budget →
+  // Distance → Recommendation). It intentionally skips tasteNeedQuestion;
+  // resolveBranchQuestions also skips avoidQuestion for this scene.
   '早餐': [
-    tasteNeedQuestion,
     {
       id: 'breakfast-type',
       kind: 'multi-choice',
@@ -128,8 +130,9 @@ const branchQuestionsMap = {
   ],
   '午餐': [tasteNeedQuestion, cuisineQuestion],
   '晚餐': [tasteNeedQuestion, cuisineQuestion],
+  // 下午茶 uses the same shortened chain as 早餐 (skips tasteNeedQuestion;
+  // resolveBranchQuestions skips avoidQuestion for this scene too).
   '下午茶': [
-    tasteNeedQuestion,
     {
       id: 'afternoon-tea-type',
       kind: 'multi-choice',
@@ -340,7 +343,12 @@ function createBudgetQuestion(mealPurpose) {
 function resolveBranchQuestions(mealPurpose) {
   var branchQs = branchQuestionsMap[mealPurpose] || [];
   var budgetQuestion = createBudgetQuestion(mealPurpose);
-  var trailingQs = [avoidQuestion, budgetQuestion, distanceQuestion];
+  // 早餐 / 下午茶 use a shortened chain and skip the 忌口/辣度 question.
+  // 午餐 / 晚餐 / 夜宵 keep the full flow (avoid + spiciness).
+  var skipAvoid = mealPurpose === '早餐' || mealPurpose === '下午茶';
+  var trailingQs = skipAvoid
+    ? [budgetQuestion, distanceQuestion]
+    : [avoidQuestion, budgetQuestion, distanceQuestion];
   return [mealPurposeQuestion].concat(branchQs).concat(trailingQs);
 }
 
