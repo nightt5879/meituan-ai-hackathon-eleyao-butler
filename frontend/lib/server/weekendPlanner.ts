@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { promises as fs } from "fs";
 import path from "path";
+import { withFileLock } from "@/lib/server/fileLock";
 
 import { matchWeekendRoutes } from "../weekendData/matchService";
 import type { WeekendRouteMatch, WeekendWeatherCondition, WeekendWeatherLike } from "../weekendData/types";
@@ -247,7 +248,8 @@ function createPlanId() {
 }
 
 function enqueueWrite<T>(operation: () => Promise<T>) {
-  const next = operationQueue.then(operation, operation);
+  const run = () => withFileLock(getStateFilePath(), operation);
+  const next = operationQueue.then(run, run);
   operationQueue = next.catch(() => undefined);
   return next;
 }

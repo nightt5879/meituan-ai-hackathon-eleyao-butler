@@ -22,7 +22,9 @@ export async function POST(_request: Request, { params }: RouteContext) {
   }
 
   try {
-    const recommendation = await generateOpenClawRecommendation(current.task, current.participants, current.conflicts);
+    const recommendation = await generateOpenClawRecommendation(current.task, current.participants, current.conflicts, {
+      taskId
+    });
     const payload = await saveRecommendation(taskId, recommendation);
 
     if (!payload) {

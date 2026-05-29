@@ -132,7 +132,9 @@ function renderTemplate(template, poisById, pois) {
 
   for (const slot of template.slots ?? []) {
     const direct = pois.find((poi) => !selectedIds.has(poi.id) && poiMatchesFilters(poi, slot.poiFilters));
-    const fallback = (slot.fallbackPoiIds ?? []).map((poiId) => poisById.get(poiId)).find(Boolean);
+    const fallback = (slot.fallbackPoiIds ?? [])
+      .map((poiId) => poisById.get(poiId))
+      .find((poi) => poi && !selectedIds.has(poi.id));
     const poi = direct ?? fallback;
 
     if (!poi && slot.required) {
@@ -149,11 +151,21 @@ function renderTemplate(template, poisById, pois) {
     }
   }
 
+  const stopIdsSeen = new Set();
   for (const poiId of template.stopIds ?? []) {
+    if (stopIdsSeen.has(poiId)) {
+      return { ok: false, reason: `stopId "${poiId}" is duplicated` };
+    }
+    stopIdsSeen.add(poiId);
+
     const poi = poisById.get(poiId);
     if (!poi) {
       return { ok: false, reason: `stopId "${poiId}" does not exist` };
     }
+    if (selectedIds.has(poiId)) {
+      return { ok: false, reason: `stopId "${poiId}" duplicates an already selected slot POI` };
+    }
+    selectedIds.add(poiId);
     selected.push({ slot: { id: poi.id, label: "停留点" }, poi, durationMinutes: poi.durationMinutes });
   }
 
@@ -340,7 +352,13 @@ templates.forEach((template) => {
     }
   });
 
+  const stopIdsSeen = new Set();
   (template.stopIds ?? []).forEach((poiId) => {
+    if (stopIdsSeen.has(poiId)) {
+      pushError(errors, `route template ${template.id} stopId "${poiId}" is duplicated.`);
+    }
+    stopIdsSeen.add(poiId);
+
     if (!poisById.has(poiId)) {
       pushError(errors, `route template ${template.id} stopId "${poiId}" does not exist.`);
     }

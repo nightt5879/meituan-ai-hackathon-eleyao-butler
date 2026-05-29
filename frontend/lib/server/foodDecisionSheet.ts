@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process";
+import { buildOpenClawRequestScope, buildScopedOpenClawSessionId, shortHash } from "@/lib/server/openclawSession";
 
 type StringMap = Record<string, unknown>;
 
@@ -57,6 +58,10 @@ export type FoodQuestionPlanResponse = {
   decisionSheet: FoodDecisionSheet;
   source: "openclaw" | "rules";
   message?: string;
+};
+
+type FoodQuestionPlanOptions = {
+  userId?: string;
 };
 
 const DEFAULT_QUESTION_TIMEOUT_MS = 8000;
@@ -126,12 +131,13 @@ export function sanitizeFoodQuestionPlanRequest(input: unknown): FoodQuestionPla
 }
 
 export async function createFoodQuestionPlan(
-  request: FoodQuestionPlanRequest
+  request: FoodQuestionPlanRequest,
+  options: FoodQuestionPlanOptions = {}
 ): Promise<FoodQuestionPlanResponse> {
   const baseSheet = buildFoodDecisionSheet(request);
 
   try {
-    const questions = await generateQuestionsWithOpenClaw(request, baseSheet);
+    const questions = await generateQuestionsWithOpenClaw(request, baseSheet, options);
     const normalizedQuestions = normalizeDynamicQuestions(questions, baseSheet.dynamic);
 
     if (normalizedQuestions.length) {
@@ -252,7 +258,8 @@ function buildRuleQuestions(request: FoodQuestionPlanRequest, sheet: FoodDecisio
 
 async function generateQuestionsWithOpenClaw(
   request: FoodQuestionPlanRequest,
-  sheet: FoodDecisionSheet
+  sheet: FoodDecisionSheet,
+  options: FoodQuestionPlanOptions
 ): Promise<unknown> {
   if (process.env.OPENCLAW_ENABLE_QUESTION_PLAN === "0") {
     throw new Error("OpenClaw question plan disabled.");
@@ -269,10 +276,20 @@ async function generateQuestionsWithOpenClaw(
     "输入:",
     JSON.stringify({ slots: request.slots, preferences: request.preferences, decisionSheet: sheet }, null, 2)
   ].join("\n");
-  const rawContent = await runOpenClawAgentCli(prompt);
+  const rawContent = await runOpenClawAgentCli(prompt, buildQuestionOpenClawSessionId(request, options));
   const parsed = JSON.parse(extractJsonObject(rawContent));
 
   return isRecord(parsed) ? parsed.questions : [];
+}
+
+function buildQuestionOpenClawSessionId(request: FoodQuestionPlanRequest, options: FoodQuestionPlanOptions) {
+  const userPart = options.userId ? `user-${shortHash(options.userId)}` : "anonymous";
+  const mealPart = request.slots.mealPurpose || "unknown-scene";
+  return buildScopedOpenClawSessionId(
+    "meituan-food-questions",
+    ["questions", userPart, mealPart, buildOpenClawRequestScope(request)],
+    { envPrefixes: ["OPENCLAW_QUESTION_SESSION_ID"] }
+  );
 }
 
 function normalizeDynamicQuestions(input: unknown, existingDimensions: FoodDecisionDimension[]) {
@@ -379,15 +396,12 @@ function normalizeKey(value: string) {
   return value.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 40);
 }
 
-function runOpenClawAgentCli(content: string): Promise<string> {
+function runOpenClawAgentCli(content: string, sessionId: string): Promise<string> {
   const timeoutMs = readNumberEnv("OPENCLAW_QUESTION_TIMEOUT_MS", DEFAULT_QUESTION_TIMEOUT_MS);
   const maxResponseChars = readNumberEnv("OPENCLAW_MAX_RESPONSE_CHARS", DEFAULT_MAX_RESPONSE_CHARS);
   const cliPath = process.env.OPENCLAW_CLI_PATH?.trim() || "/home/nightt/.npm-global/bin/openclaw";
   const profile = process.env.OPENCLAW_PROFILE?.trim() || "meituan01";
   const agentId = process.env.OPENCLAW_AGENT_ID?.trim() || "main";
-  const sessionId = process.env.OPENCLAW_QUESTION_SESSION_ID?.trim() ||
-    process.env.OPENCLAW_CHAT_SESSION_ID?.trim() ||
-    "meituan-single-food-questions";
   const timeoutSeconds = Math.max(1, Math.ceil(timeoutMs / 1000));
   const args = [
     "--profile",

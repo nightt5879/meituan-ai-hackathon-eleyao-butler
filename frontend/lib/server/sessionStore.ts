@@ -1,9 +1,11 @@
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from "crypto";
 import { promises as fs } from "fs";
 import path from "path";
+import { withFileLock } from "@/lib/server/fileLock";
 
 const SESSION_TOKEN_PREFIX = "sess_";
 const DEFAULT_SESSION_TTL_DAYS = 30;
+const LAST_SEEN_WRITE_INTERVAL_MS = 60_000;
 
 export type AuthenticatedUser = {
   userId: string;
@@ -113,7 +115,8 @@ async function readDatabase(): Promise<SessionDatabase> {
 }
 
 function enqueueWrite<T>(operation: () => Promise<T>) {
-  const next = operationQueue.then(operation, operation);
+  const run = () => withFileLock(getStateFilePath(), operation);
+  const next = operationQueue.then(run, run);
   operationQueue = next.catch(() => undefined);
   return next;
 }
@@ -209,7 +212,17 @@ export async function getCurrentUserFromRequest(request: Request): Promise<Authe
       return null;
     }
 
-    const timestamp = nowIso();
+    const now = Date.now();
+    const lastSeenAt = Math.max(
+      new Date(session.last_seen_at).getTime() || 0,
+      new Date(user.last_seen_at).getTime() || 0
+    );
+
+    if (lastSeenAt > 0 && now - lastSeenAt < LAST_SEEN_WRITE_INTERVAL_MS) {
+      return toAuthenticatedUser(user);
+    }
+
+    const timestamp = new Date(now).toISOString();
     session.last_seen_at = timestamp;
     user.last_seen_at = timestamp;
     user.updated_at = timestamp;

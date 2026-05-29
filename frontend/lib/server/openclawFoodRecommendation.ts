@@ -1,6 +1,7 @@
 import { execFile } from "node:child_process";
 import type { FoodDecisionSheet } from "@/lib/server/foodDecisionSheet";
 import { sanitizeFoodDecisionSheet } from "@/lib/server/foodDecisionSheet";
+import { buildOpenClawRequestScope, buildScopedOpenClawSessionId, shortHash } from "@/lib/server/openclawSession";
 
 type StringMap = Record<string, unknown>;
 
@@ -54,6 +55,10 @@ export type FoodRecommendRequest = {
 export type FoodRecommendResponse = {
   recommendations: FoodRecommendationCard[];
   source: "openclaw";
+};
+
+type OpenClawFoodOptions = {
+  userId?: string;
 };
 
 const DEFAULT_TIMEOUT_MS = 30000;
@@ -111,10 +116,11 @@ export function sanitizeFoodRecommendRequest(input: unknown): FoodRecommendReque
 }
 
 export async function generateFoodRecommendationsWithOpenClaw(
-  request: FoodRecommendRequest
+  request: FoodRecommendRequest,
+  options: OpenClawFoodOptions = {}
 ): Promise<FoodRecommendResponse> {
   const prompt = buildFoodRecommendationPrompt(request);
-  const rawContent = await runOpenClawAgentCli(prompt);
+  const rawContent = await runOpenClawAgentCli(prompt, buildFoodOpenClawSessionId(request, options));
   const parsed = parseOpenClawRecommendation(rawContent);
   const recommendations = normalizeRecommendations(parsed);
 
@@ -124,6 +130,12 @@ export async function generateFoodRecommendationsWithOpenClaw(
     recommendations,
     source: "openclaw"
   };
+}
+
+function buildFoodOpenClawSessionId(request: FoodRecommendRequest, options: OpenClawFoodOptions) {
+  const userPart = options.userId ? `user-${shortHash(options.userId)}` : "anonymous";
+  const mealPart = request.slots.mealPurpose || "unknown-scene";
+  return buildScopedOpenClawSessionId("meituan-food", ["food", userPart, mealPart, buildOpenClawRequestScope(request)]);
 }
 
 function buildFoodRecommendationPrompt(request: FoodRecommendRequest) {
@@ -185,15 +197,12 @@ function buildOpenClawPromptPayload(request: FoodRecommendRequest) {
   };
 }
 
-function runOpenClawAgentCli(content: string): Promise<string> {
+function runOpenClawAgentCli(content: string, sessionId: string): Promise<string> {
   const timeoutMs = readNumberEnv("OPENCLAW_GATEWAY_TIMEOUT_MS", DEFAULT_TIMEOUT_MS);
   const maxResponseChars = readNumberEnv("OPENCLAW_MAX_RESPONSE_CHARS", DEFAULT_MAX_RESPONSE_CHARS);
   const cliPath = process.env.OPENCLAW_CLI_PATH?.trim() || "/home/nightt/.npm-global/bin/openclaw";
   const profile = process.env.OPENCLAW_PROFILE?.trim() || "meituan01";
   const agentId = process.env.OPENCLAW_AGENT_ID?.trim() || "main";
-  const sessionId = process.env.OPENCLAW_CHAT_SESSION_ID?.trim() ||
-    process.env.OPENCLAW_CHAT_SESSION_KEY?.trim() ||
-    "meituan-single-food";
   const timeoutSeconds = Math.max(1, Math.ceil(timeoutMs / 1000));
   const args = [
     "--profile",
