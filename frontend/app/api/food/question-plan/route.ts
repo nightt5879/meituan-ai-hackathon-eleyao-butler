@@ -24,7 +24,9 @@ export async function POST(request: Request) {
   }
 
   const sanitizedRequest = sanitizeFoodQuestionPlanRequest(body);
-  const result = await createFoodQuestionPlan(sanitizedRequest);
+  const result = await createFoodQuestionPlan(sanitizedRequest, {
+    userId: auth.user.userId
+  });
 
   return NextResponse.json(result);
 }

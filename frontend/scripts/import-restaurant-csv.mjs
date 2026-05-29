@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { promises as fs } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -287,6 +288,21 @@ function normalizeDate(value, rowIndex) {
   return value;
 }
 
+function stableHash(value, length = 10) {
+  return createHash("sha256").update(value).digest("hex").slice(0, length);
+}
+
+function stableManualImportKey(record, inputPath) {
+  return [
+    path.basename(inputPath).toLowerCase(),
+    record["店名"],
+    record["类别"],
+    record["地址"],
+    record["纬度"],
+    record["经度"]
+  ].join("|");
+}
+
 function toRadians(value) {
   return (value * Math.PI) / 180;
 }
@@ -415,8 +431,9 @@ function buildManualShop(record, rowIndex, manualIndex) {
   const manualDishHints = parseList(record["代表菜"]);
   const dishHints = manualDishHints.length > 0 ? manualDishHints : defaults.dishHints;
   const notes = "人工地图整理，菜品后续按类别生成补全";
+  const stableId = stableHash(stableManualImportKey(record, inputPath));
   const shop = {
-    id: `gut_manual_${padNumber(manualIndex)}`,
+    id: `gut_manual_${stableId}`,
     name: record["店名"],
     category: record["类别"],
     cuisines: defaults.cuisines,
@@ -428,7 +445,7 @@ function buildManualShop(record, rowIndex, manualIndex) {
     tags: unique([...defaults.tags, ...dishHints]),
     regionId: "guangzhou_university_town",
     source: "manual_sample",
-    sourceId: `manual_gut_${padNumber(manualIndex)}`,
+    sourceId: `manual_gut_${stableId}`,
     sourceUrl: null,
     collectedAt: today,
     confidence: 0.65,

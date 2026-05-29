@@ -27,7 +27,9 @@ export async function POST(request: Request) {
   const sanitizedRequest = sanitizeFoodRecommendRequest(body);
 
   try {
-    const result = await generateFoodRecommendationsWithOpenClaw(sanitizedRequest);
+    const result = await generateFoodRecommendationsWithOpenClaw(sanitizedRequest, {
+      userId: auth.user.userId
+    });
     return NextResponse.json({
       ...result,
       diagnostics: {

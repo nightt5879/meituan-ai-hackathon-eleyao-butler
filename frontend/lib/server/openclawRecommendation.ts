@@ -1,5 +1,6 @@
 import { execFile } from "child_process";
 import { promisify } from "util";
+import { buildScopedOpenClawSessionId } from "@/lib/server/openclawSession";
 import type { Conflict, DinnerTask, Participant, RecommendationResult, RestaurantCandidate } from "@/lib/types";
 
 const execFileAsync = promisify(execFile);
@@ -8,6 +9,10 @@ const DEFAULT_PROFILE = "meituan01";
 const DEFAULT_AGENT_ID = "main";
 const DEFAULT_SESSION_KEY = "meituan-single-food";
 const DEFAULT_TIMEOUT_SECONDS = 300;
+
+type OpenClawRecommendationOptions = {
+  taskId?: string;
+};
 
 function numberOr(value: unknown, fallback: number) {
   const num = typeof value === "number" ? value : Number(value);
@@ -215,10 +220,15 @@ function buildPrompt(task: DinnerTask, participants: Participant[], conflicts: C
   return `系统角色：你是“饿了幺”多人约饭推荐 Agent。\n\n边界和硬规则：\n- 不能假装访问真实美团、大众点评、地图、商家库存或实时排队数据。\n- 不能说已经预订、下单、联系商家、锁座或确认营业。\n- 你只能基于输入里的 task、participants、conflicts、candidate/mock restaurant data 做保守推荐。\n- 必须只返回 JSON；不要 Markdown；不要 JSON 以外的解释。\n- 必须优先满足预算、忌口、时间、距离等硬约束；无法确认时标记为 risk，不要说成已确认。\n- 必须返回 3 个候选餐厅，final_choice 必须来自 candidates。\n- group_message 要像可以直接复制到微信群的一段话。\n\n输入：\n- task：约饭任务和全局约束。\n- participants：成员偏好和手工填写约束。\n- conflicts：约束冲突。\n- candidate/mock restaurant data：候选/模拟餐厅数据。\n\n输出 JSON schema：\n{\n  "candidates": [\n    {\n      "restaurant_id": "string",\n      "name": "string",\n      "category": "string",\n      "avg_price": 50,\n      "distance_m": 800,\n      "walk_minutes": 10,\n      "open_time": "待确认",\n      "close_time": "待确认",\n      "supports_spicy": true,\n      "supports_non_spicy": true,\n      "is_hotpot": false,\n      "quiet_score": 4,\n      "chat_friendly": true,\n      "queue_risk": "low|medium|high",\n      "rating": 4.5,\n      "member_scores": { "成员名": 80 },\n      "score": 85,\n      "audit": {\n        "passed": true,\n        "hard_rules": {\n          "budget": "pass|fail|risk",\n          "diet": "pass|fail|risk",\n          "time": "pass|fail|risk",\n          "distance": "pass|fail|risk"\n        },\n        "soft_checks": {\n          "queue": "pass|fail|risk",\n          "chat": "pass|fail|risk"\n        },\n        "llm_explanation": "逐项说明预算、忌口、时间、距离、排队、聊天环境的判断"\n      },\n      "reason": "具体说明为什么适合这一组人",\n      "tags": ["预算友好", "不辣可选", "适合聊天"]\n    }\n  ],\n  "final_choice": { "restaurant_id": "必须来自 candidates", "name": "必须来自 candidates", "reason": "string", "risks": ["string"], "backup": "候补餐厅名" },\n  "group_message": "可直接复制到微信群的一段自然中文，说明推荐哪家、预算、距离、不辣/聊天/排队等关键点和需要到店前确认的风险",\n  "normal_ai_message": "简短说明你如何检查了预算、忌口、时间、距离等硬约束"\n}\n\nslots/preferences JSON：\n${JSON.stringify(slots, null, 2)}`;
 }
 
-export async function generateOpenClawRecommendation(task: DinnerTask, participants: Participant[], conflicts: Conflict[]): Promise<RecommendationResult> {
+export async function generateOpenClawRecommendation(
+  task: DinnerTask,
+  participants: Participant[],
+  conflicts: Conflict[],
+  options: OpenClawRecommendationOptions = {}
+): Promise<RecommendationResult> {
   const profile = process.env.OPENCLAW_PROFILE?.trim() || DEFAULT_PROFILE;
   const agentId = process.env.OPENCLAW_AGENT_ID?.trim() || DEFAULT_AGENT_ID;
-  const sessionKey = process.env.OPENCLAW_CHAT_SESSION_KEY?.trim() || DEFAULT_SESSION_KEY;
+  const sessionKey = buildScopedOpenClawSessionId(DEFAULT_SESSION_KEY, ["group", options.taskId || task.task_id]);
   const timeoutSeconds = numberOr(process.env.OPENCLAW_AGENT_TIMEOUT_SECONDS, DEFAULT_TIMEOUT_SECONDS);
   const openclawBin = process.env.OPENCLAW_BIN?.trim() || "/home/nightt/.npm-global/bin/openclaw";
   const prompt = buildPrompt(task, participants, conflicts);
