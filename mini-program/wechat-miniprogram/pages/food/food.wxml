@@ -24,26 +24,6 @@
     </view>
 
     <view class="chat-thread">
-      <view wx:if="{{prefCheckActive}}" class="chat-message butler-message pref-check-message">
-        <view class="message-avatar ai-mark">幺</view>
-        <view class="message-content butler-content">
-          <view class="chat-bubble butler-bubble">{{prefCheckSummary}}</view>
-          <view wx:if="{{prefCheckDisclaimer}}" class="chat-bubble butler-bubble pref-check-disclaimer-bubble">{{prefCheckDisclaimer}}</view>
-          <view class="inline-replies">
-            <view class="quick-list">
-              <view
-                wx:for="{{prefCheckOptions}}"
-                wx:key="action"
-                class="quick-chip pref-check-chip"
-                data-action="{{item.action}}"
-                data-label="{{item.label}}"
-                bindtap="handlePrefCheckOptionTap"
-              >{{item.label}}</view>
-            </view>
-          </view>
-        </view>
-      </view>
-
       <view
         wx:for="{{chatMessages}}"
         wx:key="id"
@@ -91,6 +71,64 @@
         </view>
       </view>
 
+      <view wx:if="{{prefCheckActive}}" class="chat-message butler-message pref-check-message">
+        <view class="message-avatar ai-mark">幺</view>
+        <view class="message-content butler-content">
+          <view class="pref-check-card">
+            <view class="pref-check-title">{{prefCheckTitle}}</view>
+            <view class="pref-summary-block">
+              <view wx:for="{{prefSummaryRows}}" wx:key="key" class="pref-summary-row">
+                <text class="pref-summary-label">{{item.label}}</text>
+                <text class="pref-summary-value">{{item.value}}</text>
+              </view>
+            </view>
+            <view class="pref-check-prompt">{{prefCheckPrompt}}</view>
+            <view wx:if="{{prefCheckDisclaimer}}" class="pref-check-disclaimer">{{prefCheckDisclaimer}}</view>
+          </view>
+          <view class="inline-replies pref-check-actions">
+            <view class="quick-list">
+              <view
+                wx:for="{{prefCheckOptions}}"
+                wx:key="action"
+                class="quick-chip pref-check-chip"
+                data-action="{{item.action}}"
+                data-label="{{item.label}}"
+                bindtap="handlePrefCheckOptionTap"
+              >{{item.label}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{prefModifyActive}}" class="chat-message butler-message pref-modify-message">
+        <view class="message-avatar ai-mark">幺</view>
+        <view class="message-content butler-content">
+          <view class="pref-modify-panel">
+            <view class="pref-modify-title">已为你带入以下偏好：</view>
+            <view class="pref-summary-block pref-summary-interactive">
+              <view
+                wx:for="{{prefSummaryRows}}"
+                wx:key="key"
+                class="pref-summary-row {{item.toggleable && !item.keep ? 'to-modify' : ''}}"
+              >
+                <text class="pref-summary-label">{{item.label}}</text>
+                <text class="pref-summary-value">{{item.value}}</text>
+                <view
+                  wx:if="{{item.toggleable}}"
+                  class="pref-keep-toggle {{item.keep ? 'kept' : 'modify'}}"
+                  data-key="{{item.key}}"
+                  catchtap="handlePrefRowToggle"
+                >{{item.keep ? '保留' : '要修改'}}</view>
+                <text wx:else class="pref-keep-static">本次</text>
+              </view>
+            </view>
+            <view class="pref-modify-hint">默认全部「保留」沿用。点右侧切换为「要修改」，确认后我只会重新问这几项。</view>
+            <button class="pref-modify-submit pref-modify-primary" bindtap="handlePrefUseAllFromModify">直接按这些推荐</button>
+            <button class="pref-modify-submit pref-modify-secondary" disabled="{{prefModifyCount === 0}}" bindtap="handlePrefModifyConfirm">确定修改这些{{prefModifyCount > 0 ? '（' + prefModifyCount + '）' : ''}}</button>
+          </view>
+        </view>
+      </view>
+
       <block wx:if="{{isFinished}}">
         <view class="chat-message butler-message">
           <view class="message-avatar ai-mark">幺</view>
@@ -123,7 +161,10 @@
                 <view wx:if="{{index === 0}}" class="shop-rank">首推</view>
                 <view class="shop-name">{{item.name}}</view>
               </view>
-              <view class="shop-type">{{item.type}}</view>
+              <view class="shop-header-right">
+                <view class="shop-type">{{item.type}}</view>
+                <view class="shop-fav-btn {{item.isFavorited ? 'favorited' : ''}}" catchtap="toggleFavoriteShop" data-index="{{index}}">{{item.isFavorited ? '★' : '☆'}}</view>
+              </view>
             </view>
             <view class="shop-meta">
               <view>{{item.perCapitaDisplay}}</view>

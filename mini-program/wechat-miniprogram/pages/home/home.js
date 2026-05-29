@@ -8,23 +8,28 @@ Page({
     themeCards: [],
     showThemePanel: false,
     showHistoryPanel: false,
+    showFavoritesPanel: false,
     historyRecords: [],
     hasHistoryRecords: false,
-    recentRecordTitle: '还没有推荐记录',
-    recentRecordSummary: '在结果页选择「记住这个偏好」后，我会把偏好和推荐帮你记下来。',
+    recentRecordTitle: '还没有偏好记录',
+    recentRecordSummary: '在结果页选择「记住这个偏好」后，我会把你的偏好帮你记下来。',
     recentRecordTime: '等待体验',
-    recentRecordNames: '暂无'
+    recentRecordNames: '暂无',
+    favoriteShops: [],
+    hasFavoriteShops: false
   },
 
   onLoad() {
     this.syncTheme();
     this.refreshPreferenceRecords();
+    this.refreshFavoriteShops();
     this.ensureLoggedIn();
   },
 
   onShow() {
     this.syncTheme();
     this.refreshPreferenceRecords();
+    this.refreshFavoriteShops();
     this.ensureLoggedIn();
   },
 
@@ -57,12 +62,13 @@ Page({
   refreshPreferenceRecords() {
     const records = userMemoryAdapter.getPreferenceRecords();
     const visibleRecords = records.slice(0, 5).map(function (record, index) {
-      const recommendationNames = formatRecommendationNames(record.recommendations);
+      const title = formatRecordTitle(record);
+      const rawSummary = record.summaryText || buildFallbackSummary(record);
       return {
         id: record.id || ('record_' + index),
         time: formatRecordTime(record.createdAt),
-        summary: record.summaryText || buildFallbackSummary(record),
-        names: recommendationNames,
+        summary: stripMealSceneFromSummary(rawSummary, record.mealPurpose, title),
+        title: title,
         indexText: index + 1
       };
     });
@@ -71,10 +77,10 @@ Page({
     this.setData({
       historyRecords: visibleRecords,
       hasHistoryRecords: visibleRecords.length > 0,
-      recentRecordTitle: firstRecord ? firstRecord.names : '还没有推荐记录',
-      recentRecordSummary: firstRecord ? firstRecord.summary : '在结果页选择「记住这个偏好」后，我会把偏好和推荐帮你记下来。',
+      recentRecordTitle: firstRecord ? firstRecord.title : '还没有偏好记录',
+      recentRecordSummary: firstRecord ? firstRecord.summary : '在结果页选择「记住这个偏好」后，我会把你的偏好帮你记下来。',
       recentRecordTime: firstRecord ? firstRecord.time : '等待体验',
-      recentRecordNames: firstRecord ? firstRecord.names : '暂无'
+      recentRecordNames: firstRecord ? firstRecord.title : '暂无'
     });
   },
 
@@ -154,17 +160,51 @@ Page({
     this.setData({ showHistoryPanel: false });
   },
 
+  openFavoritesPanel() {
+    this.refreshFavoriteShops();
+    this.setData({ showFavoritesPanel: true });
+  },
+
+  closeFavoritesPanel() {
+    this.setData({ showFavoritesPanel: false });
+  },
+
+  refreshFavoriteShops() {
+    try {
+      const all = wx.getStorageSync('yelema_favorite_shops') || [];
+      const recent = all.slice(0, 5);
+      this.setData({ favoriteShops: recent, hasFavoriteShops: recent.length > 0 });
+    } catch (e) {
+      this.setData({ favoriteShops: [], hasFavoriteShops: false });
+    }
+  },
+
   noop() {}
 });
 
-function formatRecommendationNames(recommendations) {
-  const names = (recommendations || []).map(function (item) {
-    return item.name;
-  }).filter(function (name) {
-    return !!name;
-  });
+function formatRecordTitle(record) {
+  return (record && record.mealPurpose) ? record.mealPurpose : '用餐偏好';
+}
 
-  return names.length ? names.join('、') : '暂无推荐';
+// The card title already shows the meal scene (早餐 / 午餐 / 晚餐 / …), so the
+// summary should not repeat it. Drop any leading " · "-separated segment that
+// exactly matches the scene (or the displayed title), keeping every other
+// segment. Guarded so a summary that is ONLY the scene is left intact rather
+// than rendered empty.
+function stripMealSceneFromSummary(summary, mealPurpose, title) {
+  const text = String(summary || '').trim();
+  if (!text) {
+    return text;
+  }
+  const scene = String(mealPurpose || title || '').trim();
+  if (!scene) {
+    return text;
+  }
+  const parts = text.split(' · ');
+  while (parts.length > 1 && parts[0].trim() === scene) {
+    parts.shift();
+  }
+  return parts.join(' · ');
 }
 
 function buildFallbackSummary(record) {

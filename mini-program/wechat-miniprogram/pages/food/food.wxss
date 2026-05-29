@@ -285,6 +285,190 @@
   background: var(--theme-card, #FFFDF8);
 }
 
+.pref-check-card,
+.pref-modify-panel {
+  box-sizing: border-box;
+  width: 590rpx;
+  max-width: 100%;
+  padding: 22rpx;
+  border: 1rpx solid var(--theme-border, #F3DDC7);
+  border-radius: 18rpx;
+  background: var(--theme-card, #FFFDF8);
+  box-shadow: 0 8rpx 22rpx rgba(255, 138, 61, 0.06);
+}
+
+.pref-check-title,
+.pref-modify-title {
+  color: var(--theme-text, #3A2A1A);
+  font-size: 28rpx;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.pref-chip-list,
+.pref-modify-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 16rpx;
+}
+
+.pref-memory-chip {
+  box-sizing: border-box;
+  min-height: 50rpx;
+  padding: 9rpx 18rpx;
+  border: 1rpx solid var(--theme-primary-ghost, #FFF1E3);
+  border-radius: 999rpx;
+  background: var(--theme-primary-ghost, #FFF1E3);
+  color: var(--theme-primary-deep, #FF8A3D);
+  font-size: 23rpx;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.pref-check-prompt {
+  margin-top: 18rpx;
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 25rpx;
+  line-height: 1.5;
+}
+
+.pref-check-disclaimer {
+  margin-top: 10rpx;
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 23rpx;
+  line-height: 1.45;
+}
+
+.pref-check-actions {
+  width: 590rpx;
+}
+
+.pref-modify-submit {
+  width: 100%;
+  margin: 18rpx 0 0;
+  padding: 0;
+  border-radius: 999rpx;
+  background: var(--theme-primary, #FF8A3D);
+  color: var(--theme-on-primary, #ffffff);
+  font-size: 26rpx;
+  line-height: 68rpx;
+}
+
+.pref-modify-submit::after {
+  border: 0;
+}
+
+/* Reused-preference summary — compact label/value rows shown inside the
+   pre-check and 部分修改 cards so the user can see what is being carried over. */
+.pref-summary-block {
+  margin-top: 16rpx;
+  padding: 8rpx 18rpx;
+  border-radius: 14rpx;
+  background: var(--theme-soft, #FFF1E3);
+}
+
+.pref-summary-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14rpx;
+  padding: 9rpx 0;
+  line-height: 1.45;
+}
+
+.pref-summary-row + .pref-summary-row {
+  border-top: 1rpx solid var(--theme-border, rgba(45, 30, 15, 0.06));
+}
+
+.pref-summary-label {
+  flex-shrink: 0;
+  width: 132rpx;
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.pref-summary-value {
+  flex: 1;
+  min-width: 0;
+  color: var(--theme-text, #3A2A1A);
+  font-size: 24rpx;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.pref-modify-hint {
+  margin-top: 16rpx;
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+
+.pref-modify-primary {
+  background: var(--theme-primary, #FF8A3D);
+  color: var(--theme-on-primary, #ffffff);
+}
+
+.pref-modify-secondary {
+  margin-top: 12rpx;
+  border: 1rpx solid var(--theme-border-strong, rgba(45, 30, 15, 0.14));
+  background: var(--theme-card, #FFFDF8);
+  color: var(--theme-muted, #8A6A4F);
+}
+
+.pref-modify-secondary[disabled] {
+  opacity: 0.45;
+}
+
+/* Interactive summary table (部分修改 panel): rows get a right-aligned
+   keep/modify toggle, so vertically center the three columns. */
+.pref-summary-interactive .pref-summary-row {
+  align-items: center;
+}
+
+.pref-summary-interactive .pref-summary-row.to-modify {
+  /* subtle cue that this field will be re-asked */
+  background: var(--theme-primary-ghost, #FFF1E3);
+  margin: 0 -10rpx;
+  padding-left: 10rpx;
+  padding-right: 10rpx;
+  border-radius: 10rpx;
+}
+
+.pref-keep-toggle {
+  box-sizing: border-box;
+  flex-shrink: 0;
+  min-width: 96rpx;
+  padding: 7rpx 18rpx;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.pref-keep-toggle.kept {
+  border: 1rpx solid var(--theme-primary, #FF8A3D);
+  background: var(--theme-primary-ghost, #FFF1E3);
+  color: var(--theme-primary-deep, #FF8A3D);
+}
+
+.pref-keep-toggle.modify {
+  border: 1rpx dashed var(--theme-border-strong, rgba(45, 30, 15, 0.30));
+  background: var(--theme-card, #FFFDF8);
+  color: var(--theme-muted, #8A6A4F);
+}
+
+.pref-keep-static {
+  flex-shrink: 0;
+  min-width: 96rpx;
+  padding: 7rpx 18rpx;
+  color: var(--theme-subtle, #B7A48E);
+  font-size: 22rpx;
+  font-weight: 600;
+  text-align: center;
+}
+
 .quick-list {
   display: flex;
   flex-wrap: wrap;
@@ -453,6 +637,32 @@
   font-weight: 700;
 }
 
+
+.shop-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12rpx;
+  flex-shrink: 0;
+}
+
+.shop-fav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52rpx;
+  height: 52rpx;
+  border-radius: 50%;
+  background: var(--theme-bg-soft, #F5EFE4);
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 28rpx;
+  line-height: 1;
+}
+
+.shop-fav-btn.favorited {
+  color: var(--theme-primary, #E8743A);
+  background: var(--theme-primary-ghost, #FFF1E3);
+}
 .shop-meta {
   display: flex;
   flex-wrap: wrap;

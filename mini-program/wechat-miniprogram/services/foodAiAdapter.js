@@ -35,19 +35,41 @@ let lastRecommendationMeta = {
 const defaultPreferences = {
   tasteTags: [],
   needTags: [],
+  temporaryAvoidTags: [],
   avoidTags: [],
   spicyLevel: ''
 };
 
 // ─── Question Definitions ──────────────────────────────────────────────────
 
+const temporaryAvoidTags = [
+  { id: 'temp_avoid_fried', label: '不想吃油炸', type: 'temporaryAvoid' },
+  { id: 'temp_avoid_spicy', label: '不想吃太辣', type: 'temporaryAvoid' },
+  { id: 'temp_avoid_rice', label: '不想吃米饭', type: 'temporaryAvoid' },
+  { id: 'temp_avoid_noodles', label: '不想吃面', type: 'temporaryAvoid' },
+  { id: 'temp_avoid_soup_noodles', label: '不想吃汤粉', type: 'temporaryAvoid' },
+  { id: 'temp_avoid_sweet', label: '不想吃甜口', type: 'temporaryAvoid' },
+  { id: 'temp_avoid_cold', label: '不想吃冷食', type: 'temporaryAvoid' },
+  { id: 'temp_avoid_heavy', label: '不想吃重口', type: 'temporaryAvoid' }
+];
+
+const dietaryRestrictionTags = [
+  { id: 'avoid_cilantro', label: '不要香菜', type: 'avoid' },
+  { id: 'avoid_garlic', label: '不要葱蒜', type: 'avoid' },
+  { id: 'avoid_seafood', label: '不吃海鲜', type: 'avoid' },
+  { id: 'avoid_offal', label: '不吃内脏', type: 'avoid' },
+  { id: 'avoid_beef_lamb', label: '不吃牛羊肉', type: 'avoid' },
+  { id: 'avoid_allergy', label: '过敏/不能吃', type: 'avoid' },
+  { id: 'avoid_none', label: '没有忌口', type: 'avoid' }
+];
+
 const mealPurposeQuestion = {
   id: 'mealPurpose',
   kind: 'choice',
   slot: 'mealPurpose',
   label: '就餐场景',
-  title: '这次你想解决什么吃饭场景？',
-  options: ['早餐', '午餐', '晚餐', '下午茶', '夜宵', '随便吃点', '轻食/减脂', '没想法']
+  title: '这次是什么用餐场景？',
+  options: ['早餐', '午餐', '晚餐', '夜宵', '下午茶', '一个人随便吃', '和朋友一起吃', '工作日快餐', '周末放松吃']
 };
 
 // Shared tag question reused by 午餐 and 晚餐 branches.
@@ -69,6 +91,12 @@ const tasteNeedQuestion = {
       type: 'need',
       mode: 'multiple',
       tags: tagConfig.getTagsByType('need')
+    },
+    {
+      title: '这次不想吃',
+      type: 'temporaryAvoid',
+      mode: 'multiple',
+      tags: temporaryAvoidTags
     }
   ]
 };
@@ -87,6 +115,7 @@ const cuisineQuestion = {
 // '没想法' has no branch questions — goes straight to common questions.
 const branchQuestionsMap = {
   '早餐': [
+    tasteNeedQuestion,
     {
       id: 'breakfast-type',
       kind: 'multi-choice',
@@ -100,6 +129,7 @@ const branchQuestionsMap = {
   '午餐': [tasteNeedQuestion, cuisineQuestion],
   '晚餐': [tasteNeedQuestion, cuisineQuestion],
   '下午茶': [
+    tasteNeedQuestion,
     {
       id: 'afternoon-tea-type',
       kind: 'multi-choice',
@@ -111,6 +141,7 @@ const branchQuestionsMap = {
     }
   ],
   '夜宵': [
+    tasteNeedQuestion,
     {
       id: 'supper-type',
       kind: 'multi-choice',
@@ -121,7 +152,35 @@ const branchQuestionsMap = {
       options: ['都可以', '烧烤', '炸串/炸鸡', '粉面', '麻辣烫', '小吃', '甜品', '粥']
     }
   ],
+  '一个人随便吃': [
+    tasteNeedQuestion,
+    {
+      id: 'solo-casual-preference',
+      kind: 'multi-choice',
+      slot: 'branchPreference',
+      label: '就餐偏好',
+      title: '更希望这顿饭怎么样？',
+      allowEmpty: true,
+      options: ['都可以', '近一点', '便宜一点', '快一点', '清淡点', '管饱', '不油腻']
+    }
+  ],
+  '和朋友一起吃': [tasteNeedQuestion, cuisineQuestion],
+  '工作日快餐': [
+    tasteNeedQuestion,
+    {
+      id: 'workday-fast-preference',
+      kind: 'multi-choice',
+      slot: 'branchPreference',
+      label: '快餐偏好',
+      title: '工作日快餐更看重什么？',
+      allowEmpty: true,
+      options: ['都可以', '快一点', '近一点', '便宜一点', '米饭套餐', '粉面', '轻食', '管饱']
+    }
+  ],
+  '周末放松吃': [tasteNeedQuestion, cuisineQuestion],
+  // Legacy keys kept so old records/manual aliases can still resolve safely.
   '随便吃点': [
+    tasteNeedQuestion,
     {
       id: 'casual-preference',
       kind: 'multi-choice',
@@ -133,6 +192,7 @@ const branchQuestionsMap = {
     }
   ],
   '轻食/减脂': [
+    tasteNeedQuestion,
     {
       id: 'light-meal-type',
       kind: 'multi-choice',
@@ -143,7 +203,7 @@ const branchQuestionsMap = {
       options: ['都可以', '沙拉', '粥', '高蛋白', '少油少盐', '不油腻', '轻负担', '清淡']
     }
   ],
-  '没想法': []
+  '没想法': [tasteNeedQuestion]
 };
 
 // Common questions appended to every branch.
@@ -151,15 +211,15 @@ const avoidQuestion = {
   id: 'avoid-preferences',
   kind: 'tag',
   label: '忌口/辣度',
-  title: '有什么不吃的吗？',
+  title: '有什么忌口或辣度要求吗？',
   optional: true,
   allowEmpty: true,
   groups: [
     {
-      title: '忌口/不想吃',
+      title: '忌口',
       type: 'avoid',
       mode: 'multiple',
-      tags: tagConfig.getTagsByType('avoid')
+      tags: dietaryRestrictionTags
     },
     {
       title: '辣度偏好',
@@ -170,12 +230,84 @@ const avoidQuestion = {
   ]
 };
 
+// ── Fine-grained single-field questions used ONLY by the row-level
+// modification flow (food.js startModifyOnlyFlow). They are NEVER inserted
+// into branchQuestionsMap, so the normal new-user flow keeps the grouped
+// tasteNeedQuestion / avoidQuestion above. Each asks exactly one field, so
+// "只改这一项" really renders only that one item.
+const modifyTasteFeelingQuestion = {
+  id: 'taste-feeling',
+  kind: 'tag',
+  label: '口味/感觉',
+  title: '这次想吃什么口味/感觉？',
+  optional: true,
+  allowEmpty: true,
+  groups: [
+    { title: '口味偏好', type: 'taste', mode: 'multiple', tags: tagConfig.getTagsByType('taste') },
+    { title: '当前想吃的感觉', type: 'need', mode: 'multiple', tags: tagConfig.getTagsByType('need') }
+  ]
+};
+
+const modifyTemporaryAvoidQuestion = {
+  id: 'temporary-avoid',
+  kind: 'tag',
+  label: '这次不想吃',
+  title: '这次有什么不想吃的吗？',
+  optional: true,
+  allowEmpty: true,
+  groups: [
+    { title: '这次不想吃', type: 'temporaryAvoid', mode: 'multiple', tags: temporaryAvoidTags }
+  ]
+};
+
+const modifyRestrictionQuestion = {
+  id: 'restriction',
+  kind: 'tag',
+  label: '忌口',
+  title: '有什么忌口吗？',
+  optional: true,
+  allowEmpty: true,
+  groups: [
+    { title: '忌口', type: 'avoid', mode: 'multiple', tags: dietaryRestrictionTags }
+  ]
+};
+
+const modifySpiceQuestion = {
+  id: 'spice',
+  kind: 'tag',
+  label: '辣度',
+  title: '辣度有什么要求吗？',
+  optional: true,
+  allowEmpty: true,
+  groups: [
+    { title: '辣度偏好', type: 'spicyLevel', mode: 'single', tags: tagConfig.getTagsByType('spicyLevel') }
+  ]
+};
+
+// Notes / 其他补充 question for the modify flow. Mirrors the page-side
+// userNotesQuestion (same id/slot) so the answer lands in the userNotes slot
+// and existing answer handling stays consistent.
+const modifyNotesQuestion = {
+  id: 'user-notes',
+  kind: 'choice',
+  slot: 'userNotes',
+  label: '其他补充',
+  title: '还有什么想补充的吗？',
+  optional: true,
+  allowEmpty: true,
+  options: ['没有补充']
+};
+
 const budgetOptionsByMealPurpose = {
   '早餐': ['10 元以内', '10-20 元', '20-30 元', '30 元以上'],
   '午餐': ['20 元以内', '20-40 元', '40-60 元', '60 元以上'],
   '晚餐': ['30 元以内', '30-60 元', '60-100 元', '100 元以上'],
   '下午茶': ['15 元以内', '15-30 元', '30-50 元', '50 元以上'],
   '夜宵': ['20 元以内', '20-40 元', '40-70 元', '70 元以上'],
+  '一个人随便吃': ['15 元以内', '15-30 元', '30-50 元', '50 元以上'],
+  '和朋友一起吃': ['30 元以内', '30-60 元', '60-100 元', '100 元以上'],
+  '工作日快餐': ['20 元以内', '20-40 元', '40-60 元', '60 元以上'],
+  '周末放松吃': ['30 元以内', '30-60 元', '60-100 元', '100 元以上'],
   '随便吃点': ['15 元以内', '15-30 元', '30-50 元', '50 元以上'],
   '轻食/减脂': ['20 元以内', '20-40 元', '40-70 元', '70 元以上'],
   '没想法': ['20 元以内', '20-40 元', '40-70 元', '预算不重要']
@@ -207,10 +339,39 @@ function createBudgetQuestion(mealPurpose) {
 // totalQuestions is always resolvedQuestions.length — never manually counted.
 function resolveBranchQuestions(mealPurpose) {
   var branchQs = branchQuestionsMap[mealPurpose] || [];
-  var skipAvoid = mealPurpose === '早餐' || mealPurpose === '下午茶';
   var budgetQuestion = createBudgetQuestion(mealPurpose);
-  var trailingQs = skipAvoid ? [budgetQuestion, distanceQuestion] : [avoidQuestion, budgetQuestion, distanceQuestion];
+  var trailingQs = [avoidQuestion, budgetQuestion, distanceQuestion];
   return [mealPurposeQuestion].concat(branchQs).concat(trailingQs);
+}
+
+// Find the scenario's own branch-preference question from the normal flow, so
+// modifying "想吃" reuses the same question/options the user would have seen
+// (early breakfast-type, supper-type, etc.) instead of a generic one.
+function findBranchPreferenceQuestion(mealPurpose) {
+  const branchQs = branchQuestionsMap[mealPurpose] || [];
+  for (let index = 0; index < branchQs.length; index += 1) {
+    if (branchQs[index] && branchQs[index].slot === 'branchPreference') {
+      return branchQs[index];
+    }
+  }
+  return null;
+}
+
+// Map a single modify-action key to the one question that asks exactly that
+// field. Used only by the row-level modification flow; budget and branch
+// preference depend on the meal scene for their options.
+function buildModifyQuestion(action, mealPurpose) {
+  switch (action) {
+    case 'branch-preference': return findBranchPreferenceQuestion(mealPurpose) || cuisineQuestion;
+    case 'taste-feeling': return modifyTasteFeelingQuestion;
+    case 'temporary-avoid': return modifyTemporaryAvoidQuestion;
+    case 'restriction': return modifyRestrictionQuestion;
+    case 'spice': return modifySpiceQuestion;
+    case 'budget': return createBudgetQuestion(mealPurpose);
+    case 'distance': return distanceQuestion;
+    case 'notes': return modifyNotesQuestion;
+    default: return null;
+  }
 }
 
 function createInitialSession() {
@@ -317,8 +478,9 @@ function answerQuestion(session, answer) {
 }
 
 function answerTagQuestion(session, question, answer) {
-  const answerPreferences = normalizePreferences(answer && answer.preferences);
-  const nextPreferences = Object.assign(clonePreferences(session.preferences), answerPreferences);
+  const preferencePatch = answer && answer.preferences ? answer.preferences : {};
+  const answerPreferences = normalizePreferences(preferencePatch);
+  const nextPreferences = mergePreferencePatch(session.preferences, preferencePatch);
   const nextSlots = Object.assign({}, session.slots, {
     taste: buildTasteSlot(nextPreferences),
     taboo: buildAvoidSlot(nextPreferences)
@@ -419,6 +581,7 @@ function buildDecisionSheet(slots, preferences, dynamicDimensions) {
       safePreferences.tasteTags.concat(safePreferences.needTags).join('、'),
       false
     ),
+    buildDecisionDimension('temporaryAvoid', '这次不想吃', safePreferences.temporaryAvoidTags.join('、'), false),
     buildDecisionDimension('avoid', '忌口', safePreferences.avoidTags.join('、'), true),
     buildDecisionDimension('spicyLevel', '辣度', safePreferences.spicyLevel, true),
     buildDecisionDimension('budget', '预算', safeSlots.budget, true),
@@ -1109,6 +1272,7 @@ function buildRemoteRecommendationPayload(slots, preferences, options) {
   if (canUseTaste) {
     requestPreferences.tasteTags = safePreferences.tasteTags.slice();
     requestPreferences.needTags = safePreferences.needTags.slice();
+    requestPreferences.temporaryAvoidTags = safePreferences.temporaryAvoidTags.slice();
   }
 
   const payload = {
@@ -1321,11 +1485,16 @@ function getEligibleShops(preferences) {
 
 function hasHardRisk(shop, preferences) {
   const avoidTags = getEffectiveAvoidTags(preferences);
+  const avoidRisk = shop.avoidRisk || [];
   const hasAvoidRisk = avoidTags.some(function (tag) {
-    return shop.avoidRisk.indexOf(tag) >= 0;
+    return avoidRisk.indexOf(tag) >= 0;
   });
 
   if (hasAvoidRisk) {
+    return true;
+  }
+
+  if (shouldTemporarilyAvoidShop(shop, preferences)) {
     return true;
   }
 
@@ -1341,12 +1510,16 @@ function hasHardRisk(shop, preferences) {
 // Scoring bonuses by mealPurpose, keyed on existing shop.category and shop.tags fields.
 // 没想法 returns 0 (diversity is handled in generateRecommendations instead).
 const mealPurposeScoringMap = {
-  '早餐':      { categories: ['粥店', '粉面', '轻食'],              tags: ['热乎的', '汤汤水水', '清淡', '轻负担'] },
-  '午餐':      { categories: ['简餐', '快餐', '湘菜'],              tags: ['饱腹感强', '下饭', '咸香'] },
-  '晚餐':      { categories: ['湘菜', '粉面', '粥店', '麻辣烫'],    tags: ['下饭', '饱腹感强', '热乎的', '浓郁'] },
-  '下午茶':    { categories: ['轻食'],                               tags: ['清淡', '轻负担', '爽口', '酸甜'] },
-  '夜宵':      { categories: ['粉面', '麻辣烫', '快餐'],            tags: ['香辣', '麻辣', '解馋', '热乎的'] },
-  '轻食/减脂': { categories: ['轻食', '粥店'],                      tags: ['清淡', '不油腻', '轻负担', '少油少盐', '爽口'] }
+  '早餐':        { categories: ['粥店', '粉面', '轻食'],              tags: ['热乎的', '汤汤水水', '清淡', '轻负担'] },
+  '午餐':        { categories: ['简餐', '快餐', '湘菜'],              tags: ['饱腹感强', '下饭', '咸香'] },
+  '晚餐':        { categories: ['湘菜', '粉面', '粥店', '麻辣烫'],    tags: ['下饭', '饱腹感强', '热乎的', '浓郁'] },
+  '下午茶':      { categories: ['轻食'],                              tags: ['清淡', '轻负担', '爽口', '酸甜'] },
+  '夜宵':        { categories: ['粉面', '麻辣烫', '快餐'],            tags: ['香辣', '麻辣', '解馋', '热乎的'] },
+  '一个人随便吃': { categories: ['简餐', '粉面', '粥店', '轻食'],       tags: ['近一点', '快一点', '饱腹感强', '不油腻'] },
+  '和朋友一起吃': { categories: ['湘菜', '粉面', '麻辣烫', '快餐'],     tags: ['解馋', '下饭', '热乎的', '浓郁'] },
+  '工作日快餐':   { categories: ['简餐', '快餐', '粉面', '轻食'],       tags: ['快一点', '饱腹感强', '不油腻'] },
+  '周末放松吃':   { categories: ['湘菜', '粉面', '麻辣烫', '粥店'],     tags: ['解馋', '热乎的', '浓郁', '下饭'] },
+  '轻食/减脂':   { categories: ['轻食', '粥店'],                      tags: ['清淡', '不油腻', '轻负担', '少油少盐', '爽口'] }
 };
 
 // Branch option → shop category (soft scoring only, never hard filter).
@@ -1620,7 +1793,8 @@ function hasLightPreference(slots, preferences) {
   const preferenceText = [
     slots.branchPreference,
     (preferences.tasteTags || []).join('、'),
-    (preferences.needTags || []).join('、')
+    (preferences.needTags || []).join('、'),
+    (preferences.temporaryAvoidTags || []).join('、')
   ].join('、');
 
   return ['清淡', '清淡点', '轻负担', '不油腻', '少油少盐'].some(function (tag) {
@@ -1650,11 +1824,28 @@ function buildAvoidSlot(preferences) {
 }
 
 function buildTagAnswerText(question, preferences) {
-  if (question.id === 'tag-preferences') {
-    return preferences.tasteTags.concat(preferences.needTags).join('、');
+  const types = ((question && question.groups) || []).map(function (group) { return group.type; });
+
+  // Legacy grouped questions with no detectable groups → original behavior.
+  if (!types.length) {
+    if (question.id === 'tag-preferences') {
+      return preferences.tasteTags
+        .concat(preferences.needTags)
+        .concat(preferences.temporaryAvoidTags)
+        .join('、');
+    }
+    return buildAvoidSlot(preferences);
   }
 
-  return buildAvoidSlot(preferences);
+  // Generic: include only the fields this question actually asks about, so a
+  // single-field modify question shows just that field's tags.
+  const parts = [];
+  if (types.indexOf('taste') >= 0) { parts.push.apply(parts, preferences.tasteTags || []); }
+  if (types.indexOf('need') >= 0) { parts.push.apply(parts, preferences.needTags || []); }
+  if (types.indexOf('temporaryAvoid') >= 0) { parts.push.apply(parts, preferences.temporaryAvoidTags || []); }
+  if (types.indexOf('avoid') >= 0) { parts.push.apply(parts, preferences.avoidTags || []); }
+  if (types.indexOf('spicyLevel') >= 0 && preferences.spicyLevel) { parts.push(preferences.spicyLevel); }
+  return parts.filter(function (part) { return !!part; }).join('、');
 }
 
 function normalizePreferences(preferences) {
@@ -1663,9 +1854,33 @@ function normalizePreferences(preferences) {
   return {
     tasteTags: safePreferences.tasteTags || [],
     needTags: safePreferences.needTags || [],
+    temporaryAvoidTags: safePreferences.temporaryAvoidTags || [],
     avoidTags: safePreferences.avoidTags || [],
     spicyLevel: safePreferences.spicyLevel || ''
   };
+}
+
+function mergePreferencePatch(basePreferences, patch) {
+  const next = clonePreferences(basePreferences);
+  const safePatch = patch || {};
+
+  if (safePatch.tasteTags !== undefined) {
+    next.tasteTags = (safePatch.tasteTags || []).slice();
+  }
+  if (safePatch.needTags !== undefined) {
+    next.needTags = (safePatch.needTags || []).slice();
+  }
+  if (safePatch.temporaryAvoidTags !== undefined) {
+    next.temporaryAvoidTags = (safePatch.temporaryAvoidTags || []).slice();
+  }
+  if (safePatch.avoidTags !== undefined) {
+    next.avoidTags = (safePatch.avoidTags || []).slice();
+  }
+  if (safePatch.spicyLevel !== undefined) {
+    next.spicyLevel = safePatch.spicyLevel || '';
+  }
+
+  return next;
 }
 
 function normalizeAdjustmentOptions(adjustment, batchIndex) {
@@ -1685,6 +1900,7 @@ function clonePreferences(preferences) {
   return {
     tasteTags: safePreferences.tasteTags.slice(),
     needTags: safePreferences.needTags.slice(),
+    temporaryAvoidTags: safePreferences.temporaryAvoidTags.slice(),
     avoidTags: safePreferences.avoidTags.slice(),
     spicyLevel: safePreferences.spicyLevel
   };
@@ -1694,6 +1910,56 @@ function getEffectiveAvoidTags(preferences) {
   return (preferences.avoidTags || []).filter(function (tag) {
     return tag !== '没有忌口';
   });
+}
+
+function getEffectiveTemporaryAvoidTags(preferences) {
+  return (preferences.temporaryAvoidTags || []).filter(function (tag) {
+    return !!tag;
+  });
+}
+
+function shouldTemporarilyAvoidShop(shop, preferences) {
+  const temporaryAvoids = getEffectiveTemporaryAvoidTags(preferences);
+
+  return temporaryAvoids.some(function (tag) {
+    return isTemporaryAvoidMatch(shop, tag);
+  });
+}
+
+function isTemporaryAvoidMatch(shop, tag) {
+  const text = [
+    shop.name,
+    shop.category,
+    (shop.tags || []).join('、')
+  ].join('、');
+  const avoidRisk = shop.avoidRisk || [];
+
+  if (tag === '不想吃油炸') {
+    return avoidRisk.indexOf('不吃油炸') >= 0 || text.indexOf('炸') >= 0 || shop.category === '快餐';
+  }
+  if (tag === '不想吃太辣') {
+    return isSpicyShop(shop);
+  }
+  if (tag === '不想吃米饭') {
+    return text.indexOf('饭') >= 0 || shop.category === '简餐' || shop.category === '湘菜';
+  }
+  if (tag === '不想吃面') {
+    return text.indexOf('面') >= 0;
+  }
+  if (tag === '不想吃汤粉') {
+    return text.indexOf('粉') >= 0 || text.indexOf('汤汤水水') >= 0;
+  }
+  if (tag === '不想吃甜口') {
+    return text.indexOf('酸甜') >= 0 || text.indexOf('甜') >= 0;
+  }
+  if (tag === '不想吃冷食') {
+    return shop.category === '轻食' && text.indexOf('热乎的') < 0;
+  }
+  if (tag === '不想吃重口') {
+    return isHeavyTasteShop(shop);
+  }
+
+  return false;
 }
 
 function shouldAvoidSpicy(preferences) {
@@ -1827,6 +2093,7 @@ module.exports = {
   createInitialSession,
   getNextQuestion,
   answerQuestion,
+  buildModifyQuestion,
   goBack,
   shouldPrefetchDynamicQuestions,
   markDynamicQuestionPlanLoading,

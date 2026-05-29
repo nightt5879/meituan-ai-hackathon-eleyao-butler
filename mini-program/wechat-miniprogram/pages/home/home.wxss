@@ -261,7 +261,12 @@
 
 .panel-mask {
   position: fixed;
-  inset: 0;
+  /* Explicit edges instead of `inset: 0` — `inset` shorthand is unreliable on
+     older iOS WeChat webviews and could leave the mask unanchored. */
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 20;
   display: flex;
   align-items: flex-end;
@@ -271,11 +276,14 @@
 .bottom-panel {
   box-sizing: border-box;
   width: 100%;
+  max-width: 100%;
   max-height: 82vh;
   padding: 30rpx 30rpx calc(34rpx + env(safe-area-inset-bottom));
   border-radius: 34rpx 34rpx 0 0;
   background: var(--theme-bg, #FBF6EF);
   overflow-y: auto;
+  /* Smooth momentum scrolling inside the sheet on iOS instead of the page. */
+  -webkit-overflow-scrolling: touch;
 }
 
 .panel-header {
@@ -284,6 +292,13 @@
   justify-content: space-between;
   gap: 24rpx;
   margin-bottom: 26rpx;
+}
+
+/* Let the title/description column shrink so the round close button always
+   stays pinned top-right and never gets squeezed by long copy. */
+.panel-header-copy {
+  flex: 1;
+  min-width: 0;
 }
 
 .panel-title {
@@ -313,14 +328,17 @@
 }
 
 .theme-grid {
-  display: flex;
-  flex-wrap: wrap;
+  /* CSS Grid is far more reliable than flex + calc(50% - 9rpx) for a fixed
+     2-column layout on real devices; minmax(0, 1fr) stops long content from
+     pushing a card past its column and breaking the row. */
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18rpx;
 }
 
 .theme-card {
   box-sizing: border-box;
-  width: calc(50% - 9rpx);
+  width: 100%;
   overflow: hidden;
   border: 2rpx solid var(--theme-border, rgba(45, 30, 15, 0.08));
   border-radius: 26rpx;
@@ -580,4 +598,79 @@
 .theme-dark .memory-icon {
   background: rgba(255, 159, 67, 0.18);
   color: var(--theme-primary, #FF9F43);
+}
+
+.favorites-block {
+  margin-top: 28rpx;
+  margin-bottom: 48rpx;
+}
+
+.favorites-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18rpx;
+  color: var(--theme-subtle, #9A8F83);
+  font-size: 24rpx;
+}
+
+.favorites-empty {
+  padding: 26rpx 28rpx;
+  border: 1rpx solid var(--theme-border, rgba(45, 30, 15, 0.08));
+  border-radius: 24rpx;
+  background: var(--theme-card, #FFFFFF);
+  text-align: center;
+}
+
+.favorites-empty-title {
+  color: var(--theme-text, #1F1A15);
+  font-size: 26rpx;
+  font-weight: 700;
+  margin-bottom: 8rpx;
+}
+
+.favorites-empty-desc {
+  color: var(--theme-muted, #6B6157);
+  font-size: 23rpx;
+  line-height: 1.55;
+}
+
+.favorites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.fav-item {
+  padding: 22rpx 24rpx;
+  border: 1rpx solid var(--theme-border, rgba(45, 30, 15, 0.08));
+  border-radius: 22rpx;
+  background: var(--theme-card, #FFFFFF);
+}
+
+.fav-name {
+  color: var(--theme-text, #1F1A15);
+  font-size: 27rpx;
+  font-weight: 700;
+}
+
+.fav-detail-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 10rpx;
+}
+
+.fav-meta {
+  color: var(--theme-muted, #6B6157);
+  font-size: 23rpx;
+}
+
+.fav-tag {
+  padding: 3rpx 12rpx;
+  border-radius: 999rpx;
+  background: var(--theme-primary-ghost, #FFF1E3);
+  color: var(--theme-primary-deep, #FF8A3D);
+  font-size: 22rpx;
+  font-weight: 700;
 }

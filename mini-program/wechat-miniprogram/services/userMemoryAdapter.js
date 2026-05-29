@@ -74,6 +74,7 @@ const defaultMemory = {
   preferences: {
     tasteTags: [],
     needTags: [],
+    temporaryAvoidTags: [],
     avoidTags: [],
     spicyLevel: ''
   },
@@ -232,13 +233,17 @@ function buildProfileFromBehaviorSource(source, gates, sourceName) {
   const safeGates = gates || getBehaviorProfilePermissions();
   const tasteTags = safeGates.taste ? (safeSource.tasteTags || []).slice() : [];
   const needTags = safeGates.taste ? (safeSource.needTags || []).slice() : [];
+  const temporaryAvoidTags = safeGates.taste ? (safeSource.temporaryAvoidTags || []).slice() : [];
 
   return {
+    mealPurpose: safeSource.mealPurpose || '',
+    branchPreference: safeSource.branchPreference || '',
     taste: safeGates.taste
       ? (safeSource.taste || tasteTags.concat(needTags).join('、') || '')
       : '',
     tasteTags,
     needTags,
+    temporaryAvoidTags,
     avoidTags: safeGates.taste ? (safeSource.avoidTags || []).slice() : [],
     spicyLevel: safeGates.taste ? (safeSource.spicyLevel || '') : '',
     budget: safeGates.budget ? (safeSource.budget || '') : '',
@@ -253,6 +258,7 @@ function buildStablePreferenceProfile(stablePreferences) {
     taste: '',
     tasteTags: [],
     needTags: [],
+    temporaryAvoidTags: [],
     avoidTags: normalizeAvoidTagsForRecommendation(stable.avoidTags),
     spicyLevel: stable.spicyLevel || '',
     budget: '',
@@ -288,6 +294,7 @@ function buildLongTermPreferenceProfile(memory, stablePreferences) {
     taste: (prefs.tasteTags || []).concat(prefs.needTags || []).join('、') || safeMemory.preferredTaste || '',
     tasteTags: (prefs.tasteTags || []).slice(),
     needTags: (prefs.needTags || []).slice(),
+    temporaryAvoidTags: (prefs.temporaryAvoidTags || []).slice(),
     avoidTags: stableAvoidTags.length ? stableAvoidTags : (prefs.avoidTags || []).slice(),
     spicyLevel: stableSpicyLevel || prefs.spicyLevel || '',
     budget: slots.budget || safeMemory.commonBudget || '',
@@ -330,6 +337,7 @@ function updateUserMemory(answerOrSlots) {
   const nextPreferences = Object.assign({}, currentMemory.preferences, {
     tasteTags: preferences.tasteTags || currentMemory.preferences.tasteTags,
     needTags: preferences.needTags || currentMemory.preferences.needTags,
+    temporaryAvoidTags: preferences.temporaryAvoidTags || currentMemory.preferences.temporaryAvoidTags || [],
     avoidTags: preferences.avoidTags || currentMemory.preferences.avoidTags,
     spicyLevel: preferences.spicyLevel || currentMemory.preferences.spicyLevel
   });
@@ -420,6 +428,7 @@ function hasUserMemory(memory) {
     safeMemory.commonDistance ||
     (preferences.tasteTags || []).length ||
     (preferences.needTags || []).length ||
+    (preferences.temporaryAvoidTags || []).length ||
     (preferences.avoidTags || []).length ||
     preferences.spicyLevel ||
     lastSlots.mealPurpose ||
@@ -468,12 +477,14 @@ function normalizePreferenceRecord(record) {
     branchPreference: safeRecord.branchPreference || '',
     tasteTags: (safeRecord.tasteTags || []).slice(),
     needTags: (safeRecord.needTags || []).slice(),
+    temporaryAvoidTags: (safeRecord.temporaryAvoidTags || []).slice(),
     avoidTags: (safeRecord.avoidTags || []).slice(),
     spicyLevel: safeRecord.spicyLevel || '',
     budget: safeRecord.budget || '',
     distance: safeRecord.distance || '',
+    userNotes: safeRecord.userNotes || '',
     manualInputs: Object.assign({}, safeRecord.manualInputs || {}),
-    recommendations: normalizeRecordRecommendations(safeRecord.recommendations),
+    recommendations: [],
     summaryText: safeRecord.summaryText || buildRecordSummaryText(safeRecord)
   };
 }
@@ -495,8 +506,13 @@ function buildRecordSummaryText(record) {
   return [
     record.mealPurpose,
     record.branchPreference,
+    (record.tasteTags || []).concat(record.needTags || []).join('、'),
+    (record.temporaryAvoidTags || []).join('、'),
+    (record.avoidTags || []).join('、'),
+    record.spicyLevel,
     record.budget,
-    record.distance
+    record.distance,
+    record.userNotes
   ].filter(function (item) {
     return !!item && item !== '未选择';
   }).join(' · ') || '一次吃饭偏好';
@@ -587,6 +603,7 @@ function hasUsefulPreferenceProfile(profile) {
     profile.distance ||
     (profile.tasteTags || []).length ||
     (profile.needTags || []).length ||
+    (profile.temporaryAvoidTags || []).length ||
     (profile.avoidTags || []).length ||
     profile.spicyLevel
   );
