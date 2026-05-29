@@ -40,6 +40,24 @@ function pushError(errors, message) {
   errors.push(message);
 }
 
+function validateUniqueField(errors, items, field, label) {
+  const seen = new Map();
+
+  items.forEach((item, index) => {
+    const value = item?.[field];
+    if (!required(value)) {
+      return;
+    }
+
+    if (seen.has(value)) {
+      pushError(errors, `${label} ${field} "${value}" is duplicated at item ${index + 1}; first seen at item ${seen.get(value) + 1}.`);
+      return;
+    }
+
+    seen.set(value, index);
+  });
+}
+
 function normalizePolygon(points) {
   const center = {
     latitude: points.reduce((sum, point) => sum + point.latitude, 0) / points.length,
@@ -202,6 +220,13 @@ const featuresByShopId = new Map();
 const sceneFitByShopId = new Map();
 const districtById = new Map((businessDistrictFile.businessDistricts ?? []).map((district) => [district.id, district]));
 const campusAnchors = businessDistrictFile.campusAnchors?.anchors ?? [];
+
+validateUniqueField(errors, metaFile.sources ?? [], "id", "data source");
+validateUniqueField(errors, regions, "id", "region");
+validateUniqueField(errors, shops, "id", "shop");
+validateUniqueField(errors, dishes, "id", "dish");
+validateUniqueField(errors, features, "shopId", "shop-feature");
+validateUniqueField(errors, sceneFits, "shopId", "scene-fit");
 
 [
   ...syntheticShops.map((entity) => ["synthetic shop", entity]),

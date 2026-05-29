@@ -1184,6 +1184,37 @@ Page({
     this.jumpToQuestionById(questionId);
   },
 
+  handleRecommendationError(error) {
+    if (isAuthRequiredError(error)) {
+      userIdentityAdapter.clearIdentity();
+      this.setData({
+        isRecommendationLoading: false,
+        recommendationNotice: '登录已过期，请重新登录后再生成推荐。',
+        connectionStatus: buildConnectionStatusView({
+          state: 'degraded',
+          text: '登录已过期',
+          detail: '服务端 session 已失效，需要重新登录。'
+        })
+      });
+      wx.showToast({ title: '登录已过期，请重新登录', icon: 'none' });
+      userIdentityAdapter.requireLoginRedirect('/pages/food/food');
+      return true;
+    }
+
+    const message = error && error.message ? error.message : String(error || '生成失败');
+    this.setData({
+      isRecommendationLoading: false,
+      recommendationNotice: '生成推荐失败，请稍后重试。',
+      connectionStatus: buildConnectionStatusView({
+        state: 'degraded',
+        text: '推荐生成失败',
+        detail: message
+      })
+    });
+    wx.showToast({ title: '生成推荐失败，请稍后重试', icon: 'none' });
+    return true;
+  },
+
   async handleRefreshRecommendations() {
     const currentRecommendations = this.data.recommendations || [];
     const currentIds = currentRecommendations.map(function (item) {
@@ -1206,6 +1237,9 @@ Page({
       );
       nextRecommendations = decorateRecommendationsForDisplay(nextRecommendations);
       nextRecommendations = decorateWithFavoriteStatus(nextRecommendations);
+    } catch (error) {
+      this.handleRecommendationError(error);
+      return;
     } finally {
       wx.hideLoading();
     }
@@ -1349,6 +1383,9 @@ Page({
       );
       nextRecommendations = decorateRecommendationsForDisplay(nextRecommendations);
       nextRecommendations = decorateWithFavoriteStatus(nextRecommendations);
+    } catch (error) {
+      this.handleRecommendationError(error);
+      return;
     } finally {
       wx.hideLoading();
     }
@@ -1640,7 +1677,28 @@ Page({
         slotItems: this.formatSlotItems(mergedSession.slots, mergedSession.preferences, mergedSession.decisionSheet),
         progressPercent: this.buildProgressPercent(mergedSession, currentQuestion)
       });
-    }).catch(() => {});
+    }).catch((error) => {
+      if (isAuthRequiredError(error)) {
+        this.handleRecommendationError(error);
+        return;
+      }
+
+      const currentSession = this.data.session;
+      if (!currentSession || !currentSession.dynamicQuestionPlan) {
+        return;
+      }
+
+      this.setData({
+        session: Object.assign({}, currentSession, {
+          dynamicQuestionPlan: {
+            status: 'failed',
+            requested: true,
+            source: '',
+            message: error && error.message ? error.message : String(error || '')
+          }
+        })
+      });
+    });
   },
 
   toggleOption(value) {
@@ -1687,6 +1745,9 @@ Page({
         });
         recommendations = decorateRecommendationsForDisplay(recommendations);
         recommendations = decorateWithFavoriteStatus(recommendations);
+      } catch (error) {
+        this.handleRecommendationError(error);
+        return;
       } finally {
         wx.hideLoading();
       }
@@ -2757,6 +2818,16 @@ function uniqueList(items) {
   });
 
   return result;
+}
+
+function isAuthRequiredError(error) {
+  if (!error) { return false; }
+  const statusCode = error.statusCode || error.status || error.code;
+  if (statusCode === 401 || statusCode === '401' || statusCode === 'AUTH_REQUIRED') {
+    return true;
+  }
+  const message = String(error.message || error.errMsg || '');
+  return /AUTH_REQUIRED|Wechat login required|login required|401/i.test(message);
 }
 
 function parseAvoidTagsFromText(text) {

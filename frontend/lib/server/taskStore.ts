@@ -3,6 +3,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import { demoTask, demoTaskId } from "@/lib/mockData";
 import { buildMockParticipant, buildMockTitle, detectConflicts, extractBudgetMax, extractConstraints, generateMockRecommendation } from "@/lib/mockFunctions";
+import { withFileLock } from "@/lib/server/fileLock";
 import type { Conflict, DinnerTask, Participant, ParticipantInput, RecommendationResult, RecommendationState, StoredTaskFields } from "@/lib/types";
 
 type TaskRecord = StoredTaskFields & {
@@ -203,7 +204,8 @@ async function readDatabase(): Promise<TaskDatabase> {
 }
 
 function enqueueWrite<T>(operation: () => Promise<T>) {
-  const next = operationQueue.then(operation, operation);
+  const run = () => withFileLock(getStateFilePath(), operation);
+  const next = operationQueue.then(run, run);
   operationQueue = next.catch(() => undefined);
   return next;
 }
@@ -413,6 +415,10 @@ function markRecordRecommendationDirty(record: TaskRecord, dirtyReason: Recommen
   record.updated_at = nowIso();
 }
 
+function isGroupTaskRecord(record: TaskRecord) {
+  return Boolean(record.owner_user_id || record.invite_token_hash);
+}
+
 export async function createTask(input: Partial<StoredTaskFields>) {
   return enqueueWrite(async () => {
     const database = await readDatabase();
@@ -458,7 +464,11 @@ export async function getTask(taskId: string) {
   const database = await readDatabase();
   const record = database.tasks[taskId];
 
-  return record ? toPayload(record) : null;
+  if (!record || isGroupTaskRecord(record)) {
+    return null;
+  }
+
+  return toPayload(record);
 }
 
 export async function getGroupTaskBoard(taskId: string, inviteToken: string): Promise<GroupTaskResult<GroupTaskBoard>> {
@@ -500,7 +510,7 @@ export async function addOrUpdateParticipant(taskId: string, input: ParticipantI
     const database = await readDatabase();
     const record = database.tasks[taskId];
 
-    if (!record) {
+    if (!record || isGroupTaskRecord(record)) {
       return null;
     }
 
@@ -572,7 +582,7 @@ export async function deleteParticipant(taskId: string, participantId: string) {
     const database = await readDatabase();
     const record = database.tasks[taskId];
 
-    if (!record) {
+    if (!record || isGroupTaskRecord(record)) {
       return null;
     }
 
@@ -589,7 +599,7 @@ export async function saveRecommendation(taskId: string, recommendation?: Recomm
     const database = await readDatabase();
     const record = database.tasks[taskId];
 
-    if (!record) {
+    if (!record || isGroupTaskRecord(record)) {
       return null;
     }
 
@@ -644,6 +654,10 @@ export async function saveGroupRecommendation(taskId: string, inviteToken: strin
 
 export async function resetDemoTask(taskId = demoTaskId) {
   return enqueueWrite(async () => {
+    if (taskId !== demoTaskId) {
+      return null;
+    }
+
     const database = await readDatabase();
     const record = createDemoRecord(taskId);
 
