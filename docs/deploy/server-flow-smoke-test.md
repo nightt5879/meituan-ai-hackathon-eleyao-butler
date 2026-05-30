@@ -33,6 +33,7 @@ export MEITUAN_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj
 export MEITUAN_AUTH_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/wechat-auth-sessions.json
 export MEITUAN_USER_PROFILE_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/user-profiles.json
 export MEITUAN_WEEKEND_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/weekend-plans.json
+export MEITUAN_OPENCLAW_FEED_AUDIT_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/openclaw-feed-audit.json
 ```
 
 OpenClaw 相关配置保持在服务端：
@@ -43,6 +44,8 @@ export OPENCLAW_PROFILE=meituan01
 export OPENCLAW_AGENT_ID=main
 export OPENCLAW_CHAT_SESSION_ID=meituan-single-food
 export OPENCLAW_CHAT_SESSION_KEY=meituan-single-food
+export OPENCLAW_GATEWAY_TIMEOUT_MS=130000
+export OPENCLAW_DATA_FEED_TIMEOUT_MS=60000
 ```
 
 如果使用 Gateway token，也只放在服务端环境变量里：
@@ -74,6 +77,26 @@ npm run verify:server-flow -- --base-url https://meituan-ai-hackathon.cn
 默认不会调用 `/api/food/recommend`，也就是不会正式递交 OpenClaw 生成推荐。
 
 需要二阶段验证 OpenClaw 推荐时，再显式加开关：
+
+```bash
+npm run verify:server-flow -- --base-url https://meituan-ai-hackathon.cn --include-openclaw-recommend
+```
+
+需要验证三条业务数据通路都能喂给 OpenClaw 时，使用更完整的开关：
+
+```bash
+npm run verify:server-flow -- --base-url https://meituan-ai-hackathon.cn --include-openclaw-feed
+```
+
+这个模式只做轻量上下文投递，不要求 OpenClaw 生成完整推荐。投递给 OpenClaw 的内容是短 prompt + JSON 摘要 + payload digest，不会把完整 task/routes/profile 大对象原样塞进 prompt。它会验证：
+
+1. 单人「今天吃什么」推荐 prompt 带上 `user_profile`、`food_preferences`、`food_decision_sheet` 和当前请求上下文。
+2. 多人约饭推荐 prompt 带上 `group_task`、`participants`、`conflicts` 和候选餐厅上下文。
+3. 周末规划生成后向 OpenClaw 投递 `weekend_request`、`weather_context`、`route_candidates` 和规划来源上下文。
+
+接口响应只暴露 `traceId`、`sessionRef`、`contextBlocks`、`status` 等诊断字段，不暴露 openid、session token、服务器路径或真实密钥。服务端会额外写入 `.data/openclaw-feed-audit.json`，可通过 `MEITUAN_OPENCLAW_FEED_AUDIT_FILE` 覆盖路径。
+
+如果需要让 OpenClaw 真正生成单人推荐，再单独使用：
 
 ```bash
 npm run verify:server-flow -- --base-url https://meituan-ai-hackathon.cn --include-openclaw-recommend

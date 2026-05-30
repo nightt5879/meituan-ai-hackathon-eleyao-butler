@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { promises as fs } from "fs";
 import path from "path";
 import { withFileLock } from "@/lib/server/fileLock";
+import type { OpenClawDataFeedResult } from "@/lib/server/openclawDataFeed";
 
 import { matchWeekendRoutes } from "../weekendData/matchService";
 import type { WeekendRouteMatch, WeekendWeatherCondition, WeekendWeatherLike } from "../weekendData/types";
@@ -131,6 +132,7 @@ export type WeekendPlanResponse = {
     poi: "mock-school-area" | "weekend-synthetic-mvp";
     planner: "rules-v1" | "weekend-data-rules-v1";
   };
+  openclawContext?: OpenClawDataFeedResult;
 };
 
 const mockPlaces: WeekendPlace[] = [

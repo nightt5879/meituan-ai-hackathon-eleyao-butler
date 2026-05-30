@@ -40,6 +40,7 @@ export MEITUAN_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj
 export MEITUAN_AUTH_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/wechat-auth-sessions.json
 export MEITUAN_USER_PROFILE_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/user-profiles.json
 export MEITUAN_WEEKEND_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/weekend-plans.json
+export MEITUAN_OPENCLAW_FEED_AUDIT_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/openclaw-feed-audit.json
 export MEITUAN_REMOTE_API_BASE_URL=https://meituan-ai-hackathon.cn
 ```
 
@@ -51,6 +52,8 @@ export OPENCLAW_PROFILE=meituan01
 export OPENCLAW_AGENT_ID=main
 export OPENCLAW_CHAT_SESSION_ID=meituan-single-food
 export OPENCLAW_CHAT_SESSION_KEY=meituan-single-food
+export OPENCLAW_GATEWAY_TIMEOUT_MS=130000
+export OPENCLAW_DATA_FEED_TIMEOUT_MS=60000
 # export OPENCLAW_GATEWAY_TOKEN=服务器现有 token
 ```
 
@@ -116,3 +119,21 @@ npm run verify:server-flow -- --base-url https://meituan-ai-hackathon.cn --inclu
 ```
 
 如果这一步失败，但第 6 步通过，说明账号、记忆和三功能主链路已经通，问题集中在 OpenClaw 推荐生成阶段。
+
+## 8. 验证三条业务通路喂给 OpenClaw
+
+如果要确认不只是单人推荐，而是单人、多人、周末三条数据通路都能把服务端上下文提交给 OpenClaw，执行：
+
+```bash
+npm run verify:server-flow -- --base-url https://meituan-ai-hackathon.cn --include-openclaw-feed
+```
+
+这个模式只做轻量上下文投递，不让 OpenClaw 完整生成推荐。发送给 OpenClaw 的是短 prompt + JSON 摘要 + payload digest，避免把完整 task/routes/profile 大对象塞进 prompt 导致验证卡住。
+
+预期输出里会看到：
+
+- `food OpenClaw context`：单人推荐 prompt 已包含画像和当前决策上下文。
+- `group OpenClaw context`：多人约饭 prompt 已包含任务、成员偏好和冲突上下文。
+- `weekend OpenClaw context`：周末规划生成后已向 OpenClaw 投递路线、天气和规划来源上下文。
+
+服务端诊断字段只返回 `traceId`、`sessionRef`、`contextBlocks` 和提交状态，不返回 openid、session token、服务器路径或密钥。默认审计文件为 `.data/openclaw-feed-audit.json`；线上建议通过 `MEITUAN_OPENCLAW_FEED_AUDIT_FILE` 指到稳定状态目录。
