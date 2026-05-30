@@ -117,7 +117,7 @@ Invoke-RestMethod "$base/api/group-tasks/$($task.taskId)/recommend" -Method POST
 小程序端配置后端 origin：
 
 ```js
-groupDiningApiBaseUrl: 'https://your-backend.example.com'
+groupDiningApiBaseUrl: 'https://meituan-ai-hackathon.cn'
 ```
 
 ## 小程序单人约饭 OpenClaw 配置
@@ -144,7 +144,7 @@ $env:OPENCLAW_AGENT_ID="agent-id"
 小程序端只配置后端 origin，例如在 `mini-program/wechat-miniprogram/app.js` 里设置：
 
 ```js
-foodRecommendApiBaseUrl: 'https://your-backend.example.com'
+foodRecommendApiBaseUrl: 'https://meituan-ai-hackathon.cn'
 ```
 
 OpenClaw Gateway token 只放后端环境变量，不能写进小程序。

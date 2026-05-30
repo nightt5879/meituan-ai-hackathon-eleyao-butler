@@ -9,13 +9,13 @@ App({
     currentUserId: '',
     sessionToken: '',
     currentTheme: themeAdapter.DEFAULT_THEME_ID,
-    // Development / real-device debugging backend origin for the single-person
-    // food recommendation flow. Experience build and production still require HTTPS.
-    // Leave empty to use the local mock recommendation fallback only.
-    authApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
-    foodRecommendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
-    groupDiningApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
-    weekendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
+    // Production backend origin. Keep all mini-program API calls on the same
+    // HTTPS domain so account/session, profile memory, food, group dining, and
+    // weekend planning share one server-side data path.
+    authApiBaseUrl: 'https://meituan-ai-hackathon.cn',
+    foodRecommendApiBaseUrl: 'https://meituan-ai-hackathon.cn',
+    groupDiningApiBaseUrl: 'https://meituan-ai-hackathon.cn',
+    weekendApiBaseUrl: 'https://meituan-ai-hackathon.cn',
     // Group dining adapter mode: 'auto' | 'real' | 'mock'.
     // - 'auto'  : try real backend first; fall back to local mock on failure.
     // - 'real'  : real backend only; surface errors to the page.
@@ -32,25 +32,9 @@ App({
     this.globalData.sessionToken = userIdentityAdapter.getSessionToken();
     this.applyTheme(themeAdapter.getCurrentThemeKey(), { silent: true });
 
-    // Auto-select a safe group dining mode based on the runtime build channel.
-    // Experience (trial) and production (release) versions cannot reach the
-    // current HTTP backend, so default them to 'mock' to keep the feature
-    // usable. Developer tools / preview keep 'auto' so real-backend
-    // integration can still be tested. A storage override
-    // ('MINIPROGRAM_API_MODE') still wins inside the adapter.
-    try {
-      const accountInfo = typeof wx.getAccountInfoSync === 'function'
-        ? wx.getAccountInfoSync()
-        : null;
-      const envVersion = accountInfo
-        && accountInfo.miniProgram
-        && accountInfo.miniProgram.envVersion;
-      if (envVersion === 'trial' || envVersion === 'release') {
-        this.globalData.groupDiningMode = 'mock';
-      }
-    } catch (error) {
-      console.warn('[app] detect envVersion failed', error);
-    }
+    // With the final HTTPS domain configured in the WeChat backend whitelist,
+    // trial/release builds should also try the real backend first. A storage
+    // override ('MINIPROGRAM_API_MODE') can still force mock mode when needed.
   },
 
   getCurrentTheme() {

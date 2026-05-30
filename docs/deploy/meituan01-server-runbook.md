@@ -4,7 +4,7 @@
 
 已知线上入口：
 
-- 公网域名：`http://meituan.43-110-71-200.sslip.io`
+- 公网域名：`https://meituan-ai-hackathon.cn`
 - Nginx 反代：`127.0.0.1:3001`
 - 历史生产工作目录：`/home/nightt/.openclaw/workspace-meituan01/meituan_prj_main/frontend`
 - 当前验证分支：`nightt5879/issue-94-web-single-experience`
@@ -40,6 +40,7 @@ export MEITUAN_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj
 export MEITUAN_AUTH_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/wechat-auth-sessions.json
 export MEITUAN_USER_PROFILE_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/user-profiles.json
 export MEITUAN_WEEKEND_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/weekend-plans.json
+export MEITUAN_REMOTE_API_BASE_URL=https://meituan-ai-hackathon.cn
 ```
 
 OpenClaw 环境变量沿用服务器现有配置。不要把 token 写进仓库：
@@ -77,6 +78,7 @@ kill <3001监听进程PID>
 nohup npm run start >/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/next-start.log 2>&1 &
 sleep 3
 curl -i http://127.0.0.1:3001/api/health
+curl -i https://meituan-ai-hackathon.cn/api/health
 ```
 
 如果你用 pm2/systemd 管理服务，改为用对应方式 restart，关键是保留第 3 步的环境变量。
@@ -86,13 +88,13 @@ curl -i http://127.0.0.1:3001/api/health
 默认验证不会调用 `/api/food/recommend` 正式递交 OpenClaw 推荐：
 
 ```bash
-npm run verify:server-flow -- --base-url http://meituan.43-110-71-200.sslip.io
+npm run verify:server-flow -- --base-url https://meituan-ai-hackathon.cn
 ```
 
 预期全部 PASS，最后显示：
 
 ```text
-All server flow checks passed for http://meituan.43-110-71-200.sslip.io
+All server flow checks passed for https://meituan-ai-hackathon.cn
 ```
 
 这代表以下链路已在同一个线上域名下跑通：
@@ -110,7 +112,7 @@ All server flow checks passed for http://meituan.43-110-71-200.sslip.io
 确认默认信息流 PASS 后，再显式递交一次 OpenClaw 推荐：
 
 ```bash
-npm run verify:server-flow -- --base-url http://meituan.43-110-71-200.sslip.io --include-openclaw-recommend
+npm run verify:server-flow -- --base-url https://meituan-ai-hackathon.cn --include-openclaw-recommend
 ```
 
 如果这一步失败，但第 6 步通过，说明账号、记忆和三功能主链路已经通，问题集中在 OpenClaw 推荐生成阶段。
