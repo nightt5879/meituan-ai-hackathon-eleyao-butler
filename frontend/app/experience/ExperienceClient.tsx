@@ -202,6 +202,32 @@ type WeekendPlan = {
 };
 
 type ApiError = Error & { status?: number; code?: string };
+type FoodConnectionStatus = {
+  text: string;
+  className: string;
+  openclawReachable: boolean;
+  detail?: string;
+};
+type FoodPingResponse = {
+  ok?: boolean;
+  service?: string;
+  checkedAt?: string;
+};
+type FoodStatusResponse = {
+  backend?: {
+    ok?: boolean;
+    checkedAt?: string;
+  };
+  openclaw?: {
+    ok?: boolean;
+    configured?: boolean;
+    cliReachable?: boolean;
+    gatewayReachable?: boolean;
+    gatewayUrl?: string;
+    mode?: string;
+    detail?: string;
+  };
+};
 
 type FoodTagType = "taste" | "need" | "temporaryAvoid" | "avoid" | "spicyLevel";
 type FoodQuestionKind = "choice" | "multi-choice" | "tag";
@@ -237,6 +263,11 @@ type PrefSummaryRow = {
 };
 
 const identityKey = "meituan_web_demo_identity";
+const defaultFoodConnectionStatus: FoodConnectionStatus = {
+  text: "正在检测远端 OpenClaw",
+  className: "status-checking",
+  openclawReachable: false
+};
 const defaultMemory: MemorySettings = {
   avoidTags: [],
   spicyLevel: "看当天心情",
@@ -941,6 +972,7 @@ export default function ExperienceClient() {
   const [foodFinished, setFoodFinished] = useState(false);
   const [foodLoading, setFoodLoading] = useState(false);
   const [foodNotice, setFoodNotice] = useState("");
+  const [foodConnection, setFoodConnection] = useState<FoodConnectionStatus>(defaultFoodConnectionStatus);
   const [recommendations, setRecommendations] = useState<RecommendationCard[]>([]);
   const [adjustmentText, setAdjustmentText] = useState("");
   const [showAdjustmentOptions, setShowAdjustmentOptions] = useState(false);
@@ -1044,6 +1076,11 @@ export default function ExperienceClient() {
     setRecords(safeJsonParse(window.localStorage.getItem(storageKey(identity.userId, "records")), []));
     setFavorites(safeJsonParse(window.localStorage.getItem(storageKey(identity.userId, "favorites")), []));
   }, [identity]);
+
+  useEffect(() => {
+    if (view !== "food") return;
+    void refreshFoodConnectionStatus();
+  }, [view]);
 
   function persistMemory(next: MemorySettings) {
     if (!identity) return;
@@ -1162,6 +1199,67 @@ export default function ExperienceClient() {
       return true;
     }
     return false;
+  }
+
+  async function refreshFoodConnectionStatus() {
+    const checking = defaultFoodConnectionStatus;
+    setFoodConnection(checking);
+
+    let pingOk = false;
+
+    try {
+      const ping = await requestJson<FoodPingResponse>("/api/remote/food/ping");
+      pingOk = Boolean(ping.ok);
+    } catch {
+      pingOk = false;
+    }
+
+    try {
+      const status = await requestJson<FoodStatusResponse>("/api/remote/food/status");
+      const backendOk = Boolean(status.backend?.ok || pingOk);
+      const gatewayReachable = Boolean(status.openclaw?.gatewayReachable);
+      const openclawReachable = Boolean(status.openclaw?.ok || gatewayReachable);
+      const detail = status.openclaw?.detail || status.openclaw?.gatewayUrl || status.backend?.checkedAt;
+      const nextStatus = openclawReachable
+        ? {
+            text: gatewayReachable ? "远端 OpenClaw Gateway 可达" : "远端 OpenClaw 已连接",
+            className: "status-connected",
+            openclawReachable: true,
+            detail
+          }
+        : backendOk
+          ? {
+              text: "远端 API 可达，OpenClaw 状态待确认",
+              className: "status-backend-only",
+              openclawReachable: false,
+              detail
+            }
+          : {
+              text: "远端推荐服务未连通",
+              className: "status-error",
+              openclawReachable: false,
+              detail
+            };
+
+      setFoodConnection(nextStatus);
+      return nextStatus;
+    } catch (error) {
+      const nextStatus = pingOk
+        ? {
+            text: "远端 API ping 可达，OpenClaw 状态未返回",
+            className: "status-backend-only",
+            openclawReachable: false,
+            detail: error instanceof Error ? error.message : String(error)
+          }
+        : {
+            text: "远端推荐服务未连通",
+            className: "status-error",
+            openclawReachable: false,
+            detail: error instanceof Error ? error.message : String(error)
+          };
+      setFoodConnection(nextStatus);
+      return nextStatus;
+    }
   }
 
   function goHome() {
@@ -1664,7 +1762,9 @@ export default function ExperienceClient() {
       if (handleAuthError(error)) return;
       setRecommendations(normalizeCards(await rankLocalRestaurants(excludeIds, slots, prefs), favorites));
       setBatchIndex(nextBatch);
-      setFoodNotice("OpenClaw 暂不可用，已切换本地推荐兜底。");
+      setFoodNotice(foodConnection.openclawReachable
+        ? "远端 OpenClaw Gateway 可达；当前本地 Web 预览未完成一次管家推荐，已先使用本地餐厅库兜底。"
+        : "OpenClaw 暂不可用，已切换本地推荐兜底。");
     } finally {
       setFoodLoading(false);
       setAdjustmentText("");
@@ -2120,9 +2220,9 @@ export default function ExperienceClient() {
             <button className="header-back-hit" onClick={goHome} type="button"><span className="header-back-button">‹</span></button>
             <div className="food-nav-title">今天吃什么</div>
           </div>
-          <button className="header-online-status status-connected" type="button">
+          <button className={`header-online-status ${foodConnection.className}`} onClick={() => void refreshFoodConnectionStatus()} title={foodConnection.detail} type="button">
             <span className="header-online-dot"></span>
-            <span className="header-online-text">{foodNotice || "OpenClaw 已连接"}</span>
+            <span className="header-online-text">{foodConnection.text}</span>
           </button>
         </div>
 

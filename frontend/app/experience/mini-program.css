@@ -905,6 +905,19 @@
   box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.12);
 }
 
+.header-online-status.status-checking .header-online-dot,
+.header-online-status.status-backend-only .header-online-dot,
+.header-online-status.status-degraded .header-online-dot,
+.header-online-status.status-mock .header-online-dot {
+  background: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.13);
+}
+
+.header-online-status.status-error .header-online-dot {
+  background: var(--theme-danger);
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12);
+}
+
 .header-online-text {
   color: var(--theme-muted);
   font-size: 13px;
