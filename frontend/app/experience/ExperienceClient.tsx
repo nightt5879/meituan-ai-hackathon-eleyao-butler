@@ -249,6 +249,33 @@ type FoodStatusResponse = {
   };
 };
 
+type AiProgressScene = "food_recommendation" | "group_dining" | "weekend_plan";
+type AiProgressStageKey = "understand" | "retrieve" | "filter" | "rank" | "compose";
+type AiProgressStatus = "running" | "done" | "fallback" | "error";
+type AiProgressStepStatus = "pending" | "running" | "done" | "fallback" | "error";
+type AiProgressStep = {
+  key: AiProgressStageKey;
+  label: string;
+  detail: string;
+  status: AiProgressStepStatus;
+  updatedAt?: string;
+};
+type AiProgressSnapshot = {
+  traceId: string;
+  scene: AiProgressScene;
+  userId?: string;
+  status: AiProgressStatus;
+  currentStage: AiProgressStageKey;
+  message: string;
+  note?: string;
+  progress: number;
+  startedAt: string;
+  updatedAt: string;
+  completedAt?: string;
+  source: "server" | "client";
+  steps: AiProgressStep[];
+};
+
 type FoodTagType = "taste" | "need" | "temporaryAvoid" | "avoid" | "spicyLevel";
 type FoodQuestionKind = "choice" | "multi-choice" | "tag";
 type FoodTagGroup = {
@@ -731,6 +758,140 @@ async function requestJson<T>(url: string, options: RequestInit = {}, token?: st
   return data as T;
 }
 
+const aiProgressSteps: Record<AiProgressScene, Array<Omit<AiProgressStep, "status" | "updatedAt">>> = {
+  food_recommendation: [
+    { key: "understand", label: "理解需求", detail: "读取场景、预算、距离和忌口" },
+    { key: "retrieve", label: "准备候选", detail: "汇总店铺候选和账号画像" },
+    { key: "filter", label: "筛选约束", detail: "对齐预算、距离和临时偏好" },
+    { key: "rank", label: "匹配排序", detail: "交给 AI 计算候选优先级" },
+    { key: "compose", label: "组织结果", detail: "生成推荐理由和管家提醒" }
+  ],
+  group_dining: [
+    { key: "understand", label: "读取任务", detail: "汇总成员偏好和可见约束" },
+    { key: "retrieve", label: "整理上下文", detail: "准备成员、冲突和候选餐厅" },
+    { key: "filter", label: "检查冲突", detail: "先过预算、忌口、时间硬约束" },
+    { key: "rank", label: "折中排序", detail: "兼顾公平性和满意度" },
+    { key: "compose", label: "生成方案", detail: "输出主推、备选和群发文案" }
+  ],
+  weekend_plan: [
+    { key: "understand", label: "读取需求", detail: "理解时间、预算、体力和兴趣" },
+    { key: "retrieve", label: "汇总素材", detail: "准备天气、地点和路线候选" },
+    { key: "filter", label: "自检风险", detail: "检查天气、步行、预算和返程" },
+    { key: "rank", label: "路线排序", detail: "按轻松度和兴趣匹配排序" },
+    { key: "compose", label: "拼好时间线", detail: "生成路线、预算和邀约文案" }
+  ]
+};
+
+function createClientAiTraceId(scene: AiProgressScene) {
+  const randomPart = typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID().replace(/-/g, "").slice(0, 10)
+    : Math.random().toString(36).slice(2, 12);
+  return `aip_${scene}_${Date.now().toString(36)}_${randomPart}`.slice(0, 96);
+}
+
+function createClientAiProgress(scene: AiProgressScene, traceId: string): AiProgressSnapshot {
+  const timestamp = new Date().toISOString();
+  const steps = aiProgressSteps[scene].map((step, index) => ({
+    ...step,
+    status: index === 0 ? "running" as const : "pending" as const,
+    updatedAt: index === 0 ? timestamp : undefined
+  }));
+
+  return {
+    traceId,
+    scene,
+    status: "running",
+    currentStage: "understand",
+    message: steps[0]?.detail || "AI 管家正在理解本次请求。",
+    progress: 10,
+    startedAt: timestamp,
+    updatedAt: timestamp,
+    source: "client",
+    steps
+  };
+}
+
+function completeClientAiProgress(current: AiProgressSnapshot | null, status: AiProgressStatus, message: string, note?: string) {
+  if (!current) return current;
+  const timestamp = new Date().toISOString();
+  return {
+    ...current,
+    status,
+    currentStage: "compose" as AiProgressStageKey,
+    message,
+    note,
+    progress: status === "done" ? 100 : 96,
+    updatedAt: timestamp,
+    completedAt: timestamp,
+    steps: current.steps.map((step) => ({
+      ...step,
+      status: status === "done" ? "done" as AiProgressStepStatus : status as AiProgressStepStatus,
+      updatedAt: step.updatedAt || timestamp
+    }))
+  };
+}
+
+function wait(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+async function pollAiProgress(
+  traceId: string,
+  token: string,
+  apply: (snapshot: AiProgressSnapshot) => void,
+  shouldStop: () => boolean
+) {
+  const startedAt = Date.now();
+  while (!shouldStop() && Date.now() - startedAt < 180_000) {
+    try {
+      const snapshot = await requestJson<AiProgressSnapshot>(`/api/ai-progress/${encodeURIComponent(traceId)}`, {}, token);
+      apply(snapshot);
+      if (snapshot.status !== "running") {
+        return;
+      }
+    } catch (error) {
+      const status = (error as ApiError).status;
+      if (status && status !== 404) {
+        console.warn("[aiProgress] poll failed", error);
+      }
+    }
+    await wait(850);
+  }
+}
+
+function aiProgressStatusLabel(status: AiProgressStatus) {
+  if (status === "done") return "已完成";
+  if (status === "fallback") return "本地兜底";
+  if (status === "error") return "已中断";
+  return "思考中";
+}
+
+function renderAiProgressCard(progress: AiProgressSnapshot | null): ReactNode {
+  if (!progress) return null;
+
+  return (
+    <div className={`ai-progress-card ai-progress-${progress.status}`}>
+      <div className="ai-progress-head">
+        <div>
+          <div className="ai-progress-eyebrow">AI 管家 · {aiProgressStatusLabel(progress.status)}</div>
+          <div className="ai-progress-message">{progress.message}</div>
+        </div>
+        <div className="ai-progress-percent">{progress.progress}%</div>
+      </div>
+      <div className="ai-progress-bar"><div style={{ width: `${progress.progress}%` }} /></div>
+      <div className="ai-progress-steps">
+        {progress.steps.map((step) => (
+          <div className={`ai-progress-step is-${step.status}`} key={step.key}>
+            <span className="ai-progress-step-dot"></span>
+            <span>{step.label}</span>
+          </div>
+        ))}
+      </div>
+      {progress.note ? <div className="ai-progress-note">{progress.note}</div> : null}
+    </div>
+  );
+}
+
 function safeJsonParse<T>(raw: string | null, fallback: T): T {
   if (!raw) return fallback;
   try {
@@ -1147,6 +1308,7 @@ export default function ExperienceClient() {
   const [foodFinished, setFoodFinished] = useState(false);
   const [foodLoading, setFoodLoading] = useState(false);
   const [foodNotice, setFoodNotice] = useState("");
+  const [foodAiProgress, setFoodAiProgress] = useState<AiProgressSnapshot | null>(null);
   const [foodConnection, setFoodConnection] = useState<FoodConnectionStatus>(defaultFoodConnectionStatus);
   const [recommendations, setRecommendations] = useState<RecommendationCard[]>([]);
   const [adjustmentText, setAdjustmentText] = useState("");
@@ -1168,6 +1330,7 @@ export default function ExperienceClient() {
   const [groupBoard, setGroupBoard] = useState<GroupBoard | null>(null);
   const [groupLoading, setGroupLoading] = useState(false);
   const [groupNotice, setGroupNotice] = useState("");
+  const [groupAiProgress, setGroupAiProgress] = useState<AiProgressSnapshot | null>(null);
   const [groupAdjustmentRequests, setGroupAdjustmentRequests] = useState<Array<{ id: string; nickname: string; visibility: string; candidateId: string; candidateName: string; reasonType: string; reasonLabel: string; note: string }>>([]);
   const [adjustmentTargetCandidate, setAdjustmentTargetCandidate] = useState<{ id: string; name: string } | null>(null);
   const [adjustmentNickname, setAdjustmentNickname] = useState("");
@@ -1213,6 +1376,7 @@ export default function ExperienceClient() {
   const [weekendLoading, setWeekendLoading] = useState(false);
   const [weekendNotice, setWeekendNotice] = useState("");
   const [weekendError, setWeekendError] = useState("");
+  const [weekendAiProgress, setWeekendAiProgress] = useState<AiProgressSnapshot | null>(null);
 
   const themeClass = useMemo(() => themeCards.find((theme) => theme.id === themeId)?.className || "theme-mint-green", [themeId]);
   const resolvedFoodQuestions = useMemo(() => buildFoodQuestions(foodSlots.mealPurpose), [foodSlots.mealPurpose]);
@@ -1708,6 +1872,7 @@ export default function ExperienceClient() {
     setRecommendations([]);
     setMemoryDecision("");
     setFoodNotice("");
+    setFoodAiProgress(null);
     setAdjustmentMessages([]);
   }
 
@@ -1843,6 +2008,7 @@ export default function ExperienceClient() {
     setRecommendations([]);
     setFoodFinished(false);
     setFoodNotice("");
+    setFoodAiProgress(null);
     setShowAdjustmentOptions(false);
     setMemoryDecision("");
     setBatchIndex(0);
@@ -1901,6 +2067,10 @@ export default function ExperienceClient() {
     if (!identity) return;
     setFoodLoading(true);
     setFoodNotice("");
+    const aiProgressTraceId = createClientAiTraceId("food_recommendation");
+    setFoodAiProgress(createClientAiProgress("food_recommendation", aiProgressTraceId));
+    let stopProgressPolling = false;
+    const progressPolling = pollAiProgress(aiProgressTraceId, identity.sessionToken, setFoodAiProgress, () => stopProgressPolling);
     if (!options.adjustment) {
       setShowAdjustmentOptions(false);
       setAdjustmentMessages([]);
@@ -1916,9 +2086,10 @@ export default function ExperienceClient() {
     const nextBatch = options.refresh ? batchIndex + 1 : batchIndex;
 
     try {
-      const response = await requestJson<{ recommendations: RecommendationCard[]; diagnostics?: { durationMs?: number } }>("/api/food/recommend", {
+      const response = await requestJson<{ recommendations: RecommendationCard[]; diagnostics?: { durationMs?: number; aiProgress?: AiProgressSnapshot } }>("/api/food/recommend", {
         method: "POST",
         body: JSON.stringify({
+          aiProgressTraceId,
           slots: {
             mealPurpose: slots.mealPurpose,
             branchPreference: slots.branchPreference,
@@ -1949,15 +2120,21 @@ export default function ExperienceClient() {
 
       setRecommendations(normalizeCards(response.recommendations || [], favorites));
       setBatchIndex(nextBatch);
+      if (response.diagnostics?.aiProgress) {
+        setFoodAiProgress(response.diagnostics.aiProgress);
+      }
       setFoodNotice(response.diagnostics?.durationMs ? `OpenClaw 已连接 · ${response.diagnostics.durationMs}ms` : "OpenClaw 已连接");
     } catch (error) {
       if (handleAuthError(error)) return;
       setRecommendations(normalizeCards(await rankLocalRestaurants(excludeIds, slots, prefs), favorites));
       setBatchIndex(nextBatch);
+      setFoodAiProgress((current) => completeClientAiProgress(current, foodConnection.openclawReachable ? "fallback" : "error", foodConnection.openclawReachable ? "OpenClaw 响应未完成，已先用本地餐厅库兜底。" : "OpenClaw 暂不可用，已切换本地推荐兜底。"));
       setFoodNotice(foodConnection.openclawReachable
         ? "远端 OpenClaw Gateway 可达；当前本地 Web 预览未完成一次管家推荐，已先使用本地餐厅库兜底。"
         : "OpenClaw 暂不可用，已切换本地推荐兜底。");
     } finally {
+      stopProgressPolling = true;
+      await progressPolling.catch(() => undefined);
       setFoodLoading(false);
       setAdjustmentText("");
     }
@@ -2110,20 +2287,31 @@ export default function ExperienceClient() {
     if (!identity || !groupTaskId || !groupInviteToken) return;
     setGroupLoading(true);
     setGroupNotice("");
+    setGroupAiProgress(null);
+    const aiProgressTraceId = createClientAiTraceId("group_dining");
+    setGroupAiProgress(createClientAiProgress("group_dining", aiProgressTraceId));
+    let stopProgressPolling = false;
+    const progressPolling = pollAiProgress(aiProgressTraceId, identity.sessionToken, setGroupAiProgress, () => stopProgressPolling);
 
     try {
-      const board = await requestJson<GroupBoard>(`/api/group-tasks/${encodeURIComponent(groupTaskId)}/recommend`, {
+      const board = await requestJson<GroupBoard & { aiProgress?: AiProgressSnapshot }>(`/api/group-tasks/${encodeURIComponent(groupTaskId)}/recommend`, {
         method: "POST",
-        body: JSON.stringify({ inviteToken: groupInviteToken })
+        body: JSON.stringify({ inviteToken: groupInviteToken, openclawFeed: true, aiProgressTraceId })
       }, identity.sessionToken);
       setGroupBoard(board);
+      if (board.aiProgress) {
+        setGroupAiProgress(board.aiProgress);
+      }
       setGroupAdjustmentRequests([]);
       setAdjustmentTargetCandidate(null);
     } catch (error) {
       if (!handleAuthError(error)) {
         setGroupNotice(error instanceof Error ? error.message : String(error));
+        setGroupAiProgress((current) => completeClientAiProgress(current, "error", "多人约饭推荐生成失败。", error instanceof Error ? error.message : String(error)));
       }
     } finally {
+      stopProgressPolling = true;
+      await progressPolling.catch(() => undefined);
       setGroupLoading(false);
     }
   }
@@ -2153,15 +2341,21 @@ export default function ExperienceClient() {
       setWeekendError(validation.message);
       setWeekendNotice("");
       setWeekendPlan(null);
+      setWeekendAiProgress(null);
       return;
     }
 
     setWeekendLoading(true);
     setWeekendNotice("");
     setWeekendError("");
+    const aiProgressTraceId = createClientAiTraceId("weekend_plan");
+    setWeekendAiProgress(createClientAiProgress("weekend_plan", aiProgressTraceId));
+    let stopProgressPolling = false;
+    const progressPolling = pollAiProgress(aiProgressTraceId, identity.sessionToken, setWeekendAiProgress, () => stopProgressPolling);
 
     const payload = {
       ...weekendForm,
+      aiProgressTraceId,
       timeWindow: validation.timeWindow,
       isAllDay: weekendForm.timeMode === "allDay",
       budgetMax: validation.budgetMax,
@@ -2169,17 +2363,23 @@ export default function ExperienceClient() {
     };
 
     try {
-      const plan = await requestJson<WeekendPlan>("/api/weekend/plans", {
+      const plan = await requestJson<WeekendPlan & { aiProgress?: AiProgressSnapshot }>("/api/weekend/plans", {
         method: "POST",
         body: JSON.stringify(payload)
       }, identity.sessionToken);
       setWeekendPlan(plan);
+      if (plan.aiProgress) {
+        setWeekendAiProgress(plan.aiProgress);
+      }
       setWeekendNotice(plan.weather?.fallback ? "天气或外部服务不可用，后端已生成保守路线。" : "已生成路线，可以复制喜欢的邀约文案。");
     } catch (error) {
       if (handleAuthError(error)) return;
       setWeekendPlan(buildLocalWeekendPlan(weekendForm));
+      setWeekendAiProgress((current) => completeClientAiProgress(current, "fallback", "后端规划暂不可用，已切到本地路线兜底。", error instanceof Error ? error.message : String(error)));
       setWeekendNotice("后端不可用，已切换本地路线。");
     } finally {
+      stopProgressPolling = true;
+      await progressPolling.catch(() => undefined);
       setWeekendLoading(false);
     }
   }
@@ -2673,6 +2873,7 @@ export default function ExperienceClient() {
           </div>
         ))}
         {foodNotice ? <div className="recommendation-notice">{foodNotice}</div> : null}
+        {renderAiProgressCard(foodAiProgress)}
         {foodLoading && !recommendations.length ? (
           <div className="recommendation-loading-card">
             <span className="loading-dot"></span>
@@ -2809,7 +3010,7 @@ export default function ExperienceClient() {
               <button className="primary-button" onClick={() => setView("group-fill")} type="button">我也填写偏好</button>
               <button className="primary-button" onClick={() => void navigator.clipboard?.writeText(`/experience?groupTaskId=${groupTaskId}&inviteToken=${groupInviteToken}`)} type="button">分享到群里</button>
               <button className="primary-button" onClick={() => setView("group-board")} type="button">查看任务看板</button>
-              <button className="primary-button" onClick={() => { setGroupTaskId(""); setGroupInviteToken(""); setGroupBoard(null); }} type="button">再发起一个</button>
+              <button className="primary-button" onClick={() => { setGroupTaskId(""); setGroupInviteToken(""); setGroupBoard(null); setGroupAiProgress(null); }} type="button">再发起一个</button>
             </div>
           </>
         )}
@@ -3134,6 +3335,7 @@ export default function ExperienceClient() {
           ) : <EmptyPanel title="暂无冲突" desc="成员偏好相近，或还没有足够数据触发冲突识别。" />}
         </BoardSection>
 
+        {renderAiProgressCard(groupAiProgress)}
         <BoardSection title="推荐方案" desc="点生成推荐会调用 adapter.generateRecommendation。">
           {groupBoard?.recommendationResult ? renderGroupRecommendationResult(groupBoard) : <EmptyPanel title="还没生成推荐" desc="点下面「生成推荐」会调用后端推荐。" />}
         </BoardSection>
@@ -3378,6 +3580,7 @@ export default function ExperienceClient() {
             {!hasPlan && !weekendLoading && !weekendError ? <div className="planner-state">提交后会展示出门路线、折中路线、雨天或低体力备选。</div> : null}
             {weekendLoading ? <div className="planner-state">正在综合天气、预算、体力和返程时间。</div> : null}
             {weekendNotice && !weekendPlan ? <div className="planner-state success">{weekendNotice}</div> : null}
+            {renderAiProgressCard(weekendAiProgress)}
           </div>
 
           {weekendPlan ? renderWeekendResults(weekendPlan) : null}
@@ -3387,7 +3590,7 @@ export default function ExperienceClient() {
           <div className="planner-summary-line">{buildWeekendTimeWindow(weekendForm)} · {weekendForm.startArea} · {weekendForm.budgetMax} 元/人</div>
           <div className="planner-summary-hint">当前条件仅用于本次周边规划，不会写入长期偏好。</div>
           <div className="planner-action-row">
-            {hasPlan ? <button className="planner-secondary-button" onClick={() => { setWeekendPlan(null); setWeekendNotice(""); setWeekendError(""); }} type="button">重新填写</button> : null}
+            {hasPlan ? <button className="planner-secondary-button" onClick={() => { setWeekendPlan(null); setWeekendNotice(""); setWeekendError(""); setWeekendAiProgress(null); }} type="button">重新填写</button> : null}
             <button className={`planner-primary-button ${weekendLoading ? "disabled-button" : ""}`} disabled={weekendLoading} type="submit">{weekendLoading ? "生成中" : "生成周边规划"}</button>
           </div>
         </div>

@@ -1528,6 +1528,139 @@
   box-shadow: var(--theme-shadow-card);
 }
 
+.ai-progress-card {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 10px 0 12px;
+  padding: 12px;
+  border: 1px solid var(--theme-border);
+  border-radius: 13px;
+  background: linear-gradient(180deg, var(--theme-card), var(--theme-card-muted));
+  color: var(--theme-text);
+  box-shadow: var(--theme-shadow-card);
+}
+
+.food-page .ai-progress-card {
+  width: auto;
+  margin-left: 34px;
+}
+
+.ai-progress-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ai-progress-eyebrow {
+  color: var(--theme-primary-deep);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.ai-progress-message {
+  margin-top: 4px;
+  color: var(--theme-text);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.ai-progress-percent {
+  flex-shrink: 0;
+  min-width: 44px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: var(--theme-primary-ghost);
+  color: var(--theme-primary-deep);
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.ai-progress-bar {
+  overflow: hidden;
+  height: 6px;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: rgba(22, 78, 63, 0.08);
+}
+
+.ai-progress-bar div {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--theme-primary);
+  transition: width 260ms ease;
+}
+
+.ai-progress-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.ai-progress-step {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+  color: var(--theme-subtle);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.ai-progress-step span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ai-progress-step-dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--theme-border-strong);
+}
+
+.ai-progress-step.is-running,
+.ai-progress-step.is-done {
+  color: var(--theme-primary-deep);
+}
+
+.ai-progress-step.is-running .ai-progress-step-dot {
+  background: var(--theme-primary);
+  box-shadow: 0 0 0 0 rgba(90, 216, 178, 0.42);
+  animation: loadingPulse 1.1s ease-in-out infinite;
+}
+
+.ai-progress-step.is-done .ai-progress-step-dot {
+  background: var(--theme-primary-deep);
+}
+
+.ai-progress-fallback .ai-progress-percent,
+.ai-progress-fallback .ai-progress-step.is-fallback,
+.ai-progress-error .ai-progress-step.is-error {
+  color: var(--theme-warn);
+}
+
+.ai-progress-error .ai-progress-percent,
+.ai-progress-error .ai-progress-eyebrow {
+  color: var(--theme-danger);
+}
+
+.ai-progress-note {
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px solid var(--theme-border);
+  color: var(--theme-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .loading-dot {
   width: 9px;
   height: 9px;
