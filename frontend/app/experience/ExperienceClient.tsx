@@ -956,6 +956,7 @@ export default function ExperienceClient() {
   const [showThemePanel, setShowThemePanel] = useState(false);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
   const [showFavoritesPanel, setShowFavoritesPanel] = useState(false);
+  const [showReviewSheet, setShowReviewSheet] = useState(false);
   const [authError, setAuthError] = useState("");
 
   const [memory, setMemory] = useState<MemorySettings>(defaultMemory);
@@ -2105,6 +2106,28 @@ export default function ExperienceClient() {
           <p>周末规划生成与 fallback</p>
           <p>记忆设置与本地持久化</p>
         </aside>
+      </div>
+
+      <button className="review-fab" onClick={() => setShowReviewSheet(true)} type="button" aria-label="评审说明">
+        <span className="review-fab-icon">i</span>
+        <span className="review-fab-text">评审说明</span>
+      </button>
+      <div className={`review-sheet-mask ${showReviewSheet ? "is-open" : ""}`} onClick={() => setShowReviewSheet(false)} />
+      <div className={`review-sheet ${showReviewSheet ? "is-open" : ""}`} role="dialog" aria-label="评审说明">
+        <div className="review-sheet-grip" />
+        <div className="review-sheet-scroll">
+          <a className="panel-link" href="/">作品首页</a>
+          <h1>饿了幺 AI 管家</h1>
+          <p>当前身份：{identity?.displayName || "未登录"}</p>
+          <p className="mono">userId: {identity?.userId || "等待登录"}</p>
+          <h2>当前体验状态</h2>
+          <p>最近偏好记录：{records.length} 条 · 收藏店铺：{favorites.length} 家</p>
+          <p>多人约饭任务：{groupTaskId || "未创建"} · 周末规划：{weekendPlan?.planId || "未生成"}</p>
+          <h2>验收覆盖</h2>
+          <p>登录 · 首页/历史/收藏/主题 · 今天吃什么 · 多人约饭 · 周末规划 · 记忆持久化</p>
+          {identity ? <button className="panel-outline-button" onClick={logout} type="button">退出 demo 身份</button> : null}
+          <button className="review-sheet-close" onClick={() => setShowReviewSheet(false)} type="button">收起</button>
+        </div>
       </div>
     </main>
   );
