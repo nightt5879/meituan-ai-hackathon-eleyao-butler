@@ -1347,33 +1347,142 @@
 }
 
 @media (max-width: 760px) {
+  /* 一页连续滚动的原生手机站：解除整屏锁定 */
+  html { -webkit-text-size-adjust: 100%; }
+  .ey-page,
+  .ey-page:not(.in-site) {
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+
+  /* 顶栏：常驻轻量贴顶条 */
+  .topnav {
+    position: sticky;
+    top: 0;
+    padding: 11px 16px;
+    opacity: 1;
+    transform: none;
+  }
+
   .topnav nav {
     display: none;
   }
 
-  .topnav {
-    padding: 12px 18px;
+  .topnav .brand {
+    font-size: 16px;
   }
 
   .topnav .nav-cta {
-    padding: 9px 14px;
+    padding: 8px 14px;
+    font-size: 13px;
   }
 
+  /* 入口 stage：固定 → 相对，可滚动首屏 */
+  .stage,
+  .stage.gone {
+    position: relative;
+    inset: auto;
+    height: auto;
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    opacity: 1;
+    visibility: visible;
+    perspective: none;
+    padding: 20px 15px 28px;
+  }
+
+  .stage::before,
+  .stage::after {
+    display: none;
+  }
+
+  /* 品牌头部（hub 回流到顶部居中） */
+  .stage .meta-top {
+    order: 1;
+    position: static;
+    top: auto;
+    transform: none;
+    margin: 2px auto 14px;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .hub {
+    order: 2;
+    position: static;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 0 18px;
+    transform: none !important;
+    pointer-events: none;
+  }
+
+  .hub .halo {
+    display: none;
+  }
+
+  .hub .core {
+    transform: none;
+  }
+
+  .seal {
+    width: 50px;
+    height: 50px;
+  }
+
+  .hub .name {
+    font-size: 22px;
+  }
+
+  .hub .role {
+    font-size: 12px;
+    margin-top: 3px;
+  }
+
+  .meta-bottom {
+    display: none;
+  }
+
+  /* 网格 → 纵向卡片栈 */
   .stage .grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(4, 1fr);
+    order: 3;
+    position: static;
+    inset: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: none;
   }
 
   .quad {
-    min-height: 25vh;
-    padding: 28px 24px;
+    min-height: 0;
+    padding: 18px;
+    border: 1px solid var(--ey-line);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(2, 44, 34, 0.05), 0 8px 22px rgba(2, 44, 34, 0.06);
+    align-items: flex-start;
+    justify-content: flex-start;
     text-align: left;
+    transform: none;
+    filter: none;
   }
 
   .q2,
   .q4 {
     align-items: flex-start;
     text-align: left;
+  }
+
+  .q4 {
+    background: linear-gradient(160deg, #ecfdf5, #d8f3e6);
+    border-color: var(--ey-emerald-200);
   }
 
   .q2 .content,
@@ -1387,23 +1496,54 @@
   }
 
   .num {
-    font-size: 72px;
-  }
-
-  .hub,
-  .meta-bottom {
     display: none;
   }
 
-  .meta-top {
-    top: auto;
-    bottom: 14px;
-    max-width: calc(100vw - 28px);
-    white-space: normal;
+  .content {
+    max-width: none;
+    width: 100%;
   }
 
+  .ico {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+  }
+
+  .eyebrow2 {
+    margin-top: 14px;
+    font-size: 11px;
+  }
+
+  .quad-title {
+    font-size: 20px;
+    margin-top: 6px;
+  }
+
+  .quad-desc {
+    max-width: none;
+    margin-top: 8px;
+    font-size: 13.5px;
+    line-height: 1.65;
+  }
+
+  .enter {
+    margin-top: 13px;
+    opacity: 1;
+    transform: none;
+  }
+
+  .tag-primary {
+    margin-top: 12px;
+  }
+
+  /* 内容区：更紧凑的移动节奏 */
   .section {
-    padding: 72px 20px;
+    padding: 56px 18px;
+  }
+
+  .sec-head {
+    margin-bottom: 28px;
   }
 
   .grid3,
@@ -1414,18 +1554,46 @@
     grid-template-columns: 1fr;
   }
 
+  .card {
+    padding: 22px 20px;
+  }
+
   .persona {
     grid-template-columns: 1fr;
-    padding: 24px;
+    padding: 22px;
+    gap: 22px;
   }
 
   .persona .avatar {
-    max-width: 160px;
+    max-width: 150px;
+  }
+
+  .flow {
+    grid-template-columns: 1fr 1fr;
+    gap: 22px 10px;
+  }
+
+  .flow .step:not(:last-child)::after {
+    display: none;
   }
 
   .flow-row {
     grid-template-columns: 1fr;
     gap: 6px;
+  }
+
+  .cta-final .btns {
+    flex-direction: column;
+  }
+
+  .btn-lg {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .footer {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 

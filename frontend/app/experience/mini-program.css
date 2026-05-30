@@ -3576,6 +3576,13 @@
   box-sizing: border-box;
 }
 
+/* 评审说明抽屉：桌面隐藏，仅移动端启用（见下方 @media ≤760） */
+.review-fab,
+.review-sheet,
+.review-sheet-mask {
+  display: none;
+}
+
 @media (max-width: 1180px) {
   .experience-shell {
     grid-template-columns: 1fr 430px;
@@ -3587,27 +3594,162 @@
 }
 
 @media (max-width: 760px) {
-  .experience-shell {
-    display: block;
-    padding: 12px 0 28px;
+  /* —— 手机壳填满真实视口，去掉假边框；解决 100vh/min-height 造成的双重滚动 —— */
+  .experience-stage {
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 
+  .experience-shell {
+    display: block;
+    max-width: none;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* 桌面评审栏在手机上改用底部抽屉呈现 */
   .review-panel {
     display: none;
   }
 
   .phone-frame {
-    width: min(100vw, 430px);
+    width: 100%;
     height: 100vh;
-    min-height: 720px;
-    margin: 0 auto;
+    height: 100dvh;
+    min-height: 0;
+    margin: 0;
     padding: 0;
+    border: 0;
     border-radius: 0;
     background: transparent;
     box-shadow: none;
   }
 
   .phone-screen {
+    height: 100%;
     border-radius: 0;
+  }
+
+  /* —— 评审说明：悬浮按钮 + 底部抽屉（保留桌面端的产品解说/验收上下文）—— */
+  .review-fab {
+    position: fixed;
+    right: 14px;
+    bottom: 16px;
+    z-index: 60;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 14px 9px 11px;
+    border: 1px solid var(--theme-border-strong);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--theme-primary-deep);
+    font-size: 13px;
+    font-weight: 800;
+    box-shadow: 0 8px 24px rgba(2, 44, 34, 0.18);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    cursor: pointer;
+  }
+
+  .review-fab-icon {
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--theme-primary);
+    color: var(--theme-on-primary);
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 900;
+  }
+
+  .review-sheet-mask {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: none;
+    background: rgba(2, 44, 34, 0.42);
+  }
+
+  .review-sheet {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 71;
+    display: block;
+    max-height: 82dvh;
+    padding: 8px 20px calc(20px + env(safe-area-inset-bottom));
+    border-radius: 22px 22px 0 0;
+    background: var(--theme-card);
+    box-shadow: 0 -16px 44px rgba(2, 44, 34, 0.22);
+    transform: translateY(110%);
+    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .review-toggle-input:checked ~ .review-sheet-mask,
+  .review-sheet-mask.is-open {
+    display: block;
+  }
+
+  .review-toggle-input:checked ~ .review-sheet,
+  .review-sheet.is-open {
+    transform: translateY(0);
+  }
+
+  .review-sheet-grip {
+    width: 38px;
+    height: 4px;
+    margin: 0 auto 10px;
+    border-radius: 999px;
+    background: var(--theme-border-strong);
+  }
+
+  .review-sheet-scroll {
+    max-height: calc(82dvh - 44px);
+    overflow-y: auto;
+  }
+
+  .review-sheet h1 {
+    margin: 6px 0 8px;
+    color: var(--theme-text);
+    font-size: 22px;
+    font-weight: 900;
+  }
+
+  .review-sheet h2 {
+    margin: 16px 0 6px;
+    color: var(--theme-text);
+    font-size: 15px;
+    font-weight: 900;
+  }
+
+  .review-sheet p {
+    margin: 4px 0;
+    color: var(--theme-muted);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .review-sheet .panel-link {
+    color: var(--theme-primary-deep);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .review-sheet-close {
+    display: block;
+    margin-top: 16px;
+    padding: 12px;
+    border: 1px solid var(--theme-border);
+    border-radius: 999px;
+    color: var(--theme-text);
+    font-size: 14px;
+    font-weight: 800;
+    text-align: center;
+    cursor: pointer;
   }
 }
