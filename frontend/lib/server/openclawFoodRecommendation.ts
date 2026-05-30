@@ -1,6 +1,7 @@
 import { execFile } from "node:child_process";
 import type { FoodDecisionSheet } from "@/lib/server/foodDecisionSheet";
 import { sanitizeFoodDecisionSheet } from "@/lib/server/foodDecisionSheet";
+import type { OpenClawDataContext } from "@/lib/server/openclawDataFeed";
 import { buildOpenClawRequestScope, buildScopedOpenClawSessionId, shortHash } from "@/lib/server/openclawSession";
 
 type StringMap = Record<string, unknown>;
@@ -59,6 +60,7 @@ export type FoodRecommendResponse = {
 
 type OpenClawFoodOptions = {
   userId?: string;
+  context?: OpenClawDataContext;
 };
 
 const DEFAULT_TIMEOUT_MS = 30000;
@@ -119,7 +121,7 @@ export async function generateFoodRecommendationsWithOpenClaw(
   request: FoodRecommendRequest,
   options: OpenClawFoodOptions = {}
 ): Promise<FoodRecommendResponse> {
-  const prompt = buildFoodRecommendationPrompt(request);
+  const prompt = buildFoodRecommendationPrompt(request, options.context);
   const rawContent = await runOpenClawAgentCli(prompt, buildFoodOpenClawSessionId(request, options));
   const parsed = parseOpenClawRecommendation(rawContent);
   const recommendations = normalizeRecommendations(parsed);
@@ -138,8 +140,8 @@ function buildFoodOpenClawSessionId(request: FoodRecommendRequest, options: Open
   return buildScopedOpenClawSessionId("meituan-food", ["food", userPart, mealPart, buildOpenClawRequestScope(request)]);
 }
 
-function buildFoodRecommendationPrompt(request: FoodRecommendRequest) {
-  const promptPayload = buildOpenClawPromptPayload(request);
+function buildFoodRecommendationPrompt(request: FoodRecommendRequest, context?: OpenClawDataContext) {
+  const promptPayload = buildOpenClawPromptPayload(request, context);
 
   return [
     "You are the recommendation engine for a WeChat mini-program food flow.",
@@ -157,7 +159,7 @@ function buildFoodRecommendationPrompt(request: FoodRecommendRequest) {
   ].join("\n");
 }
 
-function buildOpenClawPromptPayload(request: FoodRecommendRequest) {
+function buildOpenClawPromptPayload(request: FoodRecommendRequest, context?: OpenClawDataContext) {
   const slots = omitEmptyValues(request.slots);
   const preferences = omitEmptyValues({
     tasteTags: request.preferences.tasteTags,
@@ -185,6 +187,7 @@ function buildOpenClawPromptPayload(request: FoodRecommendRequest) {
       };
 
   return {
+    openclawContext: context ? buildContextEnvelope(context) : undefined,
     slots,
     preferences,
     decisionSheet: request.decisionSheet,
@@ -194,6 +197,19 @@ function buildOpenClawPromptPayload(request: FoodRecommendRequest) {
       batchIndex: request.requestContext?.batchIndex,
       adjustment: Object.keys(adjustment).length ? adjustment : undefined
     })
+  };
+}
+
+function buildContextEnvelope(context: OpenClawDataContext) {
+  return {
+    schemaVersion: context.schemaVersion,
+    traceId: context.traceId,
+    scene: context.scene,
+    createdAt: context.createdAt,
+    user: context.user,
+    profile: context.profile,
+    contextBlocks: context.contextBlocks,
+    privacy: context.privacy
   };
 }
 

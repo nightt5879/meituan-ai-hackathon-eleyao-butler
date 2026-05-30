@@ -33,6 +33,7 @@ export MEITUAN_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj
 export MEITUAN_AUTH_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/wechat-auth-sessions.json
 export MEITUAN_USER_PROFILE_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/user-profiles.json
 export MEITUAN_WEEKEND_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/weekend-plans.json
+export MEITUAN_OPENCLAW_FEED_AUDIT_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/openclaw-feed-audit.json
 ```
 
 OpenClaw 相关配置保持在服务端：
@@ -43,6 +44,7 @@ export OPENCLAW_PROFILE=meituan01
 export OPENCLAW_AGENT_ID=main
 export OPENCLAW_CHAT_SESSION_ID=meituan-single-food
 export OPENCLAW_CHAT_SESSION_KEY=meituan-single-food
+export OPENCLAW_DATA_FEED_TIMEOUT_MS=20000
 ```
 
 如果使用 Gateway token，也只放在服务端环境变量里：
@@ -78,6 +80,20 @@ npm run verify:server-flow -- --base-url https://meituan-ai-hackathon.cn
 ```bash
 npm run verify:server-flow -- --base-url https://meituan-ai-hackathon.cn --include-openclaw-recommend
 ```
+
+需要验证三条业务数据通路都能喂给 OpenClaw 时，使用更完整的开关：
+
+```bash
+npm run verify:server-flow -- --base-url https://meituan-ai-hackathon.cn --include-openclaw-feed
+```
+
+这个模式会验证：
+
+1. 单人「今天吃什么」推荐 prompt 带上 `user_profile`、`food_preferences`、`food_decision_sheet` 和当前请求上下文。
+2. 多人约饭推荐 prompt 带上 `group_task`、`participants`、`conflicts` 和候选餐厅上下文。
+3. 周末规划生成后向 OpenClaw 投递 `weekend_request`、`weather_context`、`route_candidates` 和规划来源上下文。
+
+接口响应只暴露 `traceId`、`sessionRef`、`contextBlocks`、`status` 等诊断字段，不暴露 openid、session token、服务器路径或真实密钥。服务端会额外写入 `.data/openclaw-feed-audit.json`，可通过 `MEITUAN_OPENCLAW_FEED_AUDIT_FILE` 覆盖路径。
 
 本地没有 OpenClaw Gateway 时，可以只做非 OpenClaw dry run：
 

@@ -19,7 +19,8 @@ function hasFlag(name) {
 
 const baseUrl = readArg("--base-url", "http://127.0.0.1:3000").replace(/\/+$/, "");
 const requireOpenClawStatus = !hasFlag("--skip-openclaw-status");
-const includeOpenClawRecommend = hasFlag("--include-openclaw-recommend");
+const includeOpenClawFeed = hasFlag("--include-openclaw-feed");
+const includeOpenClawRecommend = hasFlag("--include-openclaw-recommend") || includeOpenClawFeed;
 const demoUserId = readArg("--demo-user-id", "server-smoke");
 
 let failures = 0;
@@ -228,11 +229,18 @@ await step("group dining flow", async () => {
     method: "POST",
     token: sessionToken,
     body: {
-      inviteToken: task.inviteToken
+      inviteToken: task.inviteToken,
+      useOpenClaw: includeOpenClawFeed
     }
   });
 
   assertCondition(board.recommendationResult?.candidates?.length > 0, "group recommendation returned no candidates");
+  if (includeOpenClawFeed) {
+    assertCondition(board.openclawContext?.submitted === true, "group OpenClaw context was not submitted");
+    assertCondition(board.openclawContext?.contextBlocks?.includes("participants"), "group OpenClaw context missing participants block");
+    return `${task.taskId} generated with OpenClaw context ${board.openclawContext.traceId}`;
+  }
+
   return `${task.taskId} generated`;
 });
 
@@ -249,12 +257,19 @@ await step("weekend planning flow", async () => {
       energyLevel: "中等",
       companions: "朋友",
       interests: ["咖啡", "citywalk", "拍照"],
-      rawText: "不想排队，想找能坐下来聊天和拍照的地方。"
+      rawText: "不想排队，想找能坐下来聊天和拍照的地方。",
+      openclawFeed: includeOpenClawFeed
     }
   });
 
   assertCondition(plan.planId, "weekend plan missing planId");
   assertCondition(Array.isArray(plan.routes) && plan.routes.length > 0, "weekend plan returned no routes");
+  if (includeOpenClawFeed) {
+    assertCondition(plan.openclawContext?.submitted === true, "weekend OpenClaw context was not submitted");
+    assertCondition(plan.openclawContext?.contextBlocks?.includes("route_candidates"), "weekend OpenClaw context missing route candidates block");
+    return `${plan.planId} generated with OpenClaw context ${plan.openclawContext.traceId}`;
+  }
+
   return `${plan.planId} generated`;
 });
 
@@ -292,10 +307,12 @@ if (includeOpenClawRecommend) {
     });
 
     assertCondition(Array.isArray(result.recommendations) && result.recommendations.length > 0, "OpenClaw returned no recommendations");
-    return `${result.recommendations.length} recommendations`;
+    assertCondition(result.diagnostics?.openclawContext?.submitted === true, "food OpenClaw context was not submitted");
+    assertCondition(result.diagnostics?.openclawContext?.contextBlocks?.includes("current_food_request"), "food OpenClaw context missing request block");
+    return `${result.recommendations.length} recommendations with OpenClaw context ${result.diagnostics.openclawContext.traceId}`;
   });
 } else {
-  printStatus("SKIP", "optional OpenClaw recommendation generation", "pass --include-openclaw-recommend to submit a real request");
+  printStatus("SKIP", "optional OpenClaw recommendation generation", "pass --include-openclaw-recommend or --include-openclaw-feed to submit a real request");
 }
 
 if (failures > 0) {

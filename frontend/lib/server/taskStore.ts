@@ -4,6 +4,7 @@ import path from "path";
 import { demoTask, demoTaskId } from "@/lib/mockData";
 import { buildMockParticipant, buildMockTitle, detectConflicts, extractBudgetMax, extractConstraints, generateMockRecommendation } from "@/lib/mockFunctions";
 import { withFileLock } from "@/lib/server/fileLock";
+import type { OpenClawDataFeedResult } from "@/lib/server/openclawDataFeed";
 import type { Conflict, DinnerTask, Participant, ParticipantInput, RecommendationResult, RecommendationState, StoredTaskFields } from "@/lib/types";
 
 type TaskRecord = StoredTaskFields & {
@@ -81,6 +82,7 @@ export type GroupTaskBoard = {
     groupMessage: string;
     normalAiMessage: string;
   } | null;
+  openclawContext?: OpenClawDataFeedResult;
 };
 
 type ManualSpicyPreference = NonNullable<ParticipantInput["manual_fields"]["spicy_preference"]>;
@@ -672,7 +674,36 @@ export async function saveRecommendation(taskId: string, recommendation?: Recomm
   });
 }
 
-export async function saveGroupRecommendation(taskId: string, inviteToken: string): Promise<GroupTaskResult<GroupTaskBoard>> {
+export async function getGroupRecommendationSource(taskId: string, inviteToken: string): Promise<GroupTaskResult<TaskPayload>> {
+  return enqueueWrite(async () => {
+    const database = await readDatabase();
+    const record = database.tasks[taskId];
+
+    if (!record) {
+      return groupError(404, "TASK_NOT_FOUND", "Task not found.");
+    }
+
+    if (!verifyInviteToken(record, inviteToken)) {
+      return groupError(403, "INVALID_INVITE_TOKEN", "Invalid invite token.");
+    }
+
+    if (record.participants.length === 0) {
+      return groupError(400, "PARTICIPANTS_REQUIRED", "Please add participants before generating a recommendation.");
+    }
+
+    return {
+      status: 200,
+      value: toPayload(record)
+    };
+  });
+}
+
+export async function saveGroupRecommendation(
+  taskId: string,
+  inviteToken: string,
+  recommendation?: RecommendationResult,
+  openclawContext?: OpenClawDataFeedResult
+): Promise<GroupTaskResult<GroupTaskBoard>> {
   return enqueueWrite(async () => {
     const database = await readDatabase();
     const record = database.tasks[taskId];
@@ -690,7 +721,7 @@ export async function saveGroupRecommendation(taskId: string, inviteToken: strin
     }
 
     const payload = toPayload(record);
-    record.recommendation_result = generateMockRecommendation(payload.task, payload.participants);
+    record.recommendation_result = recommendation ?? generateMockRecommendation(payload.task, payload.participants);
     record.recommendation_state = {
       status: "done",
       hasGenerated: true,
@@ -701,7 +732,10 @@ export async function saveGroupRecommendation(taskId: string, inviteToken: strin
 
     return {
       status: 200,
-      value: toGroupBoard(record, inviteToken)
+      value: {
+        ...toGroupBoard(record, inviteToken),
+        openclawContext
+      }
     };
   });
 }
