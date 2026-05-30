@@ -63,7 +63,7 @@ type OpenClawFoodOptions = {
   context?: OpenClawDataContext;
 };
 
-const DEFAULT_TIMEOUT_MS = 30000;
+const DEFAULT_TIMEOUT_MS = 130_000;
 const DEFAULT_MAX_RESPONSE_CHARS = 12000;
 
 export function sanitizeFoodRecommendRequest(input: unknown): FoodRecommendRequest {

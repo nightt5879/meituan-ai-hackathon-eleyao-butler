@@ -44,7 +44,8 @@ export OPENCLAW_PROFILE=meituan01
 export OPENCLAW_AGENT_ID=main
 export OPENCLAW_CHAT_SESSION_ID=meituan-single-food
 export OPENCLAW_CHAT_SESSION_KEY=meituan-single-food
-export OPENCLAW_DATA_FEED_TIMEOUT_MS=20000
+export OPENCLAW_GATEWAY_TIMEOUT_MS=130000
+export OPENCLAW_DATA_FEED_TIMEOUT_MS=130000
 ```
 
 如果使用 Gateway token，也只放在服务端环境变量里：

@@ -43,6 +43,19 @@ function assertCondition(condition, message) {
   }
 }
 
+function summarizeOpenClawContext(context) {
+  if (!context || typeof context !== "object") {
+    return "missing openclawContext";
+  }
+
+  const detail = typeof context.detail === "string" && context.detail.trim()
+    ? ` detail=${context.detail.trim().slice(0, 320)}`
+    : "";
+  const blocks = Array.isArray(context.contextBlocks) ? ` blocks=${context.contextBlocks.join(",")}` : "";
+
+  return `status=${context.status || "unknown"} submitted=${Boolean(context.submitted)} traceId=${context.traceId || "missing"}${blocks}${detail}`;
+}
+
 async function requestJson(path, options = {}) {
   const headers = new Headers(options.headers);
 
@@ -236,7 +249,10 @@ await step("group dining flow", async () => {
 
   assertCondition(board.recommendationResult?.candidates?.length > 0, "group recommendation returned no candidates");
   if (includeOpenClawFeed) {
-    assertCondition(board.openclawContext?.submitted === true, "group OpenClaw context was not submitted");
+    assertCondition(
+      board.openclawContext?.submitted === true,
+      `group OpenClaw context was not submitted: ${summarizeOpenClawContext(board.openclawContext)}`
+    );
     assertCondition(board.openclawContext?.contextBlocks?.includes("participants"), "group OpenClaw context missing participants block");
     return `${task.taskId} generated with OpenClaw context ${board.openclawContext.traceId}`;
   }
@@ -265,7 +281,10 @@ await step("weekend planning flow", async () => {
   assertCondition(plan.planId, "weekend plan missing planId");
   assertCondition(Array.isArray(plan.routes) && plan.routes.length > 0, "weekend plan returned no routes");
   if (includeOpenClawFeed) {
-    assertCondition(plan.openclawContext?.submitted === true, "weekend OpenClaw context was not submitted");
+    assertCondition(
+      plan.openclawContext?.submitted === true,
+      `weekend OpenClaw context was not submitted: ${summarizeOpenClawContext(plan.openclawContext)}`
+    );
     assertCondition(plan.openclawContext?.contextBlocks?.includes("route_candidates"), "weekend OpenClaw context missing route candidates block");
     return `${plan.planId} generated with OpenClaw context ${plan.openclawContext.traceId}`;
   }
@@ -307,7 +326,10 @@ if (includeOpenClawRecommend) {
     });
 
     assertCondition(Array.isArray(result.recommendations) && result.recommendations.length > 0, "OpenClaw returned no recommendations");
-    assertCondition(result.diagnostics?.openclawContext?.submitted === true, "food OpenClaw context was not submitted");
+    assertCondition(
+      result.diagnostics?.openclawContext?.submitted === true,
+      `food OpenClaw context was not submitted: ${summarizeOpenClawContext(result.diagnostics?.openclawContext)}`
+    );
     assertCondition(result.diagnostics?.openclawContext?.contextBlocks?.includes("current_food_request"), "food OpenClaw context missing request block");
     return `${result.recommendations.length} recommendations with OpenClaw context ${result.diagnostics.openclawContext.traceId}`;
   });

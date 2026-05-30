@@ -58,7 +58,7 @@ type FeedAuditRecord = OpenClawDataFeedResult & {
   recordedAt: string;
 };
 
-const DEFAULT_FEED_TIMEOUT_MS = 20_000;
+const DEFAULT_FEED_TIMEOUT_MS = 130_000;
 const DEFAULT_MAX_RESPONSE_CHARS = 8000;
 
 export function createOpenClawDataContext(scene: OpenClawDataScene, input: CreateContextInput): OpenClawDataContext {
