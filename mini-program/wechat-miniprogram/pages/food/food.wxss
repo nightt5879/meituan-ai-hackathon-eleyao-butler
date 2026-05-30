@@ -515,22 +515,31 @@
   animation: none;
 }
 
+.manual-entry-label {
+  margin-top: 16rpx;
+  margin-bottom: 12rpx;
+  color: var(--theme-text, #3A2A1A);
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
 .input-bar {
   display: flex;
   align-items: center;
   gap: 14rpx;
-  margin-top: 18rpx;
+  margin-top: 0;
 }
 
 .manual-input {
   box-sizing: border-box;
-  height: 76rpx;
-  padding: 0 24rpx;
-  border: 2rpx solid var(--theme-border, #F3DDC7);
+  height: 88rpx;
+  padding: 0 28rpx;
+  border: 2rpx solid var(--theme-primary, #FF8A3D);
   border-radius: 999rpx;
   background: var(--theme-bg, #FFF8EF);
   color: var(--theme-text, #3A2A1A);
   font-size: 27rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
 }
 
 .manual-placeholder {
@@ -552,10 +561,10 @@
 
 .send-button {
   flex-shrink: 0;
-  width: 128rpx;
+  width: 116rpx;
   background: var(--theme-primary, #FF8A3D);
   color: var(--theme-on-primary, #ffffff);
-  line-height: 76rpx;
+  line-height: 88rpx;
 }
 
 .back-button {
@@ -806,10 +815,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16rpx;
-  padding: 16rpx 18rpx;
+  gap: 12rpx;
+  padding: 14rpx 18rpx;
   border: 1rpx solid var(--theme-border, #F3DDC7);
-  border-radius: 999rpx;
+  border-radius: 18rpx;
   background: var(--theme-card, #FFFDF8);
 }
 
@@ -818,23 +827,22 @@
   min-width: 0;
   color: var(--theme-muted, #8A6A4F);
   font-size: 24rpx;
-  line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.5;
+  word-break: break-word;
 }
 
 .slot-summary-toggle {
   flex-shrink: 0;
-  width: 92rpx;
+  width: auto;
   margin: 0;
-  padding: 0;
+  padding: 0 18rpx;
+  border: 1rpx solid var(--theme-border, #F3DDC7);
   border-radius: 999rpx;
-  background: var(--theme-soft, #FFF1E3);
-  color: var(--theme-primary, #FF8A3D);
-  font-size: 24rpx;
-  font-weight: 700;
-  line-height: 50rpx;
+  background: transparent;
+  color: var(--theme-muted, #8A6A4F);
+  font-size: 22rpx;
+  font-weight: 600;
+  line-height: 42rpx;
 }
 
 .slot-summary-toggle::after {
@@ -1056,7 +1064,7 @@
 }
 
 /* ─── Result-page additions ─────────────────────────────────────────────
-   Card section labels, slot-summary disclaimer, third result action,
+   Card section labels, third result action,
    and the explicit memory-choice block. No transform anywhere. */
 
 .shop-section-label {
@@ -1082,14 +1090,6 @@
 
 .matched-tags-row .matched-tags {
   margin-top: 0;
-}
-
-.slot-summary-hint {
-  margin-top: 8rpx;
-  color: var(--theme-muted, #8A6A4F);
-  font-size: 22rpx;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
 }
 
 .result-actions-wrap {
