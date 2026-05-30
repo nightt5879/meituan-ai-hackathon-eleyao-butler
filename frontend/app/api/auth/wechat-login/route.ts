@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createWechatSession } from "@/lib/server/sessionStore";
+import { ensureUserProfile } from "@/lib/server/userProfileStore";
 import { exchangeWechatCodeForSession, WechatAuthConfigError, WechatCodeSessionError } from "@/lib/server/wechatAuth";
 
 export const runtime = "nodejs";
@@ -39,11 +40,15 @@ export async function POST(request: Request) {
   try {
     const codeSession = await exchangeWechatCodeForSession(code);
     const { user, sessionToken } = await createWechatSession(codeSession.openid);
+    const profile = await ensureUserProfile(user.userId);
 
     return NextResponse.json({
       ok: true,
       userId: user.userId,
       sessionToken,
+      profile,
+      profileId: profile.profileId,
+      profileInitialized: profile.initialized,
       identityType: user.identityType,
       isStable: user.isStable
     });

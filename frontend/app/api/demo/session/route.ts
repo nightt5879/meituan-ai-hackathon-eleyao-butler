@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHash } from "crypto";
 import { createWechatSession } from "@/lib/server/sessionStore";
+import { ensureUserProfile } from "@/lib/server/userProfileStore";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -50,6 +51,7 @@ export async function POST(request: Request) {
   const demoUserId = normalizeDemoId(readString(record.demoUserId, "guest"));
   const displayName = readString(record.displayName, demoUserId === "guest" ? "评审 Demo 用户" : demoUserId).slice(0, 32);
   const { user, sessionToken } = await createWechatSession(demoOpenidFromId(demoUserId));
+  const profile = await ensureUserProfile(user.userId);
 
   return NextResponse.json({
     ok: true,
@@ -58,6 +60,9 @@ export async function POST(request: Request) {
     displayName,
     userId: user.userId,
     sessionToken,
+    profile,
+    profileId: profile.profileId,
+    profileInitialized: profile.initialized,
     identityType: user.identityType,
     isStable: user.isStable
   });

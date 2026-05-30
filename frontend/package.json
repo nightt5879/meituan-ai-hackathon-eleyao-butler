@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start -H 127.0.0.1 -p 3001"
+    "start": "next start -H 127.0.0.1 -p 3001",
+    "verify:server-flow": "node scripts/verify-server-flow.mjs"
   },
   "dependencies": {
     "next": "^16.2.5",
