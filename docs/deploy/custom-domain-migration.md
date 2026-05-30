@@ -69,14 +69,15 @@ sudo certbot --nginx -d meituan-ai-hackathon.cn -d www.meituan-ai-hackathon.cn
 ## Next 服务环境变量
 
 ```bash
-export MEITUAN_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/dinner-tasks.json
-export MEITUAN_AUTH_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/wechat-auth-sessions.json
-export MEITUAN_USER_PROFILE_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/user-profiles.json
-export MEITUAN_WEEKEND_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/weekend-plans.json
+export MEITUAN_RUNTIME_DIR="<server-state-dir>"
+export MEITUAN_STATE_FILE="$MEITUAN_RUNTIME_DIR/dinner-tasks.json"
+export MEITUAN_AUTH_STATE_FILE="$MEITUAN_RUNTIME_DIR/wechat-auth-sessions.json"
+export MEITUAN_USER_PROFILE_STATE_FILE="$MEITUAN_RUNTIME_DIR/user-profiles.json"
+export MEITUAN_WEEKEND_STATE_FILE="$MEITUAN_RUNTIME_DIR/weekend-plans.json"
 export MEITUAN_REMOTE_API_BASE_URL=https://meituan-ai-hackathon.cn
 
 export OPENCLAW_GATEWAY_URL=ws://127.0.0.1:19789
-export OPENCLAW_PROFILE=meituan01
+export OPENCLAW_PROFILE=<openclaw-profile>
 export OPENCLAW_AGENT_ID=main
 export OPENCLAW_CHAT_SESSION_ID=meituan-single-food
 export OPENCLAW_CHAT_SESSION_KEY=meituan-single-food
@@ -108,7 +109,7 @@ curl -i https://meituan-ai-hackathon.cn/api/food/status
 默认信息流 smoke test：
 
 ```bash
-cd /home/nightt/.openclaw/workspace-meituan01/meituan_prj_main/frontend
+cd <repo>/frontend
 npm run verify:server-flow -- --base-url https://meituan-ai-hackathon.cn
 ```
 

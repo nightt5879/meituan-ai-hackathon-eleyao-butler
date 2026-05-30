@@ -7,6 +7,8 @@ frontend/node_modules/
 frontend/.next/
 frontend/.npm-cache/
 frontend/.data/
+/.deploy-state/
+/.deploy.env
 frontend/data/restaurant/import/*.draft.json
 frontend/out/
 frontend/.vercel/

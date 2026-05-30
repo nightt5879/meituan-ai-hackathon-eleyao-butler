@@ -29,18 +29,19 @@
 将运行态 JSON store 指到稳定目录，避免写在临时目录或被重新部署清掉：
 
 ```bash
-export MEITUAN_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/dinner-tasks.json
-export MEITUAN_AUTH_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/wechat-auth-sessions.json
-export MEITUAN_USER_PROFILE_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/user-profiles.json
-export MEITUAN_WEEKEND_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/weekend-plans.json
-export MEITUAN_OPENCLAW_FEED_AUDIT_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/openclaw-feed-audit.json
+export MEITUAN_RUNTIME_DIR="<server-state-dir>"
+export MEITUAN_STATE_FILE="$MEITUAN_RUNTIME_DIR/dinner-tasks.json"
+export MEITUAN_AUTH_STATE_FILE="$MEITUAN_RUNTIME_DIR/wechat-auth-sessions.json"
+export MEITUAN_USER_PROFILE_STATE_FILE="$MEITUAN_RUNTIME_DIR/user-profiles.json"
+export MEITUAN_WEEKEND_STATE_FILE="$MEITUAN_RUNTIME_DIR/weekend-plans.json"
+export MEITUAN_OPENCLAW_FEED_AUDIT_FILE="$MEITUAN_RUNTIME_DIR/openclaw-feed-audit.json"
 ```
 
 OpenClaw 相关配置保持在服务端：
 
 ```bash
 export OPENCLAW_GATEWAY_URL=ws://127.0.0.1:19789
-export OPENCLAW_PROFILE=meituan01
+export OPENCLAW_PROFILE=<openclaw-profile>
 export OPENCLAW_AGENT_ID=main
 export OPENCLAW_CHAT_SESSION_ID=meituan-single-food
 export OPENCLAW_CHAT_SESSION_KEY=meituan-single-food
@@ -51,7 +52,7 @@ export OPENCLAW_DATA_FEED_TIMEOUT_MS=60000
 如果使用 Gateway token，也只放在服务端环境变量里：
 
 ```bash
-export OPENCLAW_GATEWAY_TOKEN=...
+export OPENCLAW_GATEWAY_TOKEN=<server-only-token>
 ```
 
 ## 部署后验证

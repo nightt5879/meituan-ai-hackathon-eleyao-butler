@@ -28,8 +28,8 @@ export async function checkFoodOpenClawStatus(): Promise<FoodOpenClawStatus> {
   const timeoutMs = readNumberEnv("OPENCLAW_STATUS_TIMEOUT_MS", DEFAULT_STATUS_TIMEOUT_MS);
   const gatewayTimeoutMs = readNumberEnv("OPENCLAW_GATEWAY_PROBE_TIMEOUT_MS", DEFAULT_GATEWAY_TIMEOUT_MS);
   const gatewayUrl = process.env.OPENCLAW_GATEWAY_URL?.trim() || "ws://127.0.0.1:19789";
-  const cliPath = process.env.OPENCLAW_CLI_PATH?.trim() || "/home/nightt/.npm-global/bin/openclaw";
-  const profile = process.env.OPENCLAW_PROFILE?.trim() || "meituan01";
+  const cliPath = process.env.OPENCLAW_CLI_PATH?.trim() || "openclaw";
+  const profile = process.env.OPENCLAW_PROFILE?.trim() || "default";
   const agentId = process.env.OPENCLAW_AGENT_ID?.trim() || "main";
   const sessionId = process.env.OPENCLAW_CHAT_SESSION_ID?.trim() ||
     process.env.OPENCLAW_CHAT_SESSION_KEY?.trim() ||

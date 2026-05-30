@@ -399,8 +399,8 @@ function normalizeKey(value: string) {
 function runOpenClawAgentCli(content: string, sessionId: string): Promise<string> {
   const timeoutMs = readNumberEnv("OPENCLAW_QUESTION_TIMEOUT_MS", DEFAULT_QUESTION_TIMEOUT_MS);
   const maxResponseChars = readNumberEnv("OPENCLAW_MAX_RESPONSE_CHARS", DEFAULT_MAX_RESPONSE_CHARS);
-  const cliPath = process.env.OPENCLAW_CLI_PATH?.trim() || "/home/nightt/.npm-global/bin/openclaw";
-  const profile = process.env.OPENCLAW_PROFILE?.trim() || "meituan01";
+  const cliPath = process.env.OPENCLAW_CLI_PATH?.trim() || "openclaw";
+  const profile = process.env.OPENCLAW_PROFILE?.trim() || "default";
   const agentId = process.env.OPENCLAW_AGENT_ID?.trim() || "main";
   const timeoutSeconds = Math.max(1, Math.ceil(timeoutMs / 1000));
   const args = [
