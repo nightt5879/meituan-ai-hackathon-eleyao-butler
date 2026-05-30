@@ -7,7 +7,7 @@ export type TaskStatus =
 
 export type ManualFields = {
   budget_max?: number;
-  spicy_preference?: "spicy" | "no_spicy" | "any";
+  spicy_preference?: "spicy" | "medium" | "mild" | "no_spicy" | "any";
   leave_before?: string;
 };
 
@@ -16,8 +16,17 @@ export type Participant = {
   client_id?: string;
   submitter_user_id?: string;
   nickname: string;
+  visibility?: "public" | "nickname_only" | "private";
   raw_preference: string;
   manual_fields: ManualFields;
+  availability_summary?: string;
+  budget_tag?: string;
+  spicy_label?: string;
+  dietary_restrictions?: string[];
+  cuisine_preferences?: string[];
+  hard_requirements?: string[];
+  soft_preferences?: string[];
+  requirement_priorities?: Record<string, string>;
   extracted_constraints: {
     hard_constraints: string[];
     soft_preferences: string[];
@@ -117,8 +126,17 @@ export type StoredTaskFields = {
 export type ParticipantInput = {
   client_id?: string;
   nickname: string;
+  visibility?: "public" | "nickname_only" | "private";
   raw_preference: string;
   manual_fields: ManualFields;
+  availability_summary?: string;
+  budget_tag?: string;
+  spicy_label?: string;
+  dietary_restrictions?: string[];
+  cuisine_preferences?: string[];
+  hard_requirements?: string[];
+  soft_preferences?: string[];
+  requirement_priorities?: Record<string, string>;
 };
 
 export type RecommendationState = {

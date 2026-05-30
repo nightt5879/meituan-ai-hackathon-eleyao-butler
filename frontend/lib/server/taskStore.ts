@@ -51,12 +51,21 @@ export type GroupTaskBoard = {
     clientId?: string;
     submitterUserId?: string;
     nickname: string;
+    visibility?: Participant["visibility"];
     rawPreference: string;
+    availabilitySummary?: string;
+    budgetTag?: string;
+    spicyLabel?: string;
+    dietaryRestrictions?: string[];
+    cuisinePreferences?: string[];
     manualFields: {
       budgetMax?: number;
       spicyPreference?: ManualSpicyPreference;
       leaveBefore?: string;
     };
+    hardRequirements?: string[];
+    softPreferences?: string[];
+    requirementPriorities?: Record<string, string>;
     extractedConstraints: Participant["extracted_constraints"];
   }>;
   conflicts: Conflict[];
@@ -259,11 +268,30 @@ function numberField(value: unknown, fallback = 0) {
 }
 
 function normalizeSpicyPreference(value: unknown): ManualSpicyPreference | undefined {
-  if (value === "spicy" || value === "no_spicy" || value === "any") {
+  if (value === "spicy" || value === "medium" || value === "mild" || value === "no_spicy" || value === "any") {
     return value;
   }
 
   return undefined;
+}
+
+function normalizeVisibility(value: unknown): ParticipantInput["visibility"] {
+  if (value === "public" || value === "nickname_only" || value === "private") {
+    return value;
+  }
+
+  return "public";
+}
+
+function stringArrayField(value: unknown) {
+  return Array.isArray(value) ? value.map((item) => stringField(item)).filter(Boolean) : [];
+}
+
+function stringRecordField(value: unknown) {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, stringField(item)]).filter(([, item]) => item));
 }
 
 function normalizeGroupTaskInput(input: unknown): Partial<StoredTaskFields> {
@@ -283,7 +311,12 @@ function normalizeGroupTaskInput(input: unknown): Partial<StoredTaskFields> {
 function normalizeGroupParticipantInput(input: unknown): ParticipantInput {
   const payload = isRecord(input) ? input : {};
   const rawManualFields = isRecord(payload.manualFields) ? payload.manualFields : isRecord(payload.manual_fields) ? payload.manual_fields : {};
+  const rawAvailability = isRecord(payload.availability) ? payload.availability : {};
   const budgetMax = numberField(rawManualFields.budgetMax ?? rawManualFields.budget_max, 0);
+  const availabilityDays = stringArrayField(rawAvailability.availableDays ?? rawAvailability.available_days);
+  const timeMode = stringField(rawAvailability.timeMode ?? rawAvailability.time_mode);
+  const startTime = stringField(rawAvailability.startTime ?? rawAvailability.start_time);
+  const endTime = stringField(rawAvailability.endTime ?? rawAvailability.end_time);
   const manualFields: ParticipantInput["manual_fields"] = {
     spicy_preference: normalizeSpicyPreference(rawManualFields.spicyPreference ?? rawManualFields.spicy_preference),
     leave_before: stringField(rawManualFields.leaveBefore ?? rawManualFields.leave_before) || undefined
@@ -296,8 +329,20 @@ function normalizeGroupParticipantInput(input: unknown): ParticipantInput {
   return {
     client_id: stringField(payload.clientId ?? payload.client_id) || undefined,
     nickname: stringField(payload.nickname, "我"),
+    visibility: normalizeVisibility(payload.visibility),
     raw_preference: stringField(payload.rawPreference ?? payload.raw_preference),
-    manual_fields: manualFields
+    manual_fields: manualFields,
+    availability_summary: stringField(payload.availabilitySummary ?? payload.availability_summary) || [
+      availabilityDays.join("、"),
+      timeMode === "allDay" ? "全天有空" : [startTime, endTime].filter(Boolean).join("-")
+    ].filter(Boolean).join(" "),
+    budget_tag: stringField(payload.budgetTag ?? payload.budget_tag) || undefined,
+    spicy_label: stringField(payload.spicyLabel ?? payload.spicy_label) || undefined,
+    dietary_restrictions: stringArrayField(payload.dietaryRestrictions ?? payload.dietary_restrictions),
+    cuisine_preferences: stringArrayField(payload.cuisinePreferences ?? payload.cuisine_preferences),
+    hard_requirements: stringArrayField(payload.hardRequirements ?? payload.hard_requirements),
+    soft_preferences: stringArrayField(payload.softPreferences ?? payload.soft_preferences),
+    requirement_priorities: stringRecordField(payload.requirementPriorities ?? payload.requirement_priorities)
   };
 }
 
@@ -383,12 +428,21 @@ function toGroupBoard(record: TaskRecord, inviteToken?: string): GroupTaskBoard 
       clientId: participant.client_id,
       submitterUserId: participant.submitter_user_id,
       nickname: participant.nickname,
+      visibility: participant.visibility,
       rawPreference: participant.raw_preference,
+      availabilitySummary: participant.availability_summary,
+      budgetTag: participant.budget_tag,
+      spicyLabel: participant.spicy_label,
+      dietaryRestrictions: participant.dietary_restrictions,
+      cuisinePreferences: participant.cuisine_preferences,
       manualFields: {
         budgetMax: participant.manual_fields.budget_max,
         spicyPreference: participant.manual_fields.spicy_preference,
         leaveBefore: participant.manual_fields.leave_before
       },
+      hardRequirements: participant.hard_requirements,
+      softPreferences: participant.soft_preferences,
+      requirementPriorities: participant.requirement_priorities,
       extractedConstraints: participant.extracted_constraints
     })),
     conflicts: payload.conflicts,
