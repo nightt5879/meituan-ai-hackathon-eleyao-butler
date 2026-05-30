@@ -118,6 +118,7 @@ export function createOpenClawDataFeedResult(
 export async function submitOpenClawDataFeed(context: OpenClawDataContext): Promise<OpenClawDataFeedResult> {
   const startedAt = Date.now();
   const sessionId = buildDataFeedSessionId(context);
+  const prompt = buildDataFeedPrompt(context);
 
   if (process.env.OPENCLAW_DATA_FEED_ENABLED === "0") {
     const result = createOpenClawDataFeedResult(context, "skipped", {
@@ -129,19 +130,39 @@ export async function submitOpenClawDataFeed(context: OpenClawDataContext): Prom
   }
 
   try {
-    await runOpenClawDataFeedCli(buildDataFeedPrompt(context), sessionId);
+    console.info("[openclawDataFeed] submit start", {
+      traceId: context.traceId,
+      scene: context.scene,
+      sessionRef: `session_${shortHash(sessionId, 12)}`,
+      contextBlocks: context.contextBlocks,
+      promptLength: prompt.length,
+      payloadDigest: shortHash(safeJsonStringify(context.payload), 16)
+    });
+    await runOpenClawDataFeedCli(prompt, sessionId);
     const result = createOpenClawDataFeedResult(context, "submitted", {
       sessionId,
       durationMs: Date.now() - startedAt,
       detail: "OpenClaw accepted context payload."
     });
+    console.info("[openclawDataFeed] submit ok", {
+      traceId: context.traceId,
+      scene: context.scene,
+      durationMs: result.durationMs
+    });
     await writeAudit(context, result);
     return result;
   } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
     const result = createOpenClawDataFeedResult(context, "failed", {
       sessionId,
       durationMs: Date.now() - startedAt,
-      detail: error instanceof Error ? error.message : String(error)
+      detail
+    });
+    console.warn("[openclawDataFeed] submit failed", {
+      traceId: context.traceId,
+      scene: context.scene,
+      durationMs: result.durationMs,
+      detail: detail.slice(0, 500)
     });
     await writeAudit(context, result);
     return result;

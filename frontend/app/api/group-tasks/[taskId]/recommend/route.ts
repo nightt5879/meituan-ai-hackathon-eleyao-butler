@@ -60,6 +60,16 @@ export async function POST(request: Request, { params }: RouteContext) {
     detail: "OpenClaw group feed/recommendation skipped by request or deployment config."
   });
 
+  console.info("[groupRecommend] OpenClaw decision", {
+    taskId,
+    traceId: openclawContext.traceId,
+    openclawFeed: inputRecord.openclawFeed,
+    useOpenClaw: inputRecord.useOpenClaw,
+    shouldFeedOpenClaw,
+    shouldUseOpenClaw,
+    contextBlocks: openclawContext.contextBlocks
+  });
+
   if (shouldFeedOpenClaw) {
     openclawContextResult = await submitOpenClawDataFeed(openclawContext);
   } else if (shouldUseOpenClaw) {

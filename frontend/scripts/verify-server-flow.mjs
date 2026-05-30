@@ -110,7 +110,8 @@ async function step(name, run) {
 await step("health endpoint", async () => {
   const health = await requestJson("/api/health");
   assertCondition(health.ok === true, "health.ok is not true");
-  return health.service || "ok";
+  const feedMode = health.build?.openclawFeedMode ? ` / ${health.build.openclawFeedMode}` : "";
+  return `${health.service || "ok"}${feedMode}`;
 });
 
 await step("food ping endpoint", async () => {
