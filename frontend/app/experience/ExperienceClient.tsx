@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
 
 type PhoneView = "login" | "home" | "food" | "group-create" | "group-fill" | "group-board" | "weekend" | "memory";
 
@@ -1316,7 +1316,7 @@ export default function ExperienceClient() {
   }
 
   function goHome() {
-    setView(identity ? "home" : "login");
+    setView("home");
   }
 
   function toggleGroupArrayField(field: "days" | "dietaryTags" | "cuisineTags", value: string, resetValue?: string) {
@@ -2061,17 +2061,34 @@ export default function ExperienceClient() {
   }
 
   function renderPhone() {
-    if (!identity || view === "login") {
-      return renderLoginPage();
+    let content: ReactNode;
+
+    if (view === "home") {
+      content = renderHomePage();
+    } else if (!identity || view === "login") {
+      content = renderLoginPage();
+    } else if (view === "food") {
+      content = renderFoodPage();
+    } else if (view === "group-create") {
+      content = renderGroupCreatePage();
+    } else if (view === "group-fill") {
+      content = renderGroupFillPage();
+    } else if (view === "group-board") {
+      content = renderGroupBoardPage();
+    } else if (view === "weekend") {
+      content = renderWeekendPage();
+    } else {
+      content = renderMemoryPage();
     }
 
-    if (view === "home") return renderHomePage();
-    if (view === "food") return renderFoodPage();
-    if (view === "group-create") return renderGroupCreatePage();
-    if (view === "group-fill") return renderGroupFillPage();
-    if (view === "group-board") return renderGroupBoardPage();
-    if (view === "weekend") return renderWeekendPage();
-    return renderMemoryPage();
+    return (
+      <>
+        {view !== "home" ? (
+          <button className="phone-home-shortcut" onClick={goHome} type="button" aria-label="返回四象限首页">首页</button>
+        ) : null}
+        {content}
+      </>
+    );
   }
 
   function getFoodQuestionBubbleText(question: FoodQuestion, answeredCount = foodIndex) {
@@ -2138,6 +2155,7 @@ export default function ExperienceClient() {
           <p>当前身份：{identity?.displayName || "未登录"}</p>
           <p className="mono">demoId: {identity?.demoUserId || judgeIdInput || browserJudgeId || "待生成"}</p>
           <p className="mono">userId: {identity?.userId || "等待登录"}</p>
+          <button className="panel-outline-button compact" onClick={goHome} type="button">回到四象限首页</button>
           <form className="identity-form" onSubmit={handleIdentitySubmit}>
             <label className="identity-label" htmlFor="judge-id-panel">评委 ID</label>
             <input
@@ -2186,7 +2204,9 @@ export default function ExperienceClient() {
           <a className="panel-link" href="/">作品首页</a>
           <h1>饿了幺 AI 管家</h1>
           <p>当前身份：{identity?.displayName || "未登录"}</p>
+          <p className="mono">demoId: {identity?.demoUserId || judgeIdInput || browserJudgeId || "待生成"}</p>
           <p className="mono">userId: {identity?.userId || "等待登录"}</p>
+          <button className="panel-outline-button compact" onClick={goHome} type="button">回到四象限首页</button>
           <h2>当前体验状态</h2>
           <p>最近偏好记录：{records.length} 条 · 收藏店铺：{favorites.length} 家</p>
           <p>多人约饭任务：{groupTaskId || "未创建"} · 周末规划：{weekendPlan?.planId || "未生成"}</p>

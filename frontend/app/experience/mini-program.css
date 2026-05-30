@@ -365,6 +365,28 @@
   cursor: pointer;
 }
 
+.phone-home-shortcut {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 30;
+  min-width: 58px;
+  height: 32px;
+  border: 1px solid var(--theme-border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--theme-text);
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: 0 8px 22px rgba(16, 24, 40, 0.12);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.phone-home-shortcut:active {
+  transform: translateY(1px);
+}
+
 .page {
   box-sizing: border-box;
   width: 100%;
