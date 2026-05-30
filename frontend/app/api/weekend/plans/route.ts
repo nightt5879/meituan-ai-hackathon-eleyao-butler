@@ -3,7 +3,8 @@ import {
   createOpenClawDataContext,
   createOpenClawDataFeedResult,
   recordOpenClawDataFeedResult,
-  submitOpenClawDataFeed
+  submitOpenClawDataFeed,
+  type OpenClawDataFeedResult
 } from "@/lib/server/openclawDataFeed";
 import { requireMiniProgramUser } from "@/lib/server/requestAuth";
 import { ensureUserProfile } from "@/lib/server/userProfileStore";
@@ -11,6 +12,30 @@ import { createWeekendPlan } from "@/lib/server/weekendPlanner";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+function createWeekendAiStatus(openclawContext: OpenClawDataFeedResult) {
+  const submitted = openclawContext.status === "submitted";
+  const skipped = openclawContext.status === "skipped";
+
+  return {
+    resultGeneratedBy: "rules",
+    resultIsAiGenerated: false,
+    openclawStatus: openclawContext.status,
+    openclawSubmitted: submitted,
+    traceId: openclawContext.traceId,
+    durationMs: openclawContext.durationMs,
+    label: submitted
+      ? "规则规划完成，OpenClaw 已接收上下文"
+      : skipped
+        ? "规则规划完成，OpenClaw 未启用"
+        : "规则规划完成，OpenClaw 提交失败",
+    detail: submitted
+      ? "本次路线由后端规则规划器生成；OpenClaw 接收了用户画像、天气和候选路线上下文，不是 OpenClaw 直接生成路线。"
+      : skipped
+        ? "本次路线由后端规则规划器生成；部署配置或请求参数跳过了 OpenClaw 上下文投喂。"
+        : `本次路线由后端规则规划器生成；OpenClaw 上下文投喂失败，结果不是 OpenClaw 直接返回。${openclawContext.detail ? ` ${openclawContext.detail}` : ""}`
+  };
+}
 
 export async function POST(request: Request) {
   const auth = await requireMiniProgramUser(request);
@@ -55,7 +80,8 @@ export async function POST(request: Request) {
   return NextResponse.json(
     {
       ...plan,
-      openclawContext: openclawContextResult
+      openclawContext: openclawContextResult,
+      aiStatus: createWeekendAiStatus(openclawContextResult)
     },
     { status: 201 }
   );
