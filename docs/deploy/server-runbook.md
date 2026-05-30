@@ -1,4 +1,4 @@
-# meituan01 服务器部署验证 Runbook
+# 服务器部署验证 Runbook
 
 用于把 PR #95 分支部署到已有服务器域名，并验证 issue #96 的账号、记忆和三功能信息流。
 
@@ -6,13 +6,13 @@
 
 - 公网域名：`https://meituan-ai-hackathon.cn`
 - Nginx 反代：`127.0.0.1:3001`
-- 历史生产工作目录：`/home/nightt/.openclaw/workspace-meituan01/meituan_prj_main/frontend`
-- 当前验证分支：`nightt5879/issue-94-web-single-experience`
+- 生产工作目录：服务器本地仓库根目录，使用 `<repo>` 表示，不在文档中记录个人绝对路径。
+- 当前部署分支：`main`
 
 ## 1. 进入线上工作目录
 
 ```bash
-cd /home/nightt/.openclaw/workspace-meituan01/meituan_prj_main
+cd <repo>
 git status --short --branch
 git remote -v
 ```
@@ -23,24 +23,25 @@ git remote -v
 
 ```bash
 git fetch origin --prune
-git switch nightt5879/issue-94-web-single-experience || git switch -c nightt5879/issue-94-web-single-experience origin/nightt5879/issue-94-web-single-experience
+git switch main
 git pull --ff-only
 ```
 
 ## 3. 准备稳定数据目录
 
 ```bash
-mkdir -p /home/nightt/.openclaw/workspace-meituan01/meituan_prj_state
+export MEITUAN_RUNTIME_DIR="<server-state-dir>"
+mkdir -p "$MEITUAN_RUNTIME_DIR"
 ```
 
 建议启动 Next 服务时带上这些环境变量：
 
 ```bash
-export MEITUAN_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/dinner-tasks.json
-export MEITUAN_AUTH_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/wechat-auth-sessions.json
-export MEITUAN_USER_PROFILE_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/user-profiles.json
-export MEITUAN_WEEKEND_STATE_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/weekend-plans.json
-export MEITUAN_OPENCLAW_FEED_AUDIT_FILE=/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/openclaw-feed-audit.json
+export MEITUAN_STATE_FILE="$MEITUAN_RUNTIME_DIR/dinner-tasks.json"
+export MEITUAN_AUTH_STATE_FILE="$MEITUAN_RUNTIME_DIR/wechat-auth-sessions.json"
+export MEITUAN_USER_PROFILE_STATE_FILE="$MEITUAN_RUNTIME_DIR/user-profiles.json"
+export MEITUAN_WEEKEND_STATE_FILE="$MEITUAN_RUNTIME_DIR/weekend-plans.json"
+export MEITUAN_OPENCLAW_FEED_AUDIT_FILE="$MEITUAN_RUNTIME_DIR/openclaw-feed-audit.json"
 export MEITUAN_REMOTE_API_BASE_URL=https://meituan-ai-hackathon.cn
 ```
 
@@ -48,19 +49,20 @@ OpenClaw 环境变量沿用服务器现有配置。不要把 token 写进仓库�
 
 ```bash
 export OPENCLAW_GATEWAY_URL=ws://127.0.0.1:19789
-export OPENCLAW_PROFILE=meituan01
+export OPENCLAW_PROFILE=<openclaw-profile>
 export OPENCLAW_AGENT_ID=main
 export OPENCLAW_CHAT_SESSION_ID=meituan-single-food
 export OPENCLAW_CHAT_SESSION_KEY=meituan-single-food
 export OPENCLAW_GATEWAY_TIMEOUT_MS=130000
 export OPENCLAW_DATA_FEED_TIMEOUT_MS=60000
-# export OPENCLAW_GATEWAY_TOKEN=服务器现有 token
+# export OPENCLAW_CLI_PATH="$(command -v openclaw)"
+# export OPENCLAW_GATEWAY_TOKEN=<server-only-token>
 ```
 
 ## 4. 安装并构建
 
 ```bash
-cd /home/nightt/.openclaw/workspace-meituan01/meituan_prj_main/frontend
+cd <repo>/frontend
 npm ci
 npm run build
 ```
@@ -78,7 +80,7 @@ ss -lntp | grep ':3001' || true
 
 ```bash
 kill <3001监听进程PID>
-nohup npm run start >/home/nightt/.openclaw/workspace-meituan01/meituan_prj_state/next-start.log 2>&1 &
+nohup npm run start >"$MEITUAN_RUNTIME_DIR/next-start.log" 2>&1 &
 sleep 3
 curl -i http://127.0.0.1:3001/api/health
 curl -i https://meituan-ai-hackathon.cn/api/health

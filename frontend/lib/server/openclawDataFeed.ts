@@ -313,8 +313,8 @@ function pickFields(source: Record<string, unknown>, keys: string[]) {
 function runOpenClawDataFeedCli(content: string, sessionId: string): Promise<void> {
   const timeoutMs = readNumberEnv("OPENCLAW_DATA_FEED_TIMEOUT_MS", DEFAULT_FEED_TIMEOUT_MS);
   const maxResponseChars = readNumberEnv("OPENCLAW_MAX_RESPONSE_CHARS", DEFAULT_MAX_RESPONSE_CHARS);
-  const cliPath = process.env.OPENCLAW_CLI_PATH?.trim() || process.env.OPENCLAW_BIN?.trim() || "/home/nightt/.npm-global/bin/openclaw";
-  const profile = process.env.OPENCLAW_PROFILE?.trim() || "meituan01";
+  const cliPath = process.env.OPENCLAW_CLI_PATH?.trim() || process.env.OPENCLAW_BIN?.trim() || "openclaw";
+  const profile = process.env.OPENCLAW_PROFILE?.trim() || "default";
   const agentId = process.env.OPENCLAW_AGENT_ID?.trim() || "main";
   const timeoutSeconds = Math.max(1, Math.ceil(timeoutMs / 1000));
   const args = [
@@ -341,7 +341,7 @@ function runOpenClawDataFeedCli(content: string, sessionId: string): Promise<voi
         maxBuffer: Math.max(maxResponseChars * 4, 1024 * 1024),
         env: {
           ...process.env,
-          PATH: process.env.PATH || "/usr/bin:/home/nightt/.local/bin:/home/nightt/.npm-global/bin:/usr/local/bin:/bin"
+          PATH: process.env.PATH || "/usr/local/bin:/usr/bin:/bin"
         }
       },
       (error, stdout, stderr) => {

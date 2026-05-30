@@ -6,7 +6,7 @@ import type { Conflict, DinnerTask, Participant, RecommendationResult, Restauran
 
 const execFileAsync = promisify(execFile);
 
-const DEFAULT_PROFILE = "meituan01";
+const DEFAULT_PROFILE = "default";
 const DEFAULT_AGENT_ID = "main";
 const DEFAULT_SESSION_KEY = "meituan-single-food";
 const DEFAULT_TIMEOUT_SECONDS = 300;
@@ -248,7 +248,7 @@ export async function generateOpenClawRecommendation(
   const userPart = options.userId ? `user-${shortHash(options.userId, 12)}` : undefined;
   const sessionKey = buildScopedOpenClawSessionId(DEFAULT_SESSION_KEY, ["group", userPart, options.taskId || task.task_id]);
   const timeoutSeconds = numberOr(process.env.OPENCLAW_AGENT_TIMEOUT_SECONDS, DEFAULT_TIMEOUT_SECONDS);
-  const openclawBin = process.env.OPENCLAW_BIN?.trim() || "/home/nightt/.npm-global/bin/openclaw";
+  const openclawBin = process.env.OPENCLAW_BIN?.trim() || "openclaw";
   const prompt = buildPrompt(task, participants, conflicts, options.context);
 
   const { stdout, stderr } = await execFileAsync(
@@ -259,7 +259,7 @@ export async function generateOpenClawRecommendation(
       maxBuffer: 1024 * 1024 * 8,
       env: {
         ...process.env,
-        PATH: process.env.PATH || "/usr/bin:/home/nightt/.local/bin:/home/nightt/.npm-global/bin:/usr/local/bin:/bin"
+        PATH: process.env.PATH || "/usr/local/bin:/usr/bin:/bin"
       }
     }
   );
