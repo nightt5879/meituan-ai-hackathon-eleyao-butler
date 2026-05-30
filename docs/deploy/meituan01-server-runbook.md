@@ -53,7 +53,7 @@ export OPENCLAW_AGENT_ID=main
 export OPENCLAW_CHAT_SESSION_ID=meituan-single-food
 export OPENCLAW_CHAT_SESSION_KEY=meituan-single-food
 export OPENCLAW_GATEWAY_TIMEOUT_MS=130000
-export OPENCLAW_DATA_FEED_TIMEOUT_MS=130000
+export OPENCLAW_DATA_FEED_TIMEOUT_MS=60000
 # export OPENCLAW_GATEWAY_TOKEN=服务器现有 token
 ```
 
@@ -127,6 +127,8 @@ npm run verify:server-flow -- --base-url https://meituan-ai-hackathon.cn --inclu
 ```bash
 npm run verify:server-flow -- --base-url https://meituan-ai-hackathon.cn --include-openclaw-feed
 ```
+
+这个模式只做轻量上下文投递，不让 OpenClaw 完整生成推荐。发送给 OpenClaw 的是短 prompt + JSON 摘要 + payload digest，避免把完整 task/routes/profile 大对象塞进 prompt 导致验证卡住。
 
 预期输出里会看到：
 

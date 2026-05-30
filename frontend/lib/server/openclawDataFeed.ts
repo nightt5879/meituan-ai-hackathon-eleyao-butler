@@ -58,7 +58,7 @@ type FeedAuditRecord = OpenClawDataFeedResult & {
   recordedAt: string;
 };
 
-const DEFAULT_FEED_TIMEOUT_MS = 130_000;
+const DEFAULT_FEED_TIMEOUT_MS = 60_000;
 const DEFAULT_MAX_RESPONSE_CHARS = 8000;
 
 export function createOpenClawDataContext(scene: OpenClawDataScene, input: CreateContextInput): OpenClawDataContext {
@@ -162,15 +162,131 @@ function buildDataFeedSessionId(context: OpenClawDataContext) {
 }
 
 function buildDataFeedPrompt(context: OpenClawDataContext) {
+  const contextSummary = buildDataFeedSummary(context);
+
   return [
     "You are the OpenClaw memory and context intake agent for the Meituan AI butler.",
-    "Ingest the following structured context so later recommendations can use the same user/profile/business state.",
+    "Acknowledge this compact context summary. Do not generate a recommendation, route, or ranking.",
     "Do not claim that you accessed real Meituan, Dianping, map, inventory, booking, or payment systems.",
     "Return ONLY strict JSON with this schema:",
     '{"ok":true,"traceId":"...","acceptedContext":["profile","scene_request"],"warnings":[]}',
-    "Context payload:",
-    JSON.stringify(context, null, 2)
+    "Compact context summary:",
+    JSON.stringify(contextSummary, null, 2)
   ].join("\n");
+}
+
+function buildDataFeedSummary(context: OpenClawDataContext) {
+  const payloadJson = safeJsonStringify(context.payload);
+
+  return {
+    schemaVersion: context.schemaVersion,
+    traceId: context.traceId,
+    scene: context.scene,
+    createdAt: context.createdAt,
+    user: context.user,
+    profile: {
+      initialized: context.profile.initialized,
+      initializedAt: context.profile.initializedAt,
+      butler: context.profile.butler,
+      foodPreferences: context.profile.preferences.food,
+      enabledPermissions: Object.keys(context.profile.preferences.permissions || {}).filter((key) => context.profile.preferences.permissions[key]),
+      memoryCounts: {
+        foodPreferenceRecords: context.profile.memories.foodPreferenceRecords.length,
+        favoriteShopIds: context.profile.memories.favoriteShopIds.length
+      }
+    },
+    contextBlocks: context.contextBlocks,
+    payloadDigest: shortHash(payloadJson, 16),
+    payloadSize: payloadJson.length,
+    payloadSummary: summarizeScenePayload(context.scene, context.payload),
+    privacy: context.privacy
+  };
+}
+
+function summarizeScenePayload(scene: OpenClawDataScene, payload: unknown) {
+  const record = isRecord(payload) ? payload : {};
+
+  if (scene === "group_dining") {
+    const task = isRecord(record.task) ? record.task : {};
+    const participants = Array.isArray(record.participants) ? record.participants : [];
+    const conflicts = Array.isArray(record.conflicts) ? record.conflicts : [];
+
+    return {
+      task: pickFields(task, ["task_id", "title", "raw_request", "location_text", "expected_people_count", "dinner_time", "global_constraints"]),
+      participantCount: participants.length,
+      participants: participants.slice(0, 5).map((item) => summarizeParticipant(item)),
+      conflictCount: conflicts.length,
+      conflicts: conflicts.slice(0, 5)
+    };
+  }
+
+  if (scene === "weekend_plan") {
+    const routes = Array.isArray(record.routes) ? record.routes : [];
+    const weather = isRecord(record.weather) ? record.weather : {};
+
+    return {
+      request: record.request,
+      weather: pickFields(weather, ["status", "summary", "weatherText", "temperatureC", "isRainy", "fallback"]),
+      routeCount: routes.length,
+      routes: routes.slice(0, 3).map((item) => summarizeWeekendRoute(item)),
+      source: record.source
+    };
+  }
+
+  if (scene === "food_recommendation") {
+    const requestRecord = isRecord(record.request) ? record.request : {};
+
+    return {
+      slots: requestRecord.slots,
+      preferences: requestRecord.preferences,
+      memoryProfile: requestRecord.memoryProfile,
+      decisionSheetKeys: isRecord(requestRecord.decisionSheet) ? Object.keys(requestRecord.decisionSheet) : []
+    };
+  }
+
+  return {
+    keys: Object.keys(record)
+  };
+}
+
+function summarizeParticipant(value: unknown) {
+  const record = isRecord(value) ? value : {};
+
+  return pickFields(record, [
+    "nickname",
+    "raw_preference",
+    "manual_fields",
+    "availability_summary",
+    "budget_tag",
+    "spicy_label",
+    "dietary_restrictions",
+    "cuisine_preferences",
+    "hard_requirements",
+    "soft_preferences",
+    "extracted_constraints"
+  ]);
+}
+
+function summarizeWeekendRoute(value: unknown) {
+  const record = isRecord(value) ? value : {};
+  const places = Array.isArray(record.places) ? record.places : [];
+
+  return {
+    ...pickFields(record, ["routeId", "routeType", "title", "summary", "estimatedBudget", "estimatedDurationMinutes", "walkingIntensity", "risks"]),
+    places: places.slice(0, 5).map((place) => pickFields(isRecord(place) ? place : {}, ["name", "category", "indoor", "estimatedCost", "walkMinutes"]))
+  };
+}
+
+function pickFields(source: Record<string, unknown>, keys: string[]) {
+  const result: Record<string, unknown> = {};
+
+  keys.forEach((key) => {
+    if (source[key] !== undefined) {
+      result[key] = source[key];
+    }
+  });
+
+  return result;
 }
 
 function runOpenClawDataFeedCli(content: string, sessionId: string): Promise<void> {
@@ -323,6 +439,14 @@ function readNumberEnv(name: string, fallback: number) {
 
 function readString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function safeJsonStringify(value: unknown) {
+  try {
+    return JSON.stringify(value) || "";
+  } catch {
+    return "";
+  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

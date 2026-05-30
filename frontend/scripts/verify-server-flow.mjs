@@ -20,7 +20,7 @@ function hasFlag(name) {
 const baseUrl = readArg("--base-url", "http://127.0.0.1:3000").replace(/\/+$/, "");
 const requireOpenClawStatus = !hasFlag("--skip-openclaw-status");
 const includeOpenClawFeed = hasFlag("--include-openclaw-feed");
-const includeOpenClawRecommend = hasFlag("--include-openclaw-recommend") || includeOpenClawFeed;
+const includeOpenClawRecommend = hasFlag("--include-openclaw-recommend");
 const demoUserId = readArg("--demo-user-id", "server-smoke");
 
 let failures = 0;
@@ -243,7 +243,8 @@ await step("group dining flow", async () => {
     token: sessionToken,
     body: {
       inviteToken: task.inviteToken,
-      useOpenClaw: includeOpenClawFeed
+      openclawFeed: includeOpenClawFeed,
+      useOpenClaw: false
     }
   });
 
@@ -292,6 +293,49 @@ await step("weekend planning flow", async () => {
   return `${plan.planId} generated`;
 });
 
+if (includeOpenClawFeed) {
+  await step("food OpenClaw context feed", async () => {
+    const result = await requestJson("/api/food/recommend", {
+      method: "POST",
+      token: sessionToken,
+      body: {
+        openclawFeedOnly: true,
+        slots: {
+          mealPurpose: "午餐",
+          branchPreference: "粉面",
+          budget: "20 元以内",
+          distance: "1 公里以内"
+        },
+        preferences: {
+          tasteTags: ["鲜香"],
+          needTags: ["汤汤水水"],
+          avoidTags: ["不吃辣"],
+          spicyLevel: "不吃辣"
+        },
+        memoryProfile: {
+          enabled: true,
+          stableFoodPreferences: {
+            avoidTags: ["不吃辣"],
+            spicyLevel: "不吃辣",
+            source: "server-smoke"
+          }
+        },
+        requestContext: {
+          excludeIds: [],
+          batchIndex: 0
+        }
+      }
+    });
+
+    assertCondition(
+      result.diagnostics?.openclawContext?.submitted === true,
+      `food OpenClaw context was not submitted: ${summarizeOpenClawContext(result.diagnostics?.openclawContext)}`
+    );
+    assertCondition(result.diagnostics?.openclawContext?.contextBlocks?.includes("current_food_request"), "food OpenClaw context missing request block");
+    return `food context ${result.diagnostics.openclawContext.traceId}`;
+  });
+}
+
 if (includeOpenClawRecommend) {
   await step("optional OpenClaw recommendation generation", async () => {
     const result = await requestJson("/api/food/recommend", {
@@ -334,7 +378,7 @@ if (includeOpenClawRecommend) {
     return `${result.recommendations.length} recommendations with OpenClaw context ${result.diagnostics.openclawContext.traceId}`;
   });
 } else {
-  printStatus("SKIP", "optional OpenClaw recommendation generation", "pass --include-openclaw-recommend or --include-openclaw-feed to submit a real request");
+  printStatus("SKIP", "optional OpenClaw recommendation generation", "pass --include-openclaw-recommend to submit a real recommendation request");
 }
 
 if (failures > 0) {

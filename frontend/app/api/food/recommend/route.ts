@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import {
   createOpenClawDataContext,
   createOpenClawDataFeedResult,
-  recordOpenClawDataFeedResult
+  recordOpenClawDataFeedResult,
+  submitOpenClawDataFeed
 } from "@/lib/server/openclawDataFeed";
 import { requireMiniProgramUser } from "@/lib/server/requestAuth";
 import {
@@ -31,6 +32,7 @@ export async function POST(request: Request) {
   }
 
   const sanitizedRequest = sanitizeFoodRecommendRequest(body);
+  const bodyRecord = body && typeof body === "object" ? body as Record<string, unknown> : {};
   const profile = await ensureUserProfile(auth.user.userId);
   const openclawContext = createOpenClawDataContext("food_recommendation", {
     userId: auth.user.userId,
@@ -40,6 +42,19 @@ export async function POST(request: Request) {
       request: sanitizedRequest
     }
   });
+
+  if (bodyRecord.openclawFeedOnly === true) {
+    const openclawContextResult = await submitOpenClawDataFeed(openclawContext);
+
+    return NextResponse.json({
+      ok: openclawContextResult.submitted,
+      source: "openclaw-feed",
+      diagnostics: {
+        durationMs: Date.now() - startedAt,
+        openclawContext: openclawContextResult
+      }
+    }, { status: openclawContextResult.submitted ? 200 : 502 });
+  }
 
   try {
     const result = await generateFoodRecommendationsWithOpenClaw(sanitizedRequest, {

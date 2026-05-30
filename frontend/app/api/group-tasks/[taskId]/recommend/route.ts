@@ -3,7 +3,8 @@ import { generateOpenClawRecommendation } from "@/lib/server/openclawRecommendat
 import {
   createOpenClawDataContext,
   createOpenClawDataFeedResult,
-  recordOpenClawDataFeedResult
+  recordOpenClawDataFeedResult,
+  submitOpenClawDataFeed
 } from "@/lib/server/openclawDataFeed";
 import { requireMiniProgramUser } from "@/lib/server/requestAuth";
 import { getGroupRecommendationSource, saveGroupRecommendation } from "@/lib/server/taskStore";
@@ -41,7 +42,8 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: source.error }, { status: source.status });
   }
 
-  const shouldUseOpenClaw = inputRecord.useOpenClaw !== false && process.env.OPENCLAW_GROUP_RECOMMENDATION_ENABLED !== "0";
+  const shouldFeedOpenClaw = inputRecord.openclawFeed === true && process.env.OPENCLAW_DATA_FEED_ENABLED !== "0";
+  const shouldUseOpenClaw = inputRecord.useOpenClaw === true && process.env.OPENCLAW_GROUP_RECOMMENDATION_ENABLED !== "0";
   const profile = await ensureUserProfile(auth.user.userId);
   const openclawContext = createOpenClawDataContext("group_dining", {
     userId: auth.user.userId,
@@ -55,10 +57,12 @@ export async function POST(request: Request, { params }: RouteContext) {
   });
   let recommendation: RecommendationResult | undefined;
   let openclawContextResult = createOpenClawDataFeedResult(openclawContext, "skipped", {
-    detail: "OpenClaw group recommendation skipped by request or deployment config."
+    detail: "OpenClaw group feed/recommendation skipped by request or deployment config."
   });
 
-  if (shouldUseOpenClaw) {
+  if (shouldFeedOpenClaw) {
+    openclawContextResult = await submitOpenClawDataFeed(openclawContext);
+  } else if (shouldUseOpenClaw) {
     const startedAt = Date.now();
 
     try {
@@ -89,7 +93,9 @@ export async function POST(request: Request, { params }: RouteContext) {
     }
   }
 
-  await recordOpenClawDataFeedResult(openclawContext, openclawContextResult);
+  if (!shouldFeedOpenClaw) {
+    await recordOpenClawDataFeedResult(openclawContext, openclawContextResult);
+  }
   const result = await saveGroupRecommendation(taskId, inviteToken, recommendation, openclawContextResult);
 
   if (result.status !== 200) {
