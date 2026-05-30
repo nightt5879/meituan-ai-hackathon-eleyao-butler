@@ -4,7 +4,7 @@
 
 ## 结论先行
 
-`http://meituan.43-110-71-200.sslip.io` 不是整体 ping 不通。当前已确认：
+历史临时域名不是整体 ping 不通；正式入口迁移后以 `https://meituan-ai-hackathon.cn` 为准。当前已确认：
 
 - `GET /api/food/ping` 能返回 200。
 - `GET /api/food/status` 能返回 `backend.ok=true`，并能看到 OpenClaw Gateway 可达。
@@ -56,7 +56,7 @@ export OPENCLAW_GATEWAY_TOKEN=...
 服务器 pull/build/restart 之后，在 `frontend` 目录执行：
 
 ```bash
-npm run verify:server-flow -- --base-url http://meituan.43-110-71-200.sslip.io
+npm run verify:server-flow -- --base-url https://meituan-ai-hackathon.cn
 ```
 
 默认验证内容：
@@ -76,7 +76,7 @@ npm run verify:server-flow -- --base-url http://meituan.43-110-71-200.sslip.io
 需要二阶段验证 OpenClaw 推荐时，再显式加开关：
 
 ```bash
-npm run verify:server-flow -- --base-url http://meituan.43-110-71-200.sslip.io --include-openclaw-recommend
+npm run verify:server-flow -- --base-url https://meituan-ai-hackathon.cn --include-openclaw-recommend
 ```
 
 本地没有 OpenClaw Gateway 时，可以只做非 OpenClaw dry run：

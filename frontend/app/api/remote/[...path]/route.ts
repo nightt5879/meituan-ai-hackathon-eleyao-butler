@@ -7,7 +7,7 @@ type RouteContext = {
   params: Promise<{ path: string[] }>;
 };
 
-const DEFAULT_REMOTE_API_BASE_URL = "http://meituan.43-110-71-200.sslip.io";
+const DEFAULT_REMOTE_API_BASE_URL = "https://meituan-ai-hackathon.cn";
 const ALLOWED_REMOTE_PATHS = new Set([
   "food/ping",
   "food/status",

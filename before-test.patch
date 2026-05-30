@@ -1,13 +1,13 @@
-diff --git a/mini-program/wechat-miniprogram/app.js b/mini-program/wechat-miniprogram/app.js
+﻿diff --git a/mini-program/wechat-miniprogram/app.js b/mini-program/wechat-miniprogram/app.js
 index 1f3f9cc..2c91aed 100644
 --- a/mini-program/wechat-miniprogram/app.js
 +++ b/mini-program/wechat-miniprogram/app.js
 @@ -15,7 +15,15 @@ App({
-     authApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
-     foodRecommendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
-     groupDiningApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
--    weekendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io'
-+    weekendApiBaseUrl: 'http://meituan.43-110-71-200.sslip.io',
+     authApiBaseUrl: 'https://meituan-ai-hackathon.cn',
+     foodRecommendApiBaseUrl: 'https://meituan-ai-hackathon.cn',
+     groupDiningApiBaseUrl: 'https://meituan-ai-hackathon.cn',
+-    weekendApiBaseUrl: 'https://meituan-ai-hackathon.cn'
++    weekendApiBaseUrl: 'https://meituan-ai-hackathon.cn',
 +    // Group dining adapter mode: 'auto' | 'real' | 'mock'.
 +    // - 'auto'  : try real backend first; fall back to local mock on failure.
 +    // - 'real'  : real backend only; surface errors to the page.
@@ -391,7 +391,7 @@ index 8849f1d..9531be3 100644
 --- a/mini-program/wechat-miniprogram/services/groupDiningAdapter.js
 +++ b/mini-program/wechat-miniprogram/services/groupDiningAdapter.js
 @@ -1,9 +1,79 @@
- const DEFAULT_API_BASE_URL = 'http://meituan.43-110-71-200.sslip.io';
+ const DEFAULT_API_BASE_URL = 'https://meituan-ai-hackathon.cn';
 -const STATUS = 'pending_integration';
 +// Status taxonomy used by adapter return values:
 +//   REAL_STATUS     ('remote_ok')          — real backend returned a 2xx response.

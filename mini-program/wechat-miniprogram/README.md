@@ -95,7 +95,7 @@ POST /api/food/recommend
 
 配置方式：
 
-- 在 `app.js` 的 `globalData.foodRecommendApiBaseUrl` 中填写 Next.js 后端地址，例如 `https://your-backend.example.com`。
+- 在 `app.js` 的 `globalData.foodRecommendApiBaseUrl` 中填写 Next.js 后端地址，例如 `https://meituan-ai-hackathon.cn`。
 - 本字段留空时，小程序不会请求远端，会继续使用本地 mock 推荐。
 - OpenClaw Gateway URL、token、模型 key 只允许配置在后端环境变量中，不能写入小程序。
 

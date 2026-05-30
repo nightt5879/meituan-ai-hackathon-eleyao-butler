@@ -1,4 +1,4 @@
-const DEFAULT_API_BASE_URL = 'http://meituan.43-110-71-200.sslip.io';
+const DEFAULT_API_BASE_URL = 'https://meituan-ai-hackathon.cn';
 // Status taxonomy used by adapter return values:
 //   REAL_STATUS     ('remote_ok')          — real backend returned a 2xx response.
 //   MOCK_STATUS     ('mock_ok')            — mock mode short-circuit; the adapter
