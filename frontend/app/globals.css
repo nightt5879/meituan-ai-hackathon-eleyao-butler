@@ -4,8 +4,8 @@
 
 :root {
   color-scheme: light;
-  background: #fffdf8;
-  color: #1f2937;
+  background: #f7fbf7;
+  color: #12342f;
 }
 
 * {
@@ -14,21 +14,20 @@
 
 html {
   min-height: 100%;
-  background: #fffdf8;
+  background: #f7fbf7;
   overflow-x: hidden;
 }
 
 body {
   min-height: 100%;
   margin: 0;
-  background:
-    linear-gradient(180deg, rgba(255, 209, 0, 0.16), rgba(255, 253, 248, 0) 220px),
-    #fffdf8;
-  color: #1f2937;
+  background: #f7fbf7;
+  color: #12342f;
   font-family:
-    Arial,
+    "Noto Sans SC",
     "Microsoft YaHei",
     "PingFang SC",
+    Arial,
     sans-serif;
   overflow-x: hidden;
 }

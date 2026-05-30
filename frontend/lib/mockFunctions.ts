@@ -110,6 +110,18 @@ export function extractParticipantConstraints(input: ParticipantInput): Particip
     softPreferences.push("适合聊天、安静");
   }
 
+  for (const item of input.hard_requirements ?? []) {
+    if (item.trim()) {
+      hardConstraints.push(item.trim());
+    }
+  }
+
+  for (const item of input.soft_preferences ?? []) {
+    if (item.trim()) {
+      softPreferences.push(item.trim());
+    }
+  }
+
   return {
     hard_constraints: Array.from(new Set(hardConstraints)),
     soft_preferences: Array.from(new Set(softPreferences))
@@ -129,8 +141,17 @@ export function buildMockParticipant(input: ParticipantInput, existingId?: strin
     participant_id: existingId ?? `p_local_${encodeURIComponent(nickname)}`,
     client_id: input.client_id?.trim() || undefined,
     nickname,
+    visibility: input.visibility || "public",
     raw_preference: input.raw_preference.trim(),
     manual_fields,
+    availability_summary: input.availability_summary,
+    budget_tag: input.budget_tag,
+    spicy_label: input.spicy_label,
+    dietary_restrictions: input.dietary_restrictions,
+    cuisine_preferences: input.cuisine_preferences,
+    hard_requirements: input.hard_requirements,
+    soft_preferences: input.soft_preferences,
+    requirement_priorities: input.requirement_priorities,
     extracted_constraints: extractParticipantConstraints({ ...input, nickname, manual_fields })
   };
 }
@@ -141,8 +162,17 @@ export function extractConstraints(participants: Participant[]) {
       {
         client_id: participant.client_id,
         nickname: participant.nickname,
+        visibility: participant.visibility,
         raw_preference: participant.raw_preference,
-        manual_fields: participant.manual_fields
+        manual_fields: participant.manual_fields,
+        availability_summary: participant.availability_summary,
+        budget_tag: participant.budget_tag,
+        spicy_label: participant.spicy_label,
+        dietary_restrictions: participant.dietary_restrictions,
+        cuisine_preferences: participant.cuisine_preferences,
+        hard_requirements: participant.hard_requirements,
+        soft_preferences: participant.soft_preferences,
+        requirement_priorities: participant.requirement_priorities
       },
       participant.participant_id
     )

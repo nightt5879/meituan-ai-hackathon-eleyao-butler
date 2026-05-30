@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
-type View = "login" | "home" | "food" | "group-create" | "group-fill" | "group-board" | "weekend" | "memory";
+type PhoneView = "login" | "home" | "food" | "group-create" | "group-fill" | "group-board" | "weekend" | "memory";
 
 type Identity = {
   demoUserId: string;
@@ -16,11 +16,14 @@ type MemorySettings = {
   spicyLevel: string;
   budget: string;
   distance: string;
+  memoryEnabled: boolean;
+  updatedAt: string;
   permissions: {
     stableFoodMemory: boolean;
     behaviorLearning: boolean;
     recommendationHistory: boolean;
     weekendPlans: boolean;
+    [key: string]: boolean;
   };
 };
 
@@ -35,6 +38,7 @@ type FoodSlots = {
 type FoodPreferences = {
   tasteTags: string[];
   needTags: string[];
+  temporaryAvoidTags: string[];
   avoidTags: string[];
   spicyLevel: string;
 };
@@ -49,7 +53,6 @@ type RecommendationCard = {
   distance: string;
   rating: number;
   matchedTags: string[];
-  matchedTagsText?: string;
   reason: string;
   riskTip: string;
   source?: string;
@@ -69,6 +72,8 @@ type GroupBoard = {
   task: {
     taskId: string;
     title: string;
+    displayTitle?: string;
+    displaySummary?: string;
     creatorName: string;
     rawRequest: string;
     locationText: string;
@@ -80,22 +85,33 @@ type GroupBoard = {
   participants: Array<{
     participantId: string;
     nickname: string;
+    visibility?: "public" | "nickname_only" | "private";
     rawPreference: string;
+    availabilitySummary?: string;
+    budgetTag?: string;
+    spicyLabel?: string;
+    dietaryRestrictions?: string[];
+    cuisinePreferences?: string[];
     manualFields: {
       budgetMax?: number;
       spicyPreference?: string;
       leaveBefore?: string;
     };
+    hardRequirements?: string[];
+    softPreferences?: string[];
     extractedConstraints: {
-      hard_constraints: string[];
-      soft_preferences: string[];
+      hard_constraints?: string[];
+      soft_preferences?: string[];
+      hardConstraints?: string[];
+      softPreferences?: string[];
     };
   }>;
   conflicts: Array<{
     type: string;
     severity: string;
     description: string;
-    resolution_strategy: string;
+    resolution_strategy?: string;
+    resolutionStrategy?: string;
   }>;
   recommendationState: {
     status: string;
@@ -105,16 +121,33 @@ type GroupBoard = {
   };
   recommendationResult: {
     candidates: Array<{
-      restaurant_id: string;
+      restaurant_id?: string;
+      id?: string;
       name: string;
       category: string;
-      avg_price: number;
-      distance_m: number;
+      avg_price?: number;
+      avgPrice?: number;
+      distance_m?: number;
+      walkMinutes?: number;
+      walk_minutes?: number;
       rating: number;
       reason: string;
       tags: string[];
-      queue_risk: string;
+      queue_risk?: string;
       score: number;
+      audit?: {
+        passed?: boolean;
+        hard_rules?: Record<string, "pass" | "fail" | "risk" | string>;
+        hardRules?: Record<string, "pass" | "fail" | "risk" | string>;
+        llm_explanation?: string;
+        llmExplanation?: string;
+      };
+      matchedNeeds?: string[];
+      unmetNeeds?: string[];
+      tradeoffSummary?: string;
+      tradeoffs?: Array<{ nickname?: string; reason?: string }>;
+      memberScoreList?: Array<{ nickname?: string; score?: number | string }>;
+      member_scores?: Record<string, number>;
     }>;
     finalChoice: {
       name: string;
@@ -132,19 +165,27 @@ type WeekendPlan = {
   status: string;
   weather?: {
     summary?: string;
-    status?: string;
+    sourceLabel?: string;
     fallback?: boolean;
-    condition?: string;
   };
+  weatherNotice?: string;
   backendStatus?: string;
   backendMessage?: string;
+  source?: {
+    weather?: string;
+    poi?: string;
+    planner?: string;
+  };
   routes: Array<{
     id: string;
     type: string;
+    typeLabel?: string;
     title: string;
     summary: string;
     estimatedBudget?: string;
+    estimatedBudgetText?: string;
     estimatedDurationMinutes?: number;
+    estimatedDurationText?: string;
     durationText?: string;
     transport?: string;
     timeline?: Array<{
@@ -154,7 +195,7 @@ type WeekendPlan = {
       activity?: string;
       durationMinutes?: number;
     }>;
-    selfChecks?: Record<string, string> | Array<{ label?: string; detail?: string; passed?: boolean; status?: string }>;
+    selfChecks?: Record<string, string> | Array<{ label?: string; detail?: string; passed?: boolean; statusText?: string; status?: string }>;
     risks?: string[];
     inviteText?: string;
   }>;
@@ -162,218 +203,407 @@ type WeekendPlan = {
 
 type ApiError = Error & { status?: number; code?: string };
 
+type FoodTagType = "taste" | "need" | "temporaryAvoid" | "avoid" | "spicyLevel";
+type FoodQuestionKind = "choice" | "multi-choice" | "tag";
+type FoodTagGroup = {
+  title: string;
+  type: FoodTagType;
+  mode: "single" | "multiple";
+  tags: Array<{ id: string; label: string; type: FoodTagType }>;
+};
+
 type FoodQuestion = {
   id: string;
+  slot?: keyof FoodSlots;
+  label?: string;
+  kind?: FoodQuestionKind;
   title: string;
-  helper: string;
-  options: string[];
+  helper?: string;
+  options?: string[];
+  groups?: FoodTagGroup[];
+  optional?: boolean;
+  allowEmpty?: boolean;
   multi?: boolean;
   text?: boolean;
+};
+
+type PrefSummaryRow = {
+  key: string;
+  label: string;
+  value: string;
+  action: string;
+  toggleable: boolean;
+  keep: boolean;
 };
 
 const identityKey = "meituan_web_demo_identity";
 const defaultMemory: MemorySettings = {
   avoidTags: [],
-  spicyLevel: "都可以",
+  spicyLevel: "看当天心情",
   budget: "50元以内",
   distance: "1公里以内",
+  memoryEnabled: true,
+  updatedAt: "",
   permissions: {
     stableFoodMemory: true,
     behaviorLearning: true,
     recommendationHistory: true,
-    weekendPlans: true
+    weekendPlans: true,
+    rememberTastePattern: true,
+    rememberBudgetByMeal: true,
+    rememberCommonCategories: true,
+    rememberDeliveryDineInPreference: true,
+    rememberDistancePreference: true,
+    rememberExplorationStyle: true,
+    rememberAdjustmentPatterns: true,
+    rememberDiningReport: true,
+    rememberFrequentArea: true,
+    rememberGroupPreference: true
   }
 };
 
-const foodQuestions: FoodQuestion[] = [
-  {
-    id: "mealPurpose",
-    title: "这次主要是什么用餐场景？",
-    helper: "和小程序一致，先确定早餐、午餐、晚餐、下午茶或夜宵。",
-    options: ["早餐", "午餐", "晚餐", "下午茶", "夜宵"]
-  },
-  {
-    id: "branchPreference",
-    title: "这次更想吃哪类？",
-    helper: "可以直接选择一个大方向，后面还能补充调整。",
-    options: ["饭/面正餐", "甜品/下午茶", "火锅/烤肉", "轻食/咖啡", "都可以"]
-  },
-  {
-    id: "tasteTags",
-    title: "口味和感觉更偏向？",
-    helper: "可多选。",
-    multi: true,
-    options: ["清淡", "鲜香", "酸甜", "重口", "热乎", "有汤", "精致一点"]
-  },
-  {
-    id: "needTags",
-    title: "这次最想优先满足什么？",
-    helper: "可多选，AI 会优先满足这些条件。",
-    multi: true,
-    options: ["近一点", "便宜一点", "适合聊天", "快速出餐", "不排队", "可打包"]
-  },
-  {
-    id: "avoidTags",
-    title: "这次不想踩哪些雷？",
-    helper: "可多选，也可以后面手动补充。",
-    multi: true,
-    options: ["太辣", "太油", "排队久", "太远", "奶制品", "海鲜", "甜腻"]
-  },
-  {
-    id: "spicyLevel",
-    title: "辣度能接受到哪里？",
-    helper: "会影响推荐的风险提醒。",
-    options: ["不辣", "微辣", "都可以", "能吃辣"]
-  },
-  {
-    id: "budget",
-    title: "预算大概是多少？",
-    helper: "按人均估算。",
-    options: ["30元以内", "30-50元", "50-80元", "80元以上"]
-  },
-  {
-    id: "distance",
-    title: "距离希望控制在？",
-    helper: "会和场景、预算一起权衡。",
-    options: ["500米以内", "1公里以内", "2公里以内", "都可以"]
-  },
-  {
-    id: "userNotes",
-    title: "还有其他补充吗？",
-    helper: "例如：想坐一会儿、不要太吵、最好能外带。可跳过。",
-    text: true,
-    options: []
-  }
+const memoryAvoidOptions = ["无", "香菜", "葱蒜", "花生", "海鲜", "牛羊肉", "乳制品", "其他"];
+const memorySpicyOptions = ["不吃辣", "微辣", "中辣", "重辣", "看当天心情"];
+const memoryPermissionRows = [
+  { key: "rememberTastePattern", title: "口味倾向", desc: "记录你常选哪类口味/感觉" },
+  { key: "rememberBudgetByMeal", title: "不同用餐场景的预算", desc: "区分午餐 / 晚餐 / 下午茶等的预算" },
+  { key: "rememberCommonCategories", title: "常吃餐品 / 品类", desc: "你最常被推中的菜系或品类" },
+  { key: "rememberDeliveryDineInPreference", title: "外卖 or 到店偏好", desc: "你更常选外卖还是堂食" },
+  { key: "rememberDistancePreference", title: "常用距离 / 配送接受度", desc: "你愿意走多远或等多久" },
+  { key: "rememberExplorationStyle", title: "探索新店 or 常吃熟店", desc: "你更爱回头店还是新店" },
+  { key: "rememberAdjustmentPatterns", title: "调整反馈习惯", desc: "经常觉得太贵、太远、想换品类" },
+  { key: "rememberDiningReport", title: "用餐报告与花销估算", desc: "允许管家根据你的推荐记录生成周报/月报，不读取真实支付记录。" },
+  { key: "rememberFrequentArea", title: "常去区域", desc: "记录你常用的学校周边、商圈或出发区域" },
+  { key: "rememberGroupPreference", title: "群聊偏好", desc: "记录你授权的小团体共同偏好，用于多人约饭折中" }
 ];
+const learnedPlaceholderRows = [
+  { label: "午餐常选", value: "待学习", desc: "完成几次午餐推荐后生成" },
+  { label: "晚餐预算", value: "待学习", desc: "完成几次晚餐推荐后生成" },
+  { label: "外卖偏好", value: "待学习", desc: "会学习预算、常点品类、配送接受度" },
+  { label: "到店偏好", value: "待学习", desc: "会学习距离、环境、是否愿意探索新店" },
+  { label: "探索倾向", value: "待学习", desc: "会判断你更爱熟悉店还是新店" }
+];
+
+const tasteTagOptions = [
+  { id: "taste_light", label: "清淡", type: "taste" },
+  { id: "taste_fresh", label: "鲜香", type: "taste" },
+  { id: "taste_salty", label: "咸香", type: "taste" },
+  { id: "taste_spicy", label: "香辣", type: "taste" },
+  { id: "taste_mala", label: "麻辣", type: "taste" },
+  { id: "taste_sour_spicy", label: "酸辣", type: "taste" },
+  { id: "taste_sour_sweet", label: "酸甜", type: "taste" },
+  { id: "taste_rich", label: "浓郁", type: "taste" },
+  { id: "taste_refreshing", label: "爽口", type: "taste" }
+] satisfies FoodTagGroup["tags"];
+
+const needTagOptions = [
+  { id: "need_hot", label: "热乎的", type: "need" },
+  { id: "need_soup", label: "汤汤水水", type: "need" },
+  { id: "need_rice", label: "下饭", type: "need" },
+  { id: "need_less_oil", label: "不油腻", type: "need" },
+  { id: "need_light", label: "轻负担", type: "need" },
+  { id: "need_craving", label: "解馋", type: "need" },
+  { id: "need_full", label: "饱腹感强", type: "need" }
+] satisfies FoodTagGroup["tags"];
+
+const temporaryAvoidTagOptions = [
+  { id: "temporary_queue", label: "排队久", type: "temporaryAvoid" },
+  { id: "temporary_too_oily", label: "太油", type: "temporaryAvoid" },
+  { id: "temporary_too_heavy", label: "太重口", type: "temporaryAvoid" },
+  { id: "temporary_too_sweet", label: "太甜腻", type: "temporaryAvoid" },
+  { id: "temporary_too_far", label: "太远", type: "temporaryAvoid" }
+] satisfies FoodTagGroup["tags"];
+
+const restrictionTagOptions = [
+  { id: "avoid_spicy", label: "不吃辣", type: "avoid" },
+  { id: "avoid_cilantro", label: "不要香菜", type: "avoid" },
+  { id: "avoid_garlic", label: "不要葱蒜", type: "avoid" },
+  { id: "avoid_seafood", label: "不吃海鲜", type: "avoid" },
+  { id: "avoid_offal", label: "不吃内脏", type: "avoid" },
+  { id: "avoid_beef_lamb", label: "不吃牛羊肉", type: "avoid" },
+  { id: "avoid_allergy", label: "过敏/不能吃", type: "avoid" },
+  { id: "avoid_none", label: "没有忌口", type: "avoid" }
+] satisfies FoodTagGroup["tags"];
+
+const spicyTagOptions = [
+  { id: "spicy_none", label: "不吃辣", type: "spicyLevel" },
+  { id: "spicy_light", label: "微辣", type: "spicyLevel" },
+  { id: "spicy_medium", label: "中辣", type: "spicyLevel" },
+  { id: "spicy_heavy", label: "重辣", type: "spicyLevel" }
+] satisfies FoodTagGroup["tags"];
+
+const mealPurposeQuestion: FoodQuestion = {
+  id: "mealPurpose",
+  kind: "choice",
+  slot: "mealPurpose",
+  label: "就餐场景",
+  title: "这次是什么用餐场景？",
+  options: ["早餐", "午餐", "晚餐", "夜宵", "下午茶", "一个人随便吃", "和朋友一起吃", "工作日快餐", "周末放松吃"]
+};
+
+const tasteNeedQuestion: FoodQuestion = {
+  id: "tag-preferences",
+  kind: "tag",
+  label: "口味/感觉",
+  title: "今天想吃什么口味/感觉？",
+  allowEmpty: true,
+  groups: [
+    { title: "口味偏好", type: "taste", mode: "multiple", tags: tasteTagOptions },
+    { title: "当前想吃的感觉", type: "need", mode: "multiple", tags: needTagOptions },
+    { title: "这次不想吃", type: "temporaryAvoid", mode: "multiple", tags: temporaryAvoidTagOptions }
+  ]
+};
+
+const branchPreferenceOptionsByMealPurpose: Record<string, string[]> = {
+  早餐: ["都可以", "包子/点心", "粥", "面条/粉", "三明治", "咖啡", "豆浆", "轻食"],
+  午餐: ["都可以", "中式简餐", "家常菜", "粉面", "米饭套餐", "火锅/冒菜", "麻辣烫", "烧烤/炸物", "西餐", "日料", "韩餐", "东南亚菜", "轻食"],
+  晚餐: ["都可以", "中式简餐", "家常菜", "粉面", "米饭套餐", "火锅/冒菜", "麻辣烫", "烧烤/炸物", "西餐", "日料", "韩餐", "东南亚菜", "轻食"],
+  下午茶: ["都可以", "咖啡", "奶茶", "甜品", "面包/烘焙", "轻食", "水果/酸奶"],
+  夜宵: ["都可以", "烧烤", "炸串/炸鸡", "粉面", "麻辣烫", "小吃", "甜品", "粥"],
+  一个人随便吃: ["都可以", "近一点", "便宜一点", "快一点", "清淡点", "管饱", "不油腻"],
+  和朋友一起吃: ["都可以", "中式简餐", "家常菜", "粉面", "米饭套餐", "火锅/冒菜", "麻辣烫", "烧烤/炸物", "西餐", "日料", "韩餐", "东南亚菜", "轻食"],
+  工作日快餐: ["都可以", "快一点", "近一点", "便宜一点", "米饭套餐", "粉面", "轻食", "管饱"],
+  周末放松吃: ["都可以", "中式简餐", "家常菜", "粉面", "米饭套餐", "火锅/冒菜", "麻辣烫", "烧烤/炸物", "西餐", "日料", "韩餐", "东南亚菜", "轻食"]
+};
+
+const avoidSpiceQuestion: FoodQuestion = {
+  id: "avoid-preferences",
+  kind: "tag",
+  label: "忌口/辣度",
+  title: "有什么忌口或辣度要求吗？",
+  optional: true,
+  allowEmpty: true,
+  groups: [
+    { title: "忌口", type: "avoid", mode: "multiple", tags: restrictionTagOptions },
+    { title: "辣度偏好", type: "spicyLevel", mode: "single", tags: spicyTagOptions }
+  ]
+};
+
+const budgetOptionsByMealPurpose: Record<string, string[]> = {
+  早餐: ["10 元以内", "10-20 元", "20-30 元", "30 元以上"],
+  午餐: ["20 元以内", "20-40 元", "40-60 元", "60 元以上"],
+  晚餐: ["30 元以内", "30-60 元", "60-100 元", "100 元以上"],
+  下午茶: ["15 元以内", "15-30 元", "30-50 元", "50 元以上"],
+  夜宵: ["20 元以内", "20-40 元", "40-70 元", "70 元以上"],
+  一个人随便吃: ["15 元以内", "15-30 元", "30-50 元", "50 元以上"],
+  和朋友一起吃: ["30 元以内", "30-60 元", "60-100 元", "100 元以上"],
+  工作日快餐: ["20 元以内", "20-40 元", "40-60 元", "60 元以上"],
+  周末放松吃: ["30 元以内", "30-60 元", "60-100 元", "100 元以上"]
+};
+
+const distanceQuestion: FoodQuestion = {
+  id: "distance",
+  kind: "choice",
+  slot: "distance",
+  label: "想走多远",
+  title: "想走多远？",
+  options: ["500 米以内", "1 公里以内", "2 公里以内", "远一点也行"]
+};
+
+const userNotesQuestion: FoodQuestion = {
+  id: "userNotes",
+  kind: "choice",
+  slot: "userNotes",
+  label: "其他补充",
+  title: "还有什么想补充的吗？",
+  optional: true,
+  allowEmpty: true,
+  text: true,
+  options: ["没有补充"]
+};
+
+function buildBranchPreferenceQuestion(mealPurpose: string): FoodQuestion {
+  return {
+    id: "branchPreference",
+    kind: "multi-choice",
+    slot: "branchPreference",
+    label: mealPurpose === "下午茶" ? "下午茶类型" : "菜系偏好",
+    title: mealPurpose === "早餐" ? "早餐想吃哪一类？" : mealPurpose === "下午茶" ? "下午茶想来点什么？" : mealPurpose === "夜宵" ? "夜宵想吃哪一类？" : "想吃哪类菜？",
+    allowEmpty: true,
+    options: branchPreferenceOptionsByMealPurpose[mealPurpose] || branchPreferenceOptionsByMealPurpose.晚餐
+  };
+}
+
+function buildBudgetQuestion(mealPurpose: string): FoodQuestion {
+  return {
+    id: "budget",
+    kind: "choice",
+    slot: "budget",
+    label: "预算多少",
+    title: "预算大概多少？",
+    options: budgetOptionsByMealPurpose[mealPurpose] || budgetOptionsByMealPurpose.晚餐
+  };
+}
+
+function buildFoodQuestions(mealPurpose: string): FoodQuestion[] {
+  return [
+    mealPurposeQuestion,
+    tasteNeedQuestion,
+    buildBranchPreferenceQuestion(mealPurpose),
+    avoidSpiceQuestion,
+    buildBudgetQuestion(mealPurpose),
+    distanceQuestion,
+    userNotesQuestion
+  ];
+}
+
+const foodQuestions = buildFoodQuestions("");
+
+const foodAnswerLabels: Record<string, string> = {
+  mealPurpose: "用餐场景",
+  branchPreference: "想吃",
+  tasteTags: "口味/感觉",
+  needTags: "优先满足",
+  temporaryAvoidTags: "这次不想吃",
+  avoidTags: "忌口",
+  spicyLevel: "辣度",
+  budget: "预算",
+  distance: "距离",
+  userNotes: "其他补充"
+};
 
 const fallbackRecommendations: RecommendationCard[] = [
   {
-    id: "fallback-dessert",
+    id: "fallback-dessert-1",
     name: "法式甜品下午茶",
     type: "甜品/下午茶",
     perCapita: "68",
+    perCapitaDisplay: "人均 68元",
     distance: "650 m",
     rating: 4.7,
-    matchedTags: ["下午茶", "甜品", "精致一点", "1公里以内"],
-    reason: "适合想坐下来慢慢吃甜品的场景，预算和距离都比较稳。",
-    riskTip: "热门时段可能限量，建议先确认库存。"
+    matchedTags: ["下午茶", "甜品", "50元以上", "1公里以内"],
+    reason: "主打法式小蛋糕、咖啡和下午茶套餐，客单价符合预算，距离在 1 公里以内。",
+    riskTip: "高峰期建议提前确认座位和库存。"
   },
   {
-    id: "fallback-rice",
-    name: "校园旁轻正餐",
-    type: "简餐",
-    perCapita: "45",
-    distance: "520 m",
-    rating: 4.5,
-    matchedTags: ["近一点", "便宜一点", "快速出餐"],
-    reason: "适合午晚餐快速解决，价格友好，路程短。",
-    riskTip: "口味偏稳妥，如果想吃重口可再换一批。"
+    id: "fallback-dessert-2",
+    name: "手作千层蛋糕店",
+    type: "蛋糕甜品",
+    perCapita: "58",
+    perCapitaDisplay: "人均 58元",
+    distance: "800 m",
+    rating: 4.6,
+    matchedTags: ["下午茶", "甜品", "蛋糕", "预算匹配"],
+    reason: "千层、慕斯和饮品组合适合下午茶，价格通常在 50 元以上，适合单人坐一会儿慢慢吃。",
+    riskTip: "奶油类甜品饱腹感较强，如果只是想轻一点，可以选择单块蛋糕加无糖茶。"
   },
   {
-    id: "fallback-cafe",
+    id: "fallback-dessert-3",
     name: "精品咖啡甜品馆",
     type: "咖啡/甜品",
     perCapita: "72",
+    perCapitaDisplay: "人均 72元",
     distance: "950 m",
-    rating: 4.6,
-    matchedTags: ["适合聊天", "下午茶", "精致一点"],
-    reason: "适合聊天和轻松停留，体验完整。",
-    riskTip: "下午高峰座位可能紧张。"
+    rating: 4.5,
+    matchedTags: ["下午茶", "甜品", "咖啡", "1公里以内"],
+    reason: "咖啡搭配巴斯克蛋糕或提拉米苏，体验感更完整，符合 50 元以上预算和 1 公里以内距离要求。",
+    riskTip: "下午高峰可能座位紧张，若想堂食建议先确认是否有空位。"
   }
 ];
 
-const themeOptions = [
-  { id: "mint", name: "薄荷绿", bg: "bg-[#effff8]", accent: "text-emerald-700" },
-  { id: "sun", name: "暖阳黄", bg: "bg-[#fff8df]", accent: "text-amber-700" },
-  { id: "night", name: "夜间灰", bg: "bg-[#eef2f7]", accent: "text-slate-700" }
+const themeCards = [
+  { id: "sky-blue", name: "天蓝色", description: "清爽、天空、轻盈", className: "theme-sky-blue", primary: "#6EC6FF", soft: "#BDEBFF", accent: "#4F9FE6", warn: "#F2B84B" },
+  { id: "sakura-pink", name: "樱花粉", description: "柔和、可爱、温暖", className: "theme-sakura-pink", primary: "#FF9FBC", soft: "#FFD6E3", accent: "#7EC6A4", warn: "#D58B2D" },
+  { id: "lemon-yellow", name: "柠檬黄", description: "明亮、元气、活泼", className: "theme-lemon-yellow", primary: "#FFD84D", soft: "#FFF0A6", accent: "#5AD8B2", warn: "#D88724" },
+  { id: "black-pink", name: "黑粉", description: "酷、潮流、音乐感", className: "theme-black-pink", primary: "#FF4FA3", soft: "#3A2230", accent: "#FFB3D9", warn: "#FFD166" },
+  { id: "night", name: "夜间模式", description: "低亮度、护眼、安静", className: "theme-night", primary: "#7C8CFF", soft: "#2F3A5F", accent: "#5AD8B2", warn: "#FBBF24" },
+  { id: "mint-green", name: "薄荷绿", description: "清新、健康、轻食感", className: "theme-mint-green", primary: "#5AD8B2", soft: "#BDF4E5", accent: "#3CB995", warn: "#D68C21" }
 ];
 
-function storageKey(userId: string, suffix: string) {
-  return `meituan_web_demo:${userId}:${suffix}`;
+const weekendInterestOptions = [
+  { value: "咖啡", emoji: "☕", label: "咖啡" },
+  { value: "轻食", emoji: "🥗", label: "轻食" },
+  { value: "甜品", emoji: "🍰", label: "甜品" },
+  { value: "citywalk", emoji: "🚶", label: "citywalk" },
+  { value: "拍照", emoji: "📷", label: "拍照" },
+  { value: "展览", emoji: "🎨", label: "展览" },
+  { value: "公园", emoji: "🌳", label: "公园" },
+  { value: "书店", emoji: "📚", label: "书店" },
+  { value: "电影", emoji: "🎬", label: "电影" },
+  { value: "市集", emoji: "🛍️", label: "市集" },
+  { value: "博物馆", emoji: "🏛️", label: "博物馆" },
+  { value: "美术馆", emoji: "🖼️", label: "美术馆" },
+  { value: "夜景", emoji: "🌃", label: "夜景" },
+  { value: "江边散步", emoji: "🌊", label: "江边散步" },
+  { value: "安静聊天", emoji: "💬", label: "安静聊天" },
+  { value: "购物", emoji: "🛒", label: "购物" },
+  { value: "室内活动", emoji: "🏠", label: "室内活动" },
+  { value: "户外活动", emoji: "🌞", label: "户外活动" },
+  { value: "适合打卡", emoji: "✨", label: "适合打卡" },
+  { value: "少走路", emoji: "🦶", label: "少走路" },
+  { value: "不想排队", emoji: "🚫", label: "不想排队" },
+  { value: "雨天友好", emoji: "🌧️", label: "雨天友好" },
+  { value: "宠物友好", emoji: "🐶", label: "宠物友好" },
+  { value: "适合放空", emoji: "🌿", label: "适合放空" }
+];
+
+const groupAdjustmentReasons = [
+  { value: "cannot_eat", label: "吃不了" },
+  { value: "over_budget", label: "超预算" },
+  { value: "time_mismatch", label: "时间不合" },
+  { value: "too_far", label: "太远" },
+  { value: "prefer_other_cuisine", label: "想换品类" },
+  { value: "other", label: "其他" }
+];
+const groupAdjustmentVisibilityOptions = [
+  { value: "public", label: "公开" },
+  { value: "nickname_only", label: "只显示昵称" },
+  { value: "private", label: "匿名" }
+];
+
+async function requestJson<T>(url: string, options: RequestInit = {}, token?: string): Promise<T> {
+  const headers = new Headers(options.headers);
+  headers.set("content-type", "application/json");
+  if (token) {
+    headers.set("authorization", `Bearer ${token}`);
+  }
+
+  const response = await fetch(url, { ...options, headers });
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const error = new Error(data?.error?.message || `Request failed: ${response.status}`) as ApiError;
+    error.status = response.status;
+    error.code = data?.error?.code;
+    throw error;
+  }
+
+  return data as T;
 }
 
-function safeJsonParse<T>(value: string | null, fallback: T): T {
-  if (!value) {
-    return fallback;
-  }
-
+function safeJsonParse<T>(raw: string | null, fallback: T): T {
+  if (!raw) return fallback;
   try {
-    return JSON.parse(value) as T;
+    return JSON.parse(raw) as T;
   } catch {
     return fallback;
   }
 }
 
-async function requestJson<T>(path: string, init: RequestInit = {}, token?: string): Promise<T> {
-  const headers = new Headers(init.headers);
-
-  if (init.body && !headers.has("Content-Type")) {
-    headers.set("Content-Type", "application/json");
-  }
-
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
-
-  const response = await fetch(path, {
-    ...init,
-    headers,
-    cache: "no-store"
-  });
-
-  if (!response.ok) {
-    let message = `Request failed with ${response.status}`;
-    let code = "";
-
-    try {
-      const body = await response.json();
-      if (typeof body?.error === "string") {
-        message = body.error;
-      } else if (body?.error?.message) {
-        message = body.error.message;
-        code = body.error.code || "";
-      } else if (body?.detail) {
-        message = body.detail;
-      }
-    } catch {
-      // Keep fallback message.
-    }
-
-    const error = new Error(message) as ApiError;
-    error.status = response.status;
-    error.code = code;
-    throw error;
-  }
-
-  return await response.json() as T;
+function storageKey(userId: string, suffix: string) {
+  return `meituan_web_demo:${userId}:${suffix}`;
 }
 
 function formatPrice(value: string) {
-  const match = String(value || "").match(/\d+/);
-  return match ? `人均 ${match[0]} 元` : "人均待确认";
-}
-
-function budgetMaxFromText(value: string) {
-  if (value.includes("30")) return 30;
-  if (value.includes("50")) return 50;
-  if (value.includes("80")) return 80;
-  return 120;
-}
-
-function distanceKmFromText(value: string) {
-  if (value.includes("500")) return 0.5;
-  if (value.includes("1")) return 1;
-  if (value.includes("2")) return 2;
-  return 5;
+  const raw = String(value || "").trim();
+  if (!raw) return "人均待确认";
+  if (raw.includes("人均")) return raw;
+  const match = raw.match(/\d+(?:\.\d+)?/);
+  return match ? `人均 ${match[0]}元` : `人均 ${raw}`;
 }
 
 function normalizeCards(cards: RecommendationCard[], favorites: RecommendationCard[]) {
-  const favoriteKeys = new Set(favorites.map((item) => item.id || item.name));
-  return cards.map((item) => ({
-    ...item,
-    perCapitaDisplay: item.perCapitaDisplay || formatPrice(item.perCapita),
-    isFavorited: favoriteKeys.has(item.id || item.name)
-  }));
+  return (cards.length ? cards : fallbackRecommendations).slice(0, 3).map((card, index) => {
+    const id = card.id || `card_${index}`;
+    const key = id || card.name;
+    return {
+      ...card,
+      id,
+      perCapitaDisplay: card.perCapitaDisplay || formatPrice(card.perCapita),
+      matchedTags: Array.isArray(card.matchedTags) ? card.matchedTags : [],
+      isFavorited: favorites.some((item) => (item.id || item.name) === key)
+    };
+  });
 }
 
 function summarizeFood(slots: FoodSlots, preferences: FoodPreferences) {
@@ -387,30 +617,21 @@ function summarizeFood(slots: FoodSlots, preferences: FoodPreferences) {
   ].filter(Boolean).join(" · ");
 }
 
-function normalizeSelfChecks(route: WeekendPlan["routes"][number]) {
-  if (!route.selfChecks) {
-    return [];
-  }
-
-  if (Array.isArray(route.selfChecks)) {
-    return route.selfChecks.map((item, index) => ({
-      key: `${route.id}-check-${index}`,
-      label: item.label || item.status || "自查项",
-      detail: item.detail || (item.passed === false ? "需要人工确认" : "已通过")
-    }));
-  }
-
-  return Object.entries(route.selfChecks).map(([label, detail]) => ({
-    key: `${route.id}-check-${label}`,
-    label,
-    detail
-  }));
+function budgetMaxFromText(value: string) {
+  const match = String(value || "").match(/\d+/);
+  return match ? Number(match[0]) : 80;
 }
 
-function buildLocalWeekendPlan(input: Record<string, string>): WeekendPlan {
+function distanceKmFromText(value: string) {
+  const raw = String(value || "");
+  if (raw.includes("500")) return 0.5;
+  const match = raw.match(/\d+(?:\.\d+)?/);
+  return match ? Number(match[0]) : 1;
+}
+
+function buildLocalWeekendPlan(input: { budgetMax?: string; startArea?: string }): WeekendPlan {
   const budget = input.budgetMax || "120";
-  const start = input.startArea || "学校东门";
-  const mood = input.mood || "轻松一点";
+  const start = input.startArea || "学校周边";
 
   return {
     planId: `local_${Date.now().toString(36)}`,
@@ -418,16 +639,22 @@ function buildLocalWeekendPlan(input: Record<string, string>): WeekendPlan {
     backendStatus: "fallback",
     backendMessage: "后端不可用时展示本地保守规划，便于完整体验。",
     weather: {
-      status: "unavailable",
       fallback: true,
+      sourceLabel: "fallback",
       summary: "天气暂不可用，优先选择室内/短步行方案。"
+    },
+    source: {
+      weather: "fallback",
+      poi: "local",
+      planner: "local"
     },
     routes: [
       {
         id: "local-cafe-walk",
         type: "balanced",
+        typeLabel: "轻松",
         title: "咖啡开场 + 校园周边轻 citywalk",
-        summary: `从${start}出发，适合${mood}，路线短、预算稳。`,
+        summary: `从${start}出发，路线短、预算稳，适合轻松聊天。`,
         estimatedBudget: `${budget} 元以内/人`,
         estimatedDurationMinutes: 150,
         transport: "步行 + 短途骑行",
@@ -437,9 +664,9 @@ function buildLocalWeekendPlan(input: Record<string, string>): WeekendPlan {
           { time: "70-130 分钟", title: "短步行路线", placeName: "校园周边", activity: "选 1-2 个拍照/散步点，保留弹性。", durationMinutes: 60 }
         ],
         selfChecks: {
-          budget: `${budget} 元以内`,
-          weather: "按天气未知处理，减少露天停留",
-          returnTime: "预留 30 分钟返程"
+          预算: `${budget} 元以内`,
+          天气: "按天气未知处理，减少露天停留",
+          返程: "预留 30 分钟返程"
         },
         risks: ["天气未确认，建议带伞并保留室内替代点"],
         inviteText: `从${start}出发，轻松走一条咖啡 + citywalk 路线，预算 ${budget} 元以内。`
@@ -448,128 +675,193 @@ function buildLocalWeekendPlan(input: Record<string, string>): WeekendPlan {
   };
 }
 
-function Panel({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <section className={`rounded-md border border-emerald-100 bg-white p-4 shadow-sm ${className}`}>{children}</section>;
+function normalizeSelfChecks(route: WeekendPlan["routes"][number]) {
+  if (!route.selfChecks) return [];
+  if (Array.isArray(route.selfChecks)) {
+    return route.selfChecks.map((item, index) => ({
+      key: `${route.id}-check-${index}`,
+      label: item.label || "自查项",
+      detail: item.detail || item.status || item.statusText || (item.passed === false ? "需要确认" : "通过"),
+      statusText: item.statusText || (item.passed === false ? "注意" : "通过")
+    }));
+  }
+  return Object.entries(route.selfChecks).map(([label, detail]) => ({
+    key: `${route.id}-${label}`,
+    label,
+    detail,
+    statusText: "通过"
+  }));
 }
 
-function PrimaryButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const { className = "", ...rest } = props;
-  return <button {...rest} className={`rounded-md bg-emerald-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-slate-300 ${className}`} />;
+function buildWeekendTimeWindow(form: typeof defaultWeekendForm) {
+  const dateLabel = String(form.dateLabel || "").trim();
+  if (form.timeMode === "allDay") {
+    return dateLabel ? `${dateLabel} 全天` : "全天";
+  }
+  const start = String(form.startTime || "").trim();
+  const end = String(form.endTime || "").trim();
+  const range = start && end ? `${start}-${end}` : "";
+  return [dateLabel, range].filter(Boolean).join(" ");
 }
 
-function SecondaryButton(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const { className = "", ...rest } = props;
-  return <button {...rest} className={`rounded-md border border-emerald-200 bg-white px-4 py-3 text-sm font-bold text-emerald-800 transition hover:border-emerald-500 disabled:cursor-not-allowed disabled:text-slate-400 ${className}`} />;
+function parseWeekendBudget(value: string) {
+  const match = String(value || "").match(/\d+/);
+  return match ? Number(match[0]) : 0;
 }
 
-function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  const { className = "", ...rest } = props;
-  return <input {...rest} className={`w-full rounded-md border border-emerald-100 bg-white px-3 py-3 text-sm outline-none focus:border-emerald-500 ${className}`} />;
+function validateWeekendForm(form: typeof defaultWeekendForm) {
+  const timeWindow = buildWeekendTimeWindow(form);
+  const budgetMax = parseWeekendBudget(form.budgetMax);
+  if (!form.dateLabel.trim()) return { ok: false as const, message: "请选择周几出行" };
+  if (form.timeMode !== "allDay") {
+    if (!form.startTime.trim()) return { ok: false as const, message: "请选择开始时间" };
+    if (!form.endTime.trim()) return { ok: false as const, message: "请选择结束时间" };
+    if (form.startTime >= form.endTime) return { ok: false as const, message: "结束时间要晚于开始时间" };
+  }
+  if (!budgetMax || budgetMax <= 0) return { ok: false as const, message: "请填写有效预算" };
+  if (budgetMax > 2000) return { ok: false as const, message: "预算先控制在 2000 内" };
+  if (!form.startArea.trim()) return { ok: false as const, message: "请填写出发起点" };
+  return { ok: true as const, budgetMax, timeWindow };
 }
 
-function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  const { className = "", ...rest } = props;
-  return <textarea {...rest} className={`min-h-24 w-full rounded-md border border-emerald-100 bg-white px-3 py-3 text-sm leading-6 outline-none focus:border-emerald-500 ${className}`} />;
-}
-
-function Chip({ active, children, onClick }: { active?: boolean; children: React.ReactNode; onClick: () => void }) {
-  return (
-    <button
-      className={`rounded-full border px-3 py-2 text-xs font-bold transition ${active ? "border-emerald-700 bg-emerald-700 text-white" : "border-emerald-100 bg-emerald-50 text-emerald-800 hover:border-emerald-400"}`}
-      type="button"
-      onClick={onClick}
-    >
-      {children}
-    </button>
-  );
-}
+const defaultWeekendForm = {
+  dateLabel: "周六",
+  timeMode: "range",
+  startTime: "14:00",
+  endTime: "17:00",
+  budgetMax: "120",
+  startArea: "学校周边",
+  mood: "想轻松一点",
+  energyLevel: "低体力",
+  companions: "朋友",
+  interests: ["咖啡", "citywalk", "轻食"],
+  rawText: ""
+};
 
 export default function ExperienceClient() {
-  const [view, setView] = useState<View>("login");
+  const [view, setView] = useState<PhoneView>("login");
   const [identity, setIdentity] = useState<Identity | null>(null);
-  const [loginId, setLoginId] = useState("judge-demo");
-  const [loginName, setLoginName] = useState("评审 Demo 用户");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [themeId, setThemeId] = useState("mint-green");
+  const [showThemePanel, setShowThemePanel] = useState(false);
+  const [showHistoryPanel, setShowHistoryPanel] = useState(false);
+  const [showFavoritesPanel, setShowFavoritesPanel] = useState(false);
   const [authError, setAuthError] = useState("");
-  const [themeId, setThemeId] = useState("mint");
+
   const [memory, setMemory] = useState<MemorySettings>(defaultMemory);
+  const [memoryCustomAvoid, setMemoryCustomAvoid] = useState("");
+  const [memoryNotice, setMemoryNotice] = useState("");
   const [records, setRecords] = useState<PreferenceRecord[]>([]);
   const [favorites, setFavorites] = useState<RecommendationCard[]>([]);
 
   const [foodIndex, setFoodIndex] = useState(0);
   const [foodSlots, setFoodSlots] = useState<FoodSlots>({ mealPurpose: "", branchPreference: "", budget: "", distance: "", userNotes: "" });
-  const [foodPrefs, setFoodPrefs] = useState<FoodPreferences>({ tasteTags: [], needTags: [], avoidTags: [], spicyLevel: "" });
-  const [foodRecommendations, setFoodRecommendations] = useState<RecommendationCard[]>([]);
+  const [foodPrefs, setFoodPrefs] = useState<FoodPreferences>({ tasteTags: [], needTags: [], temporaryAvoidTags: [], avoidTags: [], spicyLevel: "" });
+  const [manualAnswer, setManualAnswer] = useState("");
+  const [showSlotSummaryDetail, setShowSlotSummaryDetail] = useState(false);
+  const [foodFinished, setFoodFinished] = useState(false);
   const [foodLoading, setFoodLoading] = useState(false);
   const [foodNotice, setFoodNotice] = useState("");
+  const [recommendations, setRecommendations] = useState<RecommendationCard[]>([]);
   const [adjustmentText, setAdjustmentText] = useState("");
+  const [showAdjustmentOptions, setShowAdjustmentOptions] = useState(false);
+  const [memoryDecision, setMemoryDecision] = useState<"kept" | "session-only" | "">("");
   const [batchIndex, setBatchIndex] = useState(0);
+  const [prefCheckRecord, setPrefCheckRecord] = useState<PreferenceRecord | null>(null);
+  const [prefModifyRecord, setPrefModifyRecord] = useState<PreferenceRecord | null>(null);
+  const [prefModifyRows, setPrefModifyRows] = useState<PrefSummaryRow[]>([]);
+  const [activeFoodQuestionIds, setActiveFoodQuestionIds] = useState<Array<FoodQuestion["id"]> | null>(null);
+  const [foodPreambleMessages, setFoodPreambleMessages] = useState<Array<{ id: string; role: "user" | "butler"; text: string }>>([]);
 
-  const [groupDraft, setGroupDraft] = useState({
-    creatorName: "我",
-    rawRequest: "周六晚上 4 个人在学校附近聚餐，人均 80 内，适合聊天。",
-    locationText: "学校东门",
-    expectedPeopleCount: 4,
-    dinnerTime: "周六 18:30"
-  });
-  const [groupParticipant, setGroupParticipant] = useState({
-    nickname: "我",
-    rawPreference: "想吃不太辣、适合聊天的店，预算 80 以内。",
-    budgetMax: "80",
-    spicyPreference: "no_spicy",
-    leaveBefore: "20:30"
-  });
+  const [groupPeople, setGroupPeople] = useState(4);
+  const [customPeopleInput, setCustomPeopleInput] = useState("");
   const [groupTaskId, setGroupTaskId] = useState("");
   const [groupInviteToken, setGroupInviteToken] = useState("");
   const [groupBoard, setGroupBoard] = useState<GroupBoard | null>(null);
   const [groupLoading, setGroupLoading] = useState(false);
   const [groupNotice, setGroupNotice] = useState("");
-
-  const [weekendForm, setWeekendForm] = useState({
-    dateLabel: "周六",
-    startTime: "14:00",
-    endTime: "17:00",
-    budgetMax: "120",
-    startArea: "学校东门",
-    mood: "轻松一点",
-    energyLevel: "中等",
-    companions: "朋友",
-    interests: "咖啡, citywalk, 拍照"
+  const [groupAdjustmentRequests, setGroupAdjustmentRequests] = useState<Array<{ id: string; nickname: string; visibility: string; candidateId: string; candidateName: string; reasonType: string; reasonLabel: string; note: string }>>([]);
+  const [adjustmentTargetCandidate, setAdjustmentTargetCandidate] = useState<{ id: string; name: string } | null>(null);
+  const [adjustmentNickname, setAdjustmentNickname] = useState("");
+  const [adjustmentVisibility, setAdjustmentVisibility] = useState("public");
+  const [adjustmentReasonType, setAdjustmentReasonType] = useState("");
+  const [adjustmentNote, setAdjustmentNote] = useState("");
+  const [groupParticipant, setGroupParticipant] = useState({
+    nickname: "我",
+    rawPreference: "不吃辣，人均 80 以内，最好不要排太久。",
+    budgetMax: "80",
+    leaveBefore: "20:30",
+    spicyPreference: "no_spicy"
   });
+  const [groupFill, setGroupFill] = useState({
+    days: ["周五", "周六", "周日"],
+    timeMode: "specified",
+    startTime: "18:00",
+    endTime: "20:30",
+    dietaryTags: ["不吃辣"],
+    cuisineTags: ["都可以"],
+    budgetTag: "80以内",
+    visibility: "nickname_only",
+    timeCustomText: "",
+    restrictionCustomText: "",
+    cuisineCustomText: "",
+    budgetCustomText: "",
+    spiceCustomText: "",
+    hardRequirement: "",
+    softPreference: "适合聊天，最好不要排太久。",
+    priority: {
+      days: "must",
+      hours: "must",
+      timeText: "must",
+      dietary: "must",
+      cuisine: "nice",
+      budget: "nice",
+      spicy: "nice"
+    }
+  });
+
+  const [weekendForm, setWeekendForm] = useState(defaultWeekendForm);
   const [weekendPlan, setWeekendPlan] = useState<WeekendPlan | null>(null);
   const [weekendLoading, setWeekendLoading] = useState(false);
   const [weekendNotice, setWeekendNotice] = useState("");
+  const [weekendError, setWeekendError] = useState("");
 
-  const theme = useMemo(() => themeOptions.find((item) => item.id === themeId) || themeOptions[0], [themeId]);
-  const currentQuestion = foodQuestions[foodIndex];
-  const isFoodComplete = foodIndex >= foodQuestions.length;
+  const themeClass = useMemo(() => themeCards.find((theme) => theme.id === themeId)?.className || "theme-mint-green", [themeId]);
+  const resolvedFoodQuestions = useMemo(() => buildFoodQuestions(foodSlots.mealPurpose), [foodSlots.mealPurpose]);
+  const activeFoodQuestions = activeFoodQuestionIds ? resolvedFoodQuestions.filter((question) => activeFoodQuestionIds.includes(question.id)) : resolvedFoodQuestions;
+  const currentQuestion = activeFoodQuestions[foodIndex] || activeFoodQuestions[activeFoodQuestions.length - 1] || resolvedFoodQuestions[0] || foodQuestions[0];
+  const progressPercent = Math.round(((Math.min(foodIndex + 1, activeFoodQuestions.length || 1)) / (activeFoodQuestions.length || 1)) * 100);
+  const recentRecord = records[0];
+  const summaryFields = [
+    { key: "mealPurpose", label: "场景", value: foodSlots.mealPurpose || "待填写" },
+    { key: "branchPreference", label: "想吃", value: foodSlots.branchPreference || "待填写" },
+    { key: "tasteTags", label: "口味", value: foodPrefs.tasteTags.join("、") || "待填写" },
+    { key: "needTags", label: "优先", value: foodPrefs.needTags.join("、") || "待填写" },
+    { key: "temporaryAvoidTags", label: "避雷", value: foodPrefs.temporaryAvoidTags.join("、") || "待填写" },
+    { key: "avoidTags", label: "忌口", value: foodPrefs.avoidTags.join("、") || "待填写" },
+    { key: "spicyLevel", label: "辣度", value: foodPrefs.spicyLevel || memory.spicyLevel || "待填写" },
+    { key: "budget", label: "预算", value: foodSlots.budget || memory.budget || "待填写" },
+    { key: "distance", label: "距离", value: foodSlots.distance || memory.distance || "待填写" },
+    { key: "userNotes", label: "补充", value: foodSlots.userNotes || "可跳过" }
+  ];
 
   useEffect(() => {
     const stored = safeJsonParse<Identity | null>(window.localStorage.getItem(identityKey), null);
     if (stored?.sessionToken && stored.userId) {
       setIdentity(stored);
-      setLoginId(stored.demoUserId);
-      setLoginName(stored.displayName);
       setView("home");
     }
   }, []);
 
   useEffect(() => {
-    if (!identity) {
-      return;
-    }
+    if (!identity) return;
 
-    setMemory(safeJsonParse(window.localStorage.getItem(storageKey(identity.userId, "memory")), defaultMemory));
+    const storedMemory = safeJsonParse(window.localStorage.getItem(storageKey(identity.userId, "memory")), defaultMemory);
+    const fixedAvoidSet = new Set(memoryAvoidOptions.filter((item) => item !== "无" && item !== "其他"));
+    setMemory({ ...defaultMemory, ...storedMemory, permissions: { ...defaultMemory.permissions, ...storedMemory.permissions } });
+    setMemoryCustomAvoid((storedMemory.avoidTags || []).filter((tag) => !fixedAvoidSet.has(tag)).join("、"));
     setRecords(safeJsonParse(window.localStorage.getItem(storageKey(identity.userId, "records")), []));
     setFavorites(safeJsonParse(window.localStorage.getItem(storageKey(identity.userId, "favorites")), []));
-    const params = new URLSearchParams(window.location.search);
-    const taskId = params.get("groupTaskId");
-    const inviteToken = params.get("inviteToken");
-    if (taskId && inviteToken) {
-      setGroupTaskId(taskId);
-      setGroupInviteToken(inviteToken);
-      setView("group-board");
-      void loadGroupBoard(taskId, inviteToken, identity.sessionToken);
-    }
   }, [identity]);
 
   function persistMemory(next: MemorySettings) {
@@ -578,27 +870,86 @@ export default function ExperienceClient() {
     window.localStorage.setItem(storageKey(identity.userId, "memory"), JSON.stringify(next));
   }
 
+  function parseMemoryCustomAvoid(value: string) {
+    return String(value || "").split(/[,，、/\s]+/).map((item) => item.trim()).filter(Boolean);
+  }
+
+  function saveStableMemory(nextMemory: MemorySettings = memory, customAvoid = memoryCustomAvoid) {
+    const fixedAvoidSet = new Set(memoryAvoidOptions.filter((item) => item !== "无" && item !== "其他"));
+    const fixedTags = (nextMemory.avoidTags || []).filter((tag) => fixedAvoidSet.has(tag));
+    const avoidTags = nextMemory.avoidTags.includes("无") ? [] : Array.from(new Set([...fixedTags, ...parseMemoryCustomAvoid(customAvoid)]));
+    const updatedAt = new Date().toISOString();
+    const uiMemory = { ...nextMemory, updatedAt };
+    const storedMemory = { ...nextMemory, avoidTags, updatedAt };
+    setMemory(uiMemory);
+    if (identity) {
+      window.localStorage.setItem(storageKey(identity.userId, "memory"), JSON.stringify(storedMemory));
+    }
+    setMemoryNotice("已保存");
+  }
+
+  function handleMemoryAvoidTap(tag: string) {
+    if (tag === "无") {
+      setMemoryCustomAvoid("");
+      setMemory({ ...memory, avoidTags: memory.avoidTags.includes("无") ? [] : ["无"] });
+      return;
+    }
+
+    if (tag === "其他") {
+      const nextTags = memory.avoidTags.includes("其他")
+        ? memory.avoidTags.filter((item) => item !== "其他")
+        : [...memory.avoidTags.filter((item) => item !== "无"), "其他"];
+      setMemory({ ...memory, avoidTags: nextTags });
+      return;
+    }
+
+    const nextTags = memory.avoidTags.includes(tag)
+      ? memory.avoidTags.filter((item) => item !== tag)
+      : [...memory.avoidTags.filter((item) => item !== "无"), tag];
+    setMemory({ ...memory, avoidTags: nextTags });
+  }
+
+  function handleMemoryCustomAvoidInput(value: string) {
+    setMemoryCustomAvoid(value);
+    if (value.trim() && memory.avoidTags.includes("无")) {
+      setMemory({ ...memory, avoidTags: memory.avoidTags.filter((item) => item !== "无") });
+    }
+  }
+
+  function formatMemoryUpdatedAt(iso?: string) {
+    if (!iso) return "尚未保存";
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return "尚未保存";
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hour = String(date.getHours()).padStart(2, "0");
+    const minute = String(date.getMinutes()).padStart(2, "0");
+    return `上次保存：${month}-${day} ${hour}:${minute}`;
+  }
+
   function persistRecords(next: PreferenceRecord[]) {
     if (!identity) return;
-    setRecords(next);
-    window.localStorage.setItem(storageKey(identity.userId, "records"), JSON.stringify(next.slice(0, 20)));
+    const limited = next.slice(0, 20);
+    setRecords(limited);
+    window.localStorage.setItem(storageKey(identity.userId, "records"), JSON.stringify(limited));
   }
 
   function persistFavorites(next: RecommendationCard[]) {
     if (!identity) return;
-    setFavorites(next);
-    window.localStorage.setItem(storageKey(identity.userId, "favorites"), JSON.stringify(next.slice(0, 30)));
-    setFoodRecommendations((items) => normalizeCards(items, next));
+    const limited = next.slice(0, 30);
+    setFavorites(limited);
+    window.localStorage.setItem(storageKey(identity.userId, "favorites"), JSON.stringify(limited));
+    setRecommendations((items) => normalizeCards(items, limited));
   }
 
-  async function login(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function login() {
     setAuthError("");
+    setAuthLoading(true);
 
     try {
       const result = await requestJson<Identity>("/api/demo/session", {
         method: "POST",
-        body: JSON.stringify({ demoUserId: loginId, displayName: loginName })
+        body: JSON.stringify({ demoUserId: "judge-demo", displayName: "评审 Demo 用户" })
       });
       const nextIdentity = {
         demoUserId: result.demoUserId,
@@ -611,6 +962,8 @@ export default function ExperienceClient() {
       setView("home");
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setAuthLoading(false);
     }
   }
 
@@ -630,15 +983,61 @@ export default function ExperienceClient() {
     return false;
   }
 
-  function updateFoodValue(questionId: string, value: string) {
-    if (questionId === "mealPurpose" || questionId === "branchPreference" || questionId === "budget" || questionId === "distance" || questionId === "userNotes") {
-      setFoodSlots((current) => ({ ...current, [questionId]: value }));
+  function goHome() {
+    setView(identity ? "home" : "login");
+  }
+
+  function toggleGroupArrayField(field: "days" | "dietaryTags" | "cuisineTags", value: string, resetValue?: string) {
+    setGroupFill((current) => {
+      const list = current[field];
+      const next = resetValue && value === resetValue
+        ? [resetValue]
+        : list.includes(value)
+          ? list.filter((item) => item !== value && item !== resetValue)
+          : [...list.filter((item) => item !== resetValue), value];
+      return { ...current, [field]: next };
+    });
+  }
+
+  function setGroupPriority(field: keyof typeof groupFill.priority, value: string) {
+    setGroupFill((current) => ({ ...current, priority: { ...current.priority, [field]: value } }));
+  }
+
+  function reasonLabel(reasonType: string) {
+    return groupAdjustmentReasons.find((item) => item.value === reasonType)?.label || "其他";
+  }
+
+  function submitLocalAdjustmentRequest() {
+    if (!adjustmentTargetCandidate) return;
+
+    if (!adjustmentReasonType) {
+      setGroupNotice("请选择不满意原因");
       return;
     }
 
-    if (questionId === "spicyLevel") {
-      setFoodPrefs((current) => ({ ...current, spicyLevel: value }));
+    const nickname = adjustmentNickname.trim();
+    if (adjustmentVisibility !== "private" && !nickname) {
+      setGroupNotice("请填写昵称，或选「匿名」");
+      return;
     }
+
+    setGroupAdjustmentRequests((current) => [
+      {
+        id: `adjust_${Date.now().toString(36)}`,
+        nickname,
+        visibility: adjustmentVisibility,
+        candidateId: adjustmentTargetCandidate.id,
+        candidateName: adjustmentTargetCandidate.name,
+        reasonType: adjustmentReasonType,
+        reasonLabel: reasonLabel(adjustmentReasonType),
+        note: adjustmentNote
+      },
+      ...current
+    ]);
+    setAdjustmentTargetCandidate(null);
+    setAdjustmentReasonType("");
+    setAdjustmentNote("");
+    setGroupNotice("已提交反馈，发起人可以重新生成推荐。");
   }
 
   function toggleFoodTag(questionId: string, value: string) {
@@ -650,18 +1049,258 @@ export default function ExperienceClient() {
     });
   }
 
-  async function rankLocalRestaurants(excludeIds: string[] = []): Promise<RecommendationCard[]> {
+  function toggleFoodTagByType(type: FoodTagType, label: string, mode: "single" | "multiple") {
+    setFoodPrefs((current) => {
+      if (type === "spicyLevel") {
+        return { ...current, spicyLevel: current.spicyLevel === label ? "" : label };
+      }
+
+      const key = type === "taste" ? "tasteTags" : type === "need" ? "needTags" : type === "temporaryAvoid" ? "temporaryAvoidTags" : "avoidTags";
+      if (type === "avoid" && label === "没有忌口") {
+        return { ...current, avoidTags: current.avoidTags.includes(label) ? [] : [label] };
+      }
+
+      const baseList = type === "avoid" ? current[key].filter((item) => item !== "没有忌口") : current[key];
+      const next = mode === "single"
+        ? (baseList.includes(label) ? [] : [label])
+        : (baseList.includes(label) ? baseList.filter((item) => item !== label) : [...baseList, label]);
+      return { ...current, [key]: next };
+    });
+  }
+
+  function isFoodTagSelected(type: FoodTagType, label: string) {
+    if (type === "spicyLevel") return foodPrefs.spicyLevel === label;
+    if (type === "taste") return foodPrefs.tasteTags.includes(label);
+    if (type === "need") return foodPrefs.needTags.includes(label);
+    if (type === "temporaryAvoid") return foodPrefs.temporaryAvoidTags.includes(label);
+    return foodPrefs.avoidTags.includes(label);
+  }
+
+  function toggleFoodMultiChoiceOption(question: FoodQuestion, option: string) {
+    if (!question.slot) return;
+    setFoodSlots((current) => {
+      const currentList = current[question.slot!].split("、").map((item) => item.trim()).filter(Boolean).filter((item) => item !== "未选择");
+      const nextList = currentList.includes(option) ? currentList.filter((item) => item !== option) : [...currentList, option];
+      return { ...current, [question.slot!]: nextList.join("、") };
+    });
+  }
+
+  function updateFoodValue(questionId: string, value: string) {
+    if (questionId === "mealPurpose" || questionId === "branchPreference" || questionId === "budget" || questionId === "distance" || questionId === "userNotes") {
+      setFoodSlots((current) => ({ ...current, [questionId]: value }));
+      return;
+    }
+
+    if (questionId === "spicyLevel") {
+      setFoodPrefs((current) => ({ ...current, spicyLevel: value }));
+    }
+  }
+
+  function buildNextFoodState(question: FoodQuestion, value?: string) {
+    const nextSlots = { ...foodSlots };
+    const nextPrefs = {
+      ...foodPrefs,
+      tasteTags: [...foodPrefs.tasteTags],
+      needTags: [...foodPrefs.needTags],
+      temporaryAvoidTags: [...foodPrefs.temporaryAvoidTags],
+      avoidTags: [...foodPrefs.avoidTags]
+    };
+    const answer = question.text
+      ? value || manualAnswer || "没有补充"
+      : question.kind === "multi-choice" && question.slot
+        ? value || nextSlots[question.slot] || "未选择"
+        : value;
+
+    if (question.slot) {
+      nextSlots[question.slot] = answer || "";
+    }
+
+    if (question.id === "spicyLevel") {
+      nextPrefs.spicyLevel = answer || "";
+    }
+
+    return { nextSlots, nextPrefs };
+  }
+
+  function applyFoodState(nextSlots: FoodSlots, nextPrefs: FoodPreferences) {
+    setFoodSlots(nextSlots);
+    setFoodPrefs(nextPrefs);
+  }
+
+  function findMatchingPreferenceRecord(mealPurpose: string) {
+    const scene = mealPurpose.trim();
+    if (!scene) return null;
+    return records.find((record) => (record.slots.mealPurpose || "").trim() === scene) || null;
+  }
+
+  function buildPrefSummaryRows(record: PreferenceRecord) {
+    const rows = [
+      { key: "mealScene", label: "用餐场景", value: record.slots.mealPurpose, action: "", toggleable: false },
+      { key: "cravings", label: "想吃", value: record.slots.branchPreference, action: "branch-preference", toggleable: true },
+      { key: "taste", label: "口味/感觉", value: [...(record.preferences.tasteTags || []), ...(record.preferences.needTags || [])].join("、"), action: "taste-feeling", toggleable: true },
+      { key: "temporaryAvoid", label: "这次不想吃", value: (record.preferences.temporaryAvoidTags || []).join("、"), action: "temporary-avoid", toggleable: true },
+      { key: "taboo", label: "忌口", value: (record.preferences.avoidTags || []).join("、"), action: "restriction", toggleable: true },
+      { key: "spiceLevel", label: "辣度", value: record.preferences.spicyLevel, action: "spice", toggleable: true },
+      { key: "budget", label: "预算", value: record.slots.budget, action: "budget", toggleable: true },
+      { key: "distance", label: "距离", value: record.slots.distance, action: "distance", toggleable: true },
+      { key: "notes", label: "其他补充", value: record.slots.userNotes, action: "notes", toggleable: true }
+    ];
+    return rows.map((row) => ({ ...row, keep: true })).filter((row) => row.value && row.value !== "未选择");
+  }
+
+  function addFoodPreamble(userText: string, butlerText: string) {
+    const id = Date.now().toString(36);
+    setFoodPreambleMessages((messages) => [
+      ...messages,
+      { id: `${id}-user`, role: "user", text: userText },
+      { id: `${id}-butler`, role: "butler", text: butlerText }
+    ]);
+  }
+
+  function applyPreferenceRecord(record: PreferenceRecord) {
+    const nextSlots = {
+      mealPurpose: foodSlots.mealPurpose || record.slots.mealPurpose,
+      branchPreference: record.slots.branchPreference || "",
+      budget: record.slots.budget || "",
+      distance: record.slots.distance || "",
+      userNotes: record.slots.userNotes || ""
+    };
+    const nextPrefs = {
+      tasteTags: [...(record.preferences.tasteTags || [])],
+      needTags: [...(record.preferences.needTags || [])],
+      temporaryAvoidTags: [...(record.preferences.temporaryAvoidTags || [])],
+      avoidTags: [...(record.preferences.avoidTags || [])],
+      spicyLevel: record.preferences.spicyLevel || ""
+    };
+    applyFoodState(nextSlots, nextPrefs);
+    return { nextSlots, nextPrefs };
+  }
+
+  function questionIdsForPrefActions(actions: string[]) {
+    const ids: Array<FoodQuestion["id"]> = [];
+    const add = (id: FoodQuestion["id"]) => {
+      if (!ids.includes(id)) ids.push(id);
+    };
+    actions.forEach((action) => {
+      if (action === "branch-preference") add("branchPreference");
+      if (action === "taste-feeling" || action === "temporary-avoid") add("tag-preferences");
+      if (action === "restriction" || action === "spice") add("avoid-preferences");
+      if (action === "budget") add("budget");
+      if (action === "distance") add("distance");
+      if (action === "notes") add("userNotes");
+    });
+    return ids;
+  }
+
+  function selectedPrefModifyActions() {
+    return prefModifyRows.filter((row) => row.toggleable && !row.keep).map((row) => row.action).filter(Boolean);
+  }
+
+  function togglePrefModifyRow(key: string) {
+    setPrefModifyRows((rows) => rows.map((row) => row.key === key && row.toggleable ? { ...row, keep: !row.keep } : row));
+  }
+
+  async function startPrefModifyFlow(record: PreferenceRecord, actions: string[], label: string) {
+    const { nextSlots, nextPrefs } = applyPreferenceRecord(record);
+    const ids = questionIdsForPrefActions(actions);
+    setPrefCheckRecord(null);
+    setPrefModifyRecord(null);
+    setPrefModifyRows([]);
+    setManualAnswer("");
+    setShowSlotSummaryDetail(false);
+
+    if (!ids.length) {
+      addFoodPreamble(label, "好，已沿用上次偏好。");
+      setActiveFoodQuestionIds(null);
+      setFoodFinished(true);
+      await generateFoodRecommendations({}, nextSlots, nextPrefs);
+      return;
+    }
+
+    addFoodPreamble(label, `好的，只调整：${prefModifyRows.filter((row) => actions.includes(row.action)).map((row) => row.label).join("、")}，其他沿用上次偏好。`);
+    setActiveFoodQuestionIds(ids);
+    setFoodIndex(0);
+    setFoodFinished(false);
+  }
+
+  async function usePreferenceRecord(record: PreferenceRecord, shouldRecommend: boolean) {
+    const { nextSlots, nextPrefs } = applyPreferenceRecord(record);
+    setPrefCheckRecord(null);
+    setManualAnswer("");
+
+    if (shouldRecommend) {
+      addFoodPreamble("全都按这个来", "好，已沿用上次偏好。");
+      setFoodFinished(true);
+      await generateFoodRecommendations({}, nextSlots, nextPrefs);
+      return;
+    }
+
+    setPrefModifyRecord(record);
+    setPrefModifyRows(buildPrefSummaryRows(record));
+    addFoodPreamble("部分修改", "好的，我把你上次的偏好带进来了。");
+  }
+
+  function skipPreferenceRecord() {
+    setPrefCheckRecord(null);
+    addFoodPreamble("这次不用历史偏好", "好的，这次不用历史偏好，我们从当前场景继续。");
+  }
+
+  async function confirmFoodAnswer(value?: string) {
+    const { nextSlots, nextPrefs } = buildNextFoodState(currentQuestion, value);
+    applyFoodState(nextSlots, nextPrefs);
+
+    if (foodIndex === 0 && currentQuestion.id === "mealPurpose") {
+      const matchedRecord = findMatchingPreferenceRecord(nextSlots.mealPurpose);
+      if (matchedRecord) {
+        setFoodIndex(1);
+        setPrefCheckRecord(matchedRecord);
+        setManualAnswer("");
+        return;
+      }
+    }
+
+    if (foodIndex >= activeFoodQuestions.length - 1) {
+      setFoodFinished(true);
+      setActiveFoodQuestionIds(null);
+      setManualAnswer("");
+      await generateFoodRecommendations({}, nextSlots, nextPrefs);
+      return;
+    }
+
+    setFoodIndex((current) => current + 1);
+    setManualAnswer("");
+  }
+
+  function resetFoodFlow() {
+    setFoodIndex(0);
+    setShowSlotSummaryDetail(false);
+    setFoodSlots({ mealPurpose: "", branchPreference: "", budget: "", distance: "", userNotes: "" });
+    setFoodPrefs({ tasteTags: [], needTags: [], temporaryAvoidTags: [], avoidTags: [], spicyLevel: "" });
+    setRecommendations([]);
+    setFoodFinished(false);
+    setFoodNotice("");
+    setShowAdjustmentOptions(false);
+    setMemoryDecision("");
+    setBatchIndex(0);
+    setPrefCheckRecord(null);
+    setPrefModifyRecord(null);
+    setPrefModifyRows([]);
+    setActiveFoodQuestionIds(null);
+    setFoodPreambleMessages([]);
+  }
+
+  async function rankLocalRestaurants(excludeIds: string[] = [], slots: FoodSlots = foodSlots, prefs: FoodPreferences = foodPrefs) {
     try {
       const result = await requestJson<{ items: Array<Record<string, unknown>> }>("/api/restaurants/rank", {
         method: "POST",
         body: JSON.stringify({
           slots: {
             scene: "soloToday",
-            tasteTags: foodPrefs.tasteTags,
-            needTags: foodPrefs.needTags,
-            avoidTags: [...foodPrefs.avoidTags, ...memory.avoidTags],
-            budgetMax: budgetMaxFromText(foodSlots.budget || memory.budget),
-            maxDistanceKm: distanceKmFromText(foodSlots.distance || memory.distance)
+            tasteTags: prefs.tasteTags,
+            needTags: prefs.needTags,
+            avoidTags: [...prefs.temporaryAvoidTags, ...prefs.avoidTags, ...memory.avoidTags],
+            budgetMax: budgetMaxFromText(slots.budget || memory.budget),
+            maxDistanceKm: distanceKmFromText(slots.distance || memory.distance)
           },
           userMemory: {
             likedTags: records.flatMap((record) => record.preferences.tasteTags).slice(0, 8),
@@ -679,6 +1318,7 @@ export default function ExperienceClient() {
           name: String(item.name || "推荐餐厅"),
           type: String(item.category || "餐饮"),
           perCapita: String(item.avgPrice || "待确认"),
+          perCapitaDisplay: formatPrice(String(item.avgPrice || "")),
           distance: item.distanceKm ? `${Math.round(Number(item.distanceKm) * 1000)} m` : "距离待确认",
           rating: Number(item.rating || 4.5),
           matchedTags: Array.isArray(item.matchedTags) ? item.matchedTags.map(String).slice(0, 5) : [],
@@ -691,42 +1331,38 @@ export default function ExperienceClient() {
     }
   }
 
-  async function generateFoodRecommendations(options: { adjustment?: string; refresh?: boolean } = {}) {
+  async function generateFoodRecommendations(options: { adjustment?: string; refresh?: boolean } = {}, slots: FoodSlots = foodSlots, prefs: FoodPreferences = foodPrefs) {
     if (!identity) return;
     setFoodLoading(true);
     setFoodNotice("");
-    const excludeIds = options.refresh ? foodRecommendations.map((item) => item.id) : [];
+    if (!options.adjustment) {
+      setShowAdjustmentOptions(false);
+    }
+    const excludeIds = options.refresh ? recommendations.map((item) => item.id) : [];
     const nextBatch = options.refresh ? batchIndex + 1 : batchIndex;
 
     try {
-      const response = await requestJson<{ recommendations: RecommendationCard[]; source?: string; diagnostics?: { durationMs?: number } }>("/api/food/recommend", {
+      const response = await requestJson<{ recommendations: RecommendationCard[]; diagnostics?: { durationMs?: number } }>("/api/food/recommend", {
         method: "POST",
         body: JSON.stringify({
           slots: {
-            mealPurpose: foodSlots.mealPurpose,
-            branchPreference: foodSlots.branchPreference,
-            budget: foodSlots.budget || memory.budget,
-            distance: foodSlots.distance || memory.distance
+            mealPurpose: slots.mealPurpose,
+            branchPreference: slots.branchPreference,
+            budget: slots.budget || memory.budget,
+            distance: slots.distance || memory.distance
           },
           preferences: {
-            tasteTags: foodPrefs.tasteTags,
-            needTags: foodPrefs.needTags,
-            avoidTags: [...foodPrefs.avoidTags, ...memory.avoidTags],
-            spicyLevel: foodPrefs.spicyLevel || memory.spicyLevel
+            tasteTags: prefs.tasteTags,
+            needTags: prefs.needTags,
+            avoidTags: [...prefs.temporaryAvoidTags, ...prefs.avoidTags, ...memory.avoidTags],
+            spicyLevel: prefs.spicyLevel || memory.spicyLevel
           },
           memoryProfile: {
-            enabled: memory.permissions.stableFoodMemory,
+            enabled: memory.memoryEnabled && memory.permissions.stableFoodMemory,
             stableFoodPreferences: {
               avoidTags: memory.avoidTags,
               spicyLevel: memory.spicyLevel,
               source: "web-demo"
-            },
-            permissions: {
-              behaviorLearningEnabled: memory.permissions.behaviorLearning,
-              rememberTastePattern: memory.permissions.recommendationHistory,
-              rememberBudgetByMeal: true,
-              rememberDistancePreference: true,
-              rememberCommonCategories: true
             }
           },
           requestContext: {
@@ -737,16 +1373,14 @@ export default function ExperienceClient() {
         })
       }, identity.sessionToken);
 
-      const cards = normalizeCards(response.recommendations || [], favorites);
-      setFoodRecommendations(cards);
+      setRecommendations(normalizeCards(response.recommendations || [], favorites));
       setBatchIndex(nextBatch);
-      setFoodNotice(`OpenClaw 推荐成功${response.diagnostics?.durationMs ? `，耗时 ${response.diagnostics.durationMs}ms` : ""}。`);
+      setFoodNotice(response.diagnostics?.durationMs ? `OpenClaw 已连接 · ${response.diagnostics.durationMs}ms` : "OpenClaw 已连接");
     } catch (error) {
       if (handleAuthError(error)) return;
-      const localCards = normalizeCards(await rankLocalRestaurants(excludeIds), favorites);
-      setFoodRecommendations(localCards);
+      setRecommendations(normalizeCards(await rankLocalRestaurants(excludeIds, slots, prefs), favorites));
       setBatchIndex(nextBatch);
-      setFoodNotice(`远端推荐不可用，已切换本地保守推荐：${error instanceof Error ? error.message : String(error)}`);
+      setFoodNotice("OpenClaw 暂不可用，已切换本地推荐兜底。");
     } finally {
       setFoodLoading(false);
       setAdjustmentText("");
@@ -760,10 +1394,11 @@ export default function ExperienceClient() {
       summary: summarizeFood(foodSlots, foodPrefs),
       slots: foodSlots,
       preferences: foodPrefs,
-      recommendations: foodRecommendations.slice(0, 3)
+      recommendations: recommendations.slice(0, 3)
     };
     persistRecords([record, ...records]);
-    setFoodNotice("已记住这次偏好，首页和下次推荐会读取这条记录。");
+    setMemoryDecision("kept");
+    setFoodNotice("已记住这次偏好，下次首页会展示这条记录。");
   }
 
   function toggleFavorite(card: RecommendationCard) {
@@ -773,21 +1408,26 @@ export default function ExperienceClient() {
     persistFavorites(next);
   }
 
-  async function createGroupTask(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function createGroupTask() {
     if (!identity) return;
     setGroupLoading(true);
     setGroupNotice("");
 
     try {
+      const expectedPeopleCount = Number(customPeopleInput || groupPeople) || 4;
       const result = await requestJson<{ taskId: string; inviteToken: string; board: GroupBoard }>("/api/group-tasks", {
         method: "POST",
-        body: JSON.stringify(groupDraft)
+        body: JSON.stringify({
+          creatorName: identity.displayName || "我",
+          rawRequest: `${expectedPeopleCount} 人约饭，时间地点朋友各自填，管家整理冲突后推荐。`,
+          locationText: "待商量",
+          expectedPeopleCount,
+          dinnerTime: "待商量"
+        })
       }, identity.sessionToken);
       setGroupTaskId(result.taskId);
       setGroupInviteToken(result.inviteToken);
       setGroupBoard(result.board);
-      setView("group-fill");
     } catch (error) {
       if (!handleAuthError(error)) {
         setGroupNotice(error instanceof Error ? error.message : String(error));
@@ -797,41 +1437,85 @@ export default function ExperienceClient() {
     }
   }
 
-  async function loadGroupBoard(taskId = groupTaskId, inviteToken = groupInviteToken, token = identity?.sessionToken) {
-    if (!taskId || !inviteToken || !token) return;
-    setGroupLoading(true);
-    setGroupNotice("");
-
-    try {
-      const board = await requestJson<GroupBoard>(`/api/group-tasks/${encodeURIComponent(taskId)}?inviteToken=${encodeURIComponent(inviteToken)}`, {}, token);
-      setGroupBoard(board);
-    } catch (error) {
-      if (!handleAuthError(error)) {
-        setGroupNotice(error instanceof Error ? error.message : String(error));
-      }
-    } finally {
-      setGroupLoading(false);
-    }
-  }
-
-  async function submitGroupParticipant(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function submitGroupParticipant(event?: FormEvent<HTMLFormElement>) {
+    event?.preventDefault();
     if (!identity || !groupTaskId || !groupInviteToken) return;
+    if (!groupParticipant.nickname.trim()) {
+      setGroupNotice("先填一下昵称");
+      return;
+    }
+    if (groupFill.timeMode !== "allDay" && groupFill.startTime >= groupFill.endTime) {
+      setGroupNotice("结束时间要晚于开始时间");
+      return;
+    }
     setGroupLoading(true);
     setGroupNotice("");
 
     try {
+      const hardRequirements = [
+        groupFill.priority.hours === "must" && groupFill.timeMode !== "allDay" ? `${groupFill.startTime}-${groupFill.endTime}` : "",
+        groupFill.priority.timeText === "must" ? groupFill.timeCustomText : "",
+        groupFill.priority.dietary === "must" ? groupFill.dietaryTags.join("、") : "",
+        groupFill.restrictionCustomText,
+        groupFill.priority.budget === "must" ? `人均 ${groupParticipant.budgetMax || groupFill.budgetTag}` : "",
+        groupFill.priority.budget === "must" ? groupFill.budgetCustomText : "",
+        groupFill.priority.spicy === "must" ? (groupParticipant.spicyPreference === "no_spicy" ? "不吃辣" : "辣度都可以") : "",
+        groupFill.priority.spicy === "must" ? groupFill.spiceCustomText : "",
+        groupFill.hardRequirement
+      ].filter(Boolean);
+      const softPreferences = [
+        groupFill.priority.days !== "must" ? groupFill.days.join("、") : "",
+        groupFill.priority.timeText !== "must" ? groupFill.timeCustomText : "",
+        groupFill.priority.cuisine !== "must" ? groupFill.cuisineTags.join("、") : "",
+        groupFill.priority.cuisine !== "must" ? groupFill.cuisineCustomText : "",
+        groupFill.priority.budget !== "must" ? groupFill.budgetCustomText : "",
+        groupFill.priority.spicy !== "must" ? groupFill.spiceCustomText : "",
+        groupFill.softPreference
+      ].filter(Boolean);
+      const spicyLabel = groupParticipant.spicyPreference === "no_spicy" ? "不辣" : groupParticipant.spicyPreference === "mild" ? "微辣" : groupParticipant.spicyPreference === "spicy" ? "能吃辣" : "都可以";
+      const availabilitySummary = `${groupFill.days.join("、") || "待商量"} ${groupFill.timeMode === "allDay" ? "全天有空" : `${groupFill.startTime}-${groupFill.endTime}`}`;
+      const rawPreference = [
+        groupParticipant.rawPreference,
+        `可参与：${availabilitySummary}`,
+        groupFill.timeCustomText ? `时间补充：${groupFill.timeCustomText}` : "",
+        groupFill.dietaryTags.length ? `忌口：${groupFill.dietaryTags.join("、")}` : "",
+        groupFill.restrictionCustomText ? `忌口补充：${groupFill.restrictionCustomText}` : "",
+        groupFill.cuisineTags.length ? `想吃：${groupFill.cuisineTags.join("、")}` : "",
+        groupFill.cuisineCustomText ? `品类补充：${groupFill.cuisineCustomText}` : "",
+        `预算：${groupParticipant.budgetMax || groupFill.budgetTag}`,
+        groupFill.budgetCustomText ? `预算补充：${groupFill.budgetCustomText}` : "",
+        groupFill.spiceCustomText ? `辣度补充：${groupFill.spiceCustomText}` : "",
+        groupFill.hardRequirement ? `必须满足：${groupFill.hardRequirement}` : "",
+        groupFill.softPreference ? `希望有：${groupFill.softPreference}` : "",
+        `可见性：${groupFill.visibility === "public" ? "公开" : groupFill.visibility === "nickname_only" ? "只显示昵称" : "匿名，仅用于推荐"}`
+      ].filter(Boolean).join("；");
+
       const board = await requestJson<GroupBoard>(`/api/group-tasks/${encodeURIComponent(groupTaskId)}/participants`, {
         method: "POST",
         body: JSON.stringify({
           inviteToken: groupInviteToken,
-          clientId: identity.userId,
           nickname: groupParticipant.nickname,
-          rawPreference: groupParticipant.rawPreference,
+          visibility: groupFill.visibility,
+          rawPreference,
+          availabilitySummary,
+          availability: {
+            availableDays: groupFill.days,
+            timeMode: groupFill.timeMode,
+            startTime: groupFill.startTime,
+            endTime: groupFill.endTime,
+            timeCustomText: groupFill.timeCustomText
+          },
+          dietaryRestrictions: groupFill.dietaryTags.filter((tag) => tag !== "无忌口"),
+          cuisinePreferences: groupFill.cuisineTags.filter((tag) => tag !== "都可以"),
+          budgetTag: groupFill.budgetTag,
+          spicyLabel,
+          hardRequirements,
+          softPreferences,
+          requirementPriorities: groupFill.priority,
           manualFields: {
             budgetMax: Number(groupParticipant.budgetMax) || undefined,
             spicyPreference: groupParticipant.spicyPreference,
-            leaveBefore: groupParticipant.leaveBefore
+            leaveBefore: groupFill.timeMode === "allDay" ? undefined : groupFill.endTime || groupParticipant.leaveBefore || undefined
           }
         })
       }, identity.sessionToken);
@@ -857,6 +1541,8 @@ export default function ExperienceClient() {
         body: JSON.stringify({ inviteToken: groupInviteToken })
       }, identity.sessionToken);
       setGroupBoard(board);
+      setGroupAdjustmentRequests([]);
+      setAdjustmentTargetCandidate(null);
     } catch (error) {
       if (!handleAuthError(error)) {
         setGroupNotice(error instanceof Error ? error.message : String(error));
@@ -866,18 +1552,44 @@ export default function ExperienceClient() {
     }
   }
 
-  async function createWeekendPlan(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function refreshGroupBoard() {
+    if (!identity || !groupTaskId || !groupInviteToken) return;
+    setGroupLoading(true);
+    setGroupNotice("");
+
+    try {
+      const board = await requestJson<GroupBoard>(`/api/group-tasks/${encodeURIComponent(groupTaskId)}?inviteToken=${encodeURIComponent(groupInviteToken)}`, {}, identity.sessionToken);
+      setGroupBoard(board);
+    } catch (error) {
+      if (!handleAuthError(error)) {
+        setGroupNotice(error instanceof Error ? error.message : String(error));
+      }
+    } finally {
+      setGroupLoading(false);
+    }
+  }
+
+  async function createWeekendPlan(event?: FormEvent<HTMLFormElement>) {
+    event?.preventDefault();
     if (!identity) return;
+    const validation = validateWeekendForm(weekendForm);
+    if (!validation.ok) {
+      setWeekendError(validation.message);
+      setWeekendNotice("");
+      setWeekendPlan(null);
+      return;
+    }
+
     setWeekendLoading(true);
     setWeekendNotice("");
+    setWeekendError("");
 
     const payload = {
       ...weekendForm,
-      timeWindow: `${weekendForm.dateLabel} ${weekendForm.startTime}-${weekendForm.endTime}`,
-      budgetMax: Number(weekendForm.budgetMax) || 120,
-      interests: weekendForm.interests.split(/[，,、\s]+/).filter(Boolean),
-      rawText: `${weekendForm.mood}，${weekendForm.energyLevel}体力，和${weekendForm.companions}一起。`
+      timeWindow: validation.timeWindow,
+      isAllDay: weekendForm.timeMode === "allDay",
+      budgetMax: validation.budgetMax,
+      rawText: weekendForm.rawText || `${weekendForm.mood}，${weekendForm.energyLevel}，和${weekendForm.companions}一起。`
     };
 
     try {
@@ -886,564 +1598,1418 @@ export default function ExperienceClient() {
         body: JSON.stringify(payload)
       }, identity.sessionToken);
       setWeekendPlan(plan);
-      setWeekendNotice(plan.weather?.fallback ? "天气或外部服务不可用，后端已生成保守路线。" : "后端路线生成成功。");
+      setWeekendNotice(plan.weather?.fallback ? "天气或外部服务不可用，后端已生成保守路线。" : "已生成路线，可以复制喜欢的邀约文案。");
     } catch (error) {
       if (handleAuthError(error)) return;
       setWeekendPlan(buildLocalWeekendPlan(weekendForm));
-      setWeekendNotice(`后端不可用，已切换本地路线：${error instanceof Error ? error.message : String(error)}`);
+      setWeekendNotice("后端不可用，已切换本地路线。");
     } finally {
       setWeekendLoading(false);
     }
   }
 
-  async function copyText(text: string) {
-    if (!navigator.clipboard) return;
-    await navigator.clipboard.writeText(text);
+  function updateWeekendForm(patch: Partial<typeof defaultWeekendForm>) {
+    setWeekendForm((current) => ({ ...current, ...patch }));
+    setWeekendError("");
   }
 
-  function resetFoodFlow() {
-    setFoodIndex(0);
-    setFoodSlots({ mealPurpose: "", branchPreference: "", budget: "", distance: "", userNotes: "" });
-    setFoodPrefs({ tasteTags: [], needTags: [], avoidTags: [], spicyLevel: "" });
-    setFoodRecommendations([]);
-    setFoodNotice("");
-    setBatchIndex(0);
+  function toggleWeekendInterest(value: string) {
+    setWeekendForm((current) => ({
+      ...current,
+      interests: current.interests.includes(value)
+        ? current.interests.filter((item) => item !== value)
+        : [...current.interests, value]
+    }));
+    setWeekendError("");
   }
 
-  if (!identity || view === "login") {
-    return (
-      <main className="flex min-h-screen items-center justify-center overflow-x-hidden bg-[#eef8f5] px-5 py-10 text-[#12342f]">
-        <form className="w-full max-w-[350px] rounded-md border border-emerald-100 bg-white p-6 shadow-xl sm:max-w-md" onSubmit={login}>
-          <a className="text-sm font-bold text-emerald-700" href="/">返回作品首页</a>
-          <h1 className="mt-5 text-2xl font-black leading-tight sm:text-3xl">进入 Web 版 AI 管家</h1>
-          <p className="mt-3 text-sm leading-6 text-slate-600">输入一个 demo id 即可获得独立体验身份。不同 id 会区分用户状态和本地记忆。</p>
-          <label className="mt-6 block text-sm font-bold">Demo ID</label>
-          <TextInput value={loginId} onChange={(event) => setLoginId(event.target.value)} placeholder="judge-demo" />
-          <label className="mt-4 block text-sm font-bold">展示昵称</label>
-          <TextInput value={loginName} onChange={(event) => setLoginName(event.target.value)} placeholder="评审 Demo 用户" />
-          {authError ? <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm font-bold text-red-700">{authError}</p> : null}
-          <PrimaryButton className="mt-6 w-full" type="submit">进入在线体验</PrimaryButton>
-        </form>
-      </main>
-    );
+  function renderPhone() {
+    if (!identity || view === "login") {
+      return renderLoginPage();
+    }
+
+    if (view === "home") return renderHomePage();
+    if (view === "food") return renderFoodPage();
+    if (view === "group-create") return renderGroupCreatePage();
+    if (view === "group-fill") return renderGroupFillPage();
+    if (view === "group-board") return renderGroupBoardPage();
+    if (view === "weekend") return renderWeekendPage();
+    return renderMemoryPage();
+  }
+
+  function getFoodQuestionBubbleText(question: FoodQuestion, answeredCount = foodIndex) {
+    if (question.id === "mealPurpose" && answeredCount === 0) {
+      return "这次是什么用餐场景？";
+    }
+    return question.title;
+  }
+
+  function getFoodAnswerValue(question: FoodQuestion) {
+    if (question.id === "tag-preferences") {
+      return [
+        foodPrefs.tasteTags.length ? `口味：${foodPrefs.tasteTags.join("、")}` : "",
+        foodPrefs.needTags.length ? `感觉：${foodPrefs.needTags.join("、")}` : "",
+        foodPrefs.temporaryAvoidTags.length ? `这次不想吃：${foodPrefs.temporaryAvoidTags.join("、")}` : ""
+      ].filter(Boolean).join("；");
+    }
+    if (question.id === "avoid-preferences") {
+      return [
+        foodPrefs.avoidTags.length ? `忌口：${foodPrefs.avoidTags.join("、")}` : "",
+        foodPrefs.spicyLevel ? `辣度：${foodPrefs.spicyLevel}` : ""
+      ].filter(Boolean).join("；");
+    }
+    if (question.id === "tasteTags") return foodPrefs.tasteTags.join("、");
+    if (question.id === "needTags") return foodPrefs.needTags.join("、");
+    if (question.id === "temporaryAvoidTags") return foodPrefs.temporaryAvoidTags.join("、");
+    if (question.id === "avoidTags") return foodPrefs.avoidTags.join("、");
+    if (question.id === "spicyLevel") return foodPrefs.spicyLevel;
+    if (question.slot) {
+      return foodSlots[question.slot];
+    }
+    return "";
+  }
+
+  function renderAnsweredFoodMessages() {
+    const answeredCount = foodFinished ? activeFoodQuestions.length : foodIndex;
+    const preamble = foodPreambleMessages.map((message) => (
+      <div className={`chat-message ${message.role === "user" ? "user-message" : "butler-message"}`} key={message.id}>
+        {message.role === "butler" ? <div className="message-avatar ai-mark">幺</div> : null}
+        <div className={`message-content ${message.role === "user" ? "user-content" : "butler-content"}`}>
+          <div className={`chat-bubble ${message.role === "user" ? "user-bubble" : "butler-bubble"}`}>{message.text}</div>
+        </div>
+      </div>
+    ));
+    const answers = activeFoodQuestions.slice(0, answeredCount).map((question) => (
+      <div className="chat-message user-message" key={`answer-${question.id}`}>
+        <div className="message-content user-content">
+          <div className="chat-bubble user-bubble">{foodAnswerLabels[question.id] || "你的选择"}：{getFoodAnswerValue(question) || "未选择"}</div>
+        </div>
+      </div>
+    ));
+    return [...preamble, ...answers];
   }
 
   return (
-    <main className={`min-h-screen ${theme.bg} text-[#12342f]`}>
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[280px_430px_1fr]">
-        <aside className="space-y-4">
-          <Panel>
-            <a className="text-sm font-bold text-emerald-700" href="/">作品首页</a>
-            <h1 className="mt-4 text-2xl font-black">饿了幺 AI 管家</h1>
-            <p className="mt-2 text-sm leading-6 text-slate-600">当前身份：{identity.displayName}</p>
-            <p className="mt-1 break-all text-xs text-slate-500">userId: {identity.userId}</p>
-            <SecondaryButton className="mt-4 w-full" onClick={logout} type="button">退出 demo 身份</SecondaryButton>
-          </Panel>
-          <Panel>
-            <h2 className="text-sm font-black text-emerald-950">页面入口</h2>
-            <div className="mt-3 grid gap-2">
-              {[
-                ["home", "首页"],
-                ["food", "今天吃什么"],
-                ["group-create", "多人约饭"],
-                ["weekend", "周末轻规划"],
-                ["memory", "管家记忆"]
-              ].map(([target, label]) => (
-                <button
-                  className={`rounded-md px-3 py-2 text-left text-sm font-bold ${view === target ? "bg-emerald-700 text-white" : "bg-emerald-50 text-emerald-900"}`}
-                  key={target}
-                  onClick={() => setView(target as View)}
-                  type="button"
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </Panel>
-          <Panel>
-            <h2 className="text-sm font-black text-emerald-950">主题</h2>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {themeOptions.map((option) => (
-                <Chip active={themeId === option.id} key={option.id} onClick={() => setThemeId(option.id)}>{option.name}</Chip>
-              ))}
-            </div>
-          </Panel>
+    <main className={`experience-stage ${themeClass}`}>
+      <div className="experience-shell">
+        <aside className="review-panel">
+          <a className="panel-link" href="/">作品首页</a>
+          <h1>饿了幺 AI 管家</h1>
+          <p>当前身份：{identity?.displayName || "未登录"}</p>
+          <p className="mono">userId: {identity?.userId || "等待登录"}</p>
+          {identity ? <button className="panel-outline-button" onClick={logout} type="button">退出 demo 身份</button> : null}
         </aside>
 
-        <section className="mx-auto w-full max-w-[430px] rounded-[2rem] border border-slate-200 bg-slate-950 p-3 shadow-2xl">
-          <div className="min-h-[760px] overflow-hidden rounded-[1.45rem] bg-[#effff8]">
-            <header className="flex items-center justify-between border-b border-emerald-100 bg-white px-5 py-4">
-              <button className="text-sm font-black text-emerald-800" onClick={() => setView("home")} type="button">‹</button>
-              <div className="text-center">
-                <div className="text-sm font-black">饿了幺</div>
-                <div className="text-xs text-emerald-700">Web 复刻版</div>
-              </div>
-              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">Demo</span>
-            </header>
-            <div className="max-h-[700px] overflow-y-auto p-4">
-              {view === "home" ? renderHome() : null}
-              {view === "food" ? renderFood() : null}
-              {view === "group-create" ? renderGroupCreate() : null}
-              {view === "group-fill" ? renderGroupFill() : null}
-              {view === "group-board" ? renderGroupBoard() : null}
-              {view === "weekend" ? renderWeekend() : null}
-              {view === "memory" ? renderMemory() : null}
-            </div>
-          </div>
+        <section className="phone-frame" aria-label="小程序复刻预览">
+          <div className="phone-screen">{renderPhone()}</div>
         </section>
 
-        <aside className="space-y-4">
-          <Panel>
-            <h2 className="text-xl font-black text-emerald-950">当前体验状态</h2>
-            <div className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
-              <p>最近偏好记录：{records.length} 条</p>
-              <p>收藏店铺：{favorites.length} 家</p>
-              <p>多人约饭任务：{groupTaskId || "未创建"}</p>
-              <p>周末规划：{weekendPlan?.planId || "未生成"}</p>
-            </div>
-          </Panel>
-          <Panel>
-            <h2 className="text-xl font-black text-emerald-950">验收覆盖</h2>
-            <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
-              <li>登录/demo 身份初始化</li>
-              <li>首页、历史、收藏、主题</li>
-              <li>今天吃什么问答与推荐</li>
-              <li>多人约饭创建、填写、看板</li>
-              <li>周末规划生成与 fallback</li>
-              <li>记忆设置与本地持久化</li>
-            </ul>
-          </Panel>
+        <aside className="review-panel right-panel">
+          <h2>当前体验状态</h2>
+          <p>最近偏好记录：{records.length} 条</p>
+          <p>收藏店铺：{favorites.length} 家</p>
+          <p>多人约饭任务：{groupTaskId || "未创建"}</p>
+          <p>周末规划：{weekendPlan?.planId || "未生成"}</p>
+          <h2>验收覆盖</h2>
+          <p>登录/demo 身份初始化</p>
+          <p>首页、历史、收藏、主题</p>
+          <p>今天吃什么问答与推荐</p>
+          <p>多人约饭创建、填写、看板</p>
+          <p>周末规划生成与 fallback</p>
+          <p>记忆设置与本地持久化</p>
         </aside>
       </div>
     </main>
   );
 
-  function renderHome() {
-    const recent = records[0];
+  function renderLoginPage() {
     return (
-      <div className="space-y-4">
-        <Panel>
-          <p className={`text-sm font-bold ${theme.accent}`}>AI 管家已就绪</p>
-          <h2 className="mt-2 text-2xl font-black">今天想让管家帮你做什么？</h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">这里对齐小程序首页：进入推荐、多人约饭、周末规划和记忆设置。</p>
-        </Panel>
-        <div className="grid gap-3">
-          <PrimaryButton onClick={() => setView("food")} type="button">今天吃什么</PrimaryButton>
-          <SecondaryButton onClick={() => setView("group-create")} type="button">发起多人约饭</SecondaryButton>
-          <SecondaryButton onClick={() => setView("weekend")} type="button">生成周末轻规划</SecondaryButton>
-          <SecondaryButton onClick={() => setView("memory")} type="button">管理 AI 管家记忆</SecondaryButton>
-        </div>
-        <Panel>
-          <h3 className="text-lg font-black">最近偏好</h3>
-          <p className="mt-2 text-sm leading-6 text-slate-600">{recent ? recent.summary : "还没有记录。完成一次推荐后可选择记住偏好。"}</p>
-        </Panel>
-        <Panel>
-          <h3 className="text-lg font-black">收藏店铺</h3>
-          <div className="mt-3 space-y-2">
-            {favorites.slice(0, 4).map((item) => (
-              <div className="rounded-md bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-900" key={item.id || item.name}>{item.name}</div>
-            ))}
-            {!favorites.length ? <p className="text-sm text-slate-600">推荐结果里点收藏后会出现在这里。</p> : null}
+      <div className="page login-page">
+        <div className="login-content">
+          <div className="brand-block">
+            <div className="brand-mark ai-mark">幺</div>
+            <div className="brand-name">饿了幺</div>
+            <div className="brand-subtitle">藏在小程序里的 AI 本地生活管家</div>
           </div>
-        </Panel>
+
+          <div className="login-copy">
+            <div className="login-title">先登录一下</div>
+            <div className="login-desc">使用微信登录建立会话后，管家会把周边规划和偏好记录关联到你的账号。</div>
+          </div>
+
+          <div className="mvp-note">
+            <div className="note-icon">i</div>
+            <div className="note-text">当前为 MVP 演示版本，登录后可体验「今天吃什么」、多人约饭和周边轻规划。</div>
+          </div>
+
+          {authError ? <div className="inline-error">{authError}</div> : null}
+
+          <div className="login-actions">
+            <button className={`login-button ${authLoading ? "loading" : ""}`} disabled={authLoading} onClick={() => void login()} type="button">{authLoading ? "授权中" : "微信授权登录"}</button>
+            <div className="login-tip">登录即代表同意《用户协议》与《隐私政策》</div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  function renderFood() {
-    if (isFoodComplete) {
-      return (
-        <div className="space-y-4">
-          <Panel>
-            <h2 className="text-2xl font-black">偏好确认</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-600">{summarizeFood(foodSlots, foodPrefs) || "暂无偏好"}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {[...foodPrefs.tasteTags, ...foodPrefs.needTags, ...foodPrefs.avoidTags, foodPrefs.spicyLevel].filter(Boolean).map((tag) => (
-                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700" key={tag}>{tag}</span>
-              ))}
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <SecondaryButton onClick={resetFoodFlow} type="button">重新开始</SecondaryButton>
-              <PrimaryButton disabled={foodLoading} onClick={() => void generateFoodRecommendations()} type="button">
-                {foodLoading ? "生成中..." : "生成推荐"}
-              </PrimaryButton>
-            </div>
-          </Panel>
-          {foodNotice ? <p className="rounded-md bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-900">{foodNotice}</p> : null}
-          {foodRecommendations.length ? (
-            <div className="space-y-3">
-              {foodRecommendations.map((card, index) => (
-                <Panel key={card.id || card.name}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">{index === 0 ? "首推" : "备选"}</span>
-                      <h3 className="mt-3 text-xl font-black">{card.name}</h3>
-                    </div>
-                    <button className="rounded-full border border-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700" onClick={() => toggleFavorite(card)} type="button">
-                      {card.isFavorited ? "已收藏" : "收藏"}
-                    </button>
-                  </div>
-                  <p className="mt-2 text-sm text-slate-600">{card.perCapitaDisplay || formatPrice(card.perCapita)} · {card.distance} · 评分 {card.rating || "待确认"}</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {(card.matchedTags || []).slice(0, 5).map((tag) => <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700" key={tag}>{tag}</span>)}
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-slate-700">{card.reason}</p>
-                  <p className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900">管家提醒：{card.riskTip}</p>
-                </Panel>
-              ))}
-              <Panel>
-                <label className="block text-sm font-bold">想怎么调整？</label>
-                <TextInput value={adjustmentText} onChange={(event) => setAdjustmentText(event.target.value)} placeholder="例如：更近一点 / 不想吃甜的" />
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  <SecondaryButton disabled={foodLoading} onClick={() => void generateFoodRecommendations({ refresh: true })} type="button">换一批</SecondaryButton>
-                  <PrimaryButton disabled={foodLoading} onClick={() => void generateFoodRecommendations({ adjustment: adjustmentText || "adjust", refresh: true })} type="button">按反馈调整</PrimaryButton>
-                </div>
-                <SecondaryButton className="mt-3 w-full" onClick={saveCurrentPreferenceRecord} type="button">记住这次偏好</SecondaryButton>
-              </Panel>
+  function renderHomePage() {
+    return (
+      <div className="page home-page">
+        <div className="home-topline">
+          <span className="hello-muted">你好，</span>
+          <span className="hello-name">小幺</span>
+        </div>
+
+        <div className="home-hero">
+          <div className="section-title">今天需要管家帮什么？</div>
+          <div className="section-desc">从一个人吃什么，到多人约饭和周边规划，<span className="line-break"></span>先给你 2-3 个可执行方案。</div>
+        </div>
+
+        <div className="utility-row">
+          <button className="utility-chip" onClick={() => setShowThemePanel(true)} type="button"><span className="utility-icon">◐</span><span>主题换装</span></button>
+          <button className="utility-chip" onClick={() => setShowFavoritesPanel(true)} type="button"><span className="utility-icon">★</span><span>店铺收藏</span></button>
+        </div>
+
+        <button className="primary-entry" onClick={() => setView("food")} type="button">
+          <span className="primary-glow"></span>
+          <span className="primary-mark ai-mark">幺</span>
+          <span className="primary-eyebrow">AI 管家 · 主入口</span>
+          <span className="primary-title">今天吃什么</span>
+          <span className="primary-desc">问 4-7 个小问题，给你 2-3 个匹配场景、预算和忌口的方案</span>
+          <span className="primary-cta"><span>开始问答</span><span className="cta-arrow">→</span></span>
+        </button>
+
+        <div className="secondary-grid">
+          <button className="secondary-entry" onClick={() => setView("group-create")} type="button">
+            <span className="entry-badge entry-badge-live">可联调</span>
+            <span className="secondary-icon group-icon">饭</span>
+            <span className="secondary-title">发起约饭</span>
+            <span className="secondary-desc">创建任务 · 分享填写 · 生成推荐</span>
+          </button>
+          <button className="secondary-entry" onClick={() => setView("weekend")} type="button">
+            <span className="entry-badge">周边 · 时间 · 天气适配</span>
+            <span className="secondary-icon weekend-icon">周</span>
+            <span className="secondary-title">周边规划</span>
+            <span className="secondary-desc">按时间、预算和兴趣安排轻路线</span>
+          </button>
+        </div>
+
+        <button className="memory-entry" onClick={() => setView("memory")} type="button">
+          <span className="memory-icon ai-mark">♡</span>
+          <span className="memory-copy">
+            <span className="memory-title">管家记忆</span>
+            <span className="memory-desc">忌口、辣度与偏好授权</span>
+          </span>
+          <span className="memory-arrow">›</span>
+        </button>
+
+        <div className="recent-block">
+          <div className="recent-head">
+            <span>偏好记录</span>
+            <button className="recent-link" onClick={() => setShowHistoryPanel(true)} type="button">全部记录 ›</button>
+          </div>
+          <button className="recent-card" onClick={() => setShowHistoryPanel(true)} type="button">
+            <span className="recent-title-row">
+              <span className="recent-title">{recentRecord ? recentRecord.slots.mealPurpose || "用餐偏好" : "还没有偏好记录"}</span>
+              <span className="recent-time">{recentRecord ? new Date(recentRecord.createdAt).toLocaleString() : "等待体验"}</span>
+            </span>
+            <span className="recent-summary">{recentRecord ? recentRecord.summary : "在结果页选择「记住这个偏好」后，我会把你的偏好帮你记下来。"}</span>
+          </button>
+        </div>
+
+        {showThemePanel ? renderThemePanel() : null}
+        {showHistoryPanel ? renderHistoryPanel() : null}
+        {showFavoritesPanel ? renderFavoritesPanel() : null}
+      </div>
+    );
+  }
+
+  function renderFoodPage() {
+    return (
+      <div className="page food-page">
+        <div className="custom-food-header">
+          <div className="food-nav-row">
+            <button className="header-back-hit" onClick={goHome} type="button"><span className="header-back-button">‹</span></button>
+            <div className="food-nav-title">今天吃什么</div>
+          </div>
+          <button className="header-online-status status-connected" type="button">
+            <span className="header-online-dot"></span>
+            <span className="header-online-text">{foodNotice || "OpenClaw 已连接"}</span>
+          </button>
+        </div>
+
+        <div className="chat-body">
+          {!foodFinished && !prefCheckRecord && !prefModifyRecord ? (
+            <div className="progress-strip">
+              <div className="progress-copy">
+                <span>第 {foodIndex + 1} / {activeFoodQuestions.length} 题</span>
+                {currentQuestion.optional || currentQuestion.allowEmpty ? <span className="optional-hint">可跳过</span> : null}
+              </div>
+              <div className="progress-track"><div className="progress-fill" style={{ width: `${progressPercent}%` }}></div></div>
             </div>
           ) : null}
-        </div>
-      );
-    }
 
-    return (
-      <div className="space-y-4">
-        <Panel>
-          <p className="text-sm font-bold text-emerald-700">问题 {foodIndex + 1}/{foodQuestions.length}</p>
-          <h2 className="mt-2 text-2xl font-black">{currentQuestion.title}</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">{currentQuestion.helper}</p>
-        </Panel>
-        <Panel>
-          {currentQuestion.text ? (
-            <TextArea value={foodSlots.userNotes} onChange={(event) => updateFoodValue("userNotes", event.target.value)} placeholder="可以留空跳过" />
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {currentQuestion.options.map((option) => {
-                const currentValue = foodSlots[currentQuestion.id as keyof FoodSlots] || foodPrefs[currentQuestion.id as keyof FoodPreferences];
-                const active = Array.isArray(currentValue) ? currentValue.includes(option) : currentValue === option;
-                return (
-                  <Chip
-                    active={active}
-                    key={option}
-                    onClick={() => currentQuestion.multi ? toggleFoodTag(currentQuestion.id, option) : updateFoodValue(currentQuestion.id, option)}
-                  >
-                    {option}
-                  </Chip>
-                );
-              })}
-            </div>
-          )}
-          <div className="mt-5 grid grid-cols-2 gap-2">
-            <SecondaryButton disabled={foodIndex === 0} onClick={() => setFoodIndex(Math.max(0, foodIndex - 1))} type="button">上一步</SecondaryButton>
-            <PrimaryButton onClick={() => setFoodIndex(foodIndex + 1)} type="button">{currentQuestion.text ? "完成" : "下一步"}</PrimaryButton>
+          <div className="chat-thread">
+            {renderAnsweredFoodMessages()}
+            {prefCheckRecord ? renderPreferenceCheck(prefCheckRecord) : prefModifyRecord ? renderPreferenceModify() : !foodFinished ? renderQuestionMessage() : renderFoodResult()}
           </div>
-        </Panel>
-        {records[0] && foodIndex === 0 ? (
-          <Panel>
-            <h3 className="text-lg font-black">可复用最近偏好</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{records[0].summary}</p>
-            <SecondaryButton
-              className="mt-3 w-full"
-              onClick={() => {
-                setFoodSlots(records[0].slots);
-                setFoodPrefs(records[0].preferences);
-                setFoodIndex(foodQuestions.length);
-              }}
-              type="button"
-            >
-              应用这条偏好
-            </SecondaryButton>
-          </Panel>
-        ) : null}
+        </div>
+
+        {!foodFinished && !prefCheckRecord && !prefModifyRecord ? renderReplyDock() : null}
+        {foodFinished ? renderResultActions() : null}
       </div>
     );
   }
 
-  function renderGroupCreate() {
+  function renderPreferenceCheck(record: PreferenceRecord) {
     return (
-      <form className="space-y-4" onSubmit={createGroupTask}>
-        <Panel>
-          <h2 className="text-2xl font-black">发起多人约饭</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">创建后会得到 invite token，浏览器版用复制链接替代小程序分享。</p>
-        </Panel>
-        <Panel className="space-y-3">
-          <TextInput value={groupDraft.creatorName} onChange={(event) => setGroupDraft({ ...groupDraft, creatorName: event.target.value })} placeholder="发起人" />
-          <TextArea value={groupDraft.rawRequest} onChange={(event) => setGroupDraft({ ...groupDraft, rawRequest: event.target.value })} placeholder="聚餐需求" />
-          <TextInput value={groupDraft.locationText} onChange={(event) => setGroupDraft({ ...groupDraft, locationText: event.target.value })} placeholder="地点" />
-          <TextInput type="number" value={groupDraft.expectedPeopleCount} onChange={(event) => setGroupDraft({ ...groupDraft, expectedPeopleCount: Number(event.target.value) })} placeholder="人数" />
-          <TextInput value={groupDraft.dinnerTime} onChange={(event) => setGroupDraft({ ...groupDraft, dinnerTime: event.target.value })} placeholder="时间" />
-          {groupNotice ? <p className="text-sm text-red-700">{groupNotice}</p> : null}
-          <PrimaryButton className="w-full" disabled={groupLoading} type="submit">{groupLoading ? "创建中..." : "创建任务"}</PrimaryButton>
-        </Panel>
-      </form>
-    );
-  }
-
-  function renderGroupFill() {
-    return (
-      <form className="space-y-4" onSubmit={submitGroupParticipant}>
-        <Panel>
-          <h2 className="text-2xl font-black">填写成员偏好</h2>
-          <p className="mt-2 break-all text-sm leading-6 text-slate-600">任务：{groupTaskId || "未创建"}</p>
-        </Panel>
-        <Panel className="space-y-3">
-          <TextInput value={groupParticipant.nickname} onChange={(event) => setGroupParticipant({ ...groupParticipant, nickname: event.target.value })} placeholder="昵称" />
-          <TextArea value={groupParticipant.rawPreference} onChange={(event) => setGroupParticipant({ ...groupParticipant, rawPreference: event.target.value })} placeholder="偏好和硬约束" />
-          <TextInput value={groupParticipant.budgetMax} onChange={(event) => setGroupParticipant({ ...groupParticipant, budgetMax: event.target.value })} placeholder="预算上限" />
-          <TextInput value={groupParticipant.leaveBefore} onChange={(event) => setGroupParticipant({ ...groupParticipant, leaveBefore: event.target.value })} placeholder="最晚离开时间" />
-          <div className="flex flex-wrap gap-2">
-            {[
-              ["no_spicy", "不辣"],
-              ["any", "都可以"],
-              ["spicy", "能吃辣"]
-            ].map(([value, label]) => (
-              <Chip active={groupParticipant.spicyPreference === value} key={value} onClick={() => setGroupParticipant({ ...groupParticipant, spicyPreference: value })}>{label}</Chip>
-            ))}
-          </div>
-          {groupNotice ? <p className="text-sm text-red-700">{groupNotice}</p> : null}
-          <PrimaryButton className="w-full" disabled={groupLoading} type="submit">{groupLoading ? "提交中..." : "提交偏好"}</PrimaryButton>
-        </Panel>
-      </form>
-    );
-  }
-
-  function renderGroupBoard() {
-    const shareLink = typeof window !== "undefined" && groupTaskId && groupInviteToken
-      ? `${window.location.origin}/experience?groupTaskId=${encodeURIComponent(groupTaskId)}&inviteToken=${encodeURIComponent(groupInviteToken)}`
-      : "";
-
-    return (
-      <div className="space-y-4">
-        <Panel>
-          <h2 className="text-2xl font-black">{groupBoard?.task.title || "多人约饭看板"}</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">{groupBoard?.task.rawRequest || "创建任务后可在这里查看成员偏好和推荐。"}</p>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <SecondaryButton onClick={() => setView("group-fill")} type="button">继续填写</SecondaryButton>
-            <SecondaryButton disabled={!shareLink} onClick={() => void copyText(shareLink)} type="button">复制分享链接</SecondaryButton>
-          </div>
-        </Panel>
-        {groupNotice ? <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{groupNotice}</p> : null}
-        <Panel>
-          <h3 className="text-lg font-black">成员偏好</h3>
-          <div className="mt-3 space-y-2">
-            {(groupBoard?.participants || []).map((participant) => (
-              <div className="rounded-md bg-emerald-50 p-3 text-sm" key={participant.participantId}>
-                <div className="font-bold">{participant.nickname}</div>
-                <div className="mt-1 leading-6 text-slate-600">{participant.rawPreference}</div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {(participant.extractedConstraints?.hard_constraints || []).map((item) => (
-                    <span className="rounded-full bg-white px-2 py-1 text-xs font-bold text-rose-700" key={`hard-${participant.participantId}-${item}`}>{item}</span>
-                  ))}
-                  {(participant.extractedConstraints?.soft_preferences || []).map((item) => (
-                    <span className="rounded-full bg-white px-2 py-1 text-xs font-bold text-emerald-700" key={`soft-${participant.participantId}-${item}`}>{item}</span>
-                  ))}
-                </div>
-              </div>
-            ))}
-            {!groupBoard?.participants?.length ? <p className="text-sm text-slate-600">还没有成员提交偏好。</p> : null}
-          </div>
-        </Panel>
-        <Panel>
-          <h3 className="text-lg font-black">冲突识别</h3>
-          <div className="mt-3 space-y-2">
-            {(groupBoard?.conflicts || []).map((conflict, index) => (
-              <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm" key={`${conflict.type}-${index}`}>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-black text-amber-950">{conflict.description}</span>
-                  <span className="rounded-full bg-white px-2 py-1 text-xs font-bold text-amber-800">{conflict.severity}</span>
-                </div>
-                <p className="mt-2 leading-6 text-amber-900">{conflict.resolution_strategy}</p>
-              </div>
-            ))}
-            {!groupBoard?.conflicts?.length ? <p className="text-sm text-slate-600">当前没有明显冲突，生成推荐时会继续检查预算、辣度、时间和距离。</p> : null}
-          </div>
-        </Panel>
-        <Panel>
-          <div className="flex items-center justify-between gap-3">
-            <h3 className="text-lg font-black">推荐方案</h3>
-            <PrimaryButton disabled={groupLoading || !groupBoard?.participants?.length} onClick={() => void generateGroupRecommendation()} type="button">
-              {groupLoading ? "生成中..." : "生成"}
-            </PrimaryButton>
-          </div>
-          {groupBoard?.recommendationResult ? (
-            <div className="mt-4 space-y-3">
-              {groupBoard.recommendationResult.candidates.slice(0, 3).map((candidate) => (
-                <div className="rounded-md border border-emerald-100 p-3" key={candidate.restaurant_id}>
-                  <h4 className="font-black">{candidate.name}</h4>
-                  <p className="mt-1 text-sm text-slate-600">人均 {candidate.avg_price} 元 · {candidate.distance_m} m · 得分 {candidate.score}</p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {(candidate.tags || []).slice(0, 5).map((tag) => (
-                      <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-700" key={`${candidate.restaurant_id}-${tag}`}>{tag}</span>
-                    ))}
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-slate-700">{candidate.reason}</p>
-                  <p className="mt-2 rounded-md bg-amber-50 p-2 text-xs leading-5 text-amber-900">排队风险：{candidate.queue_risk || "待确认"}</p>
+      <div className="chat-message butler-message pref-check-message">
+        <div className="message-avatar ai-mark">幺</div>
+        <div className="message-content butler-content">
+          <div className="pref-check-card">
+            <div className="pref-check-title">我找到你上次「{record.slots.mealPurpose || "这类场景"}」的偏好：</div>
+            <div className="pref-summary-block">
+              {buildPrefSummaryRows(record).map((row) => (
+                <div className="pref-summary-row" key={row.key}>
+                  <span className="pref-summary-label">{row.label}</span>
+                  <span className="pref-summary-value">{row.value}</span>
                 </div>
               ))}
-              <div className="rounded-md bg-emerald-950 p-3 text-sm leading-6 text-white">
-                <div className="font-black">最终建议：{groupBoard.recommendationResult.finalChoice.name}</div>
-                <p className="mt-1 text-emerald-50">{groupBoard.recommendationResult.finalChoice.reason}</p>
-                <p className="mt-1 text-emerald-100">备选：{groupBoard.recommendationResult.finalChoice.backup}</p>
-                {groupBoard.recommendationResult.finalChoice.risks?.length ? (
-                  <ul className="mt-2 list-disc space-y-1 pl-5 text-emerald-50">
-                    {groupBoard.recommendationResult.finalChoice.risks.map((risk) => <li key={risk}>{risk}</li>)}
-                  </ul>
-                ) : null}
-              </div>
-              <p className="rounded-md bg-emerald-50 p-3 text-sm leading-6 text-emerald-900">{groupBoard.recommendationResult.groupMessage}</p>
             </div>
-          ) : (
-            <p className="mt-3 text-sm text-slate-600">提交至少一个成员偏好后即可生成。</p>
-          )}
-        </Panel>
+            <div className="pref-check-prompt">这次要沿用这些偏好吗？</div>
+          </div>
+          <div className="inline-replies pref-check-actions">
+            <div className="quick-list">
+              <button className="quick-chip pref-check-chip" onClick={() => void usePreferenceRecord(record, true)} type="button">全都按这个来</button>
+              <button className="quick-chip pref-check-chip" onClick={skipPreferenceRecord} type="button">这次不用历史偏好</button>
+              <button className="quick-chip pref-check-chip" onClick={() => void usePreferenceRecord(record, false)} type="button">部分修改</button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  function renderWeekend() {
+  function renderPreferenceModify() {
+    if (!prefModifyRecord) return null;
+    const modifyCount = prefModifyRows.filter((row) => row.toggleable && !row.keep).length;
+    const actions = selectedPrefModifyActions();
+
     return (
-      <div className="space-y-4">
-        <form className="space-y-4" onSubmit={createWeekendPlan}>
-          <Panel>
-            <h2 className="text-2xl font-black">周末轻规划</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">输入时间、预算、体力和兴趣，生成 3 小时左右的轻路线。</p>
-          </Panel>
-          <Panel className="space-y-3">
-            <div className="grid grid-cols-2 gap-2">
-              <TextInput value={weekendForm.dateLabel} onChange={(event) => setWeekendForm({ ...weekendForm, dateLabel: event.target.value })} placeholder="日期" />
-              <TextInput value={weekendForm.budgetMax} onChange={(event) => setWeekendForm({ ...weekendForm, budgetMax: event.target.value })} placeholder="预算" />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <TextInput value={weekendForm.startTime} onChange={(event) => setWeekendForm({ ...weekendForm, startTime: event.target.value })} placeholder="开始" />
-              <TextInput value={weekendForm.endTime} onChange={(event) => setWeekendForm({ ...weekendForm, endTime: event.target.value })} placeholder="结束" />
-            </div>
-            <TextInput value={weekendForm.startArea} onChange={(event) => setWeekendForm({ ...weekendForm, startArea: event.target.value })} placeholder="出发区域" />
-            <TextInput value={weekendForm.mood} onChange={(event) => setWeekendForm({ ...weekendForm, mood: event.target.value })} placeholder="心情" />
-            <TextInput value={weekendForm.energyLevel} onChange={(event) => setWeekendForm({ ...weekendForm, energyLevel: event.target.value })} placeholder="体力" />
-            <TextInput value={weekendForm.companions} onChange={(event) => setWeekendForm({ ...weekendForm, companions: event.target.value })} placeholder="同行人" />
-            <TextInput value={weekendForm.interests} onChange={(event) => setWeekendForm({ ...weekendForm, interests: event.target.value })} placeholder="兴趣，用逗号分隔" />
-            <PrimaryButton className="w-full" disabled={weekendLoading} type="submit">{weekendLoading ? "生成中..." : "生成路线"}</PrimaryButton>
-          </Panel>
-        </form>
-        {weekendNotice ? <p className="rounded-md bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-900">{weekendNotice}</p> : null}
-        {weekendPlan ? (
-          <div className="space-y-3">
-            <Panel>
-              <h3 className="text-lg font-black">天气与策略</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{weekendPlan.weather?.summary || "天气信息待确认。"}</p>
-              {weekendPlan.backendMessage ? <p className="mt-2 rounded-md bg-emerald-50 p-3 text-xs leading-5 text-emerald-900">{weekendPlan.backendMessage}</p> : null}
-            </Panel>
-            {weekendPlan.routes.map((route) => (
-              <Panel key={route.id}>
-                <h3 className="text-xl font-black">{route.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{route.summary}</p>
-                <p className="mt-2 text-sm font-bold text-emerald-800">{route.estimatedBudget || "预算待确认"} · {route.durationText || `${route.estimatedDurationMinutes || 150} 分钟`}</p>
-                <div className="mt-3 space-y-2">
-                  {(route.timeline || []).map((item, index) => (
-                    <div className="rounded-md bg-emerald-50 p-3 text-sm" key={`${route.id}-${index}`}>
-                      <div className="font-bold">{item.time} · {item.title}</div>
-                      <div className="mt-1 text-slate-600">{item.placeName}：{item.activity}</div>
-                    </div>
-                  ))}
+      <div className="chat-message butler-message pref-modify-message">
+        <div className="message-avatar ai-mark">幺</div>
+        <div className="message-content butler-content">
+          <div className="pref-modify-panel">
+            <div className="pref-modify-title">已为你带入以下偏好：</div>
+            <div className="pref-summary-block pref-summary-interactive">
+              {prefModifyRows.map((row) => (
+                <div className={`pref-summary-row ${row.toggleable && !row.keep ? "to-modify" : ""}`} key={row.key}>
+                  <span className="pref-summary-label">{row.label}</span>
+                  <span className="pref-summary-value">{row.value}</span>
+                  {row.toggleable ? (
+                    <button className={`pref-keep-toggle ${row.keep ? "kept" : "modify"}`} onClick={() => togglePrefModifyRow(row.key)} type="button">{row.keep ? "保留" : "要修改"}</button>
+                  ) : (
+                    <span className="pref-keep-static">本次</span>
+                  )}
                 </div>
-                {normalizeSelfChecks(route).length ? (
-                  <div className="mt-4">
-                    <h4 className="text-sm font-black text-emerald-950">自查结果</h4>
-                    <div className="mt-2 grid gap-2">
-                      {normalizeSelfChecks(route).map((check) => (
-                        <div className="rounded-md bg-slate-50 p-3 text-xs leading-5" key={check.key}>
-                          <div className="font-bold text-slate-900">{check.label}</div>
-                          <div className="mt-1 text-slate-600">{check.detail}</div>
-                        </div>
+              ))}
+            </div>
+            <div className="pref-modify-hint">默认全部「保留」沿用。点右侧切换为「要修改」，确认后我只会重新问这几项。</div>
+            <button className="pref-modify-submit pref-modify-primary" onClick={() => void startPrefModifyFlow(prefModifyRecord, actions, "直接按这些推荐")} type="button">直接按这些推荐</button>
+            <button className="pref-modify-submit pref-modify-secondary" disabled={modifyCount === 0} onClick={() => void startPrefModifyFlow(prefModifyRecord, actions, "修改这些")} type="button">确定修改这些{modifyCount > 0 ? `（${modifyCount}）` : ""}</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function renderQuestionMessage() {
+    const selectedValue = currentQuestion.slot ? foodSlots[currentQuestion.slot] : foodPrefs[currentQuestion.id as keyof FoodPreferences];
+    return (
+      <div className="chat-message butler-message">
+        <div className="message-avatar ai-mark">幺</div>
+        <div className="message-content butler-content">
+          <div className="chat-bubble butler-bubble">{getFoodQuestionBubbleText(currentQuestion)}</div>
+          <div className="inline-replies">
+            {currentQuestion.groups ? (
+              <div className="quick-groups">
+                {currentQuestion.groups.map((group) => (
+                  <div className="tag-group" key={group.type}>
+                    <div className="tag-group-title">{group.title}</div>
+                    <div className="quick-list">
+                      {group.tags.map((tag) => (
+                        <button
+                          className={`quick-chip tag-chip ${isFoodTagSelected(group.type, tag.label) ? "selected" : ""}`}
+                          key={tag.id}
+                          onClick={() => toggleFoodTagByType(group.type, tag.label, group.mode)}
+                          type="button"
+                        >
+                          {tag.label}
+                        </button>
                       ))}
                     </div>
                   </div>
-                ) : null}
-                {route.risks?.length ? (
-                  <div className="mt-4 rounded-md bg-amber-50 p-3 text-sm leading-6 text-amber-900">
-                    <div className="font-black">风险提示</div>
-                    <ul className="mt-1 list-disc space-y-1 pl-5">
-                      {route.risks.map((risk) => <li key={risk}>{risk}</li>)}
-                    </ul>
-                  </div>
-                ) : null}
-                {route.inviteText ? <p className="mt-3 rounded-md bg-amber-50 p-3 text-sm leading-6 text-amber-900">{route.inviteText}</p> : null}
-              </Panel>
-            ))}
+                ))}
+              </div>
+            ) : currentQuestion.text ? null : (
+              <div className="quick-list">
+                {(currentQuestion.options || []).map((option) => {
+                  const active = Array.isArray(selectedValue) ? selectedValue.includes(option) : selectedValue === option;
+                  return (
+                    <button
+                      className={`quick-chip option-button ${active ? "selected" : ""}`}
+                      key={option}
+                      onClick={() => currentQuestion.kind === "multi-choice" ? toggleFoodMultiChoiceOption(currentQuestion, option) : currentQuestion.multi ? toggleFoodTag(currentQuestion.id, option) : void confirmFoodAnswer(option)}
+                      type="button"
+                    >
+                      {option}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        ) : null}
+        </div>
       </div>
     );
   }
 
-  function renderMemory() {
+  function renderReplyDock() {
     return (
-      <div className="space-y-4">
-        <Panel>
-          <h2 className="text-2xl font-black">AI 管家记忆</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">对齐小程序记忆页：管理忌口、辣度、预算、距离和行为学习权限。</p>
-        </Panel>
-        <Panel className="space-y-3">
-          <label className="block text-sm font-bold">固定忌口</label>
-          <div className="flex flex-wrap gap-2">
-            {["太辣", "海鲜", "奶制品", "甜腻", "油炸", "排队久"].map((tag) => (
-              <Chip
-                active={memory.avoidTags.includes(tag)}
-                key={tag}
-                onClick={() => {
-                  const nextTags = memory.avoidTags.includes(tag) ? memory.avoidTags.filter((item) => item !== tag) : [...memory.avoidTags, tag];
-                  persistMemory({ ...memory, avoidTags: nextTags });
-                }}
-              >
-                {tag}
-              </Chip>
-            ))}
+      <div className="reply-dock">
+        {foodIndex > 0 ? (
+          <div className="reply-top-row">
+            <button className="back-button" onClick={() => setFoodIndex(Math.max(0, foodIndex - 1))} type="button">上一题</button>
           </div>
-          <label className="block text-sm font-bold">默认辣度</label>
-          <div className="flex flex-wrap gap-2">
-            {["不辣", "微辣", "都可以", "能吃辣"].map((tag) => (
-              <Chip active={memory.spicyLevel === tag} key={tag} onClick={() => persistMemory({ ...memory, spicyLevel: tag })}>{tag}</Chip>
-            ))}
+        ) : null}
+
+        <div className="slot-summary-card">
+          <div className="slot-summary-bar">
+            <div className="slot-summary-text">{summarizeFood(foodSlots, foodPrefs) || "还没有填写条件"}</div>
+            <button className="slot-summary-toggle" onClick={() => setShowSlotSummaryDetail((current) => !current)} type="button">{showSlotSummaryDetail ? "收起" : "查看"}</button>
           </div>
-          <label className="block text-sm font-bold">默认预算</label>
-          <TextInput value={memory.budget} onChange={(event) => persistMemory({ ...memory, budget: event.target.value })} />
-          <label className="block text-sm font-bold">默认距离</label>
-          <TextInput value={memory.distance} onChange={(event) => persistMemory({ ...memory, distance: event.target.value })} />
-        </Panel>
-        <Panel>
-          <h3 className="text-lg font-black">记忆权限</h3>
-          <div className="mt-3 space-y-3">
-            {[
-              ["stableFoodMemory", "使用长期饮食偏好"],
-              ["behaviorLearning", "允许行为学习"],
-              ["recommendationHistory", "记住推荐历史"],
-              ["weekendPlans", "记住周末规划"]
-            ].map(([key, label]) => (
-              <label className="flex items-center justify-between rounded-md bg-emerald-50 px-3 py-2 text-sm font-bold" key={key}>
-                <span>{label}</span>
-                <input
-                  checked={memory.permissions[key as keyof MemorySettings["permissions"]]}
-                  onChange={(event) => persistMemory({ ...memory, permissions: { ...memory.permissions, [key]: event.target.checked } })}
-                  type="checkbox"
-                />
-              </label>
-            ))}
-          </div>
-        </Panel>
-        <Panel>
-          <h3 className="text-lg font-black">历史记录</h3>
-          <div className="mt-3 space-y-2">
-            {records.map((record) => (
-              <div className="rounded-md bg-slate-50 p-3 text-sm" key={record.id}>
-                <div className="font-bold">{record.summary}</div>
-                <div className="mt-1 text-xs text-slate-500">{new Date(record.createdAt).toLocaleString()}</div>
-              </div>
-            ))}
-            {!records.length ? <p className="text-sm text-slate-600">暂无历史记录。</p> : null}
-          </div>
-          <SecondaryButton className="mt-3 w-full" onClick={() => persistRecords([])} type="button">清空历史</SecondaryButton>
-        </Panel>
+          <div className="slot-summary-hint">当前条件仅用于本次推荐，你可以在结果页选择是否长期记住</div>
+          {showSlotSummaryDetail ? (
+            <div className="slots-panel">
+              <div className="slots-title">完整需求状态</div>
+              {summaryFields.map((row) => (
+                <button className={`slot-row ${row.value === "待填写" ? "disabled" : ""}`} key={row.key} type="button">
+                  <span className="slot-label">{row.label}</span>
+                  <span className="slot-value">{row.value}</span>
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="input-bar">
+          <input className="manual-input chat-input" value={manualAnswer} onChange={(event) => setManualAnswer(event.target.value)} placeholder="也可以直接告诉我你的想法" />
+          <button className="send-button" onClick={() => void confirmFoodAnswer(manualAnswer || (currentQuestion.text ? "没有补充" : undefined))} type="button">发送</button>
+        </div>
       </div>
     );
   }
+
+  function renderFoodResult() {
+    return (
+      <>
+        <div className="chat-message butler-message">
+          <div className="message-avatar ai-mark">幺</div>
+          <div className="chat-bubble butler-bubble">我明白啦，会结合你的场景、预算、距离和偏好，给你 2-3 个可执行方案。</div>
+        </div>
+        {foodNotice ? <div className="recommendation-notice">{foodNotice}</div> : null}
+        <div className="recommendation-list">
+          {(recommendations.length ? recommendations : fallbackRecommendations).map((card, index) => (
+            <div className={`shop-card ${index === 0 ? "featured" : ""}`} key={card.id || card.name}>
+              <div className="shop-header">
+                <div className="shop-title-wrap">
+                  {index === 0 ? <div className="shop-rank">首推</div> : null}
+                  <div className="shop-name">{card.name}</div>
+                </div>
+                <div className="shop-header-right">
+                  <div className="shop-type">{card.type}</div>
+                  <button className={`shop-fav-btn ${card.isFavorited ? "favorited" : ""}`} onClick={() => toggleFavorite(card)} type="button">{card.isFavorited ? "★" : "☆"}</button>
+                </div>
+              </div>
+              <div className="shop-meta">
+                <div>{card.perCapitaDisplay || formatPrice(card.perCapita)}</div>
+                <div>{card.distance}</div>
+                <div>评分 {card.rating}</div>
+              </div>
+              <div className="matched-tags-row">
+                <span className="shop-section-label">匹配点</span>
+                <div className="matched-tags">
+                  {(card.matchedTags || []).slice(0, 5).map((tag) => <span className="matched-tag" key={tag}>{tag}</span>)}
+                  {!(card.matchedTags || []).length ? <span className="matched-tag muted">默认推荐</span> : null}
+                </div>
+              </div>
+              <div className="shop-reason"><span className="shop-section-label">为什么推荐</span>{card.reason}</div>
+              <div className="shop-risk"><span className="shop-section-label">管家提醒</span>{card.riskTip}</div>
+            </div>
+          ))}
+        </div>
+
+        {showAdjustmentOptions ? (
+          <div className="chat-message butler-message adjustment-message">
+            <div className="message-avatar ai-mark">幺</div>
+            <div className="message-content butler-content">
+              <div className="chat-bubble butler-bubble">哪里不满意呀？我可以按这些方向帮你调整：</div>
+              <div className="adjustment-options">
+                {["太贵了", "太远了", "想清淡一点", "想换个品类"].map((label) => (
+                  <button className="adjustment-chip" key={label} onClick={() => void generateFoodRecommendations({ adjustment: label, refresh: true })} type="button">{label}</button>
+                ))}
+              </div>
+              <div className="adjustment-input-row">
+                <input className="adjustment-input" value={adjustmentText} onChange={(event) => setAdjustmentText(event.target.value)} placeholder="也可以直接告诉我哪里不满意" />
+                <button className="adjustment-submit" onClick={() => void generateFoodRecommendations({ adjustment: adjustmentText || "调整", refresh: true })} type="button">发送</button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </>
+    );
+  }
+
+  function renderResultActions() {
+    return (
+      <div className="result-actions-wrap">
+        {!memoryDecision ? (
+          <div className="memory-actions">
+            <div className="memory-actions-hint">这次的偏好要不要长期记住？长期记忆完全由你决定。</div>
+            <div className="memory-actions-row">
+              <button className="memory-keep-button" onClick={saveCurrentPreferenceRecord} type="button">记住这个偏好</button>
+              <button className="memory-once-button" onClick={() => setMemoryDecision("session-only")} type="button">仅本次使用</button>
+            </div>
+          </div>
+        ) : (
+          <div className="memory-decision-note">{memoryDecision === "kept" ? "已加入长期偏好" : "本次条件不会写入长期偏好"}</div>
+        )}
+
+        <div className="result-actions">
+          <button className="secondary-action-button" disabled={foodLoading} onClick={() => void generateFoodRecommendations({ refresh: true })} type="button">{foodLoading ? "生成中" : "换一批"}</button>
+          <button className="restart-button" onClick={() => setShowAdjustmentOptions(true)} type="button">调整一下</button>
+          <button className="tertiary-action-button" onClick={resetFoodFlow} type="button">重新开始</button>
+        </div>
+      </div>
+    );
+  }
+
+  function renderGroupCreatePage() {
+    const createdTask = Boolean(groupTaskId && groupInviteToken);
+    return (
+      <div className="page scaffold-page create-scaffold">
+        <div className="create-hero">
+          <div className="create-nav-row">
+            <button className="group-nav-back-hit" onClick={goHome} type="button"><span className="group-nav-back-button create-back"><span className="group-nav-back-icon create-back-icon">‹</span></span></button>
+            <div className="page-heading create-heading"><div className="page-title">{createdTask ? "任务已生成" : "发起约饭"}</div></div>
+          </div>
+          <div className="create-hero-subtitle">{createdTask ? "现在可以分享到群里，或直接查看偏好收集进度。" : "选一下人数就能生成任务链接，朋友点开就能填偏好。"}</div>
+        </div>
+
+        <div className="status-badge"><span className="status-dot"></span><span>极简发起 · 后端联调</span></div>
+
+        {!createdTask ? (
+          <>
+            <div className="panel-card">
+              <div className="field">
+                <div className="field-label">预计几个人？</div>
+                <div className="option-grid people-grid">
+                  {[2, 3, 4, 5, 6, 8].map((value) => (
+                    <button className={`option-cell ${groupPeople === value ? "active" : ""}`} key={value} onClick={() => setGroupPeople(value)} type="button">{value}人</button>
+                  ))}
+                </div>
+                <div className="field-hint">不在列表里？下面也可以直接填数字。</div>
+              </div>
+              <div className="field last">
+                <div className="field-label">自定义人数</div>
+                <input className="field-input" type="number" value={customPeopleInput} onChange={(event) => setCustomPeopleInput(event.target.value)} placeholder="例如 12" />
+              </div>
+            </div>
+            <div className="panel-card">
+              <div className="field-label">关于其他字段</div>
+              <div className="field-hint">时间、地点、口味会让朋友各自填。管家会自动整理冲突，并给出一个最终方案。</div>
+            </div>
+            {groupNotice ? <div className="inline-error">{groupNotice}</div> : null}
+            <button className="primary-button" disabled={groupLoading} onClick={() => void createGroupTask()} type="button">{groupLoading ? "生成中..." : "生成任务链接"}</button>
+          </>
+        ) : (
+          <>
+            <div className="panel-card">
+              <div className="field-label">{groupBoard?.task.title || "多人约饭偏好收集中"}</div>
+              <div className="field-hint">{groupBoard?.task.rawRequest || "发起人邀请大家填写约饭偏好"}</div>
+              <div className="chip-row">
+                <div className="info-chip">{groupBoard?.task.expectedPeopleCount || groupPeople} 人</div>
+                <div className="info-chip soft">{groupBoard?.participants.length || 0}/{groupBoard?.task.expectedPeopleCount || groupPeople} 已提交</div>
+                <div className="info-chip">点击填写偏好</div>
+              </div>
+            </div>
+            <div className="button-stack">
+              <button className="primary-button" onClick={() => setView("group-fill")} type="button">我也填写偏好</button>
+              <button className="primary-button" onClick={() => void navigator.clipboard?.writeText(`/experience?groupTaskId=${groupTaskId}&inviteToken=${groupInviteToken}`)} type="button">分享到群里</button>
+              <button className="primary-button" onClick={() => setView("group-board")} type="button">查看任务看板</button>
+              <button className="primary-button" onClick={() => { setGroupTaskId(""); setGroupInviteToken(""); setGroupBoard(null); }} type="button">再发起一个</button>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  function renderGroupFillPage() {
+    const priorityOptions = [
+      { value: "must", label: "必须满足" },
+      { value: "nice", label: "希望满足" }
+    ];
+    const hardRequirements = [
+      groupFill.priority.hours === "must" && groupFill.timeMode !== "allDay" ? `${groupFill.startTime}-${groupFill.endTime}` : "",
+      groupFill.priority.timeText === "must" ? groupFill.timeCustomText : "",
+      groupFill.priority.dietary === "must" ? groupFill.dietaryTags.join("、") : "",
+      groupFill.restrictionCustomText,
+      groupFill.priority.budget === "must" ? `人均 ${groupParticipant.budgetMax || groupFill.budgetTag}` : "",
+      groupFill.priority.budget === "must" ? groupFill.budgetCustomText : "",
+      groupFill.priority.spicy === "must" ? (groupParticipant.spicyPreference === "no_spicy" ? "不吃辣" : "辣度都可以") : "",
+      groupFill.priority.spicy === "must" ? groupFill.spiceCustomText : "",
+      groupFill.hardRequirement
+    ].filter(Boolean);
+    const softPreferences = [
+      groupFill.priority.days !== "must" ? groupFill.days.join("、") : "",
+      groupFill.priority.timeText !== "must" ? groupFill.timeCustomText : "",
+      groupFill.priority.cuisine !== "must" ? groupFill.cuisineTags.join("、") : "",
+      groupFill.priority.cuisine !== "must" ? groupFill.cuisineCustomText : "",
+      groupFill.priority.budget !== "must" ? groupFill.budgetCustomText : "",
+      groupFill.priority.spicy !== "must" ? groupFill.spiceCustomText : "",
+      groupFill.softPreference
+    ].filter(Boolean);
+
+    return (
+      <form className="page scaffold-page fill-scaffold" onSubmit={(event) => void submitGroupParticipant(event)}>
+        <div className="group-safe-header">
+          <div className="group-safe-nav">
+            <button className="group-nav-back-hit" onClick={() => setView("group-create")} type="button"><span className="group-nav-back-button"><span className="group-nav-back-icon">‹</span></span></button>
+            <div className="group-safe-title">填写偏好</div>
+          </div>
+          <div className="group-safe-subtitle">点几个标签就行；不写也能交，管家会兜底。</div>
+        </div>
+
+        <div className="task-brief">
+          <div className="task-eyebrow">{groupBoard?.task.creatorName || "发起人"} 邀请你 · 多人约饭</div>
+          <div className="task-title">{groupBoard?.task.title || "多人约饭偏好收集"}</div>
+          <div className="task-desc">{groupBoard?.task.rawRequest || "填写你的时间、忌口和想吃的品类。"}</div>
+          <div className="task-meta">
+            <span>{groupBoard?.task.expectedPeopleCount || groupPeople} 人</span>
+            <span>{groupBoard?.participants.length || 0}/{groupBoard?.task.expectedPeopleCount || groupPeople} 已提交</span>
+            <span>{groupBoard?.task.dinnerTime && groupBoard.task.dinnerTime !== "待商量" ? groupBoard.task.dinnerTime : "时间待商量"}</span>
+            <span>{groupBoard?.task.locationText && groupBoard.task.locationText !== "待商量" ? groupBoard.task.locationText : "地点待商量"}</span>
+          </div>
+        </div>
+
+        <div className="panel-card">
+          <div className="field-label">用管家记忆一键填</div>
+          <div className="field-hint">把你保存过的忌口/辣度/常用预算套到下面字段，提交前可以再改。</div>
+          <button className="primary-button" onClick={() => setGroupParticipant((current) => ({ ...current, budgetMax: String(budgetMaxFromText(memory.budget)), spicyPreference: memory.spicyLevel === "不辣" ? "no_spicy" : "any", rawPreference: `忌口：${memory.avoidTags.join("、") || "无"}；辣度：${memory.spicyLevel}；预算：${memory.budget}` }))} type="button">使用我的管家记忆</button>
+        </div>
+
+        <div className="panel-card">
+          <div className="field">
+            <div className="field-label">你的昵称</div>
+            <input className="field-input" value={groupParticipant.nickname} onChange={(event) => setGroupParticipant({ ...groupParticipant, nickname: event.target.value })} placeholder="例如：阿酒" />
+          </div>
+        </div>
+
+        <div className="planner-card group-time-card">
+          <div className="planner-card-title">⏰ 可参与时间</div>
+          <div className="planner-card-desc">选择可参加的日期和大致时间段。</div>
+          <div className="time-priority-grid">
+            <div className="time-priority-item">
+              <div className="field-label">日期优先级</div>
+              <div className="priority-toggle">
+                {priorityOptions.map((option) => <button className={`priority-option ${groupFill.priority.days === option.value ? "active" : ""} ${option.value}`} key={option.value} onClick={() => setGroupPriority("days", option.value)} type="button">{option.label}</button>)}
+              </div>
+            </div>
+            <div className="time-priority-item">
+              <div className="field-label">时间优先级</div>
+              <div className="priority-toggle">
+                {priorityOptions.map((option) => <button className={`priority-option ${groupFill.priority.hours === option.value ? "active" : ""} ${option.value}`} key={option.value} onClick={() => setGroupPriority("hours", option.value)} type="button">{option.label}</button>)}
+              </div>
+            </div>
+          </div>
+          <div className="planner-chip-list scroll-row">
+            {["周一", "周二", "周三", "周四", "周五", "周六", "周日"].map((day) => <button className={`planner-chip ${groupFill.days.includes(day) ? "selected" : ""}`} key={day} onClick={() => toggleGroupArrayField("days", day)} type="button">{day}</button>)}
+          </div>
+          <div className="planner-field">
+            <div className="planner-chip-list">
+              {[["specified", "指定时段"], ["allDay", "全天都行"]].map(([value, label]) => (
+                <button className={`planner-chip ${groupFill.timeMode === value ? "selected" : ""}`} key={value} onClick={() => setGroupFill({ ...groupFill, timeMode: value })} type="button">{label}</button>
+              ))}
+            </div>
+          </div>
+          {groupFill.timeMode === "specified" ? (
+            <div className="planner-two-column planner-field">
+              <div className="planner-column"><div className="planner-picker-card"><div className="planner-picker-label">开始时间</div><input className="planner-picker-value inline-time-input" value={groupFill.startTime} onChange={(event) => setGroupFill({ ...groupFill, startTime: event.target.value })} /></div></div>
+              <div className="planner-column"><div className="planner-picker-card"><div className="planner-picker-label">结束时间</div><input className="planner-picker-value inline-time-input" value={groupFill.endTime} onChange={(event) => setGroupFill({ ...groupFill, endTime: event.target.value })} /></div></div>
+            </div>
+          ) : <div className="planner-note planner-field">当天时间都可以，管家会按大家的可参与日期合并。</div>}
+          <div className="field last custom-field-block">
+            <div className="field-heading">
+              <div className="field-label">时间补充（选填）</div>
+              <div className="priority-toggle">
+                {priorityOptions.map((option) => <button className={`priority-option ${groupFill.priority.timeText === option.value ? "active" : ""} ${option.value}`} key={option.value} onClick={() => setGroupPriority("timeText", option.value)} type="button">{option.label}</button>)}
+              </div>
+            </div>
+            <input className="field-input preference-custom-input" value={groupFill.timeCustomText} onChange={(event) => setGroupFill({ ...groupFill, timeCustomText: event.target.value })} placeholder="还有其他时间要求可以补充，例如周五晚一点也可以" />
+          </div>
+        </div>
+
+        <div className="panel-card">
+          <div className="field-heading">
+            <div className="field-label">🚫 忌口 / 过敏</div>
+            <div className="priority-toggle">
+              {priorityOptions.map((option) => <button className={`priority-option ${groupFill.priority.dietary === option.value ? "active" : ""} ${option.value}`} key={option.value} onClick={() => setGroupPriority("dietary", option.value)} type="button">{option.label}</button>)}
+            </div>
+          </div>
+          <div className="field-hint">可多选；选「无忌口」会清空其他选择。</div>
+          <div className="option-grid">
+            {["无忌口", "不吃辣", "海鲜过敏", "不吃奶制品", "少油", "不吃内脏"].map((tag) => <button className={`option-cell ${groupFill.dietaryTags.includes(tag) ? "active" : ""}`} key={tag} onClick={() => toggleGroupArrayField("dietaryTags", tag, "无忌口")} type="button">{tag}</button>)}
+          </div>
+          <div className="custom-field-block">
+            <div className="field-label">忌口补充（选填）</div>
+            <input className="field-input preference-custom-input" value={groupFill.restrictionCustomText} onChange={(event) => setGroupFill({ ...groupFill, restrictionCustomText: event.target.value })} placeholder="还有其他忌口或过敏可以补充，例如芒果过敏、不吃动物内脏" />
+          </div>
+        </div>
+
+        <div className="panel-card">
+          <div className="field-heading">
+            <div className="field-label">🍽️ 想吃的品类</div>
+            <div className="priority-toggle">
+              {priorityOptions.map((option) => <button className={`priority-option ${groupFill.priority.cuisine === option.value ? "active" : ""} ${option.value}`} key={option.value} onClick={() => setGroupPriority("cuisine", option.value)} type="button">{option.label}</button>)}
+            </div>
+          </div>
+          <div className="option-grid">
+            {["都可以", "粤菜", "火锅", "烧烤", "甜品", "轻食"].map((tag) => <button className={`option-cell ${groupFill.cuisineTags.includes(tag) ? "active" : ""}`} key={tag} onClick={() => toggleGroupArrayField("cuisineTags", tag, "都可以")} type="button">{tag}</button>)}
+          </div>
+          <div className="custom-field-block">
+            <div className="field-label">品类补充（选填）</div>
+            <input className="field-input preference-custom-input" value={groupFill.cuisineCustomText} onChange={(event) => setGroupFill({ ...groupFill, cuisineCustomText: event.target.value })} placeholder="还想吃什么可以补充，例如云南菜、东南亚菜" />
+          </div>
+        </div>
+
+        <div className="panel-card">
+          <div className="field">
+            <div className="field-heading">
+              <div className="field-label">💰 预算</div>
+              <div className="priority-toggle">
+                {priorityOptions.map((option) => <button className={`priority-option ${groupFill.priority.budget === option.value ? "active" : ""} ${option.value}`} key={option.value} onClick={() => setGroupPriority("budget", option.value)} type="button">{option.label}</button>)}
+              </div>
+            </div>
+            <div className="option-grid">
+              {["50以内", "80以内", "100以内", "150以内"].map((tag) => <button className={`option-cell ${groupFill.budgetTag === tag ? "active" : ""}`} key={tag} onClick={() => { setGroupFill({ ...groupFill, budgetTag: tag }); setGroupParticipant({ ...groupParticipant, budgetMax: tag.replace("以内", "") }); }} type="button">{tag}</button>)}
+            </div>
+            <input className="field-input" value={groupParticipant.budgetMax} onChange={(event) => setGroupParticipant({ ...groupParticipant, budgetMax: event.target.value })} placeholder="80" />
+            <div className="custom-field-block">
+              <div className="field-label">预算补充（选填）</div>
+              <input className="field-input preference-custom-input" value={groupFill.budgetCustomText} onChange={(event) => setGroupFill({ ...groupFill, budgetCustomText: event.target.value })} placeholder="还有预算要求可以补充，例如人均 60 左右" />
+            </div>
+          </div>
+          <div className="field last">
+            <div className="field-heading">
+              <div className="field-label">🌶️ 辣度</div>
+              <div className="priority-toggle">
+                {priorityOptions.map((option) => <button className={`priority-option ${groupFill.priority.spicy === option.value ? "active" : ""} ${option.value}`} key={option.value} onClick={() => setGroupPriority("spicy", option.value)} type="button">{option.label}</button>)}
+              </div>
+            </div>
+            <div className="option-grid">
+              {[["no_spicy", "不辣"], ["mild", "微辣"], ["any", "都可以"], ["spicy", "能吃辣"]].map(([value, label]) => <button className={`option-cell ${groupParticipant.spicyPreference === value ? "active" : ""}`} key={value} onClick={() => setGroupParticipant({ ...groupParticipant, spicyPreference: value })} type="button">{label}</button>)}
+            </div>
+            <div className="custom-field-block">
+              <div className="field-label">辣度补充（选填）</div>
+              <input className="field-input preference-custom-input" value={groupFill.spiceCustomText} onChange={(event) => setGroupFill({ ...groupFill, spiceCustomText: event.target.value })} placeholder="还有辣度要求可以补充，例如只能微辣、最好不辣" />
+            </div>
+          </div>
+        </div>
+
+        <div className="panel-card">
+          <div className="field last">
+            <div className="field-label">👀 这条偏好谁能看</div>
+            <div className="field-hint">选择这条偏好在多人约饭中的展示方式</div>
+            <div className="privacy-option-list">
+              {[
+                ["public", "公开，大家都能看", "适合不敏感的共同偏好"],
+                ["nickname_only", "只显示昵称", "其他人只能看到你的昵称和选择"],
+                ["private", "匿名，仅用于推荐", "不展示给其他成员，只参与推荐计算"]
+              ].map(([value, title, desc]) => (
+                <button className={`privacy-option ${groupFill.visibility === value ? "active" : ""}`} key={value} onClick={() => setGroupFill({ ...groupFill, visibility: value })} type="button">
+                  <span className="privacy-copy"><span className="privacy-title">{title}</span><span className="privacy-desc">{desc}</span></span>
+                  <span className={`privacy-check ${groupFill.visibility === value ? "checked" : ""}`}>✓</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="panel-card">
+          <div className="field">
+            <div className="field-label">📝 还有其他必须满足的吗？<span className="priority-tag must">必须满足</span></div>
+            <div className="field-hint">用逗号或空格分隔。例如：要有素食、不在医院附近。</div>
+            <textarea className="field-textarea" value={groupFill.hardRequirement} onChange={(event) => setGroupFill({ ...groupFill, hardRequirement: event.target.value })} placeholder="例如：要有素食，必须能停车" />
+          </div>
+          <div className="field">
+            <div className="field-label">📝 还有其他希望的吗？<span className="priority-tag nice">希望有</span></div>
+            <div className="field-hint">这些不一定满足，但管家会尽量考虑。</div>
+            <textarea className="field-textarea" value={groupFill.softPreference} onChange={(event) => setGroupFill({ ...groupFill, softPreference: event.target.value })} placeholder="例如：能拍照，靠窗座位" />
+          </div>
+          <div className="field last">
+            <div className="prompt-head">
+              <div className="field-label prompt-title">快捷提示词</div>
+              <div className="field-hint prompt-subtitle">点一下，自动拼到「希望有」里。</div>
+            </div>
+            <div className="prompt-chip-grid">
+              {["适合聊天", "不要排队", "能拍照", "有包间", "离学校近", "能点外卖"].map((label) => (
+                <button className="prompt-chip-item" key={label} onClick={() => setGroupFill((current) => ({ ...current, softPreference: current.softPreference.includes(label) ? current.softPreference : `${current.softPreference ? `${current.softPreference}，` : ""}${label}` }))} type="button">{label}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="panel-card">
+          <div className="field-label">提交时会包含的需求</div>
+          <div className="field-hint">必须满足（hardRequirements）</div>
+          <div className="chip-row">{hardRequirements.length ? hardRequirements.map((item) => <div className="info-chip hard" key={item}>{item}</div>) : <div className="field-hint">— 当前没有必须满足项 —</div>}</div>
+          <div className="field-hint preview-soft-title">希望有（softPreferences）</div>
+          <div className="chip-row">{softPreferences.length ? softPreferences.map((item) => <div className="info-chip soft" key={item}>{item}</div>) : <div className="field-hint">— 当前没有希望项 —</div>}</div>
+        </div>
+
+        <div className="empty-panel">
+          <div className="empty-title">提交后会进入任务看板</div>
+          <div className="empty-desc">提交会通过 adapter.submitPreference 写入本条偏好；同昵称重复提交会覆盖之前的内容。</div>
+        </div>
+
+        {groupNotice ? <div className="inline-error">{groupNotice}</div> : null}
+        <button className="primary-button submit-button sticky-submit" disabled={groupLoading || !groupTaskId} type="submit">{groupLoading ? "提交中..." : "提交我的偏好"}</button>
+      </form>
+    );
+  }
+
+  function renderGroupBoardPage() {
+    const submittedCount = groupBoard?.participants.length || 0;
+    const expectedPeople = groupBoard?.task.expectedPeopleCount || groupPeople;
+    const progress = Math.min(100, Math.round((submittedCount / Math.max(expectedPeople, 1)) * 100));
+
+    return (
+      <div className="page scaffold-page board-scaffold">
+        <div className="group-safe-header">
+          <div className="group-safe-nav">
+            <button className="group-nav-back-hit" onClick={() => setView("group-create")} type="button"><span className="group-nav-back-button"><span className="group-nav-back-icon">‹</span></span></button>
+            <div className="group-safe-title">约饭看板</div>
+          </div>
+          <div className="group-safe-subtitle">下拉刷新或保持在页面，每几秒会自动同步最新状态。</div>
+        </div>
+
+        <div className="panel-card progress-card">
+          <div className="progress-head">
+            <div>
+              <div className="progress-title">{groupBoard?.task.displayTitle || groupBoard?.task.title || "多人约饭偏好收集"}</div>
+              <div className="progress-desc">{submittedCount}/{expectedPeople} 已提交</div>
+            </div>
+            <div className="progress-pill">{groupBoard?.recommendationResult ? "已推荐" : "收集中"}</div>
+          </div>
+          <div className="progress-track"><div className="progress-fill" style={{ width: `${progress}%` }}></div></div>
+          <div className="avatar-row">
+            <div className="empty-avatar">幺</div>
+            {groupBoard?.participants.length
+              ? groupBoard.participants.map((member) => <div className="empty-avatar" key={member.participantId}>{member.visibility === "private" ? "匿" : (member.nickname || "友")}</div>)
+              : Array.from({ length: Math.max(expectedPeople - 1, 0) }).map((_, index) => <div className="empty-avatar" key={index}>{index + 1}</div>)}
+          </div>
+        </div>
+
+        <BoardSection title="成员偏好" desc="真实成员提交后会出现在这里。">
+          {groupBoard?.participants.length ? (
+            <div className="panel-card">
+              {groupBoard.participants.map((member) => {
+                const hard = member.extractedConstraints?.hard_constraints || member.extractedConstraints?.hardConstraints || [];
+                const soft = member.extractedConstraints?.soft_preferences || member.extractedConstraints?.softPreferences || [];
+                return (
+                  <div className="field" key={member.participantId}>
+                    {member.visibility === "private" ? (
+                      <div className="field-label">匿名成员已提交</div>
+                    ) : (
+                      <div className="field-label">{member.nickname}{member.visibility === "nickname_only" ? <span className="field-hint inline-member-note"> · 偏好仅用于推荐</span> : null}</div>
+                    )}
+
+                    {member.visibility === "public" ? (
+                      <>
+                        <div className="field-hint">{member.rawPreference || "（未填写自由偏好）"}</div>
+                        {member.availabilitySummary ? <div className="field-hint">可参与：{member.availabilitySummary}</div> : null}
+                        <div className="chip-row">
+                          {member.budgetTag ? <div className="info-chip">预算 {member.budgetTag}</div> : null}
+                          {!member.budgetTag && member.manualFields.budgetMax ? <div className="info-chip">预算 ≤ {member.manualFields.budgetMax}</div> : null}
+                          {member.spicyLabel ? <div className="info-chip">{member.spicyLabel}</div> : null}
+                          {!member.spicyLabel && member.manualFields.spicyPreference ? <div className="info-chip soft">{member.manualFields.spicyPreference === "no_spicy" ? "不辣" : "都可以"}</div> : null}
+                          {(member.dietaryRestrictions || []).map((item) => <div className="info-chip hard" key={`diet-${item}`}>{item}</div>)}
+                          {(member.cuisinePreferences || []).map((item) => <div className="info-chip soft" key={`cuisine-${item}`}>想吃 {item}</div>)}
+                          {hard.map((item) => <div className="info-chip hard" key={`hard-${item}`}>{item}</div>)}
+                          {soft.map((item) => <div className="info-chip soft" key={`soft-${item}`}>{item}</div>)}
+                        </div>
+                      </>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          ) : <EmptyPanel title="还没有成员提交" desc="把分享链接发给朋友，他们填好后这里会出现真实数据。" />}
+        </BoardSection>
+
+        <BoardSection title="冲突识别" desc="预算、忌口、辣度和时间会被优先检查。">
+          {groupBoard?.conflicts.length ? (
+            <div className="panel-card">
+              {groupBoard.conflicts.map((conflict) => (
+                <div className="field" key={conflict.description}>
+                  <div className="field-label">{conflict.type} · {conflict.severity}</div>
+                  <div className="field-hint">{conflict.description}</div>
+                  <div className="field-hint">建议：{conflict.resolutionStrategy || conflict.resolution_strategy}</div>
+                </div>
+              ))}
+            </div>
+          ) : <EmptyPanel title="暂无冲突" desc="成员偏好相近，或还没有足够数据触发冲突识别。" />}
+        </BoardSection>
+
+        <BoardSection title="推荐方案" desc="点生成推荐会调用 adapter.generateRecommendation。">
+          {groupBoard?.recommendationResult ? renderGroupRecommendationResult(groupBoard) : <EmptyPanel title="还没生成推荐" desc="点下面「生成推荐」会调用后端推荐。" />}
+        </BoardSection>
+
+        {groupNotice ? <div className="inline-error">{groupNotice}</div> : null}
+        {groupAdjustmentRequests.length ? (
+          <div className="panel-card">
+            <div className="field-label">收到的调整请求 · {groupAdjustmentRequests.length} 条</div>
+            <div className="field-hint">有成员对当前候选不满意。下方按 reasonType 汇总；点上方「生成推荐」会清空这些反馈并重新出方案。</div>
+            {groupAdjustmentRequests.map((request) => (
+              <div className="field" key={request.id}>
+                <div className="field-label">{request.visibility === "private" ? "匿名成员" : request.nickname || "某成员"} · {request.reasonLabel}</div>
+                <div className="field-hint">针对：{request.candidateName}</div>
+                {request.note ? <div className="field-hint">补充：{request.note}</div> : null}
+              </div>
+            ))}
+          </div>
+        ) : null}
+        <div className="panel-card">
+          <div className="field-label">Adapter 调用</div>
+          <div className="chip-row">
+            <div className="info-chip hard">getTaskBoard(taskId, inviteToken)</div>
+            <div className="info-chip soft">submitPreference</div>
+            <div className="info-chip">generateRecommendation</div>
+            <div className="info-chip">submitAdjustmentRequest</div>
+          </div>
+          <div className="field-hint">所有数据均经 adapter；页面不直接 wx.request。Mock fallback 可在 services/groupDiningAdapter.js 切换真实接口。</div>
+        </div>
+
+        <button className="primary-button" disabled={!submittedCount || groupLoading} onClick={() => void generateGroupRecommendation()} type="button">{groupLoading ? "生成中..." : "生成推荐"}</button>
+        <button className="primary-button" disabled={!groupTaskId || groupLoading} onClick={() => void refreshGroupBoard()} type="button">{groupLoading ? "刷新中..." : "手动刷新"}</button>
+        <button className="primary-button" onClick={goHome} type="button">回到首页</button>
+      </div>
+    );
+  }
+
+  function renderGroupRecommendationResult(board: GroupBoard) {
+    const result = board.recommendationResult;
+    if (!result) return null;
+    const hardRuleLabels: Record<string, string> = {
+      spicy: "辣度可能不合",
+      budget: "预算偏紧",
+      distance: "距离稍远"
+    };
+
+    return (
+      <div className="panel-card">
+        <div className="field">
+          <div className="field-label">最终推荐 · {result.finalChoice.name}</div>
+          <div className="field-hint">{result.finalChoice.reason}</div>
+          <div className="chip-row">{result.finalChoice.risks.map((risk) => <div className="info-chip hard" key={risk}>{risk}</div>)}</div>
+          {result.finalChoice.backup ? <div className="field-hint">备选：{result.finalChoice.backup}</div> : null}
+        </div>
+        <div className="field">
+          <div className="field-label">群里发这条</div>
+          <div className="field-hint">{result.groupMessage}</div>
+          <button className="primary-button" onClick={() => void navigator.clipboard?.writeText(result.groupMessage)} type="button">复制群消息</button>
+        </div>
+        <div className="field last">
+          <div className="field-label">全部候选 ({result.candidates.length})</div>
+          {result.candidates.map((candidate) => {
+            const candidateId = String(candidate.restaurant_id || candidate.id || candidate.name);
+            const walkMinutes = candidate.walkMinutes || candidate.walk_minutes || Math.round((candidate.distance_m || 900) / 80);
+            const hardRules = candidate.audit?.hard_rules || candidate.audit?.hardRules || {};
+            const auditExplanation = candidate.audit?.llm_explanation || candidate.audit?.llmExplanation;
+            const memberScoreList = candidate.memberScoreList || Object.entries(candidate.member_scores || {}).map(([nickname, score]) => ({ nickname, score }));
+            const riskyHardRules = Object.entries(hardRules).filter(([, status]) => status === "risk" || status === "fail");
+            const isAdjustmentOpen = adjustmentTargetCandidate?.id === candidateId;
+
+            return (
+              <div className="candidate-card" key={candidateId}>
+                <div className="field-label">{candidate.name} · 人均 ¥{candidate.avg_price || candidate.avgPrice || "待确认"} · {walkMinutes} 分钟</div>
+                <div className="field-hint">{candidate.reason}</div>
+                <div className="chip-row">{candidate.tags?.map((tag) => <div className="info-chip" key={tag}>{tag}</div>)}</div>
+
+                {candidate.audit ? (
+                  <div className="chip-row">
+                    <div className={`info-chip ${candidate.audit.passed ? "soft" : "hard"}`}>自检 {candidate.audit.passed ? "通过" : "存在风险"}</div>
+                    {riskyHardRules.map(([rule]) => <div className="info-chip hard" key={rule}>{hardRuleLabels[rule] || rule}</div>)}
+                  </div>
+                ) : null}
+
+                {candidate.matchedNeeds?.length ? (
+                  <>
+                    <div className="field-hint">满足：</div>
+                    <div className="chip-row">{candidate.matchedNeeds.map((need) => <div className="info-chip soft" key={need}>{need}</div>)}</div>
+                  </>
+                ) : null}
+
+                {candidate.unmetNeeds?.length ? (
+                  <>
+                    <div className="field-hint">可能牺牲：</div>
+                    <div className="chip-row">{candidate.unmetNeeds.map((need) => <div className="info-chip hard" key={need}>{need}</div>)}</div>
+                  </>
+                ) : null}
+
+                {candidate.tradeoffSummary ? <div className="field-hint">取舍：{candidate.tradeoffSummary}</div> : null}
+                {candidate.tradeoffs?.length ? (
+                  <div className="chip-row">{candidate.tradeoffs.map((tradeoff) => <div className="info-chip hard" key={`${tradeoff.nickname}-${tradeoff.reason}`}>{tradeoff.nickname || "成员"}：{tradeoff.reason}</div>)}</div>
+                ) : null}
+
+                {memberScoreList.length ? (
+                  <div className="chip-row">{memberScoreList.map((score) => <div className="info-chip soft" key={score.nickname || String(score.score)}>{score.nickname || "成员"}：{score.score}</div>)}</div>
+                ) : null}
+                {auditExplanation ? <div className="field-hint">自检说明：{auditExplanation}</div> : null}
+
+                <button className="primary-button" onClick={() => { setAdjustmentTargetCandidate({ id: candidateId, name: candidate.name }); setAdjustmentReasonType(""); setAdjustmentNote(""); setGroupNotice(""); }} type="button">对这家不满意</button>
+
+                {isAdjustmentOpen ? (
+                  <div className="adjustment-panel">
+                    <div className="field-label">告诉管家哪里不合适</div>
+                    <div className="field-hint">提交后管家会标记这家有人不满意，发起人可以选择重新生成推荐。</div>
+
+                    <div className="field">
+                      <div className="field-label">你的昵称（匿名时可留空）</div>
+                      <input className="field-input" value={adjustmentNickname} onChange={(event) => setAdjustmentNickname(event.target.value)} placeholder="例如：阿酒" />
+                    </div>
+
+                    <div className="field">
+                      <div className="field-label">这条反馈谁能看</div>
+                      <div className="option-grid">
+                        {groupAdjustmentVisibilityOptions.map((option) => <button className={`option-cell ${adjustmentVisibility === option.value ? "active" : ""}`} key={option.value} onClick={() => setAdjustmentVisibility(option.value)} type="button">{option.label}</button>)}
+                      </div>
+                    </div>
+
+                    <div className="field">
+                      <div className="field-label">不满意原因</div>
+                      <div className="option-grid">
+                        {groupAdjustmentReasons.map((reason) => <button className={`option-cell ${adjustmentReasonType === reason.value ? "active" : ""}`} key={reason.value} onClick={() => setAdjustmentReasonType(reason.value)} type="button">{reason.label}</button>)}
+                      </div>
+                    </div>
+
+                    <div className="field last">
+                      <div className="field-label">补充说明（选填）</div>
+                      <textarea className="field-textarea" value={adjustmentNote} onChange={(event) => setAdjustmentNote(event.target.value)} placeholder="例如：刚刚说错了，我对辣过敏" />
+                    </div>
+
+                    <button className="primary-button" onClick={submitLocalAdjustmentRequest} type="button">提交反馈</button>
+                    <button className="primary-button" onClick={() => { setAdjustmentTargetCandidate(null); setAdjustmentReasonType(""); setAdjustmentNote(""); }} type="button">取消</button>
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  function renderWeekendPage() {
+    const hasPlan = Boolean(weekendPlan);
+    return (
+      <form className="page weekend-page" onSubmit={(event) => void createWeekendPlan(event)}>
+        <div className="custom-food-header planner-header">
+          <div className="food-nav-row">
+            <button className="header-back-hit" onClick={goHome} type="button"><span className="header-back-button">‹</span></button>
+            <div className="food-nav-title">周边规划</div>
+          </div>
+          <div className="planner-header-subtitle">告诉我时间、预算和想要的状态，我会整理 2-3 条轻路线。</div>
+        </div>
+
+        <div className="planner-body">
+          <div className="planner-form-list">
+            <div className="planner-card">
+              <div className="planner-card-title">⏰ 出行时间</div>
+              <div className="planner-card-desc">选择出发日和大致时间段。</div>
+              <div className="planner-chip-list scroll-row">
+                {["周一", "周二", "周三", "周四", "周五", "周六", "周日"].map((day) => (
+                  <button className={`planner-chip ${weekendForm.dateLabel === day ? "selected" : ""}`} key={day} onClick={() => updateWeekendForm({ dateLabel: day })} type="button">{day}</button>
+                ))}
+              </div>
+              <div className="planner-field">
+                <div className="planner-chip-list">
+                  {[["range", "指定时段"], ["allDay", "全天有空"]].map(([value, label]) => (
+                    <button className={`planner-chip ${weekendForm.timeMode === value ? "selected" : ""}`} key={value} onClick={() => updateWeekendForm({ timeMode: value })} type="button">{label}</button>
+                  ))}
+                </div>
+              </div>
+              {weekendForm.timeMode === "range" ? (
+                <div className="planner-two-column planner-field">
+                  <div className="planner-column"><div className="planner-picker-card"><div className="planner-picker-label">开始时间</div><input className="planner-picker-value inline-time-input" value={weekendForm.startTime} onChange={(event) => updateWeekendForm({ startTime: event.target.value })} /></div></div>
+                  <div className="planner-column"><div className="planner-picker-card"><div className="planner-picker-label">结束时间</div><input className="planner-picker-value inline-time-input" value={weekendForm.endTime} onChange={(event) => updateWeekendForm({ endTime: event.target.value })} /></div></div>
+                </div>
+              ) : <div className="planner-note planner-field">当天时间都可以，我会按半日或轻松路线生成。</div>}
+            </div>
+
+            <div className="planner-card">
+              <div className="planner-card-title">💰 预算和起点</div>
+              <div className="planner-two-column">
+                <div className="planner-column">
+                  <div className="planner-field-label">预算上限</div>
+                  <input className="planner-input" value={weekendForm.budgetMax} onChange={(event) => updateWeekendForm({ budgetMax: event.target.value })} placeholder="120" />
+                  <div className="planner-helper">元 / 人</div>
+                </div>
+                <div className="planner-column">
+                  <div className="planner-field-label">出发起点</div>
+                  <input className="planner-input" value={weekendForm.startArea} onChange={(event) => updateWeekendForm({ startArea: event.target.value })} placeholder="学校周边" />
+                </div>
+              </div>
+            </div>
+
+            <div className="planner-card">
+              <div className="planner-card-title">✨ 这次想要什么感觉</div>
+              {[
+                ["mood", "🌿 心情", ["想轻松一点", "想拍照出片", "想换个地方", "想安静放空"]],
+                ["energyLevel", "🚶 体力", ["低体力", "中等体力", "想多走走"]],
+                ["companions", "👥 同行人", ["自己", "朋友", "情侣", "家人"]]
+              ].map(([field, label, options]) => (
+                <div className="planner-field" key={field as string}>
+                  <div className="planner-field-label">{label as string}</div>
+                  <div className="planner-chip-list">
+                    {(options as string[]).map((option) => (
+                      <button className={`planner-chip ${weekendForm[field as "mood" | "energyLevel" | "companions"] === option ? "selected" : ""}`} key={option} onClick={() => updateWeekendForm({ [field as string]: option })} type="button">{option}</button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="planner-card">
+              <div className="planner-card-title">📝 其他偏好</div>
+              <div className="planner-card-desc">室内、拍照、吃饭、少走路等限制都可以点选。</div>
+              <div className="planner-chip-list">
+                {weekendInterestOptions.map((option) => {
+                  const value = option.value;
+                  const active = weekendForm.interests.includes(value);
+                  return <button className={`planner-chip ${active ? "selected" : ""}`} key={value} onClick={() => toggleWeekendInterest(value)} type="button">{option.emoji} {option.label}</button>;
+                })}
+              </div>
+              <div className="planner-field">
+                <div className="planner-field-label">补充说明</div>
+                <textarea className="planner-textarea" value={weekendForm.rawText} onChange={(event) => updateWeekendForm({ rawText: event.target.value })} placeholder="例如：不想排队，想找能坐下来聊天和拍照的地方。" />
+              </div>
+            </div>
+
+            {weekendError ? <div className="planner-state error">生成失败：{weekendError}</div> : null}
+            {!hasPlan && !weekendLoading && !weekendError ? <div className="planner-state">提交后会展示出门路线、折中路线、雨天或低体力备选。</div> : null}
+            {weekendLoading ? <div className="planner-state">正在综合天气、预算、体力和返程时间。</div> : null}
+            {weekendNotice && !weekendPlan ? <div className="planner-state success">{weekendNotice}</div> : null}
+          </div>
+
+          {weekendPlan ? renderWeekendResults(weekendPlan) : null}
+        </div>
+
+        <div className="planner-action-dock">
+          <div className="planner-summary-line">{buildWeekendTimeWindow(weekendForm)} · {weekendForm.startArea} · {weekendForm.budgetMax} 元/人</div>
+          <div className="planner-summary-hint">当前条件仅用于本次周边规划，不会写入长期偏好。</div>
+          <div className="planner-action-row">
+            {hasPlan ? <button className="planner-secondary-button" onClick={() => { setWeekendPlan(null); setWeekendNotice(""); setWeekendError(""); }} type="button">重新填写</button> : null}
+            <button className={`planner-primary-button ${weekendLoading ? "disabled-button" : ""}`} disabled={weekendLoading} type="submit">{weekendLoading ? "生成中" : "生成周边规划"}</button>
+          </div>
+        </div>
+      </form>
+    );
+  }
+
+  function renderWeekendResults(plan: WeekendPlan) {
+    const source = {
+      weather: plan.source?.weather || (plan.weather?.fallback ? "fallback" : "backend"),
+      poi: plan.source?.poi || "backend",
+      planner: plan.source?.planner || plan.backendStatus || "backend"
+    };
+
+    return (
+      <div className="planner-result-list">
+        {plan.backendMessage ? <div className="planner-state">{plan.backendMessage}</div> : null}
+
+        <div className={`planner-card planner-weather-card ${plan.weather?.fallback ? "featured" : ""}`}>
+          <div className="planner-result-head">
+            <div>
+              <div className="planner-rank">天气</div>
+              <div className="planner-result-title">{plan.weather?.summary || "天气信息待确认"}</div>
+            </div>
+            <div className="planner-result-type">{plan.weather?.sourceLabel || "后端"}</div>
+          </div>
+          {plan.weatherNotice ? <div className="planner-risk"><span className="planner-section-label">提醒</span>{plan.weatherNotice}</div> : null}
+          <div className="planner-source-row">
+            <span className="planner-section-label">来源</span>
+            <div className="planner-source-tags">
+              <span className="planner-tag">天气 {source.weather}</span>
+              <span className="planner-tag">POI {source.poi}</span>
+              <span className="planner-tag">规划 {source.planner}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="planner-state success">已生成 {plan.routes.length} 条路线，可以复制喜欢的邀约文案。</div>
+
+        {plan.routes.map((route, index) => (
+          <div className={`planner-card planner-route-card ${index === 0 ? "featured" : ""}`} key={route.id}>
+            <div className="planner-result-head">
+              <div className="planner-result-title-wrap">
+                {index === 0 ? <div className="planner-rank">首推</div> : null}
+                <div className="planner-result-title">{route.title}</div>
+              </div>
+              <div className="planner-result-type">{route.typeLabel || route.type}</div>
+            </div>
+            <div className="planner-meta">
+              <div>预算 {route.estimatedBudgetText || route.estimatedBudget || "待确认"}</div>
+              <div>时长 {route.estimatedDurationText || route.durationText || `${route.estimatedDurationMinutes || 150} 分钟`}</div>
+              <div>{route.transport}</div>
+            </div>
+            <div className="planner-route-summary">{route.summary}</div>
+            <div className="planner-route-block">
+              <div className="planner-route-block-title">时间线</div>
+              {route.timeline?.length ? (
+                <div className="planner-timeline">
+                  {route.timeline.map((step, stepIndex) => (
+                  <div className="planner-timeline-item" key={`${route.id}-${stepIndex}`}>
+                    <div className="planner-timeline-head"><span className="planner-timeline-time">{step.time}</span><span className="planner-timeline-title">{step.title}</span></div>
+                    {step.placeName ? <div className="planner-timeline-place">{step.placeName}</div> : null}
+                    {step.activity ? <div className="planner-timeline-activity">{step.activity}</div> : null}
+                    {step.durationMinutes ? <div className="planner-timeline-duration">预计停留 {step.durationMinutes} 分钟</div> : null}
+                  </div>
+                  ))}
+                </div>
+              ) : <div className="planner-note">暂无详细时间线，可根据路线摘要灵活安排。</div>}
+            </div>
+            {normalizeSelfChecks(route).length ? (
+              <div className="planner-route-block">
+                <div className="planner-route-block-title">自检结果</div>
+                <div className="planner-check-grid">
+                  {normalizeSelfChecks(route).map((check) => (
+                    <div className="planner-check-item" key={check.key}>
+                      <div className="planner-check-top"><span>{check.label}</span><span>{check.statusText}</span></div>
+                      <div className="planner-check-detail">{check.detail}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            {route.risks?.length ? (
+              <div className="planner-route-block">
+                <div className="planner-route-block-title">风险提示</div>
+                <div className="planner-risk-list">{route.risks.map((risk) => <div className="planner-risk-item" key={risk}>{risk}</div>)}</div>
+              </div>
+            ) : null}
+            {route.inviteText ? (
+              <div className="planner-route-invite">
+                <div className="planner-route-invite-text">{route.inviteText}</div>
+                <button className="planner-secondary-button" onClick={() => void navigator.clipboard?.writeText(route.inviteText || "")} type="button">复制邀约</button>
+              </div>
+            ) : null}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  function renderMemoryPage() {
+    const isNoneSelected = memory.avoidTags.includes("无");
+
+    return (
+      <div className="page memory-page">
+        <div className="memory-intro">
+          <button className="mini-back-link" onClick={goHome} type="button">‹ 返回</button>
+          <div className="memory-page-title">管家记忆</div>
+          <div className="memory-page-subtitle">你可以在这里管理管家记住的饮食偏好</div>
+          <div className="memory-privacy">这些记忆只用于帮你推荐吃什么，你可以随时修改或清空。</div>
+        </div>
+
+        <div className="memory-section-group">
+          <div className="memory-group-header"><div className="memory-group-title">我主动告诉管家的</div><div className="memory-group-hint">保存后生效</div></div>
+          <div className="memory-section">
+            <div className="memory-section-title">忌口 / 过敏</div>
+            <div className="memory-section-desc">可多选。选「无」会清空其他选项。点「其他」后请在下方填写。</div>
+            <div className="memory-chip-list">
+              {memoryAvoidOptions.map((tag) => (
+                <button className={`memory-chip ${(tag === "无" && isNoneSelected) || (tag === "其他" && memoryCustomAvoid.trim()) || memory.avoidTags.includes(tag) ? "selected" : ""}`} key={tag} onClick={() => handleMemoryAvoidTap(tag)} type="button">{tag}</button>
+              ))}
+            </div>
+            <div className={`memory-custom-input-row ${isNoneSelected ? "dim" : ""}`}><input className="memory-custom-input" value={memoryCustomAvoid} onChange={(event) => handleMemoryCustomAvoidInput(event.target.value)} placeholder="也可以自己填写，例如：芒果、鸡蛋、菌菇" /></div>
+          </div>
+
+          <div className="memory-section">
+            <div className="memory-section-title">辣度偏好</div>
+            <div className="memory-section-desc">单选。再点一下取消。</div>
+            <div className="memory-chip-list">
+              {memorySpicyOptions.map((tag) => (
+                <button className={`memory-chip ${memory.spicyLevel === tag ? "selected" : ""}`} key={tag} onClick={() => setMemory({ ...memory, spicyLevel: memory.spicyLevel === tag ? "" : tag })} type="button">{tag}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="memory-section-group">
+          <div className="memory-group-header"><div className="memory-group-title">允许管家记住</div><div className="memory-group-hint">下方开关改动后会立刻生效。</div></div>
+          <div className="memory-section memory-permissions">
+            <PermissionRow checked={memory.permissions.behaviorLearning} desc="总开关。关闭后下方授权项不会被记录。" master title="允许管家从我的使用中学习偏好" onChange={(checked) => persistMemory({ ...memory, permissions: { ...memory.permissions, behaviorLearning: checked } })} />
+            <div className="permission-divider"></div>
+            {memoryPermissionRows.map((row) => (
+              <PermissionRow
+                checked={memory.permissions.behaviorLearning !== false && memory.permissions[row.key] !== false}
+                desc={row.desc}
+                dim={memory.permissions.behaviorLearning === false}
+                key={row.key}
+                title={row.title}
+                onChange={(checked) => persistMemory({ ...memory, permissions: { ...memory.permissions, [row.key]: checked } })}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="memory-section-group">
+          <div className="memory-group-header"><div className="memory-group-title">管家从使用中学到的</div><div className="memory-learning-pill">学习中</div></div>
+          <div className="memory-section memory-learned">
+            <div className="memory-learned-empty">多用几次后，我会帮你整理出午餐、晚餐、外卖和到店的习惯。你可以随时修改或删除。</div>
+            <div className="memory-learned-list">
+              {learnedPlaceholderRows.map((row) => (
+                <div className="memory-learned-card" key={row.label}><div className="memory-learned-copy"><div className="memory-learned-label">{row.label}</div><div className="memory-learned-desc">{row.desc}</div></div><div className="memory-learned-status">{row.value}</div></div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="memory-section-group">
+          <div className="memory-group-header"><div className="memory-group-title">记忆控制</div></div>
+          <div className="memory-section memory-switch-section">
+            <label className="memory-switch-row">
+              <span className="memory-switch-copy">
+                <span className="memory-section-title">暂停管家记忆</span>
+                <span className="memory-section-desc">开关关闭后我不会读取这些记忆，已保存的内容仍会保留。</span>
+              </span>
+              <span className={`switch-control ${memory.memoryEnabled ? "checked" : ""}`}>
+                <input checked={memory.memoryEnabled} onChange={(event) => { persistMemory({ ...memory, memoryEnabled: event.target.checked, updatedAt: new Date().toISOString() }); setMemoryNotice(event.target.checked ? "已恢复记忆" : "已暂停记忆"); }} type="checkbox" />
+              </span>
+            </label>
+          </div>
+          <div className="memory-actions-row">
+            <button className="memory-save-button" onClick={() => saveStableMemory()} type="button">保存记忆</button>
+            <button className="memory-clear-button" onClick={() => { setMemoryCustomAvoid(""); persistMemory({ ...memory, avoidTags: [], spicyLevel: "", updatedAt: new Date().toISOString() }); setMemoryNotice("已清空"); }} type="button">清空主动填写记忆</button>
+          </div>
+          <div className="memory-actions-row memory-actions-row-compact">
+            <button className="memory-clear-button memory-clear-button-wide" onClick={() => { persistRecords([]); setMemoryNotice("已清空学习记忆"); }} type="button">清空行为学习记忆</button>
+          </div>
+        </div>
+        {memoryNotice ? <div className="memory-notice">{memoryNotice}</div> : null}
+        <div className="memory-updated-at">{formatMemoryUpdatedAt(memory.updatedAt)}</div>
+      </div>
+    );
+  }
+
+  function renderThemePanel() {
+    return (
+      <div className="panel-mask" onClick={() => setShowThemePanel(false)}>
+        <div className="bottom-panel theme-panel" onClick={(event) => event.stopPropagation()}>
+          <div className="panel-header">
+            <div className="panel-header-copy"><div className="panel-title">主题换装</div><div className="panel-desc">选择后会同步影响首页、问答、多人约饭、周边规划和管家记忆。</div></div>
+            <button className="panel-close" onClick={() => setShowThemePanel(false)} type="button">×</button>
+          </div>
+          <div className="theme-grid">
+            {themeCards.map((theme) => (
+              <button className={`theme-card ${themeId === theme.id ? "selected active" : ""}`} key={theme.id} onClick={() => { setThemeId(theme.id); setShowThemePanel(false); }} type="button">
+                <div className="theme-preview" style={{ background: theme.soft }}>
+                  <div className="swatch-row">
+                    <span className="swatch" style={{ background: theme.primary }}></span>
+                    <span className="swatch" style={{ background: theme.soft }}></span>
+                    <span className="swatch" style={{ background: theme.accent }}></span>
+                    <span className="swatch" style={{ background: theme.warn }}></span>
+                  </div>
+                  <div className="mini-chat">
+                    <span className="mini-avatar" style={{ background: theme.primary }}>幺</span>
+                    <span className="mini-line"></span>
+                  </div>
+                  <div className="mini-bubble" style={{ background: theme.primary }}>清淡 · 热乎</div>
+                </div>
+                <div className="theme-card-footer">
+                  <div>
+                    <div className="theme-name">{theme.name}</div>
+                    <div className="theme-key">{theme.description}</div>
+                  </div>
+                  <div className={`theme-check ${themeId === theme.id ? "checked" : ""}`}>✓</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function renderHistoryPanel() {
+    return (
+      <div className="panel-mask" onClick={() => setShowHistoryPanel(false)}>
+        <div className="bottom-panel history-panel" onClick={(event) => event.stopPropagation()}>
+          <div className="panel-header"><div className="panel-header-copy"><div className="panel-title">偏好记录</div><div className="panel-desc">已选择「记住这个偏好」的最近 5 次会留在这里，方便继续调整。</div></div><button className="panel-close" onClick={() => setShowHistoryPanel(false)} type="button">×</button></div>
+          {!records.length ? (
+            <div className="empty-state">
+              <div className="empty-mark ai-mark">幺</div>
+              <div className="empty-title">还没有偏好记录</div>
+              <div className="empty-desc">在结果页选择「记住这个偏好」后，我会把场景、预算、距离和推荐结果帮你记下来。</div>
+            </div>
+          ) : (
+            <div className="history-list">{records.slice(0, 5).map((record, index) => <div className="history-item" key={record.id}><div className="history-index">{index + 1}</div><div className="history-copy"><div className="history-names">{record.slots.mealPurpose || "用餐偏好"}</div><div className="history-summary">{record.summary}</div><div className="history-time">{new Date(record.createdAt).toLocaleString()}</div></div></div>)}</div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  function renderFavoritesPanel() {
+    return (
+      <div className="panel-mask" onClick={() => setShowFavoritesPanel(false)}>
+        <div className="bottom-panel favorites-panel" onClick={(event) => event.stopPropagation()}>
+          <div className="panel-header"><div className="panel-header-copy"><div className="panel-title">店铺收藏</div><div className="panel-desc">在推荐卡片右上角点星星收藏，喜欢的店铺会留在这里。</div></div><button className="panel-close" onClick={() => setShowFavoritesPanel(false)} type="button">×</button></div>
+          {!favorites.length ? (
+            <div className="favorites-empty">
+              <div className="favorites-empty-title">还没有收藏的店铺</div>
+              <div className="favorites-empty-desc">在推荐卡片右上角点星星收藏喜欢的店铺</div>
+            </div>
+          ) : (
+            <div className="favorites-list">{favorites.map((item) => <div className="fav-item" key={item.id || item.name}><div className="fav-name">{item.name}</div><div className="fav-detail-row"><span className="fav-meta">{item.perCapitaDisplay || formatPrice(item.perCapita)}</span><span className="fav-meta">{item.distance}</span>{item.matchedTags?.[0] ? <span className="fav-tag">{item.matchedTags[0]}</span> : null}</div></div>)}</div>
+          )}
+        </div>
+      </div>
+    );
+  }
+}
+
+function BoardSection({ title, desc, children }: { title: string; desc: string; children: React.ReactNode }) {
+  return (
+    <section className="board-section">
+      <div className="section-head"><div className="section-dot"></div><div><div className="section-title-small">{title}</div><div className="section-desc-small">{desc}</div></div></div>
+      {children}
+    </section>
+  );
+}
+
+function EmptyPanel({ title, desc }: { title: string; desc: string }) {
+  return <div className="empty-panel section-empty"><div className="empty-title">{title}</div><div className="empty-desc">{desc}</div></div>;
+}
+
+function PermissionRow({ checked, desc, dim, disabled, master, pill, title, onChange }: { checked: boolean; desc: string; dim?: boolean; disabled?: boolean; master?: boolean; pill?: string; title: string; onChange: (checked: boolean) => void }) {
+  return (
+    <label className={`permission-row ${master ? "permission-master" : ""} ${dim ? "dim" : ""} ${disabled ? "is-disabled" : ""}`}>
+      <span className="permission-copy"><span className="permission-title-row"><span className="permission-title">{title}</span>{pill ? <span className="permission-pill">{pill}</span> : null}</span><span className="permission-desc">{desc}</span></span>
+      <span className={`switch-control ${checked ? "checked" : ""}`}><input checked={checked} disabled={disabled} onChange={(event) => onChange(event.target.checked)} type="checkbox" /></span>
+    </label>
+  );
 }
