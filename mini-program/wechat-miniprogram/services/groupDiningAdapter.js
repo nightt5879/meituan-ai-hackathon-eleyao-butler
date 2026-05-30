@@ -139,10 +139,6 @@ function request(options) {
   });
 }
 
-function isAuthError(error) {
-  return error && error.statusCode === 401;
-}
-
 function getClientId() {
   try {
     const existing = wx.getStorageSync(CLIENT_ID_STORAGE_KEY);
@@ -1122,9 +1118,11 @@ function createTask(payload) {
     };
   }).catch(function (error) {
     console.warn('[groupDiningAdapter] createTask remote failed', error);
-    if (isAuthError(error)) {
-      throw error;
-    }
+    // Real mode surfaces every error (including 401) so the page can prompt a
+    // real login. Auto mode must never block the demo, so it falls back to the
+    // local mock task on ANY failure — network down, 5xx, or a missing/expired
+    // session (401) — instead of bouncing the user to a login that itself needs
+    // the backend.
     if (mode === 'real') {
       throw error;
     }
@@ -1238,9 +1236,8 @@ function submitPreference(taskId, inviteToken, payload) {
     };
   }).catch(function (error) {
     console.warn('[groupDiningAdapter] submitPreference remote failed', error);
-    if (isAuthError(error)) {
-      throw error;
-    }
+    // Auto mode falls back to the local mock submission on any failure incl.
+    // 401; only real mode surfaces the error for a login prompt.
     if (mode === 'real') {
       throw error;
     }
@@ -1272,9 +1269,8 @@ function getTaskBoard(taskId, inviteToken) {
     return board;
   }).catch(function (error) {
     console.warn('[groupDiningAdapter] getTaskBoard remote failed', error);
-    if (isAuthError(error)) {
-      throw error;
-    }
+    // Auto mode falls back to the local mock board on any failure incl. 401;
+    // only real mode surfaces the error for a login prompt.
     if (mode === 'real') {
       throw error;
     }
@@ -1306,9 +1302,8 @@ function generateRecommendation(taskId, inviteToken) {
     return board;
   }).catch(function (error) {
     console.warn('[groupDiningAdapter] generateRecommendation remote failed', error);
-    if (isAuthError(error)) {
-      throw error;
-    }
+    // Auto mode falls back to the local mock board on any failure incl. 401;
+    // only real mode surfaces the error for a login prompt.
     if (mode === 'real') {
       throw error;
     }
@@ -1351,9 +1346,8 @@ function submitAdjustmentRequest(taskId, inviteToken, payload) {
     return board;
   }).catch(function (error) {
     console.warn('[groupDiningAdapter] submitAdjustmentRequest remote failed', error);
-    if (isAuthError(error)) {
-      throw error;
-    }
+    // Auto mode falls back to the local mock adjustment on any failure incl.
+    // 401; only real mode surfaces the error for a login prompt.
     if (mode === 'real') {
       throw error;
     }

@@ -61,8 +61,21 @@ Page({
     this.initNavMetrics();
     this.syncTheme();
     if (!userIdentityAdapter.hasSession()) {
-      userIdentityAdapter.requireLoginRedirect('/pages/group/board/board?taskId=' + encodeURIComponent(taskId) + '&inviteToken=' + encodeURIComponent(inviteToken));
-      return;
+      // Only strict 'real' mode forces a blocking login. In auto/mock mode keep
+      // the board usable so the local fallback board still renders when the
+      // backend (and therefore login) is unavailable. Auto mode also kicks off a
+      // best-effort background login so the real backend is used once reachable.
+      const mode = groupDiningAdapter.getCurrentMode();
+      if (mode === 'real') {
+        userIdentityAdapter.requireLoginRedirect('/pages/group/board/board?taskId=' + encodeURIComponent(taskId) + '&inviteToken=' + encodeURIComponent(inviteToken));
+        return;
+      }
+      if (mode === 'auto') {
+        const app = getApp();
+        if (app && app.ensureLogin) {
+          app.ensureLogin().catch(function () {});
+        }
+      }
     }
 
     this.setData({
