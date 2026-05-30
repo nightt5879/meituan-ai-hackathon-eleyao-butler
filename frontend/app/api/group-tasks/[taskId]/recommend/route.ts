@@ -6,6 +6,12 @@ import {
   recordOpenClawDataFeedResult,
   submitOpenClawDataFeed
 } from "@/lib/server/openclawDataFeed";
+import {
+  advanceAiProgress,
+  completeAiProgress,
+  normalizeAiProgressTraceId,
+  startAiProgress
+} from "@/lib/server/aiProgress";
 import { requireMiniProgramUser } from "@/lib/server/requestAuth";
 import { getGroupRecommendationSource, saveGroupRecommendation } from "@/lib/server/taskStore";
 import { ensureUserProfile } from "@/lib/server/userProfileStore";
@@ -44,6 +50,14 @@ export async function POST(request: Request, { params }: RouteContext) {
 
   const shouldFeedOpenClaw = inputRecord.openclawFeed === true && process.env.OPENCLAW_DATA_FEED_ENABLED !== "0";
   const shouldUseOpenClaw = inputRecord.useOpenClaw === true && process.env.OPENCLAW_GROUP_RECOMMENDATION_ENABLED !== "0";
+  const aiProgress = await startAiProgress("group_dining", {
+    traceId: normalizeAiProgressTraceId(inputRecord.aiProgressTraceId),
+    userId: auth.user.userId,
+    message: "正在读取约饭任务、成员偏好和可见约束。"
+  });
+  await advanceAiProgress(aiProgress.traceId, "retrieve", {
+    message: "正在整理成员偏好、冲突和候选餐厅上下文。"
+  });
   const profile = await ensureUserProfile(auth.user.userId);
   const openclawContext = createOpenClawDataContext("group_dining", {
     userId: auth.user.userId,
@@ -54,6 +68,9 @@ export async function POST(request: Request, { params }: RouteContext) {
       participants: source.value.participants,
       conflicts: source.value.conflicts
     }
+  });
+  await advanceAiProgress(aiProgress.traceId, "filter", {
+    message: "正在检查预算、忌口、时间和人数等硬约束。"
   });
   let recommendation: RecommendationResult | undefined;
   let openclawContextResult = createOpenClawDataFeedResult(openclawContext, "skipped", {
@@ -71,11 +88,24 @@ export async function POST(request: Request, { params }: RouteContext) {
   });
 
   if (shouldFeedOpenClaw) {
+    await advanceAiProgress(aiProgress.traceId, "rank", {
+      message: "正在生成多人约饭折中排序。"
+    });
+    await advanceAiProgress(aiProgress.traceId, "compose", {
+      message: "正在把多人约饭上下文同步给 OpenClaw。",
+      note: "OpenClaw 用于接收任务、成员和冲突上下文，页面推荐由服务端 adapter 返回。"
+    });
     openclawContextResult = await submitOpenClawDataFeed(openclawContext);
   } else if (shouldUseOpenClaw) {
     const startedAt = Date.now();
 
     try {
+      await advanceAiProgress(aiProgress.traceId, "rank", {
+        message: "正在请求 OpenClaw 计算群体推荐排序。"
+      });
+      await advanceAiProgress(aiProgress.traceId, "compose", {
+        message: "OpenClaw 正在生成主推、备选和群发文案。"
+      });
       recommendation = await generateOpenClawRecommendation(
         source.value.task,
         source.value.participants,
@@ -101,6 +131,14 @@ export async function POST(request: Request, { params }: RouteContext) {
         detail
       });
     }
+  } else {
+    await advanceAiProgress(aiProgress.traceId, "rank", {
+      message: "正在用服务端 adapter 生成本地折中排序。"
+    });
+    await advanceAiProgress(aiProgress.traceId, "compose", {
+      message: "正在整理多人约饭推荐结果。",
+      note: "本次请求未启用 OpenClaw，已走服务端本地规则。"
+    });
   }
 
   if (!shouldFeedOpenClaw) {
@@ -109,8 +147,24 @@ export async function POST(request: Request, { params }: RouteContext) {
   const result = await saveGroupRecommendation(taskId, inviteToken, recommendation, openclawContextResult);
 
   if (result.status !== 200) {
+    const errorNote = typeof result.error === "string" ? result.error : result.error.message;
+    await completeAiProgress(aiProgress.traceId, "error", {
+      message: "多人约饭推荐保存失败。",
+      note: errorNote
+    });
     return NextResponse.json({ error: result.error }, { status: result.status });
   }
 
-  return NextResponse.json(result.value);
+  const finalProgress = await completeAiProgress(
+    aiProgress.traceId,
+    openclawContextResult.status === "failed" ? "fallback" : "done",
+    {
+      message: openclawContextResult.status === "failed"
+        ? "多人约饭推荐已用本地 adapter 兜底完成，OpenClaw 同步失败。"
+        : "多人约饭推荐流程已完成。",
+      note: openclawContextResult.detail
+    }
+  );
+
+  return NextResponse.json({ ...result.value, aiProgress: finalProgress || aiProgress });
 }
