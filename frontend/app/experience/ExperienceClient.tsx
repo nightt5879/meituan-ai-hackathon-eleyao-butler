@@ -263,6 +263,8 @@ type PrefSummaryRow = {
 };
 
 const identityKey = "meituan_web_demo_identity";
+const judgeDeviceKey = "meituan_web_judge_device_id";
+const judgeInputKey = "meituan_web_judge_input";
 const defaultFoodConnectionStatus: FoodConnectionStatus = {
   text: "正在检测远端 OpenClaw",
   className: "status-checking",
@@ -722,6 +724,36 @@ function storageKey(userId: string, suffix: string) {
   return `meituan_web_demo:${userId}:${suffix}`;
 }
 
+function normalizeJudgeId(value: string) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
+}
+
+function createBrowserJudgeId() {
+  const randomPart = typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID().replace(/-/g, "").slice(0, 12)
+    : `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+
+  return `judge-auto-${randomPart}`;
+}
+
+function getOrCreateBrowserJudgeId() {
+  const stored = normalizeJudgeId(window.localStorage.getItem(judgeDeviceKey) || "");
+  if (stored) return stored;
+
+  const next = createBrowserJudgeId();
+  window.localStorage.setItem(judgeDeviceKey, next);
+  return next;
+}
+
+function formatJudgeDisplayName(demoUserId: string) {
+  return demoUserId.startsWith("judge-auto-") ? "评委 Demo 用户" : `评委 ${demoUserId}`;
+}
+
 function formatPrice(value: string) {
   const raw = String(value || "").trim();
   if (!raw) return "人均待确认";
@@ -952,6 +984,9 @@ export default function ExperienceClient() {
   const [view, setView] = useState<PhoneView>("login");
   const [identity, setIdentity] = useState<Identity | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
+  const [judgeIdInput, setJudgeIdInput] = useState("");
+  const [browserJudgeId, setBrowserJudgeId] = useState("");
+  const [identityNotice, setIdentityNotice] = useState("");
   const [themeId, setThemeId] = useState("mint-green");
   const [showThemePanel, setShowThemePanel] = useState(false);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
@@ -1059,7 +1094,11 @@ export default function ExperienceClient() {
   ];
 
   useEffect(() => {
+    const localJudgeId = getOrCreateBrowserJudgeId();
+    const storedJudgeId = normalizeJudgeId(window.localStorage.getItem(judgeInputKey) || "");
     const stored = safeJsonParse<Identity | null>(window.localStorage.getItem(identityKey), null);
+    setBrowserJudgeId(localJudgeId);
+    setJudgeIdInput(stored?.demoUserId || storedJudgeId || localJudgeId);
     if (stored?.sessionToken && stored.userId) {
       setIdentity(stored);
       setView("home");
@@ -1160,14 +1199,18 @@ export default function ExperienceClient() {
     setRecommendations((items) => normalizeCards(items, limited));
   }
 
-  async function login() {
+  async function login(nextJudgeId = judgeIdInput) {
     setAuthError("");
+    setIdentityNotice("");
     setAuthLoading(true);
 
     try {
+      const fallbackJudgeId = browserJudgeId || getOrCreateBrowserJudgeId();
+      const demoUserId = normalizeJudgeId(nextJudgeId) || fallbackJudgeId;
+      const displayName = formatJudgeDisplayName(demoUserId);
       const result = await requestJson<Identity>("/api/demo/session", {
         method: "POST",
-        body: JSON.stringify({ demoUserId: "judge-demo", displayName: "评审 Demo 用户" })
+        body: JSON.stringify({ demoUserId, displayName })
       });
       const nextIdentity = {
         demoUserId: result.demoUserId,
@@ -1176,7 +1219,10 @@ export default function ExperienceClient() {
         sessionToken: result.sessionToken
       };
       window.localStorage.setItem(identityKey, JSON.stringify(nextIdentity));
+      window.localStorage.setItem(judgeInputKey, nextIdentity.demoUserId);
       setIdentity(nextIdentity);
+      setJudgeIdInput(nextIdentity.demoUserId);
+      setIdentityNotice(`已切换到 ${nextIdentity.displayName}`);
       setView("home");
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : String(error));
@@ -1185,8 +1231,14 @@ export default function ExperienceClient() {
     }
   }
 
+  function handleIdentitySubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void login();
+  }
+
   function logout() {
     window.localStorage.removeItem(identityKey);
+    setIdentityNotice("");
     setIdentity(null);
     setView("login");
   }
@@ -2083,8 +2135,23 @@ export default function ExperienceClient() {
           <a className="panel-link" href="/">作品首页</a>
           <h1>饿了幺 AI 管家</h1>
           <p>当前身份：{identity?.displayName || "未登录"}</p>
+          <p className="mono">demoId: {identity?.demoUserId || judgeIdInput || browserJudgeId || "待生成"}</p>
           <p className="mono">userId: {identity?.userId || "等待登录"}</p>
-          {identity ? <button className="panel-outline-button" onClick={logout} type="button">退出 demo 身份</button> : null}
+          <form className="identity-form" onSubmit={handleIdentitySubmit}>
+            <label className="identity-label" htmlFor="judge-id-panel">评委 ID</label>
+            <input
+              className="identity-input"
+              id="judge-id-panel"
+              maxLength={40}
+              onChange={(event) => setJudgeIdInput(event.target.value)}
+              placeholder={browserJudgeId || "judge-auto"}
+              value={judgeIdInput}
+            />
+            <p className="identity-hint">不填会使用当前浏览器生成的本地匿名 ID；手动输入可复现同一评委身份。</p>
+            {identityNotice ? <div className="identity-notice">{identityNotice}</div> : null}
+            <button className="panel-outline-button compact" disabled={authLoading} type="submit">{identity ? "切换评委身份" : "进入 demo 身份"}</button>
+          </form>
+          {identity ? <button className="panel-outline-button muted" onClick={logout} type="button">退出 demo 身份</button> : null}
         </aside>
 
         <section className="phone-frame" aria-label="小程序复刻预览">
@@ -2120,21 +2187,30 @@ export default function ExperienceClient() {
           </div>
 
           <div className="login-copy">
-            <div className="login-title">先登录一下</div>
-            <div className="login-desc">使用微信登录建立会话后，管家会把周边规划和偏好记录关联到你的账号。</div>
+            <div className="login-title">选择评委 Demo 身份</div>
+            <div className="login-desc">输入评委 ID 后会建立独立会话、画像和本地偏好；不填写时使用当前浏览器生成的匿名 ID。</div>
           </div>
 
           <div className="mvp-note">
             <div className="note-icon">i</div>
-            <div className="note-text">当前为 MVP 演示版本，登录后可体验「今天吃什么」、多人约饭和周边轻规划。</div>
+            <div className="note-text">当前为 MVP 演示版本，评委身份只用于隔离 Demo 数据，不采集硬件指纹。</div>
           </div>
 
           {authError ? <div className="inline-error">{authError}</div> : null}
 
-          <div className="login-actions">
-            <button className={`login-button ${authLoading ? "loading" : ""}`} disabled={authLoading} onClick={() => void login()} type="button">{authLoading ? "授权中" : "微信授权登录"}</button>
-            <div className="login-tip">登录即代表同意《用户协议》与《隐私政策》</div>
-          </div>
+          <form className="login-actions" onSubmit={handleIdentitySubmit}>
+            <label className="login-label" htmlFor="judge-id-login">评委 ID</label>
+            <input
+              className="login-input"
+              id="judge-id-login"
+              maxLength={40}
+              onChange={(event) => setJudgeIdInput(event.target.value)}
+              placeholder={browserJudgeId || "judge-auto"}
+              value={judgeIdInput}
+            />
+            <button className={`login-button ${authLoading ? "loading" : ""}`} disabled={authLoading} type="submit">{authLoading ? "进入中" : "进入在线体验"}</button>
+            <div className="login-tip">同一 ID 会复用同一份后端账号画像，方便评委多次回到同一体验状态。</div>
+          </form>
         </div>
       </div>
     );
