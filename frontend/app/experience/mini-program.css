@@ -2586,6 +2586,23 @@
   box-shadow: var(--theme-shadow-button);
 }
 
+.planner-ai-status-card {
+  background: linear-gradient(180deg, var(--theme-card), var(--theme-soft));
+}
+
+.planner-ai-status-card.status-connected {
+  border-color: var(--theme-primary);
+}
+
+.planner-ai-status-card.status-backend-only,
+.planner-ai-status-card.status-mock {
+  border-color: var(--theme-secondary);
+}
+
+.planner-ai-status-card.status-error {
+  border-color: var(--theme-danger);
+}
+
 .planner-result-head {
   display: flex;
   align-items: flex-start;

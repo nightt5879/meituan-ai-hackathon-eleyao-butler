@@ -176,6 +176,26 @@ type WeekendPlan = {
     poi?: string;
     planner?: string;
   };
+  openclawContext?: {
+    traceId?: string;
+    scene?: string;
+    submitted?: boolean;
+    status?: "submitted" | "skipped" | "failed" | string;
+    sessionRef?: string;
+    contextBlocks?: string[];
+    durationMs?: number;
+    detail?: string;
+  };
+  aiStatus?: {
+    resultGeneratedBy?: "rules" | "local" | string;
+    resultIsAiGenerated?: boolean;
+    openclawStatus?: "submitted" | "skipped" | "failed" | "not_applicable" | string;
+    openclawSubmitted?: boolean;
+    traceId?: string;
+    durationMs?: number;
+    label?: string;
+    detail?: string;
+  };
   routes: Array<{
     id: string;
     type: string;
@@ -890,6 +910,14 @@ function buildLocalWeekendPlan(input: { budgetMax?: string; startArea?: string }
       poi: "local",
       planner: "local"
     },
+    aiStatus: {
+      resultGeneratedBy: "local",
+      resultIsAiGenerated: false,
+      openclawStatus: "not_applicable",
+      openclawSubmitted: false,
+      label: "本地兜底路线，未调用 OpenClaw",
+      detail: "后端不可用时展示本地保守规划；这不是 AI 直接返回，也没有完成 OpenClaw 上下文投喂。"
+    },
     routes: [
       {
         id: "local-cafe-walk",
@@ -933,6 +961,117 @@ function normalizeSelfChecks(route: WeekendPlan["routes"][number]) {
     detail,
     statusText: "通过"
   }));
+}
+
+type WeekendRuntimeStatus = FoodConnectionStatus & {
+  tags: string[];
+  resultSourceLabel: string;
+  openclawStatusLabel: string;
+  resultIsAiGenerated: boolean;
+  traceId?: string;
+  durationMs?: number;
+};
+
+function getWeekendPlannerLabel(plan: WeekendPlan) {
+  const source = plan.aiStatus?.resultGeneratedBy || plan.source?.planner || plan.backendStatus || "";
+  if (source === "local") return "本地兜底";
+  if (source === "rules" || source === "rules-v1" || source === "weekend-data-rules-v1") return "规则规划器";
+  return source ? source : "后端规划器";
+}
+
+function buildWeekendRuntimeStatus(plan: WeekendPlan | null, loading = false): WeekendRuntimeStatus {
+  if (loading) {
+    return {
+      text: "正在生成周边规划",
+      className: "status-checking",
+      openclawReachable: false,
+      detail: "正在综合天气、预算、体力和返程时间；生成完成后会显示 OpenClaw 是否接收上下文。",
+      tags: ["状态 生成中", "路线 待生成", "OpenClaw 待确认"],
+      resultSourceLabel: "待生成",
+      openclawStatusLabel: "待确认",
+      resultIsAiGenerated: false
+    };
+  }
+
+  if (!plan) {
+    return {
+      text: "规则规划待生成 · OpenClaw 待确认",
+      className: "status-checking",
+      openclawReachable: false,
+      detail: "提交后会展示路线来源，以及本次上下文是否提交到 OpenClaw。",
+      tags: ["路线 待生成", "OpenClaw 待确认", "非 AI 直接返回路线"],
+      resultSourceLabel: "待生成",
+      openclawStatusLabel: "待确认",
+      resultIsAiGenerated: false
+    };
+  }
+
+  const openclawStatus = plan.aiStatus?.openclawStatus || plan.openclawContext?.status || "";
+  const openclawSubmitted = Boolean(plan.aiStatus?.openclawSubmitted ?? plan.openclawContext?.submitted);
+  const localFallback = plan.source?.planner === "local" || plan.aiStatus?.resultGeneratedBy === "local" || plan.backendStatus === "fallback";
+  const resultIsAiGenerated = Boolean(plan.aiStatus?.resultIsAiGenerated);
+  const resultSourceLabel = resultIsAiGenerated ? "AI 直接返回" : getWeekendPlannerLabel(plan);
+  const traceId = plan.aiStatus?.traceId || plan.openclawContext?.traceId;
+  const durationMs = plan.aiStatus?.durationMs ?? plan.openclawContext?.durationMs;
+  const baseDetail = plan.aiStatus?.detail || plan.openclawContext?.detail || plan.backendMessage;
+
+  if (localFallback) {
+    return {
+      text: "本地兜底路线 · 未调用 OpenClaw",
+      className: "status-mock",
+      openclawReachable: false,
+      detail: baseDetail || "后端不可用时展示本地保守路线；这不是 AI 直接返回，也没有完成 OpenClaw 上下文投喂。",
+      tags: [`路线 ${resultSourceLabel}`, "OpenClaw 未调用", "非 AI 直接返回路线"],
+      resultSourceLabel,
+      openclawStatusLabel: "未调用",
+      resultIsAiGenerated,
+      traceId,
+      durationMs
+    };
+  }
+
+  if (openclawSubmitted || openclawStatus === "submitted") {
+    return {
+      text: "规则路线 · OpenClaw 已接收上下文",
+      className: "status-connected",
+      openclawReachable: true,
+      detail: baseDetail || "本次路线由规则规划器生成；OpenClaw 已接收用户画像、天气和候选路线上下文。",
+      tags: [`路线 ${resultSourceLabel}`, "OpenClaw 已接收上下文", "非 AI 直接返回路线"],
+      resultSourceLabel,
+      openclawStatusLabel: "已接收上下文",
+      resultIsAiGenerated,
+      traceId,
+      durationMs
+    };
+  }
+
+  if (openclawStatus === "failed") {
+    return {
+      text: "规则路线 · OpenClaw 提交失败",
+      className: "status-error",
+      openclawReachable: false,
+      detail: baseDetail || "本次路线由规则规划器生成；OpenClaw 上下文投喂失败。",
+      tags: [`路线 ${resultSourceLabel}`, "OpenClaw 提交失败", "非 AI 直接返回路线"],
+      resultSourceLabel,
+      openclawStatusLabel: "提交失败",
+      resultIsAiGenerated,
+      traceId,
+      durationMs
+    };
+  }
+
+  return {
+    text: openclawStatus === "skipped" ? "规则路线 · OpenClaw 未启用" : "规则路线 · OpenClaw 状态待确认",
+    className: "status-backend-only",
+    openclawReachable: false,
+    detail: baseDetail || "本次路线由规则规划器生成；OpenClaw 未返回可确认的上下文投喂状态。",
+    tags: [`路线 ${resultSourceLabel}`, openclawStatus === "skipped" ? "OpenClaw 未启用" : "OpenClaw 待确认", "非 AI 直接返回路线"],
+    resultSourceLabel,
+    openclawStatusLabel: openclawStatus === "skipped" ? "未启用" : "待确认",
+    resultIsAiGenerated,
+    traceId,
+    durationMs
+  };
 }
 
 function buildWeekendTimeWindow(form: typeof defaultWeekendForm) {
@@ -3146,12 +3285,17 @@ export default function ExperienceClient() {
 
   function renderWeekendPage() {
     const hasPlan = Boolean(weekendPlan);
+    const weekendRuntimeStatus = buildWeekendRuntimeStatus(weekendPlan, weekendLoading);
     return (
       <form className="page weekend-page" onSubmit={(event) => void createWeekendPlan(event)}>
         <div className="custom-food-header planner-header">
           <div className="food-nav-row">
             <button className="header-back-hit" onClick={goHome} type="button"><span className="header-back-button">‹</span></button>
             <div className="food-nav-title">周边规划</div>
+          </div>
+          <div className={`header-online-status ${weekendRuntimeStatus.className}`} title={weekendRuntimeStatus.detail}>
+            <span className="header-online-dot"></span>
+            <span className="header-online-text">{weekendRuntimeStatus.text}</span>
           </div>
           <div className="planner-header-subtitle">告诉我时间、预算和想要的状态，我会整理 2-3 条轻路线。</div>
         </div>
@@ -3252,6 +3396,7 @@ export default function ExperienceClient() {
   }
 
   function renderWeekendResults(plan: WeekendPlan) {
+    const runtimeStatus = buildWeekendRuntimeStatus(plan);
     const source = {
       weather: plan.source?.weather || (plan.weather?.fallback ? "fallback" : "backend"),
       poi: plan.source?.poi || "backend",
@@ -3261,6 +3406,25 @@ export default function ExperienceClient() {
     return (
       <div className="planner-result-list">
         {plan.backendMessage ? <div className="planner-state">{plan.backendMessage}</div> : null}
+
+        <div className={`planner-card planner-ai-status-card ${runtimeStatus.className}`}>
+          <div className="planner-result-head">
+            <div className="planner-result-title-wrap">
+              <div className="planner-rank">生成状态</div>
+              <div className="planner-result-title">{runtimeStatus.text}</div>
+            </div>
+            <div className="planner-result-type">{runtimeStatus.resultIsAiGenerated ? "AI" : "规则"}</div>
+          </div>
+          <div className="planner-route-summary">{runtimeStatus.detail}</div>
+          <div className="planner-source-row">
+            <span className="planner-section-label">状态</span>
+            <div className="planner-source-tags">
+              {runtimeStatus.tags.map((tag, index) => <span className="planner-tag" key={`${tag}-${index}`}>{tag}</span>)}
+              {runtimeStatus.traceId ? <span className="planner-tag">Trace {runtimeStatus.traceId}</span> : null}
+              {typeof runtimeStatus.durationMs === "number" && runtimeStatus.durationMs > 0 ? <span className="planner-tag">{runtimeStatus.durationMs}ms</span> : null}
+            </div>
+          </div>
+        </div>
 
         <div className={`planner-card planner-weather-card ${plan.weather?.fallback ? "featured" : ""}`}>
           <div className="planner-result-head">
