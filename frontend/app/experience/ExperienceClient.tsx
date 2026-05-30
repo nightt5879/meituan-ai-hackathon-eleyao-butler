@@ -332,6 +332,29 @@ const spicyTagOptions = [
   { id: "spicy_heavy", label: "重辣", type: "spicyLevel" }
 ] satisfies FoodTagGroup["tags"];
 
+const prefModificationOrder = [
+  "branch-preference",
+  "taste-feeling",
+  "temporary-avoid",
+  "restriction",
+  "spice",
+  "budget",
+  "distance",
+  "notes"
+];
+
+const mealPurposeAliases: Record<string, string[]> = {
+  早餐: ["早餐", "早饭", "早上", "早点"],
+  午餐: ["午餐", "午饭", "中午", "午间"],
+  晚餐: ["晚餐", "晚饭", "晚上", "今晚", "正餐"],
+  夜宵: ["夜宵", "宵夜", "深夜"],
+  下午茶: ["下午茶", "奶茶", "咖啡", "甜品"],
+  一个人随便吃: ["一个人", "随便", "自己吃", "单人", "懒得想"],
+  和朋友一起吃: ["朋友", "一起吃", "约饭", "多人"],
+  工作日快餐: ["快餐", "工作日", "上班", "上课", "赶时间"],
+  周末放松吃: ["周末", "放松", "慢慢吃"]
+};
+
 const mealPurposeQuestion: FoodQuestion = {
   id: "mealPurpose",
   kind: "choice",
@@ -401,7 +424,7 @@ const distanceQuestion: FoodQuestion = {
 };
 
 const userNotesQuestion: FoodQuestion = {
-  id: "userNotes",
+  id: "user-notes",
   kind: "choice",
   slot: "userNotes",
   label: "其他补充",
@@ -412,13 +435,79 @@ const userNotesQuestion: FoodQuestion = {
   options: ["没有补充"]
 };
 
+const cuisineQuestion: FoodQuestion = {
+  id: "cuisine-type",
+  kind: "multi-choice",
+  slot: "branchPreference",
+  label: "菜系偏好",
+  title: "想吃哪类菜？",
+  allowEmpty: true,
+  options: ["都可以", "中式简餐", "家常菜", "粉面", "米饭套餐", "火锅/冒菜", "麻辣烫", "烧烤/炸物", "西餐", "日料", "韩餐", "东南亚菜", "轻食"]
+};
+
+const modifyTasteFeelingQuestion: FoodQuestion = {
+  id: "taste-feeling",
+  kind: "tag",
+  label: "口味/感觉",
+  title: "这次想吃什么口味/感觉？",
+  optional: true,
+  allowEmpty: true,
+  groups: [
+    { title: "口味偏好", type: "taste", mode: "multiple", tags: tasteTagOptions },
+    { title: "当前想吃的感觉", type: "need", mode: "multiple", tags: needTagOptions }
+  ]
+};
+
+const modifyTemporaryAvoidQuestion: FoodQuestion = {
+  id: "temporary-avoid",
+  kind: "tag",
+  label: "这次不想吃",
+  title: "这次有什么不想吃的吗？",
+  optional: true,
+  allowEmpty: true,
+  groups: [
+    { title: "这次不想吃", type: "temporaryAvoid", mode: "multiple", tags: temporaryAvoidTagOptions }
+  ]
+};
+
+const modifyRestrictionQuestion: FoodQuestion = {
+  id: "restriction",
+  kind: "tag",
+  label: "忌口",
+  title: "有什么忌口吗？",
+  optional: true,
+  allowEmpty: true,
+  groups: [
+    { title: "忌口", type: "avoid", mode: "multiple", tags: restrictionTagOptions }
+  ]
+};
+
+const modifySpiceQuestion: FoodQuestion = {
+  id: "spice",
+  kind: "tag",
+  label: "辣度",
+  title: "辣度有什么要求吗？",
+  optional: true,
+  allowEmpty: true,
+  groups: [
+    { title: "辣度偏好", type: "spicyLevel", mode: "single", tags: spicyTagOptions }
+  ]
+};
+
 function buildBranchPreferenceQuestion(mealPurpose: string): FoodQuestion {
+  const ids: Record<string, string> = {
+    早餐: "breakfast-type",
+    下午茶: "afternoon-tea-type",
+    夜宵: "supper-type",
+    一个人随便吃: "solo-casual-preference",
+    工作日快餐: "workday-fast-preference"
+  };
   return {
-    id: "branchPreference",
+    id: ids[mealPurpose] || "cuisine-type",
     kind: "multi-choice",
     slot: "branchPreference",
-    label: mealPurpose === "下午茶" ? "下午茶类型" : "菜系偏好",
-    title: mealPurpose === "早餐" ? "早餐想吃哪一类？" : mealPurpose === "下午茶" ? "下午茶想来点什么？" : mealPurpose === "夜宵" ? "夜宵想吃哪一类？" : "想吃哪类菜？",
+    label: mealPurpose === "早餐" ? "早餐类型" : mealPurpose === "下午茶" ? "下午茶类型" : mealPurpose === "夜宵" ? "夜宵类型" : mealPurpose === "一个人随便吃" ? "就餐偏好" : mealPurpose === "工作日快餐" ? "快餐偏好" : "菜系偏好",
+    title: mealPurpose === "早餐" ? "早餐想吃哪一类？" : mealPurpose === "下午茶" ? "下午茶想来点什么？" : mealPurpose === "夜宵" ? "夜宵想吃哪一类？" : mealPurpose === "一个人随便吃" ? "更希望这顿饭怎么样？" : mealPurpose === "工作日快餐" ? "工作日快餐更看重什么？" : "想吃哪类菜？",
     allowEmpty: true,
     options: branchPreferenceOptionsByMealPurpose[mealPurpose] || branchPreferenceOptionsByMealPurpose.晚餐
   };
@@ -436,14 +525,21 @@ function buildBudgetQuestion(mealPurpose: string): FoodQuestion {
 }
 
 function buildFoodQuestions(mealPurpose: string): FoodQuestion[] {
+  if (!mealPurpose) {
+    return [mealPurposeQuestion];
+  }
+
+  const shortScenes = mealPurpose === "早餐" || mealPurpose === "下午茶";
+  const branchQuestions = shortScenes
+    ? [buildBranchPreferenceQuestion(mealPurpose)]
+    : [tasteNeedQuestion, mealPurpose === "午餐" || mealPurpose === "晚餐" || mealPurpose === "和朋友一起吃" || mealPurpose === "周末放松吃" ? cuisineQuestion : buildBranchPreferenceQuestion(mealPurpose)];
+
   return [
     mealPurposeQuestion,
-    tasteNeedQuestion,
-    buildBranchPreferenceQuestion(mealPurpose),
-    avoidSpiceQuestion,
+    ...branchQuestions,
+    ...(shortScenes ? [] : [avoidSpiceQuestion]),
     buildBudgetQuestion(mealPurpose),
-    distanceQuestion,
-    userNotesQuestion
+    distanceQuestion
   ];
 }
 
@@ -451,7 +547,17 @@ const foodQuestions = buildFoodQuestions("");
 
 const foodAnswerLabels: Record<string, string> = {
   mealPurpose: "用餐场景",
+  "cuisine-type": "想吃",
+  "breakfast-type": "想吃",
+  "afternoon-tea-type": "想吃",
+  "supper-type": "想吃",
+  "solo-casual-preference": "想吃",
+  "workday-fast-preference": "想吃",
   branchPreference: "想吃",
+  "taste-feeling": "口味/感觉",
+  "temporary-avoid": "这次不想吃",
+  restriction: "忌口",
+  spice: "辣度",
   tasteTags: "口味/感觉",
   needTags: "优先满足",
   temporaryAvoidTags: "这次不想吃",
@@ -459,7 +565,8 @@ const foodAnswerLabels: Record<string, string> = {
   spicyLevel: "辣度",
   budget: "预算",
   distance: "距离",
-  userNotes: "其他补充"
+  userNotes: "其他补充",
+  "user-notes": "其他补充"
 };
 
 const fallbackRecommendations: RecommendationCard[] = [
@@ -617,6 +724,78 @@ function summarizeFood(slots: FoodSlots, preferences: FoodPreferences) {
   ].filter(Boolean).join(" · ");
 }
 
+function detectMealPurposeFromText(value: string) {
+  const text = String(value || "").replace(/\s+/g, "");
+  if (!text) return "";
+
+  for (const [canonical, aliases] of Object.entries(mealPurposeAliases)) {
+    if (aliases.some((alias) => text.includes(alias))) {
+      return canonical;
+    }
+  }
+
+  return "";
+}
+
+function splitManualTags(value: string) {
+  return String(value || "").split(/[、,，/ ]+/).map((item) => item.trim()).filter(Boolean);
+}
+
+function mergeUnique(base: string[], additions: string[]) {
+  return Array.from(new Set([...base, ...additions].filter(Boolean)));
+}
+
+function applyManualTagsToPreferences(question: FoodQuestion, prefs: FoodPreferences, manualText: string): FoodPreferences {
+  const manualTags = splitManualTags(manualText);
+  if (!manualTags.length || !question.groups?.length) return prefs;
+
+  const asks = (type: FoodTagType) => Boolean(question.groups?.some((group) => group.type === type));
+  const next = {
+    ...prefs,
+    tasteTags: [...prefs.tasteTags],
+    needTags: [...prefs.needTags],
+    temporaryAvoidTags: [...prefs.temporaryAvoidTags],
+    avoidTags: [...prefs.avoidTags]
+  };
+
+  manualTags.forEach((tag) => {
+    if (asks("temporaryAvoid") && !asks("taste") && !asks("need") && !asks("avoid")) {
+      next.temporaryAvoidTags = mergeUnique(next.temporaryAvoidTags, [tag]);
+    } else if (asks("avoid") && !asks("taste") && !asks("need")) {
+      next.avoidTags = mergeUnique(next.avoidTags.filter((item) => item !== "没有忌口"), [tag]);
+    } else if (asks("need")) {
+      next.needTags = mergeUnique(next.needTags, [tag]);
+    } else if (asks("taste")) {
+      next.tasteTags = mergeUnique(next.tasteTags, [tag]);
+    }
+  });
+
+  return next;
+}
+
+function buildModifyQuestion(action: string, mealPurpose: string): FoodQuestion | null {
+  switch (action) {
+    case "branch-preference":
+      return buildBranchPreferenceQuestion(mealPurpose);
+    case "taste-feeling":
+      return modifyTasteFeelingQuestion;
+    case "temporary-avoid":
+      return modifyTemporaryAvoidQuestion;
+    case "restriction":
+      return modifyRestrictionQuestion;
+    case "spice":
+      return modifySpiceQuestion;
+    case "budget":
+      return buildBudgetQuestion(mealPurpose);
+    case "distance":
+      return distanceQuestion;
+    case "notes":
+      return userNotesQuestion;
+    default:
+      return null;
+  }
+}
+
 function budgetMaxFromText(value: string) {
   const match = String(value || "").match(/\d+/);
   return match ? Number(match[0]) : 80;
@@ -771,7 +950,9 @@ export default function ExperienceClient() {
   const [prefModifyRecord, setPrefModifyRecord] = useState<PreferenceRecord | null>(null);
   const [prefModifyRows, setPrefModifyRows] = useState<PrefSummaryRow[]>([]);
   const [activeFoodQuestionIds, setActiveFoodQuestionIds] = useState<Array<FoodQuestion["id"]> | null>(null);
+  const [activeFoodQuestionOverride, setActiveFoodQuestionOverride] = useState<FoodQuestion[] | null>(null);
   const [foodPreambleMessages, setFoodPreambleMessages] = useState<Array<{ id: string; role: "user" | "butler"; text: string }>>([]);
+  const [adjustmentMessages, setAdjustmentMessages] = useState<Array<{ id: string; role: "user" | "butler"; text: string }>>([]);
 
   const [groupPeople, setGroupPeople] = useState(4);
   const [customPeopleInput, setCustomPeopleInput] = useState("");
@@ -828,7 +1009,7 @@ export default function ExperienceClient() {
 
   const themeClass = useMemo(() => themeCards.find((theme) => theme.id === themeId)?.className || "theme-mint-green", [themeId]);
   const resolvedFoodQuestions = useMemo(() => buildFoodQuestions(foodSlots.mealPurpose), [foodSlots.mealPurpose]);
-  const activeFoodQuestions = activeFoodQuestionIds ? resolvedFoodQuestions.filter((question) => activeFoodQuestionIds.includes(question.id)) : resolvedFoodQuestions;
+  const activeFoodQuestions = activeFoodQuestionOverride || (activeFoodQuestionIds ? resolvedFoodQuestions.filter((question) => activeFoodQuestionIds.includes(question.id)) : resolvedFoodQuestions);
   const currentQuestion = activeFoodQuestions[foodIndex] || activeFoodQuestions[activeFoodQuestions.length - 1] || resolvedFoodQuestions[0] || foodQuestions[0];
   const progressPercent = Math.round(((Math.min(foodIndex + 1, activeFoodQuestions.length || 1)) / (activeFoodQuestions.length || 1)) * 100);
   const recentRecord = records[0];
@@ -1115,8 +1296,29 @@ export default function ExperienceClient() {
       nextSlots[question.slot] = answer || "";
     }
 
+    if (question.kind === "tag") {
+      const withManualTags = applyManualTagsToPreferences(question, nextPrefs, manualAnswer);
+      nextPrefs.tasteTags = withManualTags.tasteTags;
+      nextPrefs.needTags = withManualTags.needTags;
+      nextPrefs.temporaryAvoidTags = withManualTags.temporaryAvoidTags;
+      nextPrefs.avoidTags = withManualTags.avoidTags;
+      nextPrefs.spicyLevel = withManualTags.spicyLevel;
+    }
+
     if (question.id === "spicyLevel") {
       nextPrefs.spicyLevel = answer || "";
+    }
+
+    if (question.id === "mealPurpose") {
+      nextSlots.branchPreference = "";
+      nextSlots.budget = "";
+      nextSlots.distance = "";
+      nextSlots.userNotes = "";
+      nextPrefs.tasteTags = [];
+      nextPrefs.needTags = [];
+      nextPrefs.temporaryAvoidTags = [];
+      nextPrefs.avoidTags = [];
+      nextPrefs.spicyLevel = "";
     }
 
     return { nextSlots, nextPrefs };
@@ -1176,24 +1378,47 @@ export default function ExperienceClient() {
     return { nextSlots, nextPrefs };
   }
 
-  function questionIdsForPrefActions(actions: string[]) {
-    const ids: Array<FoodQuestion["id"]> = [];
-    const add = (id: FoodQuestion["id"]) => {
-      if (!ids.includes(id)) ids.push(id);
-    };
-    actions.forEach((action) => {
-      if (action === "branch-preference") add("branchPreference");
-      if (action === "taste-feeling" || action === "temporary-avoid") add("tag-preferences");
-      if (action === "restriction" || action === "spice") add("avoid-preferences");
-      if (action === "budget") add("budget");
-      if (action === "distance") add("distance");
-      if (action === "notes") add("userNotes");
-    });
-    return ids;
+  function questionsForPrefActions(actions: string[], mealPurpose: string) {
+    return prefModificationOrder
+      .filter((action) => actions.includes(action))
+      .map((action) => buildModifyQuestion(action, mealPurpose))
+      .filter((question): question is FoodQuestion => Boolean(question));
   }
 
   function selectedPrefModifyActions() {
     return prefModifyRows.filter((row) => row.toggleable && !row.keep).map((row) => row.action).filter(Boolean);
+  }
+
+  function summaryKeyToQuestionId(key: string) {
+    if (key === "mealPurpose") return "mealPurpose";
+    if (key === "branchPreference") return activeFoodQuestions.find((question) => question.slot === "branchPreference")?.id || "cuisine-type";
+    if (key === "tasteTags" || key === "needTags" || key === "temporaryAvoidTags") {
+      return activeFoodQuestions.some((question) => question.id === "taste-feeling" || question.id === "temporary-avoid")
+        ? (key === "temporaryAvoidTags" ? "temporary-avoid" : "taste-feeling")
+        : "tag-preferences";
+    }
+    if (key === "avoidTags") return activeFoodQuestions.some((question) => question.id === "restriction") ? "restriction" : "avoid-preferences";
+    if (key === "spicyLevel") return activeFoodQuestions.some((question) => question.id === "spice") ? "spice" : "avoid-preferences";
+    if (key === "budget") return "budget";
+    if (key === "distance") return "distance";
+    if (key === "userNotes") return "user-notes";
+    return key;
+  }
+
+  function jumpToFoodQuestion(key: string, value: string) {
+    if (foodFinished || prefCheckRecord || prefModifyRecord || value === "待填写") return;
+    const targetId = summaryKeyToQuestionId(key);
+    const targetIndex = activeFoodQuestions.findIndex((question) => question.id === targetId || question.slot === targetId);
+    if (targetIndex < 0 || targetIndex > foodIndex) return;
+
+    setFoodIndex(targetIndex);
+    setManualAnswer("");
+    setShowSlotSummaryDetail(false);
+    setFoodFinished(false);
+    setRecommendations([]);
+    setMemoryDecision("");
+    setFoodNotice("");
+    setAdjustmentMessages([]);
   }
 
   function togglePrefModifyRow(key: string) {
@@ -1202,23 +1427,25 @@ export default function ExperienceClient() {
 
   async function startPrefModifyFlow(record: PreferenceRecord, actions: string[], label: string) {
     const { nextSlots, nextPrefs } = applyPreferenceRecord(record);
-    const ids = questionIdsForPrefActions(actions);
+    const questions = questionsForPrefActions(actions, nextSlots.mealPurpose);
     setPrefCheckRecord(null);
     setPrefModifyRecord(null);
     setPrefModifyRows([]);
     setManualAnswer("");
     setShowSlotSummaryDetail(false);
 
-    if (!ids.length) {
+    if (!questions.length) {
       addFoodPreamble(label, "好，已沿用上次偏好。");
       setActiveFoodQuestionIds(null);
+      setActiveFoodQuestionOverride(null);
       setFoodFinished(true);
       await generateFoodRecommendations({}, nextSlots, nextPrefs);
       return;
     }
 
     addFoodPreamble(label, `好的，只调整：${prefModifyRows.filter((row) => actions.includes(row.action)).map((row) => row.label).join("、")}，其他沿用上次偏好。`);
-    setActiveFoodQuestionIds(ids);
+    setActiveFoodQuestionIds(null);
+    setActiveFoodQuestionOverride(questions);
     setFoodIndex(0);
     setFoodFinished(false);
   }
@@ -1230,6 +1457,8 @@ export default function ExperienceClient() {
 
     if (shouldRecommend) {
       addFoodPreamble("全都按这个来", "好，已沿用上次偏好。");
+      setActiveFoodQuestionOverride(null);
+      setActiveFoodQuestionIds(null);
       setFoodFinished(true);
       await generateFoodRecommendations({}, nextSlots, nextPrefs);
       return;
@@ -1245,8 +1474,50 @@ export default function ExperienceClient() {
     addFoodPreamble("这次不用历史偏好", "好的，这次不用历史偏好，我们从当前场景继续。");
   }
 
+  function addButlerPreamble(text: string) {
+    setFoodPreambleMessages((messages) => [
+      ...messages,
+      { id: `${Date.now().toString(36)}-butler`, role: "butler", text }
+    ]);
+  }
+
+  function resolveSubmissionValue(question: FoodQuestion, value?: string) {
+    const manual = manualAnswer.trim();
+
+    if (question.id === "mealPurpose") {
+      return value || detectMealPurposeFromText(manual) || manual;
+    }
+
+    if (question.kind === "tag") {
+      const hasTagSelection = Boolean(
+        foodPrefs.tasteTags.length ||
+        foodPrefs.needTags.length ||
+        foodPrefs.temporaryAvoidTags.length ||
+        foodPrefs.avoidTags.length ||
+        foodPrefs.spicyLevel ||
+        manual
+      );
+      if (!hasTagSelection && !question.optional && !question.allowEmpty) {
+        return "";
+      }
+      return value;
+    }
+
+    if (question.kind === "multi-choice" && question.slot) {
+      return value || foodSlots[question.slot] || manual || (question.allowEmpty ? "未选择" : "");
+    }
+
+    return value || manual || (question.allowEmpty || question.optional ? "未选择" : "");
+  }
+
   async function confirmFoodAnswer(value?: string) {
-    const { nextSlots, nextPrefs } = buildNextFoodState(currentQuestion, value);
+    const submissionValue = resolveSubmissionValue(currentQuestion, value);
+    if (!submissionValue && currentQuestion.kind !== "tag") {
+      setFoodNotice("请先选择或填写一个偏好");
+      return;
+    }
+
+    const { nextSlots, nextPrefs } = buildNextFoodState(currentQuestion, submissionValue);
     applyFoodState(nextSlots, nextPrefs);
 
     if (foodIndex === 0 && currentQuestion.id === "mealPurpose") {
@@ -1257,11 +1528,14 @@ export default function ExperienceClient() {
         setManualAnswer("");
         return;
       }
+      addButlerPreamble("还没有可沿用的偏好，我会先问你几个问题。");
+      setFoodIndex(1);
+      setManualAnswer("");
+      return;
     }
 
     if (foodIndex >= activeFoodQuestions.length - 1) {
       setFoodFinished(true);
-      setActiveFoodQuestionIds(null);
       setManualAnswer("");
       await generateFoodRecommendations({}, nextSlots, nextPrefs);
       return;
@@ -1286,7 +1560,9 @@ export default function ExperienceClient() {
     setPrefModifyRecord(null);
     setPrefModifyRows([]);
     setActiveFoodQuestionIds(null);
+    setActiveFoodQuestionOverride(null);
     setFoodPreambleMessages([]);
+    setAdjustmentMessages([]);
   }
 
   async function rankLocalRestaurants(excludeIds: string[] = [], slots: FoodSlots = foodSlots, prefs: FoodPreferences = foodPrefs) {
@@ -1337,6 +1613,14 @@ export default function ExperienceClient() {
     setFoodNotice("");
     if (!options.adjustment) {
       setShowAdjustmentOptions(false);
+      setAdjustmentMessages([]);
+    } else {
+      const id = Date.now().toString(36);
+      setAdjustmentMessages((messages) => [
+        ...messages,
+        { id: `${id}-user`, role: "user", text: options.adjustment || "调整一下" },
+        { id: `${id}-butler`, role: "butler", text: `收到，我会按「${options.adjustment}」重新筛选。` }
+      ]);
     }
     const excludeIds = options.refresh ? recommendations.map((item) => item.id) : [];
     const nextBatch = options.refresh ? batchIndex + 1 : batchIndex;
@@ -1645,17 +1929,20 @@ export default function ExperienceClient() {
   }
 
   function getFoodAnswerValue(question: FoodQuestion) {
-    if (question.id === "tag-preferences") {
+    if (question.id === "tag-preferences" || question.id === "taste-feeling") {
       return [
         foodPrefs.tasteTags.length ? `口味：${foodPrefs.tasteTags.join("、")}` : "",
         foodPrefs.needTags.length ? `感觉：${foodPrefs.needTags.join("、")}` : "",
-        foodPrefs.temporaryAvoidTags.length ? `这次不想吃：${foodPrefs.temporaryAvoidTags.join("、")}` : ""
+        question.id === "tag-preferences" && foodPrefs.temporaryAvoidTags.length ? `这次不想吃：${foodPrefs.temporaryAvoidTags.join("、")}` : ""
       ].filter(Boolean).join("；");
     }
-    if (question.id === "avoid-preferences") {
+    if (question.id === "temporary-avoid") {
+      return foodPrefs.temporaryAvoidTags.length ? `这次不想吃：${foodPrefs.temporaryAvoidTags.join("、")}` : "";
+    }
+    if (question.id === "avoid-preferences" || question.id === "restriction" || question.id === "spice") {
       return [
-        foodPrefs.avoidTags.length ? `忌口：${foodPrefs.avoidTags.join("、")}` : "",
-        foodPrefs.spicyLevel ? `辣度：${foodPrefs.spicyLevel}` : ""
+        question.id !== "spice" && foodPrefs.avoidTags.length ? `忌口：${foodPrefs.avoidTags.join("、")}` : "",
+        question.id !== "restriction" && foodPrefs.spicyLevel ? `辣度：${foodPrefs.spicyLevel}` : ""
       ].filter(Boolean).join("；");
     }
     if (question.id === "tasteTags") return foodPrefs.tasteTags.join("、");
@@ -1682,7 +1969,7 @@ export default function ExperienceClient() {
     const answers = activeFoodQuestions.slice(0, answeredCount).map((question) => (
       <div className="chat-message user-message" key={`answer-${question.id}`}>
         <div className="message-content user-content">
-          <div className="chat-bubble user-bubble">{foodAnswerLabels[question.id] || "你的选择"}：{getFoodAnswerValue(question) || "未选择"}</div>
+          <div className="chat-bubble user-bubble">{foodAnswerLabels[question.id] || question.label || "你的选择"}：{getFoodAnswerValue(question) || "未选择"}</div>
         </div>
       </div>
     ));
@@ -1994,7 +2281,7 @@ export default function ExperienceClient() {
             <div className="slots-panel">
               <div className="slots-title">完整需求状态</div>
               {summaryFields.map((row) => (
-                <button className={`slot-row ${row.value === "待填写" ? "disabled" : ""}`} key={row.key} type="button">
+                <button className={`slot-row ${row.value === "待填写" ? "disabled" : ""}`} key={row.key} onClick={() => jumpToFoodQuestion(row.key, row.value)} type="button">
                   <span className="slot-label">{row.label}</span>
                   <span className="slot-value">{row.value}</span>
                 </button>
@@ -2003,6 +2290,7 @@ export default function ExperienceClient() {
           ) : null}
         </div>
 
+        <div className="manual-entry-label">想自己说？直接输入</div>
         <div className="input-bar">
           <input className="manual-input chat-input" value={manualAnswer} onChange={(event) => setManualAnswer(event.target.value)} placeholder="也可以直接告诉我你的想法" />
           <button className="send-button" onClick={() => void confirmFoodAnswer(manualAnswer || (currentQuestion.text ? "没有补充" : undefined))} type="button">发送</button>
@@ -2018,8 +2306,22 @@ export default function ExperienceClient() {
           <div className="message-avatar ai-mark">幺</div>
           <div className="chat-bubble butler-bubble">我明白啦，会结合你的场景、预算、距离和偏好，给你 2-3 个可执行方案。</div>
         </div>
+        {adjustmentMessages.map((message) => (
+          <div className={`chat-message ${message.role === "user" ? "user-message" : "butler-message"}`} key={message.id}>
+            {message.role === "butler" ? <div className="message-avatar ai-mark">幺</div> : null}
+            <div className={`message-content ${message.role === "user" ? "user-content" : "butler-content"}`}>
+              <div className={`chat-bubble ${message.role === "user" ? "user-bubble" : "butler-bubble"}`}>{message.text}</div>
+            </div>
+          </div>
+        ))}
         {foodNotice ? <div className="recommendation-notice">{foodNotice}</div> : null}
-        <div className="recommendation-list">
+        {foodLoading && !recommendations.length ? (
+          <div className="recommendation-loading-card">
+            <span className="loading-dot"></span>
+            <span>管家正在结合预算、距离和偏好生成推荐...</span>
+          </div>
+        ) : (
+          <div className="recommendation-list">
           {(recommendations.length ? recommendations : fallbackRecommendations).map((card, index) => (
             <div className={`shop-card ${index === 0 ? "featured" : ""}`} key={card.id || card.name}>
               <div className="shop-header">
@@ -2048,7 +2350,8 @@ export default function ExperienceClient() {
               <div className="shop-risk"><span className="shop-section-label">管家提醒</span>{card.riskTip}</div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
 
         {showAdjustmentOptions ? (
           <div className="chat-message butler-message adjustment-message">
