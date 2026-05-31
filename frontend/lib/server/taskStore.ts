@@ -51,6 +51,7 @@ export type GroupTaskBoard = {
     participantId: string;
     clientId?: string;
     submitterUserId?: string;
+    source?: Participant["source"];
     nickname: string;
     visibility?: Participant["visibility"];
     rawPreference: string;
@@ -86,6 +87,12 @@ export type GroupTaskBoard = {
 };
 
 type ManualSpicyPreference = NonNullable<ParticipantInput["manual_fields"]["spicy_preference"]>;
+
+export type AiFillGroupParticipantsResult = {
+  board: GroupTaskBoard;
+  generatedCount: number;
+  remainingCount: number;
+};
 
 export type GroupTaskError = {
   status: 400 | 403 | 404;
@@ -429,6 +436,7 @@ function toGroupBoard(record: TaskRecord, inviteToken?: string): GroupTaskBoard 
       participantId: participant.participant_id,
       clientId: participant.client_id,
       submitterUserId: participant.submitter_user_id,
+      source: participant.source,
       nickname: participant.nickname,
       visibility: participant.visibility,
       rawPreference: participant.raw_preference,
@@ -473,6 +481,125 @@ function markRecordRecommendationDirty(record: TaskRecord, dirtyReason: Recommen
 
 function isGroupTaskRecord(record: TaskRecord) {
   return Boolean(record.owner_user_id || record.invite_token_hash);
+}
+
+type AiFriendTemplate = {
+  nickname: string;
+  availabilitySummary: string;
+  budgetMax: number;
+  spicyPreference: ManualSpicyPreference;
+  spicyLabel: string;
+  cuisines: string[];
+  dietaryRestrictions: string[];
+  hardRequirements: string[];
+  softPreferences: string[];
+  rawPreference: string;
+};
+
+const aiFriendTemplates: AiFriendTemplate[] = [
+  {
+    nickname: "小林",
+    availabilitySummary: "周五 19:00-21:30",
+    budgetMax: 80,
+    spicyPreference: "mild",
+    spicyLabel: "微辣",
+    cuisines: ["粤菜", "轻食"],
+    dietaryRestrictions: [],
+    hardRequirements: ["预算 80 元以内"],
+    softPreferences: ["少排队", "适合聊天"],
+    rawPreference: "AI 代填：周五晚上有空，想吃不太油的粤菜或轻食，最好 80 元以内，少排队，适合聊天。"
+  },
+  {
+    nickname: "阿晴",
+    availabilitySummary: "周末 12:00-14:00",
+    budgetMax: 70,
+    spicyPreference: "no_spicy",
+    spicyLabel: "不辣",
+    cuisines: ["甜品", "简餐"],
+    dietaryRestrictions: ["不吃辣"],
+    hardRequirements: ["不吃辣", "预算 70 元以内"],
+    softPreferences: ["少油", "离学校近"],
+    rawPreference: "AI 代填：周末中午可以，不吃辣，想吃甜品或简餐，预算 70 元以内，最好近一点。"
+  },
+  {
+    nickname: "老周",
+    availabilitySummary: "周六 18:30-21:00",
+    budgetMax: 100,
+    spicyPreference: "spicy",
+    spicyLabel: "想吃辣",
+    cuisines: ["火锅", "烧烤"],
+    dietaryRestrictions: [],
+    hardRequirements: ["预算 100 元以内"],
+    softPreferences: ["能吃辣", "排队别太久"],
+    rawPreference: "AI 代填：周六晚上有空，能吃辣，火锅或烧烤都行，人均 100 元以内，可以排队但别太久。"
+  },
+  {
+    nickname: "小唐",
+    availabilitySummary: "工作日 19:00-20:30",
+    budgetMax: 60,
+    spicyPreference: "medium",
+    spicyLabel: "中辣",
+    cuisines: ["粉面", "快餐"],
+    dietaryRestrictions: [],
+    hardRequirements: ["预算 60 元以内", "20:30 前结束"],
+    softPreferences: ["离学校近", "出餐快"],
+    rawPreference: "AI 代填：工作日晚餐时间有限，想吃粉面或快餐，60 元以内，离学校近，20:30 前结束。"
+  },
+  {
+    nickname: "阿宁",
+    availabilitySummary: "周日 11:30-13:30",
+    budgetMax: 90,
+    spicyPreference: "any",
+    spicyLabel: "都可以",
+    cuisines: ["粤菜", "简餐"],
+    dietaryRestrictions: [],
+    hardRequirements: ["预算 90 元以内"],
+    softPreferences: ["安静", "适合聊天"],
+    rawPreference: "AI 代填：周日中午都可以，粤菜或简餐优先，预算 90 元以内，希望环境安静一点，方便聊天。"
+  }
+];
+
+function buildAiGeneratedParticipant(record: TaskRecord, slotIndex: number, existingNicknames: Set<string>) {
+  const template = aiFriendTemplates[slotIndex % aiFriendTemplates.length];
+  let nickname = template.nickname;
+  let suffix = 2;
+
+  while (existingNicknames.has(nickname)) {
+    nickname = `${template.nickname}${suffix}`;
+    suffix += 1;
+  }
+
+  existingNicknames.add(nickname);
+  const clientId = `ai_friend_${record.task_id}_${slotIndex + 1}`;
+
+  return buildMockParticipant(
+    {
+      client_id: clientId,
+      source: "ai_generated",
+      nickname,
+      visibility: "public",
+      raw_preference: template.rawPreference.replace(template.nickname, nickname),
+      manual_fields: {
+        budget_max: template.budgetMax,
+        spicy_preference: template.spicyPreference,
+        leave_before: template.rawPreference.includes("20:30") ? "20:30" : undefined
+      },
+      availability_summary: template.availabilitySummary,
+      budget_tag: `${template.budgetMax}以内`,
+      spicy_label: template.spicyLabel,
+      dietary_restrictions: template.dietaryRestrictions,
+      cuisine_preferences: template.cuisines,
+      hard_requirements: template.hardRequirements,
+      soft_preferences: template.softPreferences,
+      requirement_priorities: {
+        budget: "must",
+        spicy: template.spicyPreference === "no_spicy" ? "must" : "nice",
+        time: template.rawPreference.includes("20:30") ? "must" : "nice",
+        cuisine: "nice"
+      }
+    },
+    `p_ai_${createHash("sha256").update(clientId).digest("hex").slice(0, 16)}`
+  );
 }
 
 export async function createTask(input: Partial<StoredTaskFields>) {
@@ -629,6 +756,51 @@ export async function addOrUpdateGroupParticipant(taskId: string, inviteToken: s
     return {
       status: 200,
       value: toGroupBoard(record, inviteToken)
+    };
+  });
+}
+
+export async function aiFillGroupParticipants(taskId: string, inviteToken: string): Promise<GroupTaskResult<AiFillGroupParticipantsResult>> {
+  return enqueueWrite(async () => {
+    const database = await readDatabase();
+    const record = database.tasks[taskId];
+
+    if (!record) {
+      return groupError(404, "TASK_NOT_FOUND", "Task not found.");
+    }
+
+    if (!verifyInviteToken(record, inviteToken)) {
+      return groupError(403, "INVALID_INVITE_TOKEN", "Invalid invite token.");
+    }
+
+    if (record.expected_people_count > 5) {
+      return groupError(
+        400,
+        "AI_FILL_TOO_MANY_PEOPLE",
+        "AI 辅助填写目前只支持 5 人以内的小局。当前人数较多，建议邀请朋友自己填写，或新建 5 人以内任务体验。"
+      );
+    }
+
+    const missingCount = Math.max(0, record.expected_people_count - record.participants.length);
+
+    if (missingCount > 0) {
+      const existingNicknames = new Set(record.participants.map((participant) => participant.nickname));
+      const nextParticipants = Array.from({ length: missingCount }, (_, index) =>
+        buildAiGeneratedParticipant(record, record.participants.length + index, existingNicknames)
+      );
+
+      record.participants = [...record.participants, ...nextParticipants];
+      markRecordRecommendationDirty(record, "participants_changed");
+      await writeDatabase(database);
+    }
+
+    return {
+      status: 200,
+      value: {
+        board: toGroupBoard(record, inviteToken),
+        generatedCount: missingCount,
+        remainingCount: Math.max(0, record.expected_people_count - record.participants.length)
+      }
     };
   });
 }
