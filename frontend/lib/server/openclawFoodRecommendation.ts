@@ -3,6 +3,8 @@ import type { FoodDecisionSheet } from "@/lib/server/foodDecisionSheet";
 import { sanitizeFoodDecisionSheet } from "@/lib/server/foodDecisionSheet";
 import type { OpenClawDataContext } from "@/lib/server/openclawDataFeed";
 import { buildOpenClawRequestScope, buildScopedOpenClawSessionId, shortHash } from "@/lib/server/openclawSession";
+import { loadRestaurantData } from "@/lib/restaurantData/loadData";
+import type { RestaurantSource, RestaurantDataSet, SceneFit, Shop, ShopFeature } from "@/lib/restaurantData/types";
 
 type StringMap = Record<string, unknown>;
 
@@ -64,7 +66,8 @@ type OpenClawFoodOptions = {
 };
 
 const DEFAULT_TIMEOUT_MS = 130_000;
-const DEFAULT_MAX_RESPONSE_CHARS = 12000;
+const DEFAULT_MAX_RESPONSE_CHARS = 4000;
+const DEFAULT_CANDIDATE_LIMIT = 28;
 
 export function sanitizeFoodRecommendRequest(input: unknown): FoodRecommendRequest {
   const payload = isRecord(input) ? input : {};
@@ -121,10 +124,11 @@ export async function generateFoodRecommendationsWithOpenClaw(
   request: FoodRecommendRequest,
   options: OpenClawFoodOptions = {}
 ): Promise<FoodRecommendResponse> {
-  const prompt = buildFoodRecommendationPrompt(request, options.context);
+  const localCandidates = await buildLocalFoodCandidates(request);
+  const prompt = buildFoodRecommendationPrompt(request, options.context, localCandidates);
   const rawContent = await runOpenClawAgentCli(prompt, buildFoodOpenClawSessionId(request, options));
   const parsed = parseOpenClawRecommendation(rawContent);
-  const recommendations = normalizeRecommendations(parsed);
+  const recommendations = normalizeRecommendations(parsed, localCandidates);
 
   assertNoHardConstraintViolation(recommendations, request.preferences);
 
@@ -140,16 +144,22 @@ function buildFoodOpenClawSessionId(request: FoodRecommendRequest, options: Open
   return buildScopedOpenClawSessionId("meituan-food", ["food", userPart, mealPart, buildOpenClawRequestScope(request)]);
 }
 
-function buildFoodRecommendationPrompt(request: FoodRecommendRequest, context?: OpenClawDataContext) {
-  const promptPayload = buildOpenClawPromptPayload(request, context);
+function buildFoodRecommendationPrompt(
+  request: FoodRecommendRequest,
+  context: OpenClawDataContext | undefined,
+  localCandidates: FoodRecommendationCard[]
+) {
+  const promptPayload = buildOpenClawPromptPayload(request, context, localCandidates);
 
   return [
     "You are the recommendation engine for a WeChat mini-program food flow.",
-    "Generate 2-3 actionable single-person meal recommendations.",
+    "Choose 2-3 actionable single-person meal recommendations from candidateShops only.",
     "Return ONLY strict JSON. Do not wrap it in Markdown. Do not include explanations outside JSON.",
     "The JSON schema is:",
-    '{"recommendations":[{"id":"shop_xxx","name":"...","type":"...","perCapita":"24 yuan/person","distance":"500 m","rating":4.6,"matchedTags":["..."],"reason":"...","riskTip":"..."}],"source":"openclaw"}',
-    "Use Chinese copy for shop names, type, reason, and riskTip when possible.",
+    '{"selected":[{"id":"candidate_shop_id","reason":"简短中文理由","riskTip":"到店前需要确认的风险","matchedTags":["最多4个短标签"]}]}',
+    "Do not output name, type, perCapita, distance, rating, or any display fields; the backend will fill those from local restaurant data.",
+    "Use exact ids from candidateShops. Do not invent shop ids or shops.",
+    "Use Chinese copy for reason, riskTip, and matchedTags.",
     "Treat decisionSheet as the final matching table: fixed dimensions are the stable required profile, dynamic dimensions are the user's extra AI-guided constraints.",
     "If dynamic dimensions are present, reference them in matchedTags/reason/riskTip when they affect the choice.",
     "Hard constraints are mandatory. If avoidTags or spicyLevel say no spicy, do not recommend spicy, hotpot, mala, Sichuan, Hunan, skewer, or similar high-spice shops.",
@@ -159,7 +169,11 @@ function buildFoodRecommendationPrompt(request: FoodRecommendRequest, context?: 
   ].join("\n");
 }
 
-function buildOpenClawPromptPayload(request: FoodRecommendRequest, context?: OpenClawDataContext) {
+function buildOpenClawPromptPayload(
+  request: FoodRecommendRequest,
+  context: OpenClawDataContext | undefined,
+  localCandidates: FoodRecommendationCard[]
+) {
   const slots = omitEmptyValues(request.slots);
   const preferences = omitEmptyValues({
     tasteTags: request.preferences.tasteTags,
@@ -191,12 +205,116 @@ function buildOpenClawPromptPayload(request: FoodRecommendRequest, context?: Ope
     slots,
     preferences,
     decisionSheet: request.decisionSheet,
+    candidateShops: localCandidates.map((candidate) => ({
+      id: candidate.id,
+      name: candidate.name,
+      type: candidate.type,
+      perCapita: candidate.perCapita,
+      distance: candidate.distance,
+      rating: candidate.rating,
+      matchedTags: candidate.matchedTags.slice(0, 6),
+      localReasons: candidate.reason.split("；").filter(Boolean).slice(0, 3),
+      localRisks: candidate.riskTip.split("；").filter(Boolean).slice(0, 3)
+    })),
     memoryProfile,
     requestContext: omitEmptyValues({
       excludeIds: request.requestContext?.excludeIds,
       batchIndex: request.requestContext?.batchIndex,
       adjustment: Object.keys(adjustment).length ? adjustment : undefined
     })
+  };
+}
+
+async function buildLocalFoodCandidates(request: FoodRecommendRequest): Promise<FoodRecommendationCard[]> {
+  const limit = readNumberEnv("OPENCLAW_FOOD_CANDIDATE_LIMIT", DEFAULT_CANDIDATE_LIMIT);
+  const data = await loadRestaurantData();
+  const excludedIds = new Set(request.requestContext?.excludeIds ?? []);
+  const candidates = buildDiverseAiCatalog(data, limit, excludedIds).map((shop) => {
+    return toFoodCandidateCard(shop, data.featuresByShopId.get(shop.id), data.sceneFitByShopId.get(shop.id));
+  });
+
+  if (candidates.length < 2) {
+    throw new Error("Local restaurant candidate pool returned fewer than 2 shops.");
+  }
+
+  return candidates;
+}
+
+function buildDiverseAiCatalog(data: RestaurantDataSet, limit: number, excludedIds: Set<string>) {
+  // Keep this catalog preference-agnostic: OpenClaw owns selection, ranking, and explanation.
+  const sourceOrder: RestaurantSource[] = ["manual_sample", "manual_public_curated", "synthetic_mvp"];
+  const bySource = sourceOrder.flatMap((source) => data.shops.filter((shop) => shop.source === source && !excludedIds.has(shop.id)));
+  const remaining = data.shops.filter((shop) => !sourceOrder.includes(shop.source) && !excludedIds.has(shop.id));
+  const ordered = [...bySource, ...remaining];
+
+  return roundRobinByCategory(ordered).slice(0, Math.max(2, limit));
+}
+
+function roundRobinByCategory(shops: Shop[]) {
+  const groups = new Map<string, Shop[]>();
+
+  for (const shop of shops) {
+    const key = shop.category || "other";
+    groups.set(key, [...(groups.get(key) ?? []), shop]);
+  }
+
+  const keys = Array.from(groups.keys()).sort((a, b) => a.localeCompare(b, "zh-Hans-CN"));
+  const result: Shop[] = [];
+  let index = 0;
+
+  while (result.length < shops.length) {
+    let added = false;
+
+    for (const key of keys) {
+      const group = groups.get(key) ?? [];
+      const item = group[index];
+
+      if (item) {
+        result.push(item);
+        added = true;
+      }
+    }
+
+    if (!added) {
+      break;
+    }
+
+    index += 1;
+  }
+
+  return result;
+}
+
+function toFoodCandidateCard(shop: Shop, features?: ShopFeature, sceneFit?: SceneFit): FoodRecommendationCard {
+  const matchedTags = uniqueStrings([
+    ...shop.tags,
+    ...(shop.cuisines ?? []),
+    ...(features?.featureTags ?? []),
+    ...(features?.tasteTags ?? []),
+    ...(features?.sceneTags ?? [])
+  ]).slice(0, 6);
+  const riskHints = uniqueStrings([
+    ...(features?.riskHints ?? []),
+    ...(sceneFit?.riskHints.soloToday ?? [])
+  ]).slice(0, 3);
+  const rankReasons = uniqueStrings([
+    ...(features?.explainHints ?? []),
+    ...(sceneFit?.explainHints.soloToday ?? [])
+  ]).slice(0, 3);
+  const rating = shop.rating ?? shop.syntheticRating ?? 4.5;
+
+  return {
+    id: shop.id,
+    name: shop.name,
+    type: shop.category || "餐饮推荐",
+    perCapita: shop.avgPrice !== null ? `人均 ${shop.avgPrice} 元` : "人均待确认",
+    distance: "大学城内，具体距离待确认",
+    rating,
+    matchedTags,
+    matchedTagsText: matchedTags.length ? matchedTags.join("、") : shop.category || "候选店",
+    reason: rankReasons.length ? rankReasons.join("；") : "本地餐厅库命中当前偏好",
+    riskTip: riskHints.length ? riskHints.join("；") : "到店前建议确认营业、排队和库存情况。",
+    source: "openclaw"
   };
 }
 
@@ -320,8 +438,18 @@ function parseOpenClawRecommendation(rawContent: string): unknown {
   }
 }
 
-function normalizeRecommendations(input: unknown): FoodRecommendationCard[] {
+function normalizeRecommendations(input: unknown, localCandidates: FoodRecommendationCard[]): FoodRecommendationCard[] {
   const payload = isRecord(input) ? input : {};
+  const selected = readSelectedDecisionArray(payload);
+
+  if (selected.length > 0) {
+    const enriched = enrichSelectedRecommendations(selected, localCandidates);
+
+    if (enriched.length >= 2) {
+      return enriched;
+    }
+  }
+
   const rawRecommendations = readRecommendationArray(payload);
   const recommendations = rawRecommendations.slice(0, 3).map((item, index) => {
     const raw = isRecord(item) ? item : {};
@@ -367,6 +495,62 @@ function normalizeRecommendations(input: unknown): FoodRecommendationCard[] {
   }
 
   return valid;
+}
+
+function enrichSelectedRecommendations(rawSelected: unknown[], localCandidates: FoodRecommendationCard[]) {
+  const candidatesById = new Map(localCandidates.map((candidate) => [candidate.id, candidate]));
+  const usedIds = new Set<string>();
+  const cards: FoodRecommendationCard[] = [];
+
+  for (const item of rawSelected.slice(0, 3)) {
+    const raw = isRecord(item) ? item : {};
+    const candidateId = readStringFrom(raw, ["id", "shopId", "shop_id", "restaurantId", "restaurant_id"]);
+    const candidateName = readStringFrom(raw, ["name", "shopName", "shop_name", "restaurantName", "restaurant_name", "title"]);
+    const candidate = candidatesById.get(candidateId) ||
+      localCandidates.find((entry) => candidateName && entry.name === candidateName);
+
+    if (!candidate || usedIds.has(candidate.id)) {
+      continue;
+    }
+
+    usedIds.add(candidate.id);
+    const matchedTags = readStringArrayFrom(raw, ["matchedTags", "matched_tags", "tags", "labels"]);
+    const reason = readStringFrom(raw, ["reason", "rationale", "why", "recommendReason", "recommend_reason"]);
+    const riskTip = readStringFrom(raw, ["riskTip", "risk_tip", "risk", "tips", "tip", "note"]);
+
+    cards.push({
+      ...candidate,
+      matchedTags: matchedTags.length ? matchedTags.slice(0, 4) : candidate.matchedTags,
+      matchedTagsText: matchedTags.length ? matchedTags.slice(0, 4).join("、") : candidate.matchedTagsText,
+      reason: reason || candidate.reason,
+      riskTip: riskTip || candidate.riskTip
+    });
+  }
+
+  return cards;
+}
+
+function readSelectedDecisionArray(payload: StringMap) {
+  const directKeys = ["selected", "selection", "decisions", "chosen"];
+
+  for (const key of directKeys) {
+    const value = payload[key];
+    if (Array.isArray(value)) {
+      return value;
+    }
+  }
+
+  const nestedResult = payload.result;
+  if (isRecord(nestedResult)) {
+    for (const key of directKeys) {
+      const value = nestedResult[key];
+      if (Array.isArray(value)) {
+        return value;
+      }
+    }
+  }
+
+  return [];
 }
 
 function readRecommendationArray(payload: StringMap) {
@@ -495,6 +679,10 @@ function getNested(source: StringMap, pathParts: string[]) {
   }
 
   return current;
+}
+
+function uniqueStrings(values: Array<string | undefined | null>) {
+  return Array.from(new Set(values.map((value) => typeof value === "string" ? value.trim() : "").filter(Boolean)));
 }
 
 function readNumberEnv(name: string, fallback: number) {
