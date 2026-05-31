@@ -760,25 +760,25 @@ async function requestJson<T>(url: string, options: RequestInit = {}, token?: st
 
 const aiProgressSteps: Record<AiProgressScene, Array<Omit<AiProgressStep, "status" | "updatedAt">>> = {
   food_recommendation: [
-    { key: "understand", label: "理解需求", detail: "读取场景、预算、距离和忌口" },
-    { key: "retrieve", label: "准备候选", detail: "汇总店铺候选和账号画像" },
-    { key: "filter", label: "筛选约束", detail: "对齐预算、距离和临时偏好" },
-    { key: "rank", label: "匹配排序", detail: "交给 AI 计算候选优先级" },
-    { key: "compose", label: "组织结果", detail: "生成推荐理由和管家提醒" }
+    { key: "understand", label: "读懂你的需求", detail: "整理场景、口味和忌口" },
+    { key: "retrieve", label: "检索附近店铺", detail: "拉取候选餐厅" },
+    { key: "filter", label: "按忌口和预算筛查", detail: "硬性条件不满足的直接挡掉" },
+    { key: "rank", label: "算匹配度排序", detail: "结合口味和记忆打分" },
+    { key: "compose", label: "写推荐理由", detail: "生成理由和风险提示" }
   ],
   group_dining: [
-    { key: "understand", label: "读取任务", detail: "汇总成员偏好和可见约束" },
-    { key: "retrieve", label: "整理上下文", detail: "准备成员、冲突和候选餐厅" },
-    { key: "filter", label: "检查冲突", detail: "先过预算、忌口、时间硬约束" },
-    { key: "rank", label: "折中排序", detail: "兼顾公平性和满意度" },
-    { key: "compose", label: "生成方案", detail: "输出主推、备选和群发文案" }
+    { key: "understand", label: "汇总大家的偏好", detail: "合并 4 人填写" },
+    { key: "retrieve", label: "找大家都方便的店", detail: "按公共区域召回" },
+    { key: "filter", label: "识别并化解冲突", detail: "忌口冲突、预算冲突、时间冲突" },
+    { key: "rank", label: "折中打分", detail: "尽量让每人都不难受" },
+    { key: "compose", label: "写群发说明", detail: "主推、备选和文案" }
   ],
   weekend_plan: [
-    { key: "understand", label: "读取需求", detail: "理解时间、预算、体力和兴趣" },
-    { key: "retrieve", label: "汇总素材", detail: "准备天气、地点和路线候选" },
-    { key: "filter", label: "自检风险", detail: "检查天气、步行、预算和返程" },
-    { key: "rank", label: "路线排序", detail: "按轻松度和兴趣匹配排序" },
-    { key: "compose", label: "拼好时间线", detail: "生成路线、预算和邀约文案" }
+    { key: "understand", label: "读懂你的周末", detail: "时间、预算、体力、兴趣" },
+    { key: "retrieve", label: "查天气、找周边", detail: "天气和 POI 召回" },
+    { key: "filter", label: "按体力和返程筛", detail: "走太多、来不及的都去掉" },
+    { key: "rank", label: "排出几条路线", detail: "轻松度和兴趣匹配" },
+    { key: "compose", label: "拼好时间线", detail: "时间线、预算和邀约" }
   ]
 };
 
@@ -859,35 +859,138 @@ async function pollAiProgress(
   }
 }
 
-function aiProgressStatusLabel(status: AiProgressStatus) {
-  if (status === "done") return "已完成";
-  if (status === "fallback") return "本地兜底";
-  if (status === "error") return "已中断";
+type AiProgressUiMode = "thinking" | "slow" | "fallback" | "error" | "done";
+type AiProgressVisualStepStatus = AiProgressStepStatus | "slow";
+
+function aiProgressSceneTitle(scene: AiProgressScene) {
+  if (scene === "group_dining") return "多人约饭";
+  if (scene === "weekend_plan") return "周边规划";
+  return "今天吃什么";
+}
+
+function aiProgressRequestSummary(scene: AiProgressScene) {
+  if (scene === "group_dining") return "4 人 · 有人忌海鲜 · 预算 80/120 不一 · 20:30 前走";
+  if (scene === "weekend_plan") return "周六 14:00-17:00 · 低体力 · <120元 · 咖啡/citywalk";
+  return "晚餐 · 想吃热乎的 · 不要香菜 · 60元内 · 1公里内";
+}
+
+function aiProgressDoneText(scene: AiProgressScene) {
+  if (scene === "group_dining") return "约饭方案已生成";
+  if (scene === "weekend_plan") return "周边路线已生成";
+  return "推荐结果已生成";
+}
+
+function getAiProgressUiMode(progress: AiProgressSnapshot): AiProgressUiMode {
+  if (progress.status === "done") return "done";
+  if (progress.status === "fallback") return "fallback";
+  if (progress.status === "error") return "error";
+
+  const startedAtMs = Date.parse(progress.startedAt);
+  const isSlow = Number.isFinite(startedAtMs) && Date.now() - startedAtMs > 12_000;
+  return isSlow ? "slow" : "thinking";
+}
+
+function aiProgressStatusLabel(mode: AiProgressUiMode) {
+  if (mode === "done") return "完成";
+  if (mode === "fallback") return "兜底";
+  if (mode === "error") return "失败";
+  if (mode === "slow") return "慢了";
   return "思考中";
+}
+
+function aiProgressBannerText(mode: AiProgressUiMode) {
+  if (mode === "slow") return "云端还在算，比平时久一点；先把已完成的判断点亮给你看。";
+  if (mode === "fallback") return "远端 OpenClaw 暂时不可用，已切换本地兜底方案。";
+  if (mode === "error") return "这次生成中断了，可能是网络抖动或模型超时，可以换条件后重试。";
+  return "";
+}
+
+function aiProgressCurrentStepIndex(progress: AiProgressSnapshot, steps: AiProgressStep[]) {
+  const index = steps.findIndex((step) => step.key === progress.currentStage);
+  return index >= 0 ? index : Math.max(0, steps.findIndex((step) => step.status === "running"));
+}
+
+function aiProgressStepVisualStatus(
+  progress: AiProgressSnapshot,
+  step: AiProgressStep,
+  index: number,
+  currentIndex: number,
+  mode: AiProgressUiMode
+): AiProgressVisualStepStatus {
+  if (mode === "done") return "done";
+  if (mode === "error" && index >= currentIndex) return index === currentIndex ? "error" : "pending";
+  if (mode === "fallback" && index >= currentIndex) return index === currentIndex ? "fallback" : "pending";
+  if ((mode === "thinking" || mode === "slow") && index === currentIndex) return mode === "slow" ? "slow" : "running";
+  if (index < currentIndex) return "done";
+  return step.status;
 }
 
 function renderAiProgressCard(progress: AiProgressSnapshot | null): ReactNode {
   if (!progress) return null;
 
+  const steps = progress.steps.length
+    ? progress.steps
+    : aiProgressSteps[progress.scene].map((step) => ({ ...step, status: "pending" as const }));
+  const mode = getAiProgressUiMode(progress);
+  const currentIndex = aiProgressCurrentStepIndex(progress, steps);
+  const bannerText = aiProgressBannerText(mode);
+  const progressWidth = Math.max(0, Math.min(100, progress.progress));
+
   return (
-    <div className={`ai-progress-card ai-progress-${progress.status}`}>
-      <div className="ai-progress-head">
-        <div>
-          <div className="ai-progress-eyebrow">AI 管家 · {aiProgressStatusLabel(progress.status)}</div>
-          <div className="ai-progress-message">{progress.message}</div>
+    <div className={`ai-progress-card ai-progress-${mode}`}>
+      <div className="ai-progress-cap">
+        <div className="ai-progress-cat" aria-hidden="true">
+          <span className="ai-progress-cat-eye ai-progress-cat-eye-left"></span>
+          <span className="ai-progress-cat-eye ai-progress-cat-eye-right"></span>
+          <span className="ai-progress-cat-mouth"></span>
+          <span className="ai-progress-cat-spark ai-progress-cat-spark-left"></span>
+          <span className="ai-progress-cat-spark ai-progress-cat-spark-right"></span>
         </div>
-        <div className="ai-progress-percent">{progress.progress}%</div>
+        <div className="ai-progress-cap-text">
+          <div className="ai-progress-eyebrow">AI 管家 · {aiProgressStatusLabel(mode)}</div>
+          <div className="ai-progress-title">{aiProgressSceneTitle(progress.scene)}</div>
+        </div>
       </div>
-      <div className="ai-progress-bar"><div style={{ width: `${progress.progress}%` }} /></div>
-      <div className="ai-progress-steps">
-        {progress.steps.map((step) => (
-          <div className={`ai-progress-step is-${step.status}`} key={step.key}>
-            <span className="ai-progress-step-dot"></span>
-            <span>{step.label}</span>
-          </div>
-        ))}
+
+      <div className="ai-progress-ask">{aiProgressRequestSummary(progress.scene)}</div>
+
+      <div className="ai-progress-timeline">
+        {steps.map((step, index) => {
+          const visualStatus = aiProgressStepVisualStatus(progress, step, index, currentIndex, mode);
+          const showMiniMeter = visualStatus === "running" || visualStatus === "slow";
+
+          return (
+            <div className={`ai-progress-row is-${visualStatus}`} key={step.key}>
+              <span className="ai-progress-node" aria-hidden="true">
+                {visualStatus === "done" ? "✓" : ""}
+              </span>
+              <div className="ai-progress-row-copy">
+                <div className="ai-progress-row-title">{step.label}</div>
+                <div className="ai-progress-row-detail">{step.detail}</div>
+                {showMiniMeter ? (
+                  <div className="ai-progress-mini-meter">
+                    <div style={{ width: `${Math.max(18, progressWidth)}%` }} />
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          );
+        })}
       </div>
-      {progress.note ? <div className="ai-progress-note">{progress.note}</div> : null}
+
+      {bannerText ? <div className="ai-progress-banner">{bannerText}</div> : null}
+      {mode === "done" ? (
+        <div className="ai-progress-result">
+          <span className="ai-progress-result-check">✓</span>
+          <span>{aiProgressDoneText(progress.scene)}</span>
+          <span className="ai-progress-result-chip">可继续调整</span>
+        </div>
+      ) : null}
+      {progress.note && mode !== "done" ? <div className="ai-progress-note">{progress.note}</div> : null}
+
+      <div className="ai-progress-rail" aria-hidden="true">
+        <div style={{ width: `${progressWidth}%` }} />
+      </div>
     </div>
   );
 }
