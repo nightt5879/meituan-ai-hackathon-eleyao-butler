@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { ThemeNavPicker, ThemePipPicker } from "@/components/SiteThemeProvider";
 import "./ey-design.css";
 
 const demoVideoUrl = process.env.NEXT_PUBLIC_DEMO_VIDEO_URL || "";
@@ -273,7 +274,10 @@ export default function PortfolioHomePage() {
           <a href="#video" onClick={(event) => handleInternalLink(event, "#video")}>演示视频</a>
           <a href="https://github.com/nightt5879/meituan_prj" target="_blank" rel="noreferrer">GitHub</a>
         </nav>
-        <a className="nav-cta" href="/experience">开始体验 →</a>
+        <div className="nav-right">
+          <ThemeNavPicker />
+          <a className="nav-cta" href="/experience">开始体验 →</a>
+        </div>
       </header>
 
       <div className={`stage ${siteOpen ? "gone" : ""}`} id="top" aria-hidden={siteOpen}>
@@ -310,7 +314,10 @@ export default function PortfolioHomePage() {
           </div>
         </div>
 
-        <div className="meta meta-top"><span>美团 OpenClaw</span><span className="sep">·</span><span>全天候私人管家赛道</span></div>
+        <div className="hero-toprow">
+          <div className="toppill"><span>美团 OpenClaw</span><span className="sep">·</span><span>全天候私人管家赛道</span></div>
+          <ThemePipPicker />
+        </div>
         <div className="meta meta-bottom"><span className="pulse" /><span>最终提交作品 · 点任意象限进入</span></div>
       </div>
 

@@ -1,0 +1,672 @@
+html {
+  --ey-bg: #f7fbf7;
+  --ey-bg-2: #eef8f5;
+  --ey-screen: #effff8;
+  --ey-card: #ffffff;
+  --ey-ink: #12342f;
+  --ey-ink-2: #2f5b52;
+  --ey-slate: #475569;
+  --ey-slate-2: #64748b;
+  --ey-slate-3: #94a3b8;
+  --ey-emerald: #047857;
+  --ey-emerald-d: #065f46;
+  --ey-emerald-dd: #064e3b;
+  --ey-forest: #022c22;
+  --ey-emerald-50: #ecfdf5;
+  --ey-emerald-100: #d1fae5;
+  --ey-emerald-200: #a7f3d0;
+  --ey-emerald-300: #6ee7b7;
+  --ey-emerald-400: #34d399;
+  --ey-mint: #5ad8b2;
+  --ey-amber-50: #fffbeb;
+  --ey-amber-100: #fef3c7;
+  --ey-amber: #d97706;
+  --ey-amber-900: #78350f;
+  --ey-rose-50: #fff1f2;
+  --ey-rose: #be123c;
+  --ey-line: #d6f0e4;
+  --ey-line-2: #e6f4ee;
+  --ey-shadow-sm: 0 1px 2px rgba(2, 44, 34, 0.05), 0 6px 18px rgba(2, 44, 34, 0.05);
+  --ey-shadow: 0 10px 30px rgba(2, 44, 34, 0.09);
+  --ey-shadow-lg: 0 24px 60px rgba(2, 44, 34, 0.16);
+}
+
+body {
+  background: var(--ey-bg);
+  transition: background-color 0.55s ease;
+}
+
+body.t-sky-blue {
+  --ey-emerald: #1f6eaa;
+  --ey-emerald-d: #185a8c;
+  --ey-emerald-dd: #103f63;
+  --ey-emerald-50: #ecf7ff;
+  --ey-emerald-100: #d3ecff;
+  --ey-emerald-200: #a9d8f7;
+  --ey-emerald-300: #6ec6ff;
+  --ey-emerald-400: #4f9fe6;
+  --ey-mint: #6ec6ff;
+  --ey-forest: #07263c;
+  --ey-bg: #f2faff;
+  --ey-bg-2: #e4f1fb;
+  --ey-line: #cfe6f7;
+  --ey-line-2: #e0eefa;
+}
+
+body.t-sakura-pink {
+  --ey-emerald: #c1496f;
+  --ey-emerald-d: #a53a5e;
+  --ey-emerald-dd: #7d2a45;
+  --ey-emerald-50: #fff2f7;
+  --ey-emerald-100: #ffe1ec;
+  --ey-emerald-200: #ffc6da;
+  --ey-emerald-300: #ff9fbc;
+  --ey-emerald-400: #f17fa3;
+  --ey-mint: #ff9fbc;
+  --ey-forest: #34121f;
+  --ey-bg: #fff5f9;
+  --ey-bg-2: #ffe9f1;
+  --ey-line: #ffd6e4;
+  --ey-line-2: #ffe7ef;
+}
+
+body.t-lemon-yellow {
+  --ey-emerald: #997400;
+  --ey-emerald-d: #7c5e00;
+  --ey-emerald-dd: #5a4500;
+  --ey-emerald-50: #fffced;
+  --ey-emerald-100: #fff3c4;
+  --ey-emerald-200: #f1e09a;
+  --ey-emerald-300: #ffd84d;
+  --ey-emerald-400: #ecbe1f;
+  --ey-mint: #ffd84d;
+  --ey-forest: #2c2500;
+  --ey-bg: #fffdf2;
+  --ey-bg-2: #fff4c9;
+  --ey-line: #f0e4a8;
+  --ey-line-2: #f7eec6;
+}
+
+body.t-black-pink {
+  --ey-emerald: #ff4fa3;
+  --ey-emerald-d: #ff7bbb;
+  --ey-emerald-dd: #ffa6d3;
+  --ey-emerald-50: #26121d;
+  --ey-emerald-100: #341a29;
+  --ey-emerald-200: #46233a;
+  --ey-emerald-300: #ff79bd;
+  --ey-emerald-400: #ff4fa3;
+  --ey-mint: #ff4fa3;
+  --ey-forest: #140610;
+  --ey-bg: #160a12;
+  --ey-bg-2: #0b0309;
+  --ey-card: #1d1019;
+  --ey-ink: #ffffff;
+  --ey-ink-2: #f6dce8;
+  --ey-slate: #cdb5c2;
+  --ey-slate-2: #a88f9c;
+  --ey-slate-3: #86707c;
+  --ey-line: rgba(255, 255, 255, 0.1);
+  --ey-line-2: rgba(255, 255, 255, 0.06);
+}
+
+body.t-night {
+  --ey-emerald: #7c8cff;
+  --ey-emerald-d: #9aa6ff;
+  --ey-emerald-dd: #bcc4ff;
+  --ey-emerald-50: #121a2e;
+  --ey-emerald-100: #1a2540;
+  --ey-emerald-200: #243154;
+  --ey-emerald-300: #9aa6ff;
+  --ey-emerald-400: #7c8cff;
+  --ey-mint: #7c8cff;
+  --ey-forest: #0a0f1e;
+  --ey-bg: #0f172a;
+  --ey-bg-2: #070b16;
+  --ey-card: #16203a;
+  --ey-ink: #ffffff;
+  --ey-ink-2: #dfe4f5;
+  --ey-slate: #b9c2dc;
+  --ey-slate-2: #94a0c0;
+  --ey-slate-3: #73809f;
+  --ey-line: rgba(203, 213, 225, 0.14);
+  --ey-line-2: rgba(203, 213, 225, 0.08);
+}
+
+html {
+  scrollbar-color: color-mix(in srgb, var(--sb, #047857) 62%, transparent) transparent;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sb, #047857) 46%, transparent);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--sb, #047857) 82%, transparent);
+  background-clip: padding-box;
+}
+
+.theme-reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  opacity: 1;
+  pointer-events: none;
+  clip-path: circle(var(--reveal-radius) at var(--reveal-x) var(--reveal-y));
+  animation: theme-reveal-fill 0.62s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: clip-path, opacity;
+}
+
+.theme-reveal.is-fading {
+  opacity: 0;
+  transition: opacity 0.42s ease;
+}
+
+@keyframes theme-reveal-fill {
+  from {
+    clip-path: circle(0 at var(--reveal-x) var(--reveal-y));
+  }
+
+  to {
+    clip-path: circle(var(--reveal-radius) at var(--reveal-x) var(--reveal-y));
+  }
+}
+
+.hero-toprow {
+  position: absolute;
+  top: clamp(16px, 2.4vh, 26px);
+  left: 50%;
+  z-index: 24;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  transform: translateX(-50%);
+}
+
+.toppill {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-forest) 55%, transparent);
+  color: #eafff4;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.toppill .sep {
+  opacity: 0.5;
+}
+
+.hero-theme,
+.nav-theme {
+  position: relative;
+}
+
+.hero-theme-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px;
+  border: 1px solid var(--ey-line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.66);
+  box-shadow: var(--ey-shadow-sm);
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.5s ease, border-color 0.5s ease;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.hero-theme-btn:hover {
+  transform: translateY(-1px);
+}
+
+.ht-dot,
+.nav-theme-btn .nd {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.78), 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+
+.hero-theme-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--ey-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-card) 95%, transparent);
+  box-shadow: var(--ey-shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-50%) scale(0.9);
+  transform-origin: top center;
+  transition: opacity 0.22s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.22s;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+.hero-theme.open .hero-theme-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) scale(1);
+}
+
+.ht-pip {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.72), 0 1px 4px rgba(0, 0, 0, 0.16);
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ht-pip:hover {
+  transform: scale(1.22);
+}
+
+.ht-pip.on {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.85), 0 0 0 2px var(--ey-ink);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-theme-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--ey-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ey-ink-2);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  transition: background-color 0.2s ease, border-color 0.5s ease, color 0.5s ease;
+}
+
+.nav-theme-btn:hover {
+  background: var(--ey-emerald-50);
+  color: var(--ey-emerald-d);
+}
+
+.nav-theme-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 70;
+  width: 188px;
+  padding: 8px;
+  border: 1px solid var(--ey-line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--ey-card) 97%, transparent);
+  box-shadow: var(--ey-shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px) scale(0.97);
+  transform-origin: top right;
+  transition: opacity 0.24s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.24s;
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+.nav-theme.open .nav-theme-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.ntm-list {
+  display: grid;
+  gap: 2px;
+}
+
+.nt-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 11px;
+  padding: 9px 10px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.nt-row:hover,
+.nt-row.on {
+  background: var(--ey-emerald-50);
+}
+
+.nt-row.on {
+  border-color: color-mix(in srgb, var(--ey-emerald) 30%, transparent);
+}
+
+.nt-row .swatches {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+.nt-row .swatches i {
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.nt-row .nm {
+  flex: 1;
+  min-width: 0;
+  color: var(--ey-ink);
+  font-size: 13.5px;
+  font-weight: 900;
+}
+
+.nt-row .ck {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  place-items: center;
+  border: 1.5px solid var(--ey-line);
+  border-radius: 50%;
+  color: transparent;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.nt-row.on .ck {
+  border-color: var(--ey-emerald);
+  background: var(--ey-emerald);
+  color: #ffffff;
+}
+
+body.in-site .topnav nav,
+.ey-page.in-site .topnav nav {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.stage {
+  background: radial-gradient(120% 95% at 50% 50%, var(--ey-emerald-50) 0%, var(--ey-emerald-100) 48%, var(--ey-emerald-200) 100%) !important;
+  transition: background 0.6s ease;
+}
+
+.q1 {
+  background: radial-gradient(130% 130% at 0% 0%, #ffffff 0%, var(--ey-bg) 70%, var(--ey-bg-2) 100%) !important;
+}
+
+.q2 {
+  background: radial-gradient(130% 130% at 100% 0%, #ffffff 0%, var(--ey-bg) 70%, var(--ey-bg-2) 100%) !important;
+}
+
+.q3 {
+  background: radial-gradient(130% 130% at 0% 100%, #ffffff 0%, var(--ey-bg) 70%, var(--ey-bg-2) 100%) !important;
+}
+
+.q4 {
+  background: radial-gradient(135% 135% at 100% 100%, var(--ey-emerald-50) 0%, var(--ey-emerald-100) 60%, var(--ey-emerald-200) 100%) !important;
+}
+
+body.t-black-pink .q1,
+body.t-night .q1 {
+  background: radial-gradient(130% 130% at 0% 0%, color-mix(in srgb, var(--ey-emerald) 13%, var(--ey-bg)) 0%, var(--ey-bg) 62%, var(--ey-bg-2) 100%) !important;
+}
+
+body.t-black-pink .q2,
+body.t-night .q2 {
+  background: radial-gradient(130% 130% at 100% 0%, color-mix(in srgb, var(--ey-emerald) 11%, var(--ey-bg)) 0%, var(--ey-bg) 62%, var(--ey-bg-2) 100%) !important;
+}
+
+body.t-black-pink .q3,
+body.t-night .q3 {
+  background: radial-gradient(130% 130% at 0% 100%, color-mix(in srgb, var(--ey-emerald) 11%, var(--ey-bg)) 0%, var(--ey-bg) 62%, var(--ey-bg-2) 100%) !important;
+}
+
+body.t-black-pink .q4,
+body.t-night .q4 {
+  background: radial-gradient(135% 135% at 100% 100%, color-mix(in srgb, var(--ey-emerald) 40%, var(--ey-bg)) 0%, color-mix(in srgb, var(--ey-emerald) 17%, var(--ey-bg)) 56%, var(--ey-bg) 100%) !important;
+}
+
+.ico {
+  background: color-mix(in srgb, var(--ey-emerald) 10%, transparent) !important;
+  color: var(--ey-emerald-dd) !important;
+}
+
+.q4 .ico,
+.quad:hover .ico {
+  background: var(--ey-emerald) !important;
+  color: #ffffff !important;
+  box-shadow: 0 16px 30px color-mix(in srgb, var(--ey-emerald) 32%, transparent) !important;
+}
+
+.quad::before {
+  background: radial-gradient(360px 360px at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--ey-emerald-400) 34%, transparent), rgba(0, 0, 0, 0) 60%) !important;
+}
+
+.hub .halo {
+  background:
+    radial-gradient(closest-side, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.5) 46%, rgba(255, 255, 255, 0) 72%),
+    radial-gradient(closest-side, color-mix(in srgb, var(--ey-emerald-400) 30%, transparent) 30%, rgba(0, 0, 0, 0) 70%) !important;
+}
+
+body.t-black-pink .hub .halo,
+body.t-night .hub .halo {
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--ey-emerald) 40%, transparent) 0%, rgba(0, 0, 0, 0) 70%) !important;
+}
+
+.section--forest {
+  background:
+    radial-gradient(80% 120% at 12% 0%, color-mix(in srgb, var(--ey-emerald) 52%, transparent) 0%, rgba(2, 44, 34, 0) 55%),
+    var(--ey-forest) !important;
+  transition: background 0.6s ease;
+}
+
+.topnav {
+  background: color-mix(in srgb, var(--ey-bg) 86%, transparent) !important;
+  transition: background 0.5s ease, border-color 0.5s ease;
+}
+
+body.t-black-pink .section--paper,
+body.t-night .section--paper {
+  background: var(--ey-bg) !important;
+}
+
+body.t-black-pink .card,
+body.t-night .card,
+body.t-black-pink .persona,
+body.t-night .persona,
+body.t-black-pink .panel,
+body.t-night .panel {
+  border-color: var(--ey-line) !important;
+  background: var(--ey-card) !important;
+}
+
+body.t-black-pink .member,
+body.t-night .member {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+body.t-black-pink .flow .step .dot,
+body.t-night .flow .step .dot {
+  background: var(--ey-card) !important;
+}
+
+body.t-black-pink .hero-theme-btn,
+body.t-night .hero-theme-btn {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+body.t-black-pink .hero-theme-menu,
+body.t-night .hero-theme-menu,
+body.t-black-pink .nav-theme-menu,
+body.t-night .nav-theme-menu {
+  background: color-mix(in srgb, var(--ey-card) 94%, transparent) !important;
+}
+
+body.t-black-pink .nt-row .nm,
+body.t-night .nt-row .nm {
+  color: var(--ey-ink) !important;
+}
+
+.theme-shell-page,
+.theme-arch-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(900px 580px at 50% -18%, color-mix(in srgb, var(--ey-emerald-300) 28%, transparent), transparent 62%),
+    linear-gradient(180deg, var(--ey-bg), var(--ey-bg-2));
+  color: var(--ey-ink);
+}
+
+.theme-shell-page .bg-white,
+.theme-arch-page .bg-white,
+.theme-shell-page .bg-stone-50,
+.theme-arch-page .bg-slate-50 {
+  background-color: var(--ey-card) !important;
+}
+
+.theme-shell-page .bg-stone-100 {
+  background-color: color-mix(in srgb, var(--ey-card) 72%, var(--ey-bg)) !important;
+}
+
+.theme-shell-page .border-line,
+.theme-arch-page .border-emerald-100,
+.theme-arch-page .border-slate-100,
+.theme-shell-page .border-stone-100,
+.theme-shell-page .border-stone-300 {
+  border-color: var(--ey-line) !important;
+}
+
+.theme-shell-page .text-ink,
+.theme-arch-page .text-\[\#12342f\],
+.theme-arch-page .text-emerald-950,
+.theme-shell-page .text-stone-700,
+.theme-shell-page .font-bold.text-ink {
+  color: var(--ey-ink) !important;
+}
+
+.theme-shell-page .text-stone-600,
+.theme-shell-page .text-stone-500,
+.theme-arch-page .text-slate-700,
+.theme-arch-page .text-slate-600 {
+  color: var(--ey-slate) !important;
+}
+
+.theme-arch-page .text-emerald-700,
+.theme-arch-page .text-emerald-800,
+.theme-shell-page .text-emerald-700,
+.theme-shell-page .text-emerald-800 {
+  color: var(--ey-emerald-d) !important;
+}
+
+.theme-shell-page .bg-ink {
+  background-color: var(--ey-emerald-dd) !important;
+}
+
+.theme-shell-page .bg-brand {
+  background-color: var(--ey-emerald-300) !important;
+}
+
+.theme-shell-page input,
+.theme-shell-page textarea,
+.theme-shell-page select {
+  border-color: var(--ey-line) !important;
+  background: var(--ey-card) !important;
+  color: var(--ey-ink) !important;
+}
+
+.theme-shell-page input:focus,
+.theme-shell-page textarea:focus,
+.theme-shell-page select:focus {
+  border-color: var(--ey-emerald) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ey-emerald) 16%, transparent);
+}
+
+.theme-arch-page .bg-emerald-950 {
+  background:
+    radial-gradient(80% 120% at 12% 0%, color-mix(in srgb, var(--ey-emerald) 52%, transparent) 0%, rgba(2, 44, 34, 0) 55%),
+    var(--ey-forest) !important;
+}
+
+.theme-shell-page .bg-emerald-50 {
+  background-color: var(--ey-emerald-50) !important;
+}
+
+.theme-shell-page .text-emerald-900,
+.theme-shell-page .text-emerald-950 {
+  color: var(--ey-emerald-dd) !important;
+}
+
+.theme-shell-page .bg-yellow-50 {
+  background-color: var(--ey-amber-50) !important;
+}
+
+.theme-shell-page .text-yellow-900,
+.theme-shell-page .text-yellow-800 {
+  color: var(--ey-amber-900) !important;
+}
+
+@media (max-width: 760px) {
+  .topnav .nav-theme {
+    display: none;
+  }
+
+  .hero-toprow {
+    position: static;
+    order: 1;
+    justify-content: center;
+    max-width: 100%;
+    margin: 2px auto 14px;
+    transform: none;
+  }
+
+  .toppill {
+    white-space: normal;
+    line-height: 1.5;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-reveal {
+    animation: none;
+    transition: none !important;
+  }
+}

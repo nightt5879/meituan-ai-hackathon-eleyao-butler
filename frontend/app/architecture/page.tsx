@@ -1,3 +1,5 @@
+import { ThemeNavPicker } from "@/components/SiteThemeProvider";
+
 const layers = [
   {
     name: "体验层",
@@ -27,10 +29,13 @@ const flows = [
 
 export default function ArchitecturePage() {
   return (
-    <main className="min-h-screen bg-[#f8faf9] text-[#12342f]">
+    <main className="theme-arch-page min-h-screen">
       <section className="border-b border-emerald-100 bg-white">
         <div className="mx-auto max-w-6xl px-5 py-10 md:px-8">
-          <a className="text-sm font-bold text-emerald-700" href="/">返回作品首页</a>
+          <div className="mb-5 flex items-center justify-between gap-3">
+            <a className="text-sm font-bold text-emerald-700" href="/">返回作品首页</a>
+            <ThemeNavPicker compact />
+          </div>
           <h1 className="mt-5 max-w-4xl text-4xl font-black leading-tight md:text-5xl">整体设计与架构</h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-slate-700">
             Web 作品页不是小程序的替代品，而是面向评审的可访问镜像：保持产品能力一致，复用现有后端链路，同时用浏览器友好的身份、路由和存储方式承载完整体验。
