@@ -256,6 +256,10 @@
 }
 
 .panel-outline-button {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   min-height: 44px;
   margin-top: 16px;
@@ -264,6 +268,8 @@
   background: #ffffff;
   color: #064e3b;
   font-weight: 800;
+  text-align: center;
+  text-decoration: none;
   box-shadow: 0 8px 20px rgba(4, 120, 87, 0.08);
 }
 
