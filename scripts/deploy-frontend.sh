@@ -37,6 +37,9 @@ MEITUAN_DEPLOY_STATE_DIR="${MEITUAN_DEPLOY_STATE_DIR:-$REPO_ROOT/.deploy-state}"
 MEITUAN_DEPLOY_LOG_FILE="${MEITUAN_DEPLOY_LOG_FILE:-$MEITUAN_DEPLOY_STATE_DIR/frontend-3001.log}"
 MEITUAN_DEPLOY_PID_FILE="${MEITUAN_DEPLOY_PID_FILE:-$MEITUAN_DEPLOY_STATE_DIR/frontend-3001.pid}"
 STOP_TIMEOUT_SECONDS="${STOP_TIMEOUT_SECONDS:-10}"
+DEPLOY_RESTART_MODE="${DEPLOY_RESTART_MODE:-auto}"
+FRONTEND_SYSTEMD_SERVICE="${FRONTEND_SYSTEMD_SERVICE:-meituan-prj-h5.service}"
+SUDO_BIN="${SUDO_BIN:-sudo}"
 
 [[ -d "$REPO_ROOT/.git" || -f "$REPO_ROOT/.git" ]] || fail "REPO_ROOT is not a git worktree: $REPO_ROOT"
 [[ -f "$FRONTEND_DIR/package.json" ]] || fail "FRONTEND_DIR does not contain package.json: $FRONTEND_DIR"
@@ -47,6 +50,8 @@ log "repo: $REPO_ROOT"
 log "frontend: $FRONTEND_DIR"
 log "state dir: $MEITUAN_DEPLOY_STATE_DIR"
 log "log file: $MEITUAN_DEPLOY_LOG_FILE"
+log "restart mode: $DEPLOY_RESTART_MODE"
+log "systemd service: $FRONTEND_SYSTEMD_SERVICE"
 
 if [[ "$SKIP_GIT_PULL" != "1" ]]; then
   current_branch="$(git -C "$REPO_ROOT" branch --show-current)"
@@ -70,6 +75,44 @@ fi
 
 log "building frontend"
 npm run build
+
+systemd_unit_exists() {
+  [[ -n "$FRONTEND_SYSTEMD_SERVICE" ]] || return 1
+  command -v systemctl >/dev/null 2>&1 || return 1
+
+  systemctl list-unit-files "$FRONTEND_SYSTEMD_SERVICE" --no-legend 2>/dev/null | grep -q . \
+    || systemctl status "$FRONTEND_SYSTEMD_SERVICE" >/dev/null 2>&1
+}
+
+run_systemctl() {
+  if [[ "$(id -u)" == "0" ]]; then
+    systemctl "$@"
+  else
+    "$SUDO_BIN" systemctl "$@"
+  fi
+}
+
+if [[ "$DEPLOY_RESTART_MODE" != "manual" ]]; then
+  if systemd_unit_exists; then
+    log "restarting systemd service: $FRONTEND_SYSTEMD_SERVICE"
+    run_systemctl restart "$FRONTEND_SYSTEMD_SERVICE"
+
+    if ! run_systemctl is-active --quiet "$FRONTEND_SYSTEMD_SERVICE"; then
+      run_systemctl status "$FRONTEND_SYSTEMD_SERVICE" --no-pager || true
+      fail "systemd service did not become active: $FRONTEND_SYSTEMD_SERVICE"
+    fi
+
+    log "systemd service is active: $FRONTEND_SYSTEMD_SERVICE"
+    log "status: $SUDO_BIN systemctl status $FRONTEND_SYSTEMD_SERVICE --no-pager"
+    exit 0
+  fi
+
+  if [[ "$DEPLOY_RESTART_MODE" == "systemd" ]]; then
+    fail "systemd service not found: $FRONTEND_SYSTEMD_SERVICE"
+  fi
+
+  log "systemd service not found; falling back to manual npm run start"
+fi
 
 log "stopping old frontend processes from this directory"
 matched_pids=()
