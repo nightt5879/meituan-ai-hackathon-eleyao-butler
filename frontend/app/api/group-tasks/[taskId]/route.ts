@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { requireMiniProgramUser } from "@/lib/server/requestAuth";
 import { getGroupTaskBoard } from "@/lib/server/taskStore";
 
 export const runtime = "nodejs";
@@ -10,12 +9,6 @@ type RouteContext = {
 };
 
 export async function GET(request: Request, { params }: RouteContext) {
-  const auth = await requireMiniProgramUser(request);
-
-  if (!auth.ok) {
-    return auth.response;
-  }
-
   const { taskId } = await params;
   const inviteToken = new URL(request.url).searchParams.get("inviteToken") ?? "";
   const result = await getGroupTaskBoard(taskId, inviteToken);
