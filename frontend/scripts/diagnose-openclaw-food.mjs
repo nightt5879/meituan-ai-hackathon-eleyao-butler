@@ -129,6 +129,8 @@ function summarizeRun(index, recommendResult, recommendElapsedMs) {
     cliMs: openclawFood.cliMs,
     parseMs: openclawFood.parseMs,
     normalizeMs: openclawFood.normalizeMs,
+    inputMode: openclawFood.inputMode,
+    payloadChars: openclawFood.payloadChars,
     promptChars: openclawFood.promptChars,
     responseChars: openclawFood.responseChars,
     candidateCount: openclawFood.candidateCount,
@@ -161,7 +163,7 @@ function printRun(summary) {
     { phase: "parse_openclaw_json", ms: summary.parseMs },
     { phase: "normalize_and_enrich", ms: summary.normalizeMs }
   ]);
-  console.log(`promptChars=${summary.promptChars ?? "n/a"} responseChars=${summary.responseChars ?? "n/a"} candidateCount=${summary.candidateCount ?? "n/a"} outputMode=${summary.outputMode ?? "n/a"} selectedCount=${summary.selectedCount ?? "n/a"}`);
+  console.log(`inputMode=${summary.inputMode ?? "n/a"} payloadChars=${summary.payloadChars ?? "n/a"} promptChars=${summary.promptChars ?? "n/a"} responseChars=${summary.responseChars ?? "n/a"} candidateCount=${summary.candidateCount ?? "n/a"} outputMode=${summary.outputMode ?? "n/a"} selectedCount=${summary.selectedCount ?? "n/a"}`);
   console.log(`firstRecommendation=${summary.firstRecommendation || "n/a"}`);
 }
 

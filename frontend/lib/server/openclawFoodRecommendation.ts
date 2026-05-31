@@ -63,6 +63,8 @@ export type FoodRecommendResponse = {
 
 export type FoodOpenClawDiagnostics = {
   localCandidateMs: number;
+  inputMode: "compact-json";
+  payloadChars: number;
   promptChars: number;
   candidateCount: number;
   cliMs: number;
@@ -141,8 +143,9 @@ export async function generateFoodRecommendationsWithOpenClaw(
   const localCandidates = await buildLocalFoodCandidates(request);
   const localCandidateMs = Date.now() - localCandidateStartedAt;
   const prompt = buildFoodRecommendationPrompt(request, options.context, localCandidates);
+  const payloadChars = prompt.payload.length;
   const cliStartedAt = Date.now();
-  const rawContent = await runOpenClawAgentCli(prompt, buildFoodOpenClawSessionId(request, options));
+  const rawContent = await runOpenClawAgentCli(prompt.content, buildFoodOpenClawSessionId(request, options));
   const cliMs = Date.now() - cliStartedAt;
   const parseStartedAt = Date.now();
   const parsed = parseOpenClawRecommendation(rawContent);
@@ -158,7 +161,9 @@ export async function generateFoodRecommendationsWithOpenClaw(
     source: "openclaw",
     diagnostics: {
       localCandidateMs,
-      promptChars: prompt.length,
+      inputMode: "compact-json",
+      payloadChars,
+      promptChars: prompt.content.length,
       candidateCount: localCandidates.length,
       cliMs,
       responseChars: rawContent.length,
@@ -182,23 +187,20 @@ function buildFoodRecommendationPrompt(
   localCandidates: FoodRecommendationCard[]
 ) {
   const promptPayload = buildOpenClawPromptPayload(request, context, localCandidates);
+  const payload = JSON.stringify(promptPayload);
 
-  return [
-    "You are the recommendation engine for a WeChat mini-program food flow.",
-    "Choose 2-3 actionable single-person meal recommendations from candidateShops only.",
-    "Return ONLY strict JSON. Do not wrap it in Markdown. Do not include explanations outside JSON.",
-    "The JSON schema is:",
-    '{"selected":[{"id":"candidate_shop_id","reason":"简短中文理由","riskTip":"到店前需要确认的风险","matchedTags":["最多4个短标签"]}]}',
-    "Do not output name, type, perCapita, distance, rating, or any display fields; the backend will fill those from local restaurant data.",
-    "Use exact ids from candidateShops. Do not invent shop ids or shops.",
-    "Use Chinese copy for reason, riskTip, and matchedTags.",
-    "Treat decisionSheet as the final matching table: fixed dimensions are the stable required profile, dynamic dimensions are the user's extra AI-guided constraints.",
-    "If dynamic dimensions are present, reference them in matchedTags/reason/riskTip when they affect the choice.",
-    "Hard constraints are mandatory. If avoidTags or spicyLevel say no spicy, do not recommend spicy, hotpot, mala, Sichuan, Hunan, skewer, or similar high-spice shops.",
-    "Do not infer or expose private data that is not present in the payload.",
-    "Payload:",
-    JSON.stringify(promptPayload, null, 2)
-  ].join("\n");
+  return {
+    payload,
+    content: [
+      "Task: choose 2-3 food shops from decisionPayload.candidates for the user's current request.",
+      "AI owns the final selection. The server only prepared a compact, non-ranked candidate catalog.",
+      "Candidate order is NOT a recommendation ranking. Decide from constraints and candidate facts.",
+      "Hard constraints in decisionPayload.constraints are mandatory; avoid spicy/high-spice shops when no-spicy is requested.",
+      "Use exact candidate ids only. Do not invent shops. Do not output display fields the backend can fill.",
+      "Return ONLY strict JSON: {\"selected\":[{\"id\":\"candidate_id\",\"reason\":\"中文短理由\",\"riskTip\":\"中文风险提示\",\"matchedTags\":[\"最多4个短标签\"]}]}",
+      `decisionPayload=${payload}`
+    ].join("\n")
+  };
 }
 
 function buildOpenClawPromptPayload(
@@ -206,55 +208,88 @@ function buildOpenClawPromptPayload(
   context: OpenClawDataContext | undefined,
   localCandidates: FoodRecommendationCard[]
 ) {
-  const slots = omitEmptyValues(request.slots);
-  const preferences = omitEmptyValues({
-    tasteTags: request.preferences.tasteTags,
-    needTags: request.preferences.needTags,
-    avoidTags: request.preferences.avoidTags,
-    spicyLevel: request.preferences.spicyLevel
-  });
   const adjustment = omitEmptyValues({
     types: request.requestContext?.adjustment?.types,
     avoidCategories: request.requestContext?.adjustment?.avoidCategories
   });
-  const memoryProfile = request.memoryProfile?.enabled
-    ? {
-        enabled: true,
-        stableFoodPreferences: omitEmptyValues({
-          avoidTags: request.memoryProfile.stableFoodPreferences?.avoidTags,
-          spicyLevel: request.memoryProfile.stableFoodPreferences?.spicyLevel,
-          source: request.memoryProfile.stableFoodPreferences?.source
-        }),
-        permissions: request.memoryProfile.permissions || {}
-      }
-    : {
-        enabled: false,
-        permissions: request.memoryProfile?.permissions || {}
-      };
 
-  return {
-    openclawContext: context ? buildContextEnvelope(context) : undefined,
-    slots,
-    preferences,
-    decisionSheet: request.decisionSheet,
-    candidateShops: localCandidates.map((candidate) => ({
-      id: candidate.id,
-      name: candidate.name,
-      type: candidate.type,
-      perCapita: candidate.perCapita,
-      distance: candidate.distance,
-      rating: candidate.rating,
-      matchedTags: candidate.matchedTags.slice(0, 6),
-      localReasons: candidate.reason.split("；").filter(Boolean).slice(0, 3),
-      localRisks: candidate.riskTip.split("；").filter(Boolean).slice(0, 3)
-    })),
-    memoryProfile,
+  return omitEmptyValues({
+    task: "select_food_recommendations",
+    traceId: context?.traceId,
+    constraints: buildCompactConstraints(request),
+    candidates: localCandidates.map(toCompactDecisionCandidate),
     requestContext: omitEmptyValues({
       excludeIds: request.requestContext?.excludeIds,
       batchIndex: request.requestContext?.batchIndex,
       adjustment: Object.keys(adjustment).length ? adjustment : undefined
-    })
-  };
+    }),
+    output: {
+      selected: "2-3 candidate ids with Chinese reason, riskTip and up to 4 matchedTags"
+    }
+  });
+}
+
+function buildCompactConstraints(request: FoodRecommendRequest) {
+  const stableFoodPreferences = request.memoryProfile?.stableFoodPreferences;
+  const dynamicDimensions = compactDecisionDimensions(request.decisionSheet?.dynamic ?? []);
+
+  return omitEmptyValues({
+    scene: request.slots.mealPurpose,
+    categoryPreference: request.slots.branchPreference,
+    budget: request.slots.budget,
+    distance: request.slots.distance,
+    tasteTags: request.preferences.tasteTags,
+    needTags: request.preferences.needTags,
+    avoidTags: uniqueStrings([
+      ...request.preferences.avoidTags,
+      ...(stableFoodPreferences?.avoidTags ?? [])
+    ]),
+    spicyLevel: request.preferences.spicyLevel || stableFoodPreferences?.spicyLevel,
+    memory: request.memoryProfile?.enabled
+      ? omitEmptyValues({
+          avoidTags: stableFoodPreferences?.avoidTags,
+          spicyLevel: stableFoodPreferences?.spicyLevel
+        })
+      : undefined,
+    dynamic: dynamicDimensions.length ? dynamicDimensions : undefined
+  });
+}
+
+function compactDecisionDimensions(dimensions: NonNullable<FoodDecisionSheet["dynamic"]>) {
+  return dimensions
+    .map((dimension) => omitEmptyValues({
+      key: dimension.key,
+      value: dimension.value,
+      hard: dimension.hard === true ? true : undefined
+    }))
+    .filter((dimension) => Object.keys(dimension).length > 1);
+}
+
+function toCompactDecisionCandidate(candidate: FoodRecommendationCard) {
+  return omitEmptyValues({
+    id: candidate.id,
+    name: candidate.name,
+    category: candidate.type,
+    priceYuan: readNumberFromText(candidate.perCapita),
+    area: "大学城",
+    rating: candidate.rating > 0 ? Number(candidate.rating.toFixed(1)) : undefined,
+    tags: candidate.matchedTags.slice(0, 4),
+    signals: splitCompactText(candidate.reason, 2),
+    risks: splitCompactText(candidate.riskTip, 2)
+  });
+}
+
+function splitCompactText(value: string, limit: number) {
+  return value
+    .split(/[；;。]/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, limit);
+}
+
+function readNumberFromText(value: string) {
+  const match = value.match(/\d+(?:\.\d+)?/);
+  return match ? Number(match[0]) : undefined;
 }
 
 async function buildLocalFoodCandidates(request: FoodRecommendRequest): Promise<FoodRecommendationCard[]> {
