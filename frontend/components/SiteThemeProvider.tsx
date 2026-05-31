@@ -29,6 +29,18 @@ function siteIconHref(theme: SiteTheme) {
   return `/favicons/${theme.id}.svg?theme=${encodeURIComponent(theme.id)}`;
 }
 
+function syncThemeFavicon(theme: SiteTheme) {
+  document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]').forEach((link) => link.remove());
+
+  const iconLink = document.createElement("link");
+  iconLink.rel = "icon";
+  iconLink.type = "image/svg+xml";
+  iconLink.setAttribute("sizes", "any");
+  iconLink.href = siteIconHref(theme);
+  iconLink.dataset.siteThemeIcon = "true";
+  document.head.appendChild(iconLink);
+}
+
 export function SiteThemeProvider({ children }: { children: ReactNode }) {
   const [themeId, setThemeId] = useState("mint-green");
   const [themeReveal, setThemeReveal] = useState<ThemeReveal | null>(null);
@@ -53,16 +65,7 @@ export function SiteThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.style.setProperty("--sb", activeTheme.siteAccent);
     document.documentElement.style.setProperty("--theme-color", activeTheme.siteAccent);
 
-    const iconLink = document.querySelector<HTMLLinkElement>('link[rel="icon"]') || document.createElement("link");
-    iconLink.rel = "icon";
-    iconLink.type = "image/svg+xml";
-    iconLink.setAttribute("sizes", "any");
-    iconLink.href = siteIconHref(activeTheme);
-    iconLink.dataset.siteThemeIcon = "true";
-    if (!iconLink.parentNode) {
-      document.head.appendChild(iconLink);
-    }
-
+    syncThemeFavicon(activeTheme);
     const themeColorMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
     themeColorMeta?.setAttribute("content", activeTheme.siteAccent);
   }, [activeTheme]);
