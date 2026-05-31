@@ -157,9 +157,11 @@
 }
 
 .stage {
-  position: fixed;
+  position: relative;
   inset: 0;
   z-index: 50;
+  height: 100vh;
+  height: 100svh;
   overflow: hidden;
   background: radial-gradient(120% 90% at 50% 50%, #d7f3e6 0%, #bfe9d6 45%, #a6dcc4 100%);
   perspective: 1100px;
@@ -169,6 +171,7 @@
 .stage.gone {
   visibility: hidden;
   opacity: 0;
+  pointer-events: none;
 }
 
 .stage::before {
