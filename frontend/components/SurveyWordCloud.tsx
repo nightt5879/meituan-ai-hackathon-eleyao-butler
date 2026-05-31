@@ -5,6 +5,7 @@ import surveyInsights from "@/data/survey/wordcloud-insights.json";
 
 type CloudWord = {
   t: string;
+  id: string;
   w: 1 | 2 | 3 | 4 | 5;
   pct: number;
   count: number;
@@ -12,6 +13,7 @@ type CloudWord = {
   sourceCategory: string;
   sourceFile: string;
   sourceLabel: string;
+  sourceBreakdown?: Record<string, number>;
   example?: string;
 };
 
@@ -41,14 +43,39 @@ type SurveySection = {
   rows: SurveySectionRow[];
 };
 
+type SurveyScenario = {
+  key: string;
+  title: string;
+  icon: string;
+  count: number;
+  pct: number;
+  examples: Array<{ id: string; text: string; phase?: string; sourceLabel?: string }>;
+};
+
+type SurveySource = {
+  phase: string;
+  sourceLabel: string;
+  fileName: string;
+  encoding: string;
+  sampleSize: number;
+  openTextCount: number;
+  columnCount: number;
+  targetQuestion: string;
+};
+
 type SurveyInsights = {
   meta: {
     sampleSize: number;
+    openTextCount: number;
     columnCount: number;
     sourceSnapshot: string;
     rawCsv: string;
-    sourceMetrics: string;
+    sourceEncoding: string;
+    targetQuestion: string;
+    generatedAt: string;
+    importCommand: string;
     note: string;
+    sources: SurveySource[];
   };
   hero: {
     eyebrow: string;
@@ -59,11 +86,13 @@ type SurveyInsights = {
   stats: SurveyStat[];
   insightCards: SurveyInsight[];
   words: CloudWord[];
+  scenarios: SurveyScenario[];
   sections: SurveySection[];
+  examples: Array<{ id: string; text: string; phase?: string; sourceLabel?: string }>;
 };
 
 const SURVEY = surveyInsights as SurveyInsights;
-const WORDS = SURVEY.words;
+const WORDS = SURVEY.words.slice(0, 64);
 
 type CloudNode = {
   el: HTMLButtonElement;
@@ -86,9 +115,13 @@ function wordClass(word: CloudWord) {
   return `cloud-word${word.c ? ` c-${word.c}` : ""}`;
 }
 
+function sourceBreakdownEntries(word: CloudWord) {
+  return Object.entries(word.sourceBreakdown || {}).filter(([, count]) => count > 0);
+}
+
 export function SurveyWordCloud() {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedWord, setSelectedWord] = useState<CloudWord | null>(null);
+  const [selectedWord, setSelectedWord] = useState<CloudWord | null>(WORDS[0] ?? null);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const introRef = useRef<HTMLDivElement | null>(null);
   const rippleRef = useRef<HTMLSpanElement | null>(null);
@@ -96,7 +129,7 @@ export function SurveyWordCloud() {
   const nodesRef = useRef<CloudNode[]>([]);
   const frameRef = useRef(0);
   const mouseRef = useRef({ x: -9999, y: -9999, active: false });
-  const topWords = useMemo(() => WORDS.slice().sort((a, b) => b.pct - a.pct).slice(0, 18), []);
+  const topWords = useMemo(() => WORDS.slice().sort((a, b) => b.count - a.count).slice(0, 26), []);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -110,10 +143,10 @@ export function SurveyWordCloud() {
       const H = stage.clientHeight;
       if (!W || !H) return;
 
-      const cx = W / 2;
-      const cy = H / 2;
-      const k = Math.max(0.78, Math.min(1.22, W / 940));
-      const sizes: Record<CloudWord["w"], number> = { 5: 50, 4: 37, 3: 28, 2: 20, 1: 16 };
+      const cx = W * 0.6;
+      const cy = H * 0.53;
+      const k = Math.max(0.76, Math.min(1.22, W / 1260));
+      const sizes: Record<CloudWord["w"], number> = { 5: 78, 4: 58, 3: 42, 2: 31, 1: 23 };
       const placed: Array<{ x: number; y: number; w: number; h: number }> = [];
       const intro = introRef.current;
 
@@ -123,16 +156,16 @@ export function SurveyWordCloud() {
         placed.push({
           x: ir.left - sr.left + ir.width / 2,
           y: ir.top - sr.top + ir.height / 2,
-          w: ir.width + 48,
-          h: ir.height + 48
+          w: ir.width + 62,
+          h: ir.height + 70
         });
       }
 
       const nodes: CloudNode[] = [];
-      const list = WORDS.slice().sort((a, b) => b.w - a.w);
+      const list = WORDS.slice().sort((a, b) => b.w - a.w || b.count - a.count);
 
       list.forEach((word, index) => {
-        const el = wordRefs.current[word.t];
+        const el = wordRefs.current[word.id];
         if (!el) return;
 
         el.classList.remove("show");
@@ -142,13 +175,14 @@ export function SurveyWordCloud() {
         const bh = el.offsetHeight;
         let px = cx;
         let py = cy;
+        let found = false;
 
-        for (let t = 0; t < 1400; t += 0.22) {
-          const r = 3.6 * t;
+        for (let t = 0; t < 2600; t += 0.16) {
+          const r = 3.05 * t;
           const x = cx + r * Math.cos(t);
-          const y = cy + r * Math.sin(t) * 0.6;
+          const y = cy + r * Math.sin(t) * 0.66;
 
-          if (x - bw / 2 < 12 || x + bw / 2 > W - 12 || y - bh / 2 < 74 || y + bh / 2 > H - 16) {
+          if (x - bw / 2 < 18 || x + bw / 2 > W - 18 || y - bh / 2 < 82 || y + bh / 2 > H - 24) {
             continue;
           }
 
@@ -160,7 +194,24 @@ export function SurveyWordCloud() {
           if (!hit) {
             px = x;
             py = y;
+            found = true;
             break;
+          }
+        }
+
+        if (!found) {
+          for (let tries = 0; tries < 100; tries += 1) {
+            const x = rand(W * 0.18, W * 0.94);
+            const y = rand(H * 0.16, H * 0.9);
+            const hit = placed.some((q) => (
+              Math.abs(x - q.x) < (bw + q.w) / 2 + 8 &&
+              Math.abs(y - q.y) < (bh + q.h) / 2 + 7
+            ));
+            if (!hit) {
+              px = x;
+              py = y;
+              break;
+            }
           }
         }
 
@@ -169,7 +220,7 @@ export function SurveyWordCloud() {
         el.style.top = `${py}px`;
         el.style.transform = "translate(-50%,-50%)";
 
-        timeoutIds.push(window.setTimeout(() => el.classList.add("show"), 40 + index * 26));
+        timeoutIds.push(window.setTimeout(() => el.classList.add("show"), 30 + index * 14));
         nodes.push({
           el,
           hx: px,
@@ -179,8 +230,8 @@ export function SurveyWordCloud() {
           vx: 0,
           vy: 0,
           ph: rand(0, 6.28),
-          amp: rand(5, 11),
-          sp: rand(0.45, 0.85)
+          amp: rand(4, 10),
+          sp: rand(0.38, 0.78)
         });
       });
 
@@ -193,7 +244,7 @@ export function SurveyWordCloud() {
 
       nodesRef.current.forEach((node) => {
         const tx = node.hx + Math.sin(t * node.sp + node.ph) * node.amp;
-        const ty = node.hy + Math.cos(t * node.sp * 0.9 + node.ph) * node.amp * 0.78;
+        const ty = node.hy + Math.cos(t * node.sp * 0.9 + node.ph) * node.amp * 0.72;
 
         node.vx += (tx - node.x) * 0.02;
         node.vy += (ty - node.y) * 0.02;
@@ -202,11 +253,11 @@ export function SurveyWordCloud() {
           const dx = node.x - mouse.x;
           const dy = node.y - mouse.y;
           const distance = Math.sqrt(dx * dx + dy * dy) || 0.001;
-          const radius = 185;
+          const radius = 190;
 
           if (distance < radius) {
             const f = 1 - distance / radius;
-            const push = f * f * 6.4;
+            const push = f * f * 6.2;
             node.vx += (dx / distance) * push;
             node.vy += (dy / distance) * push;
           }
@@ -219,7 +270,7 @@ export function SurveyWordCloud() {
 
         const ox = node.x - node.hx;
         const oy = node.y - node.hy;
-        const rot = Math.max(-7, Math.min(7, node.vx * 0.8));
+        const rot = Math.max(-6, Math.min(6, node.vx * 0.72));
         node.el.style.transform = `translate(-50%,-50%) translate(${ox.toFixed(2)}px,${oy.toFixed(2)}px) rotate(${rot.toFixed(2)}deg)`;
       });
 
@@ -251,18 +302,12 @@ export function SurveyWordCloud() {
     const mutationObserver = new MutationObserver(() => scheduleLayout(140));
     if (pageRoot) mutationObserver.observe(pageRoot, { attributes: true, attributeFilter: ["class"] });
 
-    const onViewportChange = () => scheduleLayout(120);
-    window.addEventListener("hashchange", onViewportChange);
-    window.addEventListener("scroll", onViewportChange, { passive: true });
-
     return () => {
       window.clearTimeout(fallbackTimer);
       window.clearTimeout(resizeTimer);
       timeoutIds.forEach((id) => window.clearTimeout(id));
       resizeObserver.disconnect();
       mutationObserver.disconnect();
-      window.removeEventListener("hashchange", onViewportChange);
-      window.removeEventListener("scroll", onViewportChange);
       window.cancelAnimationFrame(frameRef.current);
     };
   }, []);
@@ -308,10 +353,10 @@ export function SurveyWordCloud() {
               aria-label={`查看“${word.t}”调研数据`}
               className={wordClass(word)}
               data-w={word.w}
-              key={word.t}
+              key={word.id}
               onClick={() => openDrawer(word)}
               ref={(node) => {
-                wordRefs.current[word.t] = node;
+                wordRefs.current[word.id] = node;
               }}
               type="button"
             >
@@ -325,11 +370,11 @@ export function SurveyWordCloud() {
         <div className="cloud-intro" ref={introRef}>
           <div className="sec-eyebrow">{SURVEY.hero.eyebrow}</div>
           <h2 className="cloud-title" id="cloud-title">
-            {SURVEY.hero.title}<br /><em>{SURVEY.hero.emphasis}</em>
+            {SURVEY.hero.title}
+            <br />
+            <em>{SURVEY.hero.emphasis}</em>
           </h2>
-          <p className="cloud-sub">
-            {SURVEY.hero.subtitle}
-          </p>
+          <p className="cloud-sub">{SURVEY.hero.subtitle}</p>
         </div>
 
         <button className="cloud-handle" onClick={() => openDrawer()} type="button" aria-label="拉开调研数据">
@@ -339,11 +384,11 @@ export function SurveyWordCloud() {
       </section>
 
       <div className={`cloud-scrim ${drawerOpen ? "open" : ""}`} onClick={closeDrawer} />
-      <aside className={`cloud-drawer ${drawerOpen ? "open" : ""}`} aria-hidden={!drawerOpen} aria-label="约饭调研数据">
+      <aside className={`cloud-drawer ${drawerOpen ? "open" : ""}`} aria-hidden={!drawerOpen} aria-label="开放题词云调研数据">
         <div className="cd-head">
           <div>
-            <div className="eyebrow">真实问卷汇总 · Survey Insights</div>
-            <h4>词云来自哪几张表</h4>
+            <div className="eyebrow">融合开放题词云 · Survey v1.1 + Phase 2</div>
+            <h4>这些词从哪来，指向什么功能</h4>
           </div>
           <button className="cd-close" onClick={closeDrawer} type="button" aria-label="关闭">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -370,12 +415,31 @@ export function SurveyWordCloud() {
                 <strong>{selectedWord.t}</strong>
               </div>
               <p>
-                来源：{selectedWord.sourceCategory}，原始选项「{selectedWord.sourceLabel}」；
-                {selectedWord.count} 人 / {selectedWord.pct}% 提到。
+                在两阶段开放题中命中 {selectedWord.count} 条，占开放文本 {selectedWord.pct}%。
+                这个词条用于判断需求是否落到单人吃饭、多人约饭、周末规划或执行自检。
               </p>
+              <div className="cd-breakdown">
+                {sourceBreakdownEntries(selectedWord).map(([source, count]) => (
+                  <span key={source}>{source}: {count} 条</span>
+                ))}
+              </div>
               {selectedWord.example ? <blockquote>{selectedWord.example}</blockquote> : null}
             </div>
           ) : null}
+
+          <div className="cd-section-h">场景归因</div>
+          <div className="cd-scenarios">
+            {SURVEY.scenarios.map((scenario) => (
+              <div className="cd-scenario" key={scenario.key}>
+                <div className="cd-scenario-icon">{scenario.icon}</div>
+                <div>
+                  <strong>{scenario.title}</strong>
+                  <span>{scenario.count} 条 / {scenario.pct}%</span>
+                  {scenario.examples[0] ? <p>{scenario.examples[0].text}</p> : null}
+                </div>
+              </div>
+            ))}
+          </div>
 
           <div className="cd-section-h">关键洞察</div>
           <div className="cd-insights">
@@ -388,17 +452,17 @@ export function SurveyWordCloud() {
             ))}
           </div>
 
-          <div className="cd-section-h">词云权重</div>
+          <div className="cd-section-h">高频词权重</div>
           <div className="cd-legend">
-            <span><i style={{ background: "var(--ey-emerald)" }} />协调 / 决策</span>
-            <span><i style={{ background: "var(--ey-amber)" }} />时间 / 距离</span>
-            <span><i style={{ background: "var(--ey-rose)" }} />硬约束 / 忌口</span>
+            <span><i style={{ background: "var(--ey-emerald)" }} />选择 / 推荐 / 记忆</span>
+            <span><i style={{ background: "var(--ey-amber)" }} />预算 / 距离 / 时间</span>
+            <span><i style={{ background: "var(--ey-rose)" }} />冲突 / 忌口 / 兜底</span>
           </div>
           <div className="cd-bars">
             {topWords.map((word) => (
               <div
-                className={`cd-bar${word.c ? ` c-${word.c}` : ""}${selectedWord?.t === word.t ? " active" : ""}`}
-                key={word.t}
+                className={`cd-bar${word.c ? ` c-${word.c}` : ""}${selectedWord?.id === word.id ? " active" : ""}`}
+                key={word.id}
                 onClick={() => setSelectedWord(word)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") {
@@ -410,13 +474,28 @@ export function SurveyWordCloud() {
                 tabIndex={0}
               >
                 <div className="lbl">
-                  <span className="t">{word.t}<small>{word.sourceCategory}</small></span>
-                  <span className="n">{word.pct}%</span>
+                  <span className="t">{word.t}<small>{word.example || word.sourceCategory}</small></span>
+                  <span className="n">{word.count} 条</span>
                 </div>
                 <div className="track">
-                  <span className="fill" style={{ width: drawerOpen ? `${word.pct}%` : 0 }} />
+                  <span className="fill" style={{ width: drawerOpen ? `${Math.min(100, Math.max(7, word.pct * 2.6))}%` : 0 }} />
                 </div>
               </div>
+            ))}
+          </div>
+
+          <div className="cd-section-h">典型原始回答</div>
+          <div className="cd-examples">
+            {SURVEY.examples.slice(0, 10).map((item, index) => (
+              <blockquote className="cd-example" key={`${item.id}-${index}`}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <div>
+                  <p>{item.text}</p>
+                  {item.phase || item.sourceLabel ? (
+                    <cite>{[item.phase, item.sourceLabel].filter(Boolean).join(" · ")}</cite>
+                  ) : null}
+                </div>
+              </blockquote>
             ))}
           </div>
 
@@ -428,10 +507,10 @@ export function SurveyWordCloud() {
                   <strong>{section.title}</strong>
                   <code>{section.sourceFile}</code>
                 </div>
-                {section.rows.slice(0, 5).map((row) => (
-                  <div className="cd-source-row" key={`${section.key}-${row.display}`}>
+                {section.rows.slice(0, 8).map((row, index) => (
+                  <div className="cd-source-row" key={`${section.key}-${row.display}-${index}`}>
                     <span>{row.display}</span>
-                    <b>{row.count} 人</b>
+                    <b>{row.count} 条</b>
                     <i>{row.pct}%</i>
                   </div>
                 ))}
@@ -439,9 +518,22 @@ export function SurveyWordCloud() {
             ))}
           </div>
 
+          <div className="cd-section-h">导入记录</div>
+          <div className="cd-imports">
+            {SURVEY.meta.sources.map((source) => (
+              <div className="cd-import" key={source.fileName}>
+                <strong>{source.phase} · {source.sourceLabel}</strong>
+                <span>{source.openTextCount} 条开放文本 / {source.sampleSize} 份有效问卷</span>
+                <code>{source.fileName}</code>
+                <p>{source.targetQuestion}</p>
+              </div>
+            ))}
+          </div>
+
           <div className="cd-note">
-            数据源：<code>{SURVEY.meta.rawCsv}</code> 经分析脚本生成聚合表，再由
-            <code>analysis/scripts/export_wordcloud_data.mjs</code> 导出到前端。{SURVEY.meta.note}
+            数据源：<code>{SURVEY.meta.rawCsv}</code>，编码：<code>{SURVEY.meta.sourceEncoding}</code>。
+            <div className="cd-command">{SURVEY.meta.importCommand}</div>
+            {SURVEY.meta.note}
           </div>
         </div>
       </aside>
