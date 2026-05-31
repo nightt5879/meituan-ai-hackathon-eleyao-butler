@@ -112,6 +112,11 @@ body.t-black-pink {
   --ey-slate-3: #86707c;
   --ey-line: rgba(255, 255, 255, 0.1);
   --ey-line-2: rgba(255, 255, 255, 0.06);
+  --sb: #ff4fa3;
+  --sb-track: #0b0309;
+  --sb-thumb: color-mix(in srgb, #ff4fa3 62%, #160a12);
+  --sb-thumb-hover: color-mix(in srgb, #ff4fa3 84%, #160a12);
+  color-scheme: dark;
 }
 
 body.t-night {
@@ -135,6 +140,27 @@ body.t-night {
   --ey-slate-3: #73809f;
   --ey-line: rgba(203, 213, 225, 0.14);
   --ey-line-2: rgba(203, 213, 225, 0.08);
+  --sb: #7c8cff;
+  --sb-track: #070b16;
+  --sb-thumb: color-mix(in srgb, #7c8cff 62%, #0f172a);
+  --sb-thumb-hover: color-mix(in srgb, #7c8cff 84%, #0f172a);
+  color-scheme: dark;
+}
+
+html:has(> body.t-black-pink) {
+  --sb: #ff4fa3;
+  --sb-track: #0b0309;
+  --sb-thumb: color-mix(in srgb, #ff4fa3 62%, #160a12);
+  --sb-thumb-hover: color-mix(in srgb, #ff4fa3 84%, #160a12);
+  color-scheme: dark;
+}
+
+html:has(> body.t-night) {
+  --sb: #7c8cff;
+  --sb-track: #070b16;
+  --sb-thumb: color-mix(in srgb, #7c8cff 62%, #0f172a);
+  --sb-thumb-hover: color-mix(in srgb, #7c8cff 84%, #0f172a);
+  color-scheme: dark;
 }
 
 html {
