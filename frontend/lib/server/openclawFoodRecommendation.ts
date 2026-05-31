@@ -204,8 +204,10 @@ function buildFoodRecommendationPrompt(
       "Candidate order is NOT a recommendation ranking. Decide from constraints and candidate facts.",
       "Hard constraints in decisionPayload.constraints are mandatory; avoid spicy/high-spice shops when no-spicy is requested.",
       "Use exact candidate ids only. Do not invent shops. Backend fills display fields.",
-      "Return ONLY minified JSON, no markdown, no extra text.",
-      "Schema: {\"selected\":[{\"id\":\"candidate_id\",\"why\":\"18字内中文理由\",\"tip\":\"18字内中文提醒\",\"tags\":[\"最多2个短标签\"]}]}",
+      "Return exactly one JSON object that JSON.parse can parse.",
+      "Do not wrap the JSON in markdown fences. Do not add explanations, comments, bullets, or trailing commas.",
+      "Every selected item must be separated by a comma. Escape any double quote inside string values.",
+      "Schema: {\"selected\":[{\"id\":\"candidate_id\",\"why\":\"short_reason\",\"tip\":\"short_risk_tip\",\"tags\":[\"short_tag\"]}]}",
       `decisionPayload=${payload}`
     ].join("\n")
   };
@@ -561,13 +563,7 @@ function runOpenClawAgentCli(content: string, sessionId: string): Promise<string
 }
 
 function extractCliPayloadText(stdout: string) {
-  let parsed: unknown;
-
-  try {
-    parsed = JSON.parse(stdout);
-  } catch (error) {
-    throw new Error(`OpenClaw CLI stdout JSON parse failed: ${(error as Error).message}`);
-  }
+  const parsed = parseOpenClawCliStdout(stdout);
 
   const payloads = isRecord(parsed) && isRecord(parsed.result) && Array.isArray(parsed.result.payloads)
     ? parsed.result.payloads
@@ -606,16 +602,47 @@ function summarizeCliStderr(stderr: string) {
     .slice(0, 1200);
 }
 
+function parseOpenClawCliStdout(stdout: string) {
+  try {
+    return JSON.parse(stdout);
+  } catch (directError) {
+    const jsonText = extractBalancedJsonObject(stdout);
+
+    if (!jsonText) {
+      throw new Error(`OpenClaw CLI stdout JSON parse failed: ${(directError as Error).message}`);
+    }
+
+    try {
+      return JSON.parse(jsonText);
+    } catch (extractedError) {
+      throw new Error(`OpenClaw CLI stdout JSON parse failed: ${(extractedError as Error).message}`);
+    }
+  }
+}
+
 function parseOpenClawRecommendation(rawContent: string): unknown {
   const jsonText = extractJsonObject(rawContent);
 
   if (!jsonText) {
+    logOpenClawJsonParseFailure(rawContent, "", "no JSON object found");
     throw new Error("OpenClaw response did not contain a JSON object.");
   }
 
   try {
     return JSON.parse(jsonText);
   } catch (error) {
+    const repairedJsonText = repairOpenClawJsonText(jsonText);
+
+    if (repairedJsonText !== jsonText) {
+      try {
+        return JSON.parse(repairedJsonText);
+      } catch (repairError) {
+        logOpenClawJsonParseFailure(rawContent, jsonText, (repairError as Error).message, repairedJsonText);
+      }
+    } else {
+      logOpenClawJsonParseFailure(rawContent, jsonText, (error as Error).message);
+    }
+
     throw new Error(`OpenClaw response JSON parse failed: ${(error as Error).message}`);
   }
 }
@@ -845,27 +872,93 @@ function isNoSpicyPreference(preferences: FoodRecommendRequest["preferences"]) {
 
 function extractJsonObject(content: string) {
   const trimmed = content.trim();
+  const unfenced = stripMarkdownJsonFence(trimmed);
+  const balanced = extractBalancedJsonObject(unfenced);
 
-  if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
-    return trimmed;
+  return balanced || "";
+}
+
+function stripMarkdownJsonFence(content: string) {
+  const fencedMatch = content.trim().match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  return fencedMatch && fencedMatch[1] ? fencedMatch[1].trim() : content.trim();
+}
+
+function extractBalancedJsonObject(content: string) {
+  const source = stripMarkdownJsonFence(content);
+  const start = source.indexOf("{");
+
+  if (start < 0) {
+    return "";
   }
 
-  const fencedMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  if (fencedMatch && fencedMatch[1]) {
-    const fenced = fencedMatch[1].trim();
-    if (fenced.startsWith("{") && fenced.endsWith("}")) {
-      return fenced;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let index = start; index < source.length; index += 1) {
+    const char = source[index];
+
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === "\\") {
+        escaped = true;
+      } else if (char === "\"") {
+        inString = false;
+      }
+
+      continue;
+    }
+
+    if (char === "\"") {
+      inString = true;
+      continue;
+    }
+
+    if (char === "{") {
+      depth += 1;
+      continue;
+    }
+
+    if (char === "}") {
+      depth -= 1;
+
+      if (depth === 0) {
+        return source.slice(start, index + 1).trim();
+      }
     }
   }
 
-  const start = trimmed.indexOf("{");
-  const end = trimmed.lastIndexOf("}");
-
-  if (start >= 0 && end > start) {
-    return trimmed.slice(start, end + 1);
-  }
-
   return "";
+}
+
+function repairOpenClawJsonText(jsonText: string) {
+  return stripMarkdownJsonFence(jsonText)
+    .replace(/^\uFEFF/, "")
+    .replace(/,\s*([}\]])/g, "$1")
+    .replace(/}\s*{/g, "},{")
+    .trim();
+}
+
+function logOpenClawJsonParseFailure(
+  rawContent: string,
+  jsonText: string,
+  detail: string,
+  repairedJsonText?: string
+) {
+  console.warn("[openclawFoodRecommendation] JSON parse diagnostics", {
+    detail,
+    rawExcerpt: summarizeLogExcerpt(rawContent),
+    jsonExcerpt: summarizeLogExcerpt(jsonText),
+    repairedExcerpt: repairedJsonText ? summarizeLogExcerpt(repairedJsonText) : undefined
+  });
+}
+
+function summarizeLogExcerpt(value: string) {
+  return value
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 1200);
 }
 
 function getNested(source: StringMap, pathParts: string[]) {
