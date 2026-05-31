@@ -15,6 +15,7 @@ export type Participant = {
   participant_id: string;
   client_id?: string;
   submitter_user_id?: string;
+  source?: "user" | "ai_generated";
   nickname: string;
   visibility?: "public" | "nickname_only" | "private";
   raw_preference: string;
@@ -125,6 +126,7 @@ export type StoredTaskFields = {
 
 export type ParticipantInput = {
   client_id?: string;
+  source?: "user" | "ai_generated";
   nickname: string;
   visibility?: "public" | "nickname_only" | "private";
   raw_preference: string;

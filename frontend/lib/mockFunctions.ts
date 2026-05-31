@@ -140,6 +140,7 @@ export function buildMockParticipant(input: ParticipantInput, existingId?: strin
   return {
     participant_id: existingId ?? `p_local_${encodeURIComponent(nickname)}`,
     client_id: input.client_id?.trim() || undefined,
+    source: input.source,
     nickname,
     visibility: input.visibility || "public",
     raw_preference: input.raw_preference.trim(),
@@ -161,6 +162,7 @@ export function extractConstraints(participants: Participant[]) {
     buildMockParticipant(
       {
         client_id: participant.client_id,
+        source: participant.source,
         nickname: participant.nickname,
         visibility: participant.visibility,
         raw_preference: participant.raw_preference,

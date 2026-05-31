@@ -86,6 +86,7 @@ type GroupBoard = {
   };
   participants: Array<{
     participantId: string;
+    source?: "user" | "ai_generated";
     nickname: string;
     visibility?: "public" | "nickname_only" | "private";
     rawPreference: string;
@@ -2429,6 +2430,45 @@ export default function ExperienceClient() {
     }
   }
 
+  async function aiFillGroupFriends() {
+    if (!identity || !groupTaskId || !groupInviteToken) return;
+    const expectedPeople = groupBoard?.task.expectedPeopleCount || groupPeople;
+    const submittedCount = groupBoard?.participants.length || 0;
+    const missingPeople = Math.max(0, expectedPeople - submittedCount);
+
+    if (expectedPeople > 5) {
+      setGroupNotice("AI 辅助填写目前只支持 5 人以内的小局。当前人数较多，建议邀请朋友自己填写，或新建 5 人以内任务体验。");
+      return;
+    }
+
+    if (missingPeople <= 0) {
+      setGroupNotice("当前成员偏好已经收齐，可以直接生成推荐。");
+      return;
+    }
+
+    setGroupLoading(true);
+    setGroupNotice("");
+
+    try {
+      const result = await requestJson<{ board: GroupBoard; generatedCount: number; remainingCount: number }>(
+        `/api/group-tasks/${encodeURIComponent(groupTaskId)}/participants/ai-fill`,
+        {
+          method: "POST",
+          body: JSON.stringify({ inviteToken: groupInviteToken })
+        },
+        identity.sessionToken
+      );
+      setGroupBoard(result.board);
+      setGroupNotice(result.generatedCount > 0 ? `AI 已填写 ${result.generatedCount} 位朋友偏好，可以继续生成推荐。` : "当前成员偏好已经收齐，可以直接生成推荐。");
+    } catch (error) {
+      if (!handleAuthError(error)) {
+        setGroupNotice(error instanceof Error ? error.message : String(error));
+      }
+    } finally {
+      setGroupLoading(false);
+    }
+  }
+
   async function createWeekendPlan(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
     if (!identity) return;
@@ -3399,6 +3439,7 @@ export default function ExperienceClient() {
   function renderGroupBoardPage() {
     const submittedCount = groupBoard?.participants.length || 0;
     const expectedPeople = groupBoard?.task.expectedPeopleCount || groupPeople;
+    const missingPeople = Math.max(0, expectedPeople - submittedCount);
     const progress = Math.min(100, Math.round((submittedCount / Math.max(expectedPeople, 1)) * 100));
 
     return (
@@ -3428,7 +3469,7 @@ export default function ExperienceClient() {
           </div>
         </div>
 
-        <BoardSection title="成员偏好" desc="真实成员提交后会出现在这里。">
+        <BoardSection title="成员偏好" desc="真实成员和 AI 代填的朋友偏好会出现在这里。">
           {groupBoard?.participants.length ? (
             <div className="panel-card">
               {groupBoard.participants.map((member) => {
@@ -3439,7 +3480,11 @@ export default function ExperienceClient() {
                     {member.visibility === "private" ? (
                       <div className="field-label">匿名成员已提交</div>
                     ) : (
-                      <div className="field-label">{member.nickname}{member.visibility === "nickname_only" ? <span className="field-hint inline-member-note"> · 偏好仅用于推荐</span> : null}</div>
+                      <div className="field-label">
+                        {member.nickname}
+                        {member.source === "ai_generated" ? <span className="field-hint inline-member-note"> · AI代填</span> : null}
+                        {member.visibility === "nickname_only" ? <span className="field-hint inline-member-note"> · 偏好仅用于推荐</span> : null}
+                      </div>
                     )}
 
                     {member.visibility === "public" ? (
@@ -3503,12 +3548,18 @@ export default function ExperienceClient() {
           <div className="chip-row">
             <div className="info-chip hard">getTaskBoard(taskId, inviteToken)</div>
             <div className="info-chip soft">submitPreference</div>
+            <div className="info-chip">aiFillFriends</div>
             <div className="info-chip">generateRecommendation</div>
             <div className="info-chip">submitAdjustmentRequest</div>
           </div>
           <div className="field-hint">所有数据均经 adapter；页面不直接 wx.request。Mock fallback 可在 services/groupDiningAdapter.js 切换真实接口。</div>
         </div>
 
+        {missingPeople > 0 ? (
+          <button className="primary-button" disabled={!groupTaskId || groupLoading} onClick={() => void aiFillGroupFriends()} type="button">
+            {groupLoading ? "生成中..." : `AI 填写剩余 ${missingPeople} 位朋友偏好`}
+          </button>
+        ) : null}
         <button className="primary-button" disabled={!submittedCount || groupLoading} onClick={() => void generateGroupRecommendation()} type="button">{groupLoading ? "生成中..." : "生成推荐"}</button>
         <button className="primary-button" disabled={!groupTaskId || groupLoading} onClick={() => void refreshGroupBoard()} type="button">{groupLoading ? "刷新中..." : "手动刷新"}</button>
         <button className="primary-button" onClick={goHome} type="button">回到首页</button>
