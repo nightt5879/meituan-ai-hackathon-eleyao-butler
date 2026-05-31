@@ -1,613 +1,1181 @@
 {
   "meta": {
-    "sampleSize": 104,
-    "columnCount": 202,
-    "sourceSnapshot": "2026-05-08",
-    "rawCsv": "data/raw/问卷数据v1.1.csv",
-    "sourceMetrics": "analysis/outputs/2026-05-08/report_metrics.json",
-    "note": "词云由聚合统计表派生，不展示原始答卷明细。"
+    "sampleSize": 184,
+    "openTextCount": 163,
+    "columnCount": 322,
+    "sourceSnapshot": "v1.1 + phase2",
+    "rawCsv": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+    "sourceEncoding": "gb18030",
+    "targetQuestion": "第一阶段: 请你回想最近一次\"做本地生活决策很累\"的经历,可能是吃饭、约人、规划周末或别的事。请用 1-2 句话描述这件事 / 第二阶段: 请用一句话描述：你最希望 AI 本地生活管家在什么具体场景下帮到你？",
+    "generatedAt": "2026-05-31T12:30:33.292Z",
+    "importCommand": "npm run build:survey-wordcloud",
+    "note": "词云融合第一阶段痛点经历和第二阶段 AI 期待场景；高频词使用规则词表归并同义表达，不展示完整个人答卷。",
+    "sources": [
+      {
+        "phase": "第一阶段",
+        "sourceLabel": "痛点经历",
+        "fileName": "data/raw/问卷数据v1.1.csv",
+        "encoding": "gb18030",
+        "sampleSize": 104,
+        "openTextCount": 86,
+        "columnCount": 202,
+        "targetQuestion": "请你回想最近一次\"做本地生活决策很累\"的经历,可能是吃饭、约人、规划周末或别的事。请用 1-2 句话描述这件事"
+      },
+      {
+        "phase": "第二阶段",
+        "sourceLabel": "AI 期待场景",
+        "fileName": "data/raw/第二阶段问卷数据.csv",
+        "encoding": "gb18030",
+        "sampleSize": 80,
+        "openTextCount": 77,
+        "columnCount": 120,
+        "targetQuestion": "请用一句话描述：你最希望 AI 本地生活管家在什么具体场景下帮到你？"
+      }
+    ]
   },
   "hero": {
     "eyebrow": "设计与思路 · 真实调研",
-    "title": "约饭，最让你烦的不是选店",
-    "emphasis": "是没人拍板",
-    "subtitle": "104 份有效问卷、202 个原始字段，词条来自本地决策痛点、多人约饭冲突、开放题主题和 AI 需求统计；字越大，代表被更多人提到。"
+    "title": "本地生活最累的，不是没选择",
+    "emphasis": "是没人把需求收敛成方案",
+    "subtitle": "184 份有效问卷，合并第一阶段痛点经历和第二阶段 AI 期待场景；高频需求集中在今天吃什么、多人约饭、周末规划，以及预算/距离/排队/营业的执行自检。"
   },
   "stats": [
     {
-      "v": "104",
-      "k": "有效样本"
+      "v": "184",
+      "k": "有效问卷"
     },
     {
-      "v": "202",
-      "k": "原始字段"
+      "v": "163",
+      "k": "开放文本"
     },
     {
-      "v": "61.5%",
-      "k": "评价真假难辨"
+      "v": "47",
+      "k": "归并词条"
     },
     {
-      "v": "60.6%",
-      "k": "口味不同"
+      "v": "2",
+      "k": "调研阶段"
     }
   ],
   "insightCards": [
     {
-      "title": "选店不是终点，可信信息才是入口",
-      "value": "61.5%",
-      "detail": "64 人选择“餐厅 / 活动评价真假难辨”，高于单纯预算、路线等执行问题。"
+      "title": "不是缺信息，是缺收敛",
+      "value": "42.3%",
+      "detail": "多人约饭相关表达最多。用户不是只要列表，而是要从预算、口味、距离和时间里快速收敛。"
     },
     {
-      "title": "多人约饭的核心冲突先是口味",
-      "value": "60.6%",
-      "detail": "63 人提到“口味不同”，因此推荐链路必须先保护忌口和硬约束。"
+      "title": "三条功能线都有直接语料",
+      "value": "69 / 41",
+      "detail": "多人约饭和周末规划都在开放题中高频出现，可以作为“今天吃什么”之外的第二、第三入口。"
     },
     {
-      "title": "开放题反复指向“选不出来”",
-      "value": "50%",
-      "detail": "52 份回答被归入“不知道吃什么/选店困难”，说明用户需要的是能收敛决策的管家。"
-    },
-    {
-      "title": "用户期待 AI 直接给可执行餐厅方案",
-      "value": "55.8%",
-      "detail": "58 人选择“根据预算、口味、距离、评分等推荐餐厅”，支撑先做吃饭、约饭、周末规划三个场景。"
+      "title": "执行自检决定可信度",
+      "value": "12.3%",
+      "detail": "预算、距离、排队、营业、天气和备选方案共同构成兜底要求，适合沉淀成每个推荐结果的自检模块。"
     }
   ],
   "words": [
     {
-      "t": "评价真假难辨",
+      "t": "家人朋友场景混在一起",
+      "id": "family_friends",
       "w": 5,
-      "pct": 61.5,
-      "count": 64,
-      "c": "hard",
-      "sourceCategory": "本地决策痛点",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/decision_pain_points_overall.csv",
-      "sourceLabel": "餐厅 / 活动评价真假难辨",
-      "example": ""
-    },
-    {
-      "t": "口味不同",
-      "w": 5,
-      "pct": 60.6,
-      "count": 63,
-      "sourceCategory": "多人约饭冲突",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/group_conflict_types_overall.csv",
-      "sourceLabel": "口味不同",
-      "example": ""
-    },
-    {
-      "t": "信息太多",
-      "w": 5,
-      "pct": 59.6,
-      "count": 62,
-      "sourceCategory": "本地决策痛点",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/decision_pain_points_overall.csv",
-      "sourceLabel": "信息太多，不知道怎么选",
-      "example": ""
-    },
-    {
-      "t": "按预算口味推荐",
-      "w": 5,
-      "pct": 55.8,
-      "count": 58,
-      "c": "warn",
-      "sourceCategory": "期待 AI 做的事",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/desired_ai_tasks_overall.csv",
-      "sourceLabel": "根据预算、口味、距离、评分等推荐餐厅",
-      "example": ""
-    },
-    {
-      "t": "找灵感",
-      "w": 4,
-      "pct": 52.9,
-      "count": 55,
-      "sourceCategory": "期待 AI 做的事",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/desired_ai_tasks_overall.csv",
-      "sourceLabel": "想不到吃什么/玩什么时，帮我找灵感",
-      "example": ""
-    },
-    {
-      "t": "多 App 切换",
-      "w": 4,
-      "pct": 50,
-      "count": 52,
-      "sourceCategory": "本地决策痛点",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/decision_pain_points_overall.csv",
-      "sourceLabel": "需要在多个 App 之间反复切换",
-      "example": ""
-    },
-    {
-      "t": "不知道吃什么",
-      "w": 4,
-      "pct": 50,
-      "count": 52,
-      "sourceCategory": "开放题主题",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/open_text_theme_counts.csv",
-      "sourceLabel": "不知道吃什么/选店困难",
-      "example": "饭点吃什么，看什么动漫"
-    },
-    {
-      "t": "周末规划",
-      "w": 4,
-      "pct": 48.1,
-      "count": 50,
-      "c": "warn",
-      "sourceCategory": "期待 AI 做的事",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/desired_ai_tasks_overall.csv",
-      "sourceLabel": "帮我规划周末活动 / 短途游 / citywalk",
-      "example": ""
-    },
-    {
-      "t": "多人意见冲突",
-      "w": 4,
-      "pct": 44.2,
-      "count": 46,
-      "sourceCategory": "开放题主题",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/open_text_theme_counts.csv",
-      "sourceLabel": "多人约饭/意见冲突",
-      "example": "有一次我想去约我的室友去吃饭，距离用餐的地点大约约5公里左右，但是他们都不想去那么远的地方，定找别的餐厅聚餐，那个地方其实我看博主推荐想去好久了，结果因为距离原因，最后没有去成。"
-    },
-    {
-      "t": "时间不一致",
-      "w": 4,
-      "pct": 42.3,
-      "count": 44,
-      "c": "warn",
-      "sourceCategory": "多人约饭冲突",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/group_conflict_types_overall.csv",
-      "sourceLabel": "时间不一致",
-      "example": ""
-    },
-    {
-      "t": "距离远近不同",
-      "w": 4,
-      "pct": 42.3,
-      "count": 44,
-      "c": "warn",
-      "sourceCategory": "多人约饭冲突",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/group_conflict_types_overall.csv",
-      "sourceLabel": "距离远近不同",
-      "example": ""
-    },
-    {
-      "t": "协调约饭地点",
-      "w": 4,
-      "pct": 41.3,
-      "count": 43,
-      "sourceCategory": "期待 AI 做的事",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/desired_ai_tasks_overall.csv",
-      "sourceLabel": "帮我和朋友协调约饭 / 聚会地点，根据多人偏好提供建议",
-      "example": ""
-    },
-    {
-      "t": "路线/时间安排",
-      "w": 4,
-      "pct": 40.4,
-      "count": 42,
-      "c": "warn",
-      "sourceCategory": "开放题主题",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/open_text_theme_counts.csv",
-      "sourceLabel": "路线/距离/时间安排",
+      "pct": 29.4,
+      "count": 48,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 35,
+        "AI 期待场景": 13
+      },
       "example": "周末和老婆规划附近游玩，并且有美食挑选"
     },
     {
-      "t": "优惠/预约提醒",
-      "w": 3,
-      "pct": 31.7,
-      "count": 33,
+      "t": "周末规划需要省心",
+      "id": "weekend_plan",
+      "w": 5,
+      "pct": 23.9,
+      "count": 39,
       "c": "warn",
-      "sourceCategory": "期待 AI 做的事",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/desired_ai_tasks_overall.csv",
-      "sourceLabel": "帮我留意限时优惠 / 抢购 / 演出预约",
-      "example": ""
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 28,
+        "AI 期待场景": 11
+      },
+      "example": "周末和老婆规划附近游玩，并且有美食挑选"
     },
     {
-      "t": "预算不同",
-      "w": 3,
-      "pct": 26.9,
-      "count": 28,
-      "c": "warn",
-      "sourceCategory": "多人约饭冲突",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/group_conflict_types_overall.csv",
-      "sourceLabel": "预算不同",
-      "example": ""
-    },
-    {
-      "t": "忌口/过敏",
-      "w": 3,
-      "pct": 26,
+      "t": "不知道吃什么",
+      "id": "what_to_eat",
+      "w": 4,
+      "pct": 16.6,
       "count": 27,
-      "c": "hard",
-      "sourceCategory": "多人约饭冲突",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/group_conflict_types_overall.csv",
-      "sourceLabel": "有人忌口 / 过敏 / 不吃某类食物",
-      "example": ""
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 19,
+        "AI 期待场景": 8
+      },
+      "example": "饭点吃什么，看什么动漫"
     },
     {
-      "t": "尝新 vs 熟店",
+      "t": "选择困难",
+      "id": "choice_overload",
+      "w": 4,
+      "pct": 15.3,
+      "count": 25,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 20,
+        "AI 期待场景": 5
+      },
+      "example": "五一期间和家人商量去哪里游玩，老婆想去观景的地方，我想去能带孩子游玩的地方，因此而纠结。"
+    },
+    {
+      "t": "多人约饭要协调",
+      "id": "group_dining",
       "w": 3,
-      "pct": 26,
-      "count": 27,
-      "sourceCategory": "多人约饭冲突",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/group_conflict_types_overall.csv",
-      "sourceLabel": "有人想尝新，有人想吃熟悉的店",
-      "example": ""
-    },
-    {
-      "t": "营业/排队不确定",
-      "w": 3,
-      "pct": 25,
-      "count": 26,
-      "c": "warn",
-      "sourceCategory": "本地决策痛点",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/decision_pain_points_overall.csv",
-      "sourceLabel": "不知道营业时间、排队情况是否合适",
-      "example": ""
-    },
-    {
-      "t": "信息过载",
-      "w": 2,
-      "pct": 22.1,
+      "pct": 14.1,
       "count": 23,
-      "sourceCategory": "开放题主题",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/open_text_theme_counts.csv",
-      "sourceLabel": "信息过载/多 App 切换",
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 13,
+        "AI 期待场景": 10
+      },
+      "example": "有一次我想去约我的室友去吃饭，距离用餐的地点大约约5公里左右，但是他们都不想去那么远的地方，定找别的餐厅聚餐，那个地方其实我看博主推荐想去好久了，结果因为距离原因，最后没有去成。"
+    },
+    {
+      "t": "口味偏好要被照顾",
+      "id": "taste",
+      "w": 3,
+      "pct": 14.1,
+      "count": 23,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 17,
+        "AI 期待场景": 6
+      },
+      "example": "有些人的口味不同"
+    },
+    {
+      "t": "反复对比",
+      "id": "compare_many",
+      "w": 3,
+      "pct": 11.7,
+      "count": 19,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 18,
+        "AI 期待场景": 1
+      },
+      "example": "本地周末玩但是规划一天具体安排比较麻烦，不知道目的地附近有什么好吃的，上网查询了但是信息比较少。"
+    },
+    {
+      "t": "时间凑不齐",
+      "id": "time",
+      "w": 3,
+      "pct": 10.4,
+      "count": 17,
+      "c": "warn",
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 14,
+        "AI 期待场景": 3
+      },
       "example": "吃的晚饭的时候不知道吃什么现在各个软件之间来回切换寻找，很浪费时间"
     },
     {
-      "t": "突发兜底",
-      "w": 2,
-      "pct": 22.1,
-      "count": 23,
-      "sourceCategory": "期待 AI 做的事",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/desired_ai_tasks_overall.csv",
-      "sourceLabel": "突发情况帮我兜底，例如找 24h 药店、医院、维修等",
-      "example": ""
-    },
-    {
-      "t": "实时调整方案",
-      "w": 2,
-      "pct": 22.1,
-      "count": 23,
-      "sourceCategory": "期待 AI 做的事",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/desired_ai_tasks_overall.csv",
-      "sourceLabel": "根据天气、时间等实时调整我已经定好的方案",
-      "example": ""
-    },
-    {
-      "t": "预算不确定",
-      "w": 2,
-      "pct": 21.2,
-      "count": 22,
+      "t": "路线安排很累",
+      "id": "route_plan",
+      "w": 3,
+      "pct": 9.2,
+      "count": 15,
       "c": "warn",
-      "sourceCategory": "本地决策痛点",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/decision_pain_points_overall.csv",
-      "sourceLabel": "不知道是否符合预算",
-      "example": ""
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 8,
+        "AI 期待场景": 7
+      },
+      "example": "本地周末玩但是规划一天具体安排比较麻烦，不知道目的地附近有什么好吃的，上网查询了但是信息比较少。"
     },
     {
-      "t": "都不想做决定",
-      "w": 2,
-      "pct": 19.2,
-      "count": 20,
-      "sourceCategory": "多人约饭冲突",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/group_conflict_types_overall.csv",
-      "sourceLabel": "大家都不想做决定",
-      "example": ""
-    },
-    {
-      "t": "路线不顺路",
-      "w": 2,
-      "pct": 17.3,
-      "count": 18,
-      "c": "warn",
-      "sourceCategory": "本地决策痛点",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/decision_pain_points_overall.csv",
-      "sourceLabel": "不知道路线是否顺路",
-      "example": ""
-    },
-    {
-      "t": "临时变更重查",
-      "w": 2,
-      "pct": 15.4,
-      "count": 16,
-      "c": "warn",
-      "sourceCategory": "本地决策痛点",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/decision_pain_points_overall.csv",
-      "sourceLabel": "临时计划变化后，需要重新查很多信息",
-      "example": ""
-    },
-    {
-      "t": "朋友意见不统一",
-      "w": 1,
-      "pct": 13.5,
+      "t": "想要直接推荐餐厅",
+      "id": "restaurant_recommend",
+      "w": 3,
+      "pct": 8.6,
       "count": 14,
-      "sourceCategory": "本地决策痛点",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/decision_pain_points_overall.csv",
-      "sourceLabel": "和朋友意见不统一，很难协调",
-      "example": ""
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 10,
+        "AI 期待场景": 4
+      },
+      "example": "有一次我想去约我的室友去吃饭，距离用餐的地点大约约5公里左右，但是他们都不想去那么远的地方，定找别的餐厅聚餐，那个地方其实我看博主推荐想去好久了，结果因为距离原因，最后没有去成。"
     },
     {
-      "t": "安静/热闹冲突",
-      "w": 1,
-      "pct": 12.5,
-      "count": 13,
-      "sourceCategory": "多人约饭冲突",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/group_conflict_types_overall.csv",
-      "sourceLabel": "有人想安静聊天，有人想热闹",
-      "example": ""
-    },
-    {
-      "t": "执行不确定",
-      "w": 1,
-      "pct": 8.7,
-      "count": 9,
-      "sourceCategory": "开放题主题",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/open_text_theme_counts.csv",
-      "sourceLabel": "执行不确定/约束检查",
+      "t": "预算难开口",
+      "id": "budget",
+      "w": 3,
+      "pct": 8.6,
+      "count": 14,
+      "c": "warn",
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 9,
+        "AI 期待场景": 5
+      },
       "example": "有一次中午下班后不想一个人做饭，就想点份外卖。但翻过来翻过去感觉不是口味不合适就是价格太贵，一直纠结了半个多小时后才定下来"
+    },
+    {
+      "t": "要 2-3 个可选方案",
+      "id": "quick_options",
+      "w": 3,
+      "pct": 8.6,
+      "count": 14,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 1,
+        "AI 期待场景": 13
+      },
+      "example": "纠结半天不知道周末去哪里游玩，反复对比多个地点和出行方案，做决定时十分耗费精力"
+    },
+    {
+      "t": "外卖也纠结",
+      "id": "food_delivery",
+      "w": 3,
+      "pct": 8.6,
+      "count": 14,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 9,
+        "AI 期待场景": 5
+      },
+      "example": "有一次中午下班后不想一个人做饭，就想点份外卖。但翻过来翻过去感觉不是口味不合适就是价格太贵，一直纠结了半个多小时后才定下来"
+    },
+    {
+      "t": "距离太远",
+      "id": "distance",
+      "w": 2,
+      "pct": 8,
+      "count": 13,
+      "c": "warn",
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 11,
+        "AI 期待场景": 2
+      },
+      "example": "周末和老婆规划附近游玩，并且有美食挑选"
+    },
+    {
+      "t": "评分口碑要比",
+      "id": "rating_compare",
+      "w": 2,
+      "pct": 6.1,
+      "count": 10,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 9,
+        "AI 期待场景": 1
+      },
+      "example": "下班了想找地方吃饭，翻看了大量评论，对比了很多家菜品，反复纠结，花了很久的时间才选择出要吃饭的地方"
+    },
+    {
+      "t": "想省心省力",
+      "id": "save_effort",
+      "w": 2,
+      "pct": 4.9,
+      "count": 8,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 1,
+        "AI 期待场景": 7
+      },
+      "example": "本地周末玩但是规划一天具体安排比较麻烦，不知道目的地附近有什么好吃的，上网查询了但是信息比较少。"
+    },
+    {
+      "t": "本地活动也想覆盖",
+      "id": "local_activity",
+      "w": 2,
+      "pct": 4.9,
+      "count": 8,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 3,
+        "AI 期待场景": 5
+      },
+      "example": "我规划周末路线的时候，会需要经常切换app就会觉得很累。因为要看路线，也要看景点评分，餐厅的位置等等，就会感觉很累。"
+    },
+    {
+      "t": "下班下课马上要答案",
+      "id": "after_work",
+      "w": 2,
+      "pct": 4.9,
+      "count": 8,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 8,
+        "AI 期待场景": 0
+      },
+      "example": "饭点吃什么，看什么动漫"
+    },
+    {
+      "t": "排队太久",
+      "id": "queue",
+      "w": 2,
+      "pct": 4.3,
+      "count": 7,
+      "c": "warn",
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 4,
+        "AI 期待场景": 3
+      },
+      "example": "周末想约朋友出门聚餐，来回翻了十几家本地餐馆，对比口味、距离、排队时长和人均预算，反复征求大家意见，纠结半天还是定不下来，整个决策过程特别费心疲惫。"
+    },
+    {
+      "t": "折中地点更公平",
+      "id": "location_compromise",
+      "w": 2,
+      "pct": 4.3,
+      "count": 7,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 5,
+        "AI 期待场景": 2
+      },
+      "example": "上周和朋友约吃饭，在平台对比了多家店铺口味和位置，讨论了一个小时才定好餐厅，觉得很耗精力，心很累。"
+    },
+    {
+      "t": "攻略和博主也要参考",
+      "id": "blogger_recommend",
+      "w": 2,
+      "pct": 4.3,
+      "count": 7,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 2,
+        "AI 期待场景": 5
+      },
+      "example": "有一次我想去约我的室友去吃饭，距离用餐的地点大约约5公里左右，但是他们都不想去那么远的地方，定找别的餐厅聚餐，那个地方其实我看博主推荐想去好久了，结果因为距离原因，最后没有去成。"
+    },
+    {
+      "t": "酒店旅行也会纠结",
+      "id": "travel_booking",
+      "w": 2,
+      "pct": 4.3,
+      "count": 7,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 3,
+        "AI 期待场景": 4
+      },
+      "example": "订酒店不知道选什么，看了很久最后才决定"
+    },
+    {
+      "t": "先检查能不能执行",
+      "id": "execution_check",
+      "w": 1,
+      "pct": 3.7,
+      "count": 6,
+      "c": "warn",
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 3,
+        "AI 期待场景": 3
+      },
+      "example": "周末想约朋友出门聚餐，来回翻了十几家本地餐馆，对比口味、距离、排队时长和人均预算，反复征求大家意见，纠结半天还是定不下来，整个决策过程特别费心疲惫。"
+    },
+    {
+      "t": "找店花时间",
+      "id": "waste_time",
+      "w": 1,
+      "pct": 3.7,
+      "count": 6,
+      "c": "warn",
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 6,
+        "AI 期待场景": 0
+      },
+      "example": "吃的晚饭的时候不知道吃什么现在各个软件之间来回切换寻找，很浪费时间"
+    },
+    {
+      "t": "筛选排序要清楚",
+      "id": "candidate_sort",
+      "w": 1,
+      "pct": 3.7,
+      "count": 6,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 2,
+        "AI 期待场景": 4
+      },
+      "example": "周末想和朋友聚餐，反复对比多家餐厅的评分，距离和口碑，纠结很久难以决定"
+    },
+    {
+      "t": "主动提醒别错过",
+      "id": "reminder",
+      "w": 1,
+      "pct": 3.1,
+      "count": 5,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 4,
+        "AI 期待场景": 1
+      },
+      "example": "周末想约朋友出门聚餐，来回翻了十几家本地餐馆，对比口味、距离、排队时长和人均预算，反复征求大家意见，纠结半天还是定不下来，整个决策过程特别费心疲惫。"
+    },
+    {
+      "t": "计划容易落空",
+      "id": "not_implemented",
+      "w": 1,
+      "pct": 3.1,
+      "count": 5,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 5,
+        "AI 期待场景": 0
+      },
+      "example": "有一次我想去约我的室友去吃饭，距离用餐的地点大约约5公里左右，但是他们都不想去那么远的地方，定找别的餐厅聚餐，那个地方其实我看博主推荐想去好久了，结果因为距离原因，最后没有去成。"
+    },
+    {
+      "t": "吃喝玩路线要一体化",
+      "id": "all_in_one",
+      "w": 1,
+      "pct": 2.5,
+      "count": 4,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 2,
+        "AI 期待场景": 2
+      },
+      "example": "周末和老婆规划附近游玩，并且有美食挑选"
+    },
+    {
+      "t": "天气会打乱计划",
+      "id": "weather",
+      "w": 1,
+      "pct": 1.8,
+      "count": 3,
+      "c": "warn",
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 3,
+        "AI 期待场景": 0
+      },
+      "example": "约饭场景：上周和朋友约周末聚餐，在多个 App 里反复对比口味、预算和距离，纠结了 2 小时还没定下来，最后大家都累得不想出门了。吃饭场景：昨天中午点外卖，翻了几十家店看评价、比满减，选了 40 分钟才下单，吃完还觉得没选对，特别疲惫。周末规划场景：上周末想带家人去 citywalk，查了景点、路线、天气和餐厅，信息太杂越看越乱，最后干脆在家躺了一天。"
+    },
+    {
+      "t": "营业状态不确定",
+      "id": "open_hours",
+      "w": 1,
+      "pct": 1.8,
+      "count": 3,
+      "c": "warn",
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 0,
+        "AI 期待场景": 3
+      },
+      "example": "在我出发去之前确认是否营业 排队情况如何"
+    },
+    {
+      "t": "没灵感时给方向",
+      "id": "inspiration",
+      "w": 1,
+      "pct": 1.8,
+      "count": 3,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 1,
+        "AI 期待场景": 2
+      },
+      "example": "规划周末去哪玩。很纠结，最后哪也没去成"
+    },
+    {
+      "t": "想要安静聊天",
+      "id": "quiet_env",
+      "w": 1,
+      "pct": 1.8,
+      "count": 3,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 2,
+        "AI 期待场景": 1
+      },
+      "example": "周末想和朋友找一家兼具性价比和安静环境的新餐厅聚餐，翻了好几款APP翻了上百条评价，一会纠结评分真假一会担心位置太远，选了快一个小时还没确定想去的店，感觉特别累"
+    },
+    {
+      "t": "学校周边高频",
+      "id": "school_area",
+      "w": 1,
+      "pct": 1.8,
+      "count": 3,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 3,
+        "AI 期待场景": 0
+      },
+      "example": "同学之间团聚不知道吃什么，多个人无法做到意见统一"
+    },
+    {
+      "t": "附近去哪玩",
+      "id": "nearby_play",
+      "w": 1,
+      "pct": 1.8,
+      "count": 3,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 2,
+        "AI 期待场景": 1
+      },
+      "example": "周末和老婆规划附近游玩，并且有美食挑选"
+    },
+    {
+      "t": "评价真假难辨",
+      "id": "fake_review",
+      "w": 1,
+      "pct": 1.2,
+      "count": 2,
+      "c": "hard",
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 2,
+        "AI 期待场景": 0
+      },
+      "example": "想找个地方随便吃点，结果刷半天点评软件，要么排队久要么评价踩雷，越选越烦，最后干脆点了外卖"
+    },
+    {
+      "t": "想去的店没位",
+      "id": "reservation",
+      "w": 1,
+      "pct": 1.2,
+      "count": 2,
+      "c": "warn",
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 2,
+        "AI 期待场景": 0
+      },
+      "example": "五一和朋友约饭前的空闲时间决定去找个娱乐场所消遣时间，但因为假期缘故很多地方都没有空位，反复预订最后还是取消了"
+    },
+    {
+      "t": "停车也麻烦",
+      "id": "parking",
+      "w": 1,
+      "pct": 1.2,
+      "count": 2,
+      "c": "warn",
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 1,
+        "AI 期待场景": 1
+      },
+      "example": "？这个周末回老家由于没开车，对乘坐的交通工具和路线很纠结"
+    },
+    {
+      "t": "优惠抢购也想管",
+      "id": "coupon",
+      "w": 1,
+      "pct": 1.2,
+      "count": 2,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 1,
+        "AI 期待场景": 1
+      },
+      "example": "晚上想点外卖，刷了半个多小时的软件，在各种菜品和优惠里来回救下，最后也没有想到满意的反而更烦了"
+    },
+    {
+      "t": "突发情况要兜底",
+      "id": "emergency",
+      "w": 1,
+      "pct": 1.2,
+      "count": 2,
+      "c": "hard",
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 1,
+        "AI 期待场景": 1
+      },
+      "example": "突发情况去看牙医，找不到合适诊所，不知医院预约挂号人数"
+    },
+    {
+      "t": "隐私和客观性顾虑",
+      "id": "privacy",
+      "w": 1,
+      "pct": 1.2,
+      "count": 2,
+      "c": "hard",
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 0,
+        "AI 期待场景": 2
+      },
+      "example": "希望在日常外出就餐，就近选购生活好物时，帮我客观筛选靠谱商家。"
+    },
+    {
+      "t": "希望入口顺手",
+      "id": "chat_window",
+      "w": 1,
+      "pct": 1.2,
+      "count": 2,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 2,
+        "AI 期待场景": 0
+      },
+      "example": "约饭场景：上周和朋友约周末聚餐，在多个 App 里反复对比口味、预算和距离，纠结了 2 小时还没定下来，最后大家都累得不想出门了。吃饭场景：昨天中午点外卖，翻了几十家店看评价、比满减，选了 40 分钟才下单，吃完还觉得没选对，特别疲惫。周末规划场景：上周末想带家人去 citywalk，查了景点、路线、天气和餐厅，信息太杂越看越乱，最后干脆在家躺了一天。"
+    },
+    {
+      "t": "多个 App 来回切",
+      "id": "app_switch",
+      "w": 1,
+      "pct": 0.6,
+      "count": 1,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 1,
+        "AI 期待场景": 0
+      },
+      "example": "吃的晚饭的时候不知道吃什么现在各个软件之间来回切换寻找，很浪费时间"
+    },
+    {
+      "t": "信息太多越看越乱",
+      "id": "too_much_info",
+      "w": 1,
+      "pct": 0.6,
+      "count": 1,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 1,
+        "AI 期待场景": 0
+      },
+      "example": "约饭场景：上周和朋友约周末聚餐，在多个 App 里反复对比口味、预算和距离，纠结了 2 小时还没定下来，最后大家都累得不想出门了。吃饭场景：昨天中午点外卖，翻了几十家店看评价、比满减，选了 40 分钟才下单，吃完还觉得没选对，特别疲惫。周末规划场景：上周末想带家人去 citywalk，查了景点、路线、天气和餐厅，信息太杂越看越乱，最后干脆在家躺了一天。"
+    },
+    {
+      "t": "需要备选方案",
+      "id": "fallback_plan",
+      "w": 1,
+      "pct": 0.6,
+      "count": 1,
+      "c": "warn",
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 1,
+        "AI 期待场景": 0
+      },
+      "example": "有一次规划在周边旅游，但是天气变化很大，导致原有计划被打乱而且没有备选计划"
+    },
+    {
+      "t": "希望记住偏好",
+      "id": "memory",
+      "w": 1,
+      "pct": 0.6,
+      "count": 1,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 0,
+        "AI 期待场景": 1
+      },
+      "example": "一个人吃饭时推荐个人偏好"
+    },
+    {
+      "t": "群里投票更快",
+      "id": "vote",
+      "w": 1,
+      "pct": 0.6,
+      "count": 1,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 0,
+        "AI 期待场景": 1
+      },
+      "example": "加班结束后.帮我快速筛选出顺路、营业中且口味匹配的外卖或夜宵选项"
+    },
+    {
+      "t": "先收集大家偏好",
+      "id": "preference_collection",
+      "w": 1,
+      "pct": 0.6,
+      "count": 1,
+      "sourceCategory": "融合开放题需求语料",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
+      "sourceLabel": "痛点经历 + AI 期待场景",
+      "sourceBreakdown": {
+        "痛点经历": 0,
+        "AI 期待场景": 1
+      },
+      "example": "和朋友多人约饭时，帮我们快速协调大家的口味、预算和位置，给出合适的餐厅方案，减少群里反复讨论的时间。"
+    }
+  ],
+  "scenarios": [
+    {
+      "key": "group_dining",
+      "title": "多人约饭",
+      "icon": "约",
+      "count": 69,
+      "pct": 42.3,
+      "examples": [
+        {
+          "id": "第一阶段-XO2Kgbml39o",
+          "text": "有一次我想去约我的室友去吃饭，距离用餐的地点大约约5公里左右，但是他们都不想去那么远的地方，定找别的餐厅聚餐，那个地方其实我看博主推荐想去好久了，结果因为距离原因，最后没有去成。",
+          "phase": "第一阶段",
+          "sourceLabel": "痛点经历"
+        },
+        {
+          "id": "第二阶段-nNrgk8gJrka",
+          "text": "选择困难症时 不知道实在选不出来时能结束大家的犹豫",
+          "phase": "第二阶段",
+          "sourceLabel": "AI 期待场景"
+        },
+        {
+          "id": "第一阶段-bNxKOGWa5zy",
+          "text": "周五晚上和朋友一起出去吃饭，但是大家都没有明确的偏好，因此没有人推荐餐厅，陷入僵局",
+          "phase": "第一阶段",
+          "sourceLabel": "痛点经历"
+        },
+        {
+          "id": "第一阶段-NRYK1Qldaxz",
+          "text": "跟朋友出去去吃饭要考虑他喜欢的我喜欢的然后折中商量感觉很累",
+          "phase": "第一阶段",
+          "sourceLabel": "痛点经历"
+        }
+      ]
+    },
+    {
+      "key": "solo_food",
+      "title": "今天吃什么",
+      "icon": "食",
+      "count": 59,
+      "pct": 36.2,
+      "examples": [
+        {
+          "id": "第一阶段-gnNKNj5ykvl",
+          "text": "饭点吃什么，看什么动漫",
+          "phase": "第一阶段",
+          "sourceLabel": "痛点经历"
+        },
+        {
+          "id": "第二阶段-WP18GB4PPWB",
+          "text": "不知道点什么外卖的时候",
+          "phase": "第二阶段",
+          "sourceLabel": "AI 期待场景"
+        },
+        {
+          "id": "第一阶段-Q4wKrEvblwQ",
+          "text": "吃的晚饭的时候不知道吃什么现在各个软件之间来回切换寻找，很浪费时间",
+          "phase": "第一阶段",
+          "sourceLabel": "痛点经历"
+        },
+        {
+          "id": "第一阶段-XO2Kgbml39o",
+          "text": "有一次我想去约我的室友去吃饭，距离用餐的地点大约约5公里左右，但是他们都不想去那么远的地方，定找别的餐厅聚餐，那个地方其实我看博主推荐想去好久了，结果因为距离原因，最后没有去成。",
+          "phase": "第一阶段",
+          "sourceLabel": "痛点经历"
+        }
+      ]
+    },
+    {
+      "key": "weekend_plan",
+      "title": "周末规划",
+      "icon": "周",
+      "count": 41,
+      "pct": 25.2,
+      "examples": [
+        {
+          "id": "第一阶段-gnNKYBGjxEk",
+          "text": "周末和老婆规划附近游玩，并且有美食挑选",
+          "phase": "第一阶段",
+          "sourceLabel": "痛点经历"
+        },
+        {
+          "id": "第二阶段-mnYqJy3B9Zp",
+          "text": "临时起意和朋友出去玩，安排行程，景点推荐，然后顺便解决吃饭问题",
+          "phase": "第二阶段",
+          "sourceLabel": "AI 期待场景"
+        },
+        {
+          "id": "第一阶段-gnNKAq6RkN8",
+          "text": "本地周末玩但是规划一天具体安排比较麻烦，不知道目的地附近有什么好吃的，上网查询了但是信息比较少。",
+          "phase": "第一阶段",
+          "sourceLabel": "痛点经历"
+        },
+        {
+          "id": "第一阶段-oBowxDgB02n",
+          "text": "吃饭不懂吃什么，特别是周末的时候。",
+          "phase": "第一阶段",
+          "sourceLabel": "痛点经历"
+        }
+      ]
+    },
+    {
+      "key": "execution_risk",
+      "title": "执行自检",
+      "icon": "验",
+      "count": 20,
+      "pct": 12.3,
+      "examples": [
+        {
+          "id": "第一阶段-XO2Kgbml39o",
+          "text": "有一次我想去约我的室友去吃饭，距离用餐的地点大约约5公里左右，但是他们都不想去那么远的地方，定找别的餐厅聚餐，那个地方其实我看博主推荐想去好久了，结果因为距离原因，最后没有去成。",
+          "phase": "第一阶段",
+          "sourceLabel": "痛点经历"
+        },
+        {
+          "id": "第二阶段-Q4Emn41QaDq",
+          "text": "在我出发去之前确认是否营业 排队情况如何",
+          "phase": "第二阶段",
+          "sourceLabel": "AI 期待场景"
+        },
+        {
+          "id": "第一阶段-nNV3E4nEwDN",
+          "text": "周末想约朋友出门聚餐，来回翻了十几家本地餐馆，对比口味、距离、排队时长和人均预算，反复征求大家意见，纠结半天还是定不下来，整个决策过程特别费心疲惫。",
+          "phase": "第一阶段",
+          "sourceLabel": "痛点经历"
+        },
+        {
+          "id": "第一阶段-XO2KQ6yGD3G",
+          "text": "想找个地方随便吃点，结果刷半天点评软件，要么排队久要么评价踩雷，越选越烦，最后干脆点了外卖",
+          "phase": "第一阶段",
+          "sourceLabel": "痛点经历"
+        }
+      ]
     }
   ],
   "sections": [
     {
-      "key": "decisionPainPoints",
-      "title": "本地决策痛点",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/decision_pain_points_overall.csv",
+      "key": "sources",
+      "title": "合并语料来源",
+      "sourceFile": "data/raw/问卷数据v1.1.csv + data/raw/第二阶段问卷数据.csv",
       "rows": [
         {
-          "label": "餐厅 / 活动评价真假难辨",
-          "display": "评价真假难辨",
-          "count": 64,
-          "pct": 61.5,
-          "example": "",
-          "sourceColumn": "你在做本地生活决策时，通常会遇到哪些问题？-C. 餐厅 / 活动评价真假难辨"
+          "label": "请你回想最近一次\"做本地生活决策很累\"的经历,可能是吃饭、约人、规划周末或别的事。请用 1-2 句话描述这件事",
+          "display": "第一阶段 · 痛点经历",
+          "count": 86,
+          "pct": 52.8,
+          "example": "请你回想最近一次\"做本地生活决策很累\"的经历,可能是吃饭、约人、规划周末或别的事。请用 1-2 句话描述这件事"
         },
         {
-          "label": "信息太多，不知道怎么选",
-          "display": "信息太多",
-          "count": 62,
-          "pct": 59.6,
-          "example": "",
-          "sourceColumn": "你在做本地生活决策时，通常会遇到哪些问题？-A. 信息太多，不知道怎么选"
-        },
-        {
-          "label": "需要在多个 App 之间反复切换",
-          "display": "多 App 切换",
-          "count": 52,
-          "pct": 50,
-          "example": "",
-          "sourceColumn": "你在做本地生活决策时，通常会遇到哪些问题？-B. 需要在多个 App 之间反复切换"
-        },
-        {
-          "label": "不知道营业时间、排队情况是否合适",
-          "display": "营业/排队不确定",
-          "count": 26,
-          "pct": 25,
-          "example": "",
-          "sourceColumn": "你在做本地生活决策时，通常会遇到哪些问题？-F. 不知道营业时间、排队情况是否合适"
-        },
-        {
-          "label": "不知道是否符合预算",
-          "display": "预算不确定",
-          "count": 22,
-          "pct": 21.2,
-          "example": "",
-          "sourceColumn": "你在做本地生活决策时，通常会遇到哪些问题？-D. 不知道是否符合预算"
-        },
-        {
-          "label": "不知道路线是否顺路",
-          "display": "路线不顺路",
-          "count": 18,
-          "pct": 17.3,
-          "example": "",
-          "sourceColumn": "你在做本地生活决策时，通常会遇到哪些问题？-E. 不知道路线是否顺路"
-        },
-        {
-          "label": "临时计划变化后，需要重新查很多信息",
-          "display": "临时变更重查",
-          "count": 16,
-          "pct": 15.4,
-          "example": "",
-          "sourceColumn": "你在做本地生活决策时，通常会遇到哪些问题？-H. 临时计划变化后，需要重新查很多信息"
-        },
-        {
-          "label": "和朋友意见不统一，很难协调",
-          "display": "朋友意见不统一",
-          "count": 14,
-          "pct": 13.5,
-          "example": "",
-          "sourceColumn": "你在做本地生活决策时，通常会遇到哪些问题？-G. 和朋友意见不统一，很难协调"
+          "label": "请用一句话描述：你最希望 AI 本地生活管家在什么具体场景下帮到你？",
+          "display": "第二阶段 · AI 期待场景",
+          "count": 77,
+          "pct": 47.2,
+          "example": "请用一句话描述：你最希望 AI 本地生活管家在什么具体场景下帮到你？"
         }
       ]
     },
     {
-      "key": "groupConflicts",
-      "title": "多人约饭冲突",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/group_conflict_types_overall.csv",
+      "key": "scenarios",
+      "title": "产品场景归因",
+      "sourceFile": "融合开放题文本",
       "rows": [
         {
-          "label": "口味不同",
-          "display": "口味不同",
-          "count": 63,
-          "pct": 60.6,
-          "example": "",
-          "sourceColumn": "多人约饭 / 聚会时，最常见的问题是什么？-A. 口味不同"
-        },
-        {
-          "label": "时间不一致",
-          "display": "时间不一致",
-          "count": 44,
+          "label": "多人约饭",
+          "display": "多人约饭",
+          "count": 69,
           "pct": 42.3,
-          "example": "",
-          "sourceColumn": "多人约饭 / 聚会时，最常见的问题是什么？-D. 时间不一致"
+          "example": "有一次我想去约我的室友去吃饭，距离用餐的地点大约约5公里左右，但是他们都不想去那么远的地方，定找别的餐厅聚餐，那个地方其实我看博主推荐想去好久了，结果因为距离原因，最后没有去成。"
         },
         {
-          "label": "距离远近不同",
-          "display": "距离远近不同",
-          "count": 44,
-          "pct": 42.3,
-          "example": "",
-          "sourceColumn": "多人约饭 / 聚会时，最常见的问题是什么？-C. 距离远近不同"
+          "label": "今天吃什么",
+          "display": "今天吃什么",
+          "count": 59,
+          "pct": 36.2,
+          "example": "饭点吃什么，看什么动漫"
         },
         {
-          "label": "预算不同",
-          "display": "预算不同",
-          "count": 28,
-          "pct": 26.9,
-          "example": "",
-          "sourceColumn": "多人约饭 / 聚会时，最常见的问题是什么？-B. 预算不同"
-        },
-        {
-          "label": "有人忌口 / 过敏 / 不吃某类食物",
-          "display": "忌口/过敏",
-          "count": 27,
-          "pct": 26,
-          "example": "",
-          "sourceColumn": "多人约饭 / 聚会时，最常见的问题是什么？-E. 有人忌口 / 过敏 / 不吃某类食物"
-        },
-        {
-          "label": "有人想尝新，有人想吃熟悉的店",
-          "display": "尝新 vs 熟店",
-          "count": 27,
-          "pct": 26,
-          "example": "",
-          "sourceColumn": "多人约饭 / 聚会时，最常见的问题是什么？-G. 有人想尝新，有人想吃熟悉的店"
-        },
-        {
-          "label": "大家都不想做决定",
-          "display": "都不想做决定",
-          "count": 20,
-          "pct": 19.2,
-          "example": "",
-          "sourceColumn": "多人约饭 / 聚会时，最常见的问题是什么？-H. 大家都不想做决定"
-        },
-        {
-          "label": "有人想安静聊天，有人想热闹",
-          "display": "安静/热闹冲突",
-          "count": 13,
-          "pct": 12.5,
-          "example": "",
-          "sourceColumn": "多人约饭 / 聚会时，最常见的问题是什么？-F. 有人想安静聊天，有人想热闹"
-        }
-      ]
-    },
-    {
-      "key": "openTextThemes",
-      "title": "开放题主题",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/open_text_theme_counts.csv",
-      "rows": [
-        {
-          "label": "不知道吃什么/选店困难",
-          "display": "不知道吃什么",
-          "count": 52,
-          "pct": 50,
-          "example": "饭点吃什么，看什么动漫",
-          "sourceColumn": ""
-        },
-        {
-          "label": "多人约饭/意见冲突",
-          "display": "多人意见冲突",
-          "count": 46,
-          "pct": 44.2,
-          "example": "有一次我想去约我的室友去吃饭，距离用餐的地点大约约5公里左右，但是他们都不想去那么远的地方，定找别的餐厅聚餐，那个地方其实我看博主推荐想去好久了，结果因为距离原因，最后没有去成。",
-          "sourceColumn": ""
-        },
-        {
-          "label": "路线/距离/时间安排",
-          "display": "路线/时间安排",
-          "count": 42,
-          "pct": 40.4,
-          "example": "周末和老婆规划附近游玩，并且有美食挑选",
-          "sourceColumn": ""
-        },
-        {
-          "label": "信息过载/多 App 切换",
-          "display": "信息过载",
-          "count": 23,
-          "pct": 22.1,
-          "example": "吃的晚饭的时候不知道吃什么现在各个软件之间来回切换寻找，很浪费时间",
-          "sourceColumn": ""
-        },
-        {
-          "label": "执行不确定/约束检查",
-          "display": "执行不确定",
-          "count": 9,
-          "pct": 8.7,
-          "example": "有一次中午下班后不想一个人做饭，就想点份外卖。但翻过来翻过去感觉不是口味不合适就是价格太贵，一直纠结了半个多小时后才定下来",
-          "sourceColumn": ""
-        },
-        {
-          "label": "突发/兜底需求",
-          "display": "突发兜底",
-          "count": 1,
-          "pct": 1,
-          "example": "突发情况去看牙医，找不到合适诊所，不知医院预约挂号人数",
-          "sourceColumn": ""
-        }
-      ]
-    },
-    {
-      "key": "desiredAiTasks",
-      "title": "期待 AI 做的事",
-      "sourceFile": "analysis/outputs/2026-05-08/tables/desired_ai_tasks_overall.csv",
-      "rows": [
-        {
-          "label": "根据预算、口味、距离、评分等推荐餐厅",
-          "display": "按预算口味推荐",
-          "count": 58,
-          "pct": 55.8,
-          "example": "",
-          "sourceColumn": "如果有一个 AI 本地生活管家，你最希望它帮你做什么？-B. 根据预算、口味、距离、评分等推荐餐厅"
-        },
-        {
-          "label": "想不到吃什么/玩什么时，帮我找灵感",
-          "display": "找灵感",
-          "count": 55,
-          "pct": 52.9,
-          "example": "",
-          "sourceColumn": "如果有一个 AI 本地生活管家，你最希望它帮你做什么？-A. 想不到吃什么/玩什么时，帮我找灵感"
-        },
-        {
-          "label": "帮我规划周末活动 / 短途游 / citywalk",
+          "label": "周末规划",
           "display": "周末规划",
-          "count": 50,
-          "pct": 48.1,
-          "example": "",
-          "sourceColumn": "如果有一个 AI 本地生活管家，你最希望它帮你做什么？-C. 帮我规划周末活动 / 短途游 / citywalk"
+          "count": 41,
+          "pct": 25.2,
+          "example": "周末和老婆规划附近游玩，并且有美食挑选"
         },
         {
-          "label": "帮我和朋友协调约饭 / 聚会地点，根据多人偏好提供建议",
-          "display": "协调约饭地点",
-          "count": 43,
-          "pct": 41.3,
-          "example": "",
-          "sourceColumn": "如果有一个 AI 本地生活管家，你最希望它帮你做什么？-D. 帮我和朋友协调约饭 / 聚会地点，根据多人偏好提供建议"
+          "label": "执行自检",
+          "display": "执行自检",
+          "count": 20,
+          "pct": 12.3,
+          "example": "有一次我想去约我的室友去吃饭，距离用餐的地点大约约5公里左右，但是他们都不想去那么远的地方，定找别的餐厅聚餐，那个地方其实我看博主推荐想去好久了，结果因为距离原因，最后没有去成。"
+        }
+      ]
+    },
+    {
+      "key": "words",
+      "title": "高频需求词条",
+      "sourceFile": "规则词表归并",
+      "rows": [
+        {
+          "label": "痛点经历 + AI 期待场景",
+          "display": "家人朋友场景混在一起",
+          "count": 48,
+          "pct": 29.4,
+          "example": "周末和老婆规划附近游玩，并且有美食挑选"
         },
         {
-          "label": "帮我留意限时优惠 / 抢购 / 演出预约",
-          "display": "优惠/预约提醒",
-          "count": 33,
-          "pct": 31.7,
-          "example": "",
-          "sourceColumn": "如果有一个 AI 本地生活管家，你最希望它帮你做什么？-G. 帮我留意限时优惠 / 抢购 / 演出预约"
+          "label": "痛点经历 + AI 期待场景",
+          "display": "周末规划需要省心",
+          "count": 39,
+          "pct": 23.9,
+          "example": "周末和老婆规划附近游玩，并且有美食挑选"
         },
         {
-          "label": "根据天气、时间等实时调整我已经定好的方案",
-          "display": "实时调整方案",
+          "label": "痛点经历 + AI 期待场景",
+          "display": "不知道吃什么",
+          "count": 27,
+          "pct": 16.6,
+          "example": "饭点吃什么，看什么动漫"
+        },
+        {
+          "label": "痛点经历 + AI 期待场景",
+          "display": "选择困难",
+          "count": 25,
+          "pct": 15.3,
+          "example": "五一期间和家人商量去哪里游玩，老婆想去观景的地方，我想去能带孩子游玩的地方，因此而纠结。"
+        },
+        {
+          "label": "痛点经历 + AI 期待场景",
+          "display": "多人约饭要协调",
           "count": 23,
-          "pct": 22.1,
-          "example": "",
-          "sourceColumn": "如果有一个 AI 本地生活管家，你最希望它帮你做什么？-F. 根据天气、时间等实时调整我已经定好的方案"
+          "pct": 14.1,
+          "example": "有一次我想去约我的室友去吃饭，距离用餐的地点大约约5公里左右，但是他们都不想去那么远的地方，定找别的餐厅聚餐，那个地方其实我看博主推荐想去好久了，结果因为距离原因，最后没有去成。"
         },
         {
-          "label": "突发情况帮我兜底，例如找 24h 药店、医院、维修等",
-          "display": "突发兜底",
+          "label": "痛点经历 + AI 期待场景",
+          "display": "口味偏好要被照顾",
           "count": 23,
-          "pct": 22.1,
-          "example": "",
-          "sourceColumn": "如果有一个 AI 本地生活管家，你最希望它帮你做什么？-E. 突发情况帮我兜底，例如找 24h 药店、医院、维修等"
+          "pct": 14.1,
+          "example": "有些人的口味不同"
+        },
+        {
+          "label": "痛点经历 + AI 期待场景",
+          "display": "反复对比",
+          "count": 19,
+          "pct": 11.7,
+          "example": "本地周末玩但是规划一天具体安排比较麻烦，不知道目的地附近有什么好吃的，上网查询了但是信息比较少。"
+        },
+        {
+          "label": "痛点经历 + AI 期待场景",
+          "display": "时间凑不齐",
+          "count": 17,
+          "pct": 10.4,
+          "example": "吃的晚饭的时候不知道吃什么现在各个软件之间来回切换寻找，很浪费时间"
+        },
+        {
+          "label": "痛点经历 + AI 期待场景",
+          "display": "路线安排很累",
+          "count": 15,
+          "pct": 9.2,
+          "example": "本地周末玩但是规划一天具体安排比较麻烦，不知道目的地附近有什么好吃的，上网查询了但是信息比较少。"
+        },
+        {
+          "label": "痛点经历 + AI 期待场景",
+          "display": "想要直接推荐餐厅",
+          "count": 14,
+          "pct": 8.6,
+          "example": "有一次我想去约我的室友去吃饭，距离用餐的地点大约约5公里左右，但是他们都不想去那么远的地方，定找别的餐厅聚餐，那个地方其实我看博主推荐想去好久了，结果因为距离原因，最后没有去成。"
+        },
+        {
+          "label": "痛点经历 + AI 期待场景",
+          "display": "预算难开口",
+          "count": 14,
+          "pct": 8.6,
+          "example": "有一次中午下班后不想一个人做饭，就想点份外卖。但翻过来翻过去感觉不是口味不合适就是价格太贵，一直纠结了半个多小时后才定下来"
+        },
+        {
+          "label": "痛点经历 + AI 期待场景",
+          "display": "要 2-3 个可选方案",
+          "count": 14,
+          "pct": 8.6,
+          "example": "纠结半天不知道周末去哪里游玩，反复对比多个地点和出行方案，做决定时十分耗费精力"
+        },
+        {
+          "label": "痛点经历 + AI 期待场景",
+          "display": "外卖也纠结",
+          "count": 14,
+          "pct": 8.6,
+          "example": "有一次中午下班后不想一个人做饭，就想点份外卖。但翻过来翻过去感觉不是口味不合适就是价格太贵，一直纠结了半个多小时后才定下来"
+        },
+        {
+          "label": "痛点经历 + AI 期待场景",
+          "display": "距离太远",
+          "count": 13,
+          "pct": 8,
+          "example": "周末和老婆规划附近游玩，并且有美食挑选"
+        },
+        {
+          "label": "痛点经历 + AI 期待场景",
+          "display": "评分口碑要比",
+          "count": 10,
+          "pct": 6.1,
+          "example": "下班了想找地方吃饭，翻看了大量评论，对比了很多家菜品，反复纠结，花了很久的时间才选择出要吃饭的地方"
+        },
+        {
+          "label": "痛点经历 + AI 期待场景",
+          "display": "想省心省力",
+          "count": 8,
+          "pct": 4.9,
+          "example": "本地周末玩但是规划一天具体安排比较麻烦，不知道目的地附近有什么好吃的，上网查询了但是信息比较少。"
         }
       ]
     }
-  ]
+  ],
+  "examples": [
+    {
+      "id": "第一阶段-XO2Kgbml39o",
+      "text": "有一次我想去约我的室友去吃饭，距离用餐的地点大约约5公里左右，但是他们都不想去那么远的地方，定找别的餐厅聚餐，那个地方其实我看博主推荐想去好久了，结果因为距离原因，最后没有去成。",
+      "phase": "第一阶段",
+      "sourceLabel": "痛点经历"
+    },
+    {
+      "id": "第二阶段-nNrgk8gJrka",
+      "text": "选择困难症时 不知道实在选不出来时能结束大家的犹豫",
+      "phase": "第二阶段",
+      "sourceLabel": "AI 期待场景"
+    },
+    {
+      "id": "第一阶段-bNxKOGWa5zy",
+      "text": "周五晚上和朋友一起出去吃饭，但是大家都没有明确的偏好，因此没有人推荐餐厅，陷入僵局",
+      "phase": "第一阶段",
+      "sourceLabel": "痛点经历"
+    },
+    {
+      "id": "第一阶段-NRYK1Qldaxz",
+      "text": "跟朋友出去去吃饭要考虑他喜欢的我喜欢的然后折中商量感觉很累",
+      "phase": "第一阶段",
+      "sourceLabel": "痛点经历"
+    },
+    {
+      "id": "第一阶段-gnNKNj5ykvl",
+      "text": "饭点吃什么，看什么动漫",
+      "phase": "第一阶段",
+      "sourceLabel": "痛点经历"
+    },
+    {
+      "id": "第二阶段-WP18GB4PPWB",
+      "text": "不知道点什么外卖的时候",
+      "phase": "第二阶段",
+      "sourceLabel": "AI 期待场景"
+    },
+    {
+      "id": "第一阶段-Q4wKrEvblwQ",
+      "text": "吃的晚饭的时候不知道吃什么现在各个软件之间来回切换寻找，很浪费时间",
+      "phase": "第一阶段",
+      "sourceLabel": "痛点经历"
+    },
+    {
+      "id": "第一阶段-gnNKYBGjxEk",
+      "text": "周末和老婆规划附近游玩，并且有美食挑选",
+      "phase": "第一阶段",
+      "sourceLabel": "痛点经历"
+    },
+    {
+      "id": "第二阶段-mnYqJy3B9Zp",
+      "text": "临时起意和朋友出去玩，安排行程，景点推荐，然后顺便解决吃饭问题",
+      "phase": "第二阶段",
+      "sourceLabel": "AI 期待场景"
+    },
+    {
+      "id": "第一阶段-gnNKAq6RkN8",
+      "text": "本地周末玩但是规划一天具体安排比较麻烦，不知道目的地附近有什么好吃的，上网查询了但是信息比较少。",
+      "phase": "第一阶段",
+      "sourceLabel": "痛点经历"
+    }
+  ],
+  "source": {
+    "files": [
+      "data/raw/问卷数据v1.1.csv",
+      "data/raw/第二阶段问卷数据.csv"
+    ],
+    "analyzer": "analysis/scripts/export_wordcloud_data.mjs",
+    "method": "regex-phrase-rule-merge-v2"
+  }
 }
