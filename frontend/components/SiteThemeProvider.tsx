@@ -25,6 +25,25 @@ type SiteThemeContextValue = {
 const SiteThemeContext = createContext<SiteThemeContextValue | null>(null);
 const bodyThemeClasses = siteThemes.map((theme) => theme.bodyClassName);
 
+function buildSiteIconSvg(theme: SiteTheme) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="g" x1="7" y1="5" x2="41" y2="43" gradientUnits="userSpaceOnUse">
+      <stop stop-color="${theme.primary}"/>
+      <stop offset="1" stop-color="${theme.siteAccent}"/>
+    </linearGradient>
+  </defs>
+  <rect width="48" height="48" rx="14" fill="url(#g)"/>
+  <path d="M10 23h28" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M12 23a12 12 0 0 0 24 0" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M20 10c-1.4 2 1.4 3.6 0 5.6M28 8.5c-1.6 2.2 1.6 3.8 0 6" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+}
+
+function siteIconHref(theme: SiteTheme) {
+  return `data:image/svg+xml,${encodeURIComponent(buildSiteIconSvg(theme))}`;
+}
+
 export function SiteThemeProvider({ children }: { children: ReactNode }) {
   const [themeId, setThemeId] = useState("mint-green");
   const [themeReveal, setThemeReveal] = useState<ThemeReveal | null>(null);
@@ -48,6 +67,18 @@ export function SiteThemeProvider({ children }: { children: ReactNode }) {
     document.body.classList.add(activeTheme.bodyClassName);
     document.documentElement.style.setProperty("--sb", activeTheme.siteAccent);
     document.documentElement.style.setProperty("--theme-color", activeTheme.siteAccent);
+
+    const iconLink = document.querySelector<HTMLLinkElement>('link[rel="icon"]') || document.createElement("link");
+    iconLink.rel = "icon";
+    iconLink.type = "image/svg+xml";
+    iconLink.href = siteIconHref(activeTheme);
+    iconLink.dataset.siteThemeIcon = "true";
+    if (!iconLink.parentNode) {
+      document.head.appendChild(iconLink);
+    }
+
+    const themeColorMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    themeColorMeta?.setAttribute("content", activeTheme.siteAccent);
   }, [activeTheme]);
 
   useEffect(() => {
