@@ -52,6 +52,43 @@ type SurveyScenario = {
   examples: Array<{ id: string; text: string; phase?: string; sourceLabel?: string }>;
 };
 
+type ChartRow = {
+  label: string;
+  count: number;
+  pct: number;
+  note?: string;
+};
+
+type SurveyPhaseFocus = {
+  phase: string;
+  sourceLabel: string;
+  openTextCount: number;
+  topWords: ChartRow[];
+  topScenarios: ChartRow[];
+};
+
+type SurveyAgeFocus = {
+  age: string;
+  sampleSize: number;
+  openTextCount: number;
+  topWords: ChartRow[];
+  topScenarios: ChartRow[];
+};
+
+type SurveyCharts = {
+  topTerms: ChartRow[];
+  scenarioDonut: ChartRow[];
+  ageDistribution: ChartRow[];
+  identityDistribution: ChartRow[];
+  appFrequency: ChartRow[];
+  aiUsage: ChartRow[];
+  sourceOpenText: ChartRow[];
+  tangledScenes: ChartRow[];
+  painPointBars: ChartRow[];
+  phaseFocus: SurveyPhaseFocus[];
+  ageFocus: SurveyAgeFocus[];
+};
+
 type SurveySource = {
   phase: string;
   sourceLabel: string;
@@ -87,6 +124,7 @@ type SurveyInsights = {
   insightCards: SurveyInsight[];
   words: CloudWord[];
   scenarios: SurveyScenario[];
+  charts: SurveyCharts;
   sections: SurveySection[];
   examples: Array<{ id: string; text: string; phase?: string; sourceLabel?: string }>;
 };
@@ -117,6 +155,73 @@ function wordClass(word: CloudWord) {
 
 function sourceBreakdownEntries(word: CloudWord) {
   return Object.entries(word.sourceBreakdown || {}).filter(([, count]) => count > 0);
+}
+
+function colorClass(index: number) {
+  return ["green", "amber", "rose", "blue", "slate"][index % 5];
+}
+
+function formatPct(value: number) {
+  return `${Number(value || 0).toFixed(1).replace(/\.0$/, "")}%`;
+}
+
+function barWidth(row: ChartRow, rows: ChartRow[]) {
+  const max = Math.max(1, ...rows.map((item) => item.count));
+  return `${Math.max(6, Math.round((row.count / max) * 100))}%`;
+}
+
+function donutBackground(rows: ChartRow[]) {
+  const colors = ["#2f7d5b", "#cf7f28", "#bb2947", "#2f68a3", "#718096"];
+  let cursor = 0;
+  const parts = rows.map((row, index) => {
+    const start = cursor;
+    const end = Math.min(100, cursor + row.pct);
+    cursor = end;
+    return `${colors[index % colors.length]} ${start}% ${end}%`;
+  });
+  if (cursor < 100) parts.push(`#e8f4ef ${cursor}% 100%`);
+  return `conic-gradient(${parts.join(", ")})`;
+}
+
+function ChartBars({ rows, limit = 10 }: { rows: ChartRow[]; limit?: number }) {
+  const visibleRows = rows.slice(0, limit);
+
+  return (
+    <div className="cd-chart-bars">
+      {visibleRows.map((row, index) => (
+        <div className={`cd-chart-bar c-${colorClass(index)}`} key={`${row.label}-${index}`}>
+          <div className="lbl">
+            <span>{row.label}</span>
+            <b>{row.count} 条 · {formatPct(row.pct)}</b>
+          </div>
+          <div className="track">
+            <span className="fill" style={{ width: barWidth(row, visibleRows) }} />
+          </div>
+          {row.note ? <small>{row.note}</small> : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DonutChart({ rows }: { rows: ChartRow[] }) {
+  return (
+    <div className="cd-donut-wrap">
+      <div className="cd-donut" style={{ background: donutBackground(rows) }}>
+        <span>{rows.reduce((sum, row) => sum + row.count, 0)}</span>
+        <small>条文本</small>
+      </div>
+      <div className="cd-donut-legend">
+        {rows.map((row, index) => (
+          <div key={`${row.label}-${index}`}>
+            <i className={`c-${colorClass(index)}`} />
+            <span>{row.label}</span>
+            <b>{formatPct(row.pct)}</b>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export function SurveyWordCloud() {
@@ -387,8 +492,8 @@ export function SurveyWordCloud() {
       <aside className={`cloud-drawer ${drawerOpen ? "open" : ""}`} aria-hidden={!drawerOpen} aria-label="开放题词云调研数据">
         <div className="cd-head">
           <div>
-            <div className="eyebrow">融合开放题词云 · Survey v1.1 + Phase 2</div>
-            <h4>这些词从哪来，指向什么功能</h4>
+            <div className="eyebrow">开放题原文词频 · Survey v1.1 + Phase 2</div>
+            <h4>不总结，只看用户自己写下的词</h4>
           </div>
           <button className="cd-close" onClick={closeDrawer} type="button" aria-label="关闭">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -416,7 +521,7 @@ export function SurveyWordCloud() {
               </div>
               <p>
                 在两阶段开放题中命中 {selectedWord.count} 条，占开放文本 {selectedWord.pct}%。
-                这个词条用于判断需求是否落到单人吃饭、多人约饭、周末规划或执行自检。
+                这里统计的是原文里直接出现这个词或短语的文本数量，不再把开放回答改写成产品概念。
               </p>
               <div className="cd-breakdown">
                 {sourceBreakdownEntries(selectedWord).map(([source, count]) => (
@@ -427,16 +532,83 @@ export function SurveyWordCloud() {
             </div>
           ) : null}
 
-          <div className="cd-section-h">场景归因</div>
-          <div className="cd-scenarios">
-            {SURVEY.scenarios.map((scenario) => (
-              <div className="cd-scenario" key={scenario.key}>
-                <div className="cd-scenario-icon">{scenario.icon}</div>
-                <div>
-                  <strong>{scenario.title}</strong>
-                  <span>{scenario.count} 条 / {scenario.pct}%</span>
-                  {scenario.examples[0] ? <p>{scenario.examples[0].text}</p> : null}
+          <div className="cd-section-h">数据图表</div>
+          <div className="cd-dashboard">
+            <div className="cd-chart-card wide">
+              <div className="cd-chart-title">
+                <strong>开放题原词 Top 20</strong>
+                <span>来自两列开放题，按命中文本数排序</span>
+              </div>
+              <ChartBars rows={SURVEY.charts.topTerms} limit={14} />
+            </div>
+
+            <div className="cd-chart-card">
+              <div className="cd-chart-title">
+                <strong>主场景占比</strong>
+                <span>用原词命中后取最高分场景</span>
+              </div>
+              <DonutChart rows={SURVEY.charts.scenarioDonut} />
+            </div>
+
+            <div className="cd-chart-card">
+              <div className="cd-chart-title">
+                <strong>年龄分布</strong>
+                <span>两阶段有效样本合并</span>
+              </div>
+              <ChartBars rows={SURVEY.charts.ageDistribution} limit={8} />
+            </div>
+
+            <div className="cd-chart-card">
+              <div className="cd-chart-title">
+                <strong>身份分布</strong>
+                <span>学生与工作人群样本结构</span>
+              </div>
+              <ChartBars rows={SURVEY.charts.identityDistribution} limit={8} />
+            </div>
+
+            <div className="cd-chart-card">
+              <div className="cd-chart-title">
+                <strong>本地生活 App 使用频率</strong>
+                <span>判断用户是否高频遇到本地决策</span>
+              </div>
+              <ChartBars rows={SURVEY.charts.appFrequency} limit={8} />
+            </div>
+
+            <div className="cd-chart-card">
+              <div className="cd-chart-title">
+                <strong>决策痛点</strong>
+                <span>问卷选择题，不混入均值/方差列</span>
+              </div>
+              <ChartBars rows={SURVEY.charts.painPointBars} limit={8} />
+            </div>
+          </div>
+
+          <div className="cd-section-h">阶段与人群差异</div>
+          <div className="cd-focus-grid">
+            {SURVEY.charts.phaseFocus.map((item) => (
+              <div className="cd-focus-card" key={`${item.phase}-${item.sourceLabel}`}>
+                <div className="cd-focus-head">
+                  <strong>{item.phase} · {item.sourceLabel}</strong>
+                  <span>{item.openTextCount} 条开放文本</span>
                 </div>
+                <div className="cd-chip-row">
+                  {item.topWords.slice(0, 8).map((row) => (
+                    <span key={row.label}>{row.label}<b>{row.count}</b></span>
+                  ))}
+                </div>
+                <ChartBars rows={item.topScenarios} limit={4} />
+              </div>
+            ))}
+          </div>
+
+          <div className="cd-age-grid">
+            {SURVEY.charts.ageFocus.slice(0, 6).map((item) => (
+              <div className="cd-age-card" key={item.age}>
+                <div>
+                  <strong>{item.age}</strong>
+                  <span>{item.sampleSize} 份样本 / {item.openTextCount} 条文本</span>
+                </div>
+                <p>{item.topScenarios[0]?.label ?? "其他需求"}最集中，原词高频：{item.topWords.slice(0, 4).map((word) => word.label).join("、")}</p>
               </div>
             ))}
           </div>
@@ -452,11 +624,26 @@ export function SurveyWordCloud() {
             ))}
           </div>
 
-          <div className="cd-section-h">高频词权重</div>
+          <div className="cd-section-h">典型原始回答</div>
+          <div className="cd-examples">
+            {SURVEY.examples.slice(0, 10).map((item, index) => (
+              <blockquote className="cd-example" key={`${item.id}-${index}`}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <div>
+                  <p>{item.text}</p>
+                  {item.phase || item.sourceLabel ? (
+                    <cite>{[item.phase, item.sourceLabel].filter(Boolean).join(" · ")}</cite>
+                  ) : null}
+                </div>
+              </blockquote>
+            ))}
+          </div>
+
+          <div className="cd-section-h">原词频权重明细</div>
           <div className="cd-legend">
-            <span><i style={{ background: "var(--ey-emerald)" }} />选择 / 推荐 / 记忆</span>
-            <span><i style={{ background: "var(--ey-amber)" }} />预算 / 距离 / 时间</span>
-            <span><i style={{ background: "var(--ey-rose)" }} />冲突 / 忌口 / 兜底</span>
+            <span><i style={{ background: "var(--ey-emerald)" }} />普通高频词</span>
+            <span><i style={{ background: "var(--ey-amber)" }} />预算 / 距离 / 时间 / 执行项</span>
+            <span><i style={{ background: "var(--ey-rose)" }} />多人 / 忌口 / 风险项</span>
           </div>
           <div className="cd-bars">
             {topWords.map((word) => (
@@ -481,21 +668,6 @@ export function SurveyWordCloud() {
                   <span className="fill" style={{ width: drawerOpen ? `${Math.min(100, Math.max(7, word.pct * 2.6))}%` : 0 }} />
                 </div>
               </div>
-            ))}
-          </div>
-
-          <div className="cd-section-h">典型原始回答</div>
-          <div className="cd-examples">
-            {SURVEY.examples.slice(0, 10).map((item, index) => (
-              <blockquote className="cd-example" key={`${item.id}-${index}`}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <div>
-                  <p>{item.text}</p>
-                  {item.phase || item.sourceLabel ? (
-                    <cite>{[item.phase, item.sourceLabel].filter(Boolean).join(" · ")}</cite>
-                  ) : null}
-                </div>
-              </blockquote>
             ))}
           </div>
 
