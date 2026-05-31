@@ -2915,6 +2915,9 @@ export default function ExperienceClient() {
 
   function renderQuestionMessage() {
     const selectedValue = currentQuestion.slot ? foodSlots[currentQuestion.slot] : foodPrefs[currentQuestion.id as keyof FoodPreferences];
+    const selectedMultiValues = currentQuestion.kind === "multi-choice" && typeof selectedValue === "string"
+      ? selectedValue.split("、").map((item) => item.trim()).filter(Boolean).filter((item) => item !== "未选择")
+      : [];
     return (
       <div className="chat-message butler-message">
         <div className="message-avatar ai-mark">幺</div>
@@ -2927,16 +2930,20 @@ export default function ExperienceClient() {
                   <div className="tag-group" key={group.type}>
                     <div className="tag-group-title">{group.title}</div>
                     <div className="quick-list">
-                      {group.tags.map((tag) => (
-                        <button
-                          className={`quick-chip tag-chip ${isFoodTagSelected(group.type, tag.label) ? "selected" : ""}`}
-                          key={tag.id}
-                          onClick={() => toggleFoodTagByType(group.type, tag.label, group.mode)}
-                          type="button"
-                        >
-                          {tag.label}
-                        </button>
-                      ))}
+                      {group.tags.map((tag) => {
+                        const selected = isFoodTagSelected(group.type, tag.label);
+                        return (
+                          <button
+                            aria-pressed={selected}
+                            className={`quick-chip tag-chip ${selected ? "selected" : ""}`}
+                            key={tag.id}
+                            onClick={() => toggleFoodTagByType(group.type, tag.label, group.mode)}
+                            type="button"
+                          >
+                            {tag.label}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
@@ -2944,9 +2951,12 @@ export default function ExperienceClient() {
             ) : currentQuestion.text ? null : (
               <div className="quick-list">
                 {(currentQuestion.options || []).map((option) => {
-                  const active = Array.isArray(selectedValue) ? selectedValue.includes(option) : selectedValue === option;
+                  const active = selectedMultiValues.length
+                    ? selectedMultiValues.includes(option)
+                    : Array.isArray(selectedValue) ? selectedValue.includes(option) : selectedValue === option;
                   return (
                     <button
+                      aria-pressed={active}
                       className={`quick-chip option-button ${active ? "selected" : ""}`}
                       key={option}
                       onClick={() => currentQuestion.kind === "multi-choice" ? toggleFoodMultiChoiceOption(currentQuestion, option) : currentQuestion.multi ? toggleFoodTag(currentQuestion.id, option) : void confirmFoodAnswer(option)}
