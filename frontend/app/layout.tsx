@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
+import { SiteThemeProvider } from "@/components/SiteThemeProvider";
 import "./globals.css";
+import "./site-theme.css";
 
 export const metadata: Metadata = {
   title: "饿了幺 · 全天候私人管家作品站",
@@ -20,7 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body>{children}</body>
+      <body>
+        <SiteThemeProvider>{children}</SiteThemeProvider>
+      </body>
     </html>
   );
 }
