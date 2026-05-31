@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { ThemeNavPicker, ThemePipPicker } from "@/components/SiteThemeProvider";
+import { SurveyWordCloud } from "@/components/SurveyWordCloud";
 import "./ey-design.css";
 
 const demoVideoUrl = process.env.NEXT_PUBLIC_DEMO_VIDEO_URL || "";
@@ -338,6 +339,8 @@ export default function PortfolioHomePage() {
               </div>
             ))}
           </div>
+
+          <SurveyWordCloud />
 
           <div className="persona reveal">
             <div className="avatar"><div><div className="big">小林</div><div className="avatar-note">用户照片占位</div></div></div>
