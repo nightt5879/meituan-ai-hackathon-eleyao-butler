@@ -4,7 +4,8 @@ import { sanitizeFoodDecisionSheet } from "@/lib/server/foodDecisionSheet";
 import type { OpenClawDataContext } from "@/lib/server/openclawDataFeed";
 import { buildOpenClawRequestScope, buildScopedOpenClawSessionId, shortHash } from "@/lib/server/openclawSession";
 import { loadRestaurantData } from "@/lib/restaurantData/loadData";
-import type { RestaurantSource, RestaurantDataSet, SceneFit, Shop, ShopFeature } from "@/lib/restaurantData/types";
+import { distanceKm } from "@/lib/restaurantData/geo";
+import type { GeoPoint, Region, RestaurantSource, RestaurantDataSet, SceneFit, Shop, ShopFeature } from "@/lib/restaurantData/types";
 
 type StringMap = Record<string, unknown>;
 
@@ -14,6 +15,8 @@ export type FoodRecommendationCard = {
   type: string;
   perCapita: string;
   distance: string;
+  distanceMeters?: number;
+  walkMinutes?: number;
   rating: number;
   matchedTags: string[];
   matchedTagsText: string;
@@ -281,6 +284,8 @@ function toCompactDecisionCandidate(candidate: FoodRecommendationCard) {
     name: candidate.name,
     category: candidate.type,
     priceYuan: readNumberFromText(candidate.perCapita),
+    distanceMeters: candidate.distanceMeters,
+    walkMinutes: candidate.walkMinutes,
     rating: candidate.rating > 0 ? Number(candidate.rating.toFixed(1)) : undefined,
     tags: candidate.matchedTags.slice(0, 3),
     signal: splitCompactText(candidate.reason, 1)[0],
@@ -307,7 +312,7 @@ async function buildLocalFoodCandidates(request: FoodRecommendRequest): Promise<
   const excludedIds = new Set(request.requestContext?.excludeIds ?? []);
   const hardFilter = buildHardFoodFilterPolicy(request);
   const candidates = buildDiverseAiCatalog(data, limit, excludedIds, hardFilter).map((shop) => {
-    return toFoodCandidateCard(shop, data.featuresByShopId.get(shop.id), data.sceneFitByShopId.get(shop.id));
+    return toFoodCandidateCard(shop, data.featuresByShopId.get(shop.id), data.sceneFitByShopId.get(shop.id), data.regions);
   });
 
   if (candidates.length < 2) {
@@ -469,7 +474,12 @@ function roundRobinByCategory(shops: Shop[]) {
   return result;
 }
 
-function toFoodCandidateCard(shop: Shop, features?: ShopFeature, sceneFit?: SceneFit): FoodRecommendationCard {
+function toFoodCandidateCard(
+  shop: Shop,
+  features?: ShopFeature,
+  sceneFit?: SceneFit,
+  regions: Region[] = []
+): FoodRecommendationCard {
   const matchedTags = uniqueStrings([
     ...shop.tags,
     ...(shop.cuisines ?? []),
@@ -486,13 +496,16 @@ function toFoodCandidateCard(shop: Shop, features?: ShopFeature, sceneFit?: Scen
     ...(sceneFit?.explainHints.soloToday ?? [])
   ]).slice(0, 3);
   const rating = shop.rating ?? shop.syntheticRating ?? 4.5;
+  const distance = getShopDistanceInfo(shop, regions);
 
   return {
     id: shop.id,
     name: shop.name,
     type: shop.category || "餐饮推荐",
     perCapita: shop.avgPrice !== null ? `人均 ${shop.avgPrice} 元` : "人均待确认",
-    distance: "大学城内，具体距离待确认",
+    distance: distance.text,
+    distanceMeters: distance.distanceMeters,
+    walkMinutes: distance.walkMinutes,
     rating,
     matchedTags,
     matchedTagsText: matchedTags.length ? matchedTags.join("、") : shop.category || "候选店",
@@ -500,6 +513,36 @@ function toFoodCandidateCard(shop: Shop, features?: ShopFeature, sceneFit?: Scen
     riskTip: riskHints.length ? riskHints.join("；") : "到店前建议确认营业、排队和库存情况。",
     source: "openclaw"
   };
+}
+
+function getShopDistanceInfo(shop: Shop, regions: Region[]) {
+  const center = getShopDistanceCenter(shop, regions);
+
+  if (!center) {
+    return {
+      text: "距离待确认",
+      distanceMeters: undefined,
+      walkMinutes: undefined
+    };
+  }
+
+  const km = distanceKm(center, { latitude: shop.latitude, longitude: shop.longitude });
+  const distanceMeters = Math.max(1, Math.round(km * 1000));
+  const walkMinutes = Math.max(1, Math.round(distanceMeters / 80));
+  const distanceText = distanceMeters >= 1000
+    ? `约 ${(distanceMeters / 1000).toFixed(1)} km`
+    : `约 ${Math.round(distanceMeters / 10) * 10} m`;
+
+  return {
+    text: `${distanceText} / 步行 ${walkMinutes} 分钟`,
+    distanceMeters,
+    walkMinutes
+  };
+}
+
+function getShopDistanceCenter(shop: Shop, regions: Region[]): GeoPoint | undefined {
+  const region = regions.find((item) => item.id === shop.regionId) ?? regions.find((item) => item.id === "guangzhou_university_town");
+  return region?.center;
 }
 
 function buildContextEnvelope(context: OpenClawDataContext) {
