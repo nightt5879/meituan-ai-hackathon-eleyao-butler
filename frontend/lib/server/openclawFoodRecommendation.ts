@@ -205,7 +205,7 @@ function buildFoodRecommendationPrompt(
       "Hard constraints in decisionPayload.constraints are mandatory; avoid spicy/high-spice shops when no-spicy is requested.",
       "Use exact candidate ids only. Do not invent shops. Backend fills display fields.",
       "Return ONLY minified JSON, no markdown, no extra text.",
-      "Schema: {\"selected\":[{\"id\":\"candidate_id\",\"r\":\"18字内中文理由\",\"risk\":\"16字内中文风险\",\"tags\":[\"最多2个短标签\"]}]}",
+      "Schema: {\"selected\":[{\"id\":\"candidate_id\",\"why\":\"18字内中文理由\",\"tip\":\"18字内中文提醒\",\"tags\":[\"最多2个短标签\"]}]}",
       `decisionPayload=${payload}`
     ].join("\n")
   };
@@ -232,7 +232,7 @@ function buildOpenClawPromptPayload(
       adjustment: Object.keys(adjustment).length ? adjustment : undefined
     }),
     output: {
-      selected: "2-3 candidate ids with Chinese reason, riskTip and up to 4 matchedTags"
+      selected: "2-3 candidate ids with short Chinese why, tip and up to 2 tags"
     }
   });
 }
@@ -638,7 +638,7 @@ function normalizeRecommendations(input: unknown, localCandidates: FoodRecommend
   const rawRecommendations = readRecommendationArray(payload);
   const recommendations = rawRecommendations.slice(0, 3).map((item, index) => {
     const raw = isRecord(item) ? item : {};
-    const matchedTags = readStringArrayFrom(raw, ["matchedTags", "matched_tags", "tags", "labels"]);
+    const matchedTags = readStringArrayFrom(raw, ["tags", "matchedTags", "matched_tags", "labels"]);
     const name = readStringFrom(raw, ["name", "shopName", "shop_name", "restaurantName", "restaurant_name", "title"]);
     const type = readStringFrom(raw, ["type", "category", "cuisine", "shopType", "shop_type"]);
     const perCapita = readStringFrom(raw, [
@@ -653,8 +653,8 @@ function normalizeRecommendations(input: unknown, localCandidates: FoodRecommend
       "average_price"
     ]);
     const distance = readStringFrom(raw, ["distance", "distanceText", "distance_text"]);
-    const reason = readStringFrom(raw, ["reason", "r", "rationale", "why", "recommendReason", "recommend_reason"]);
-    const riskTip = readStringFrom(raw, ["riskTip", "risk_tip", "risk", "tips", "tip", "note"]);
+    const reason = readStringFrom(raw, ["why", "reason", "r", "rationale", "recommendReason", "recommend_reason"]);
+    const riskTip = readStringFrom(raw, ["tip", "riskTip", "risk_tip", "risk", "tips", "note"]);
 
     return {
       id: readStringFrom(raw, ["id", "shopId", "shop_id", "restaurantId", "restaurant_id"]) || `openclaw_${index + 1}`,
@@ -702,20 +702,33 @@ function enrichSelectedRecommendations(rawSelected: unknown[], localCandidates: 
     }
 
     usedIds.add(candidate.id);
-    const matchedTags = readStringArrayFrom(raw, ["matchedTags", "matched_tags", "tags", "labels"]);
-    const reason = readStringFrom(raw, ["reason", "r", "rationale", "why", "recommendReason", "recommend_reason"]);
-    const riskTip = readStringFrom(raw, ["riskTip", "risk_tip", "risk", "tips", "tip", "note"]);
+    const matchedTags = readStringArrayFrom(raw, ["tags", "matchedTags", "matched_tags", "labels"]);
+    const reason = readStringFrom(raw, ["why", "reason", "r", "rationale", "recommendReason", "recommend_reason"]);
+    const riskTip = readStringFrom(raw, ["tip", "riskTip", "risk_tip", "risk", "tips", "note"]);
+    const finalTags = normalizeAiShortTags(matchedTags, candidate.matchedTags);
 
     cards.push({
       ...candidate,
-      matchedTags: matchedTags.length ? matchedTags.slice(0, 4) : candidate.matchedTags,
-      matchedTagsText: matchedTags.length ? matchedTags.slice(0, 4).join("、") : candidate.matchedTagsText,
-      reason: reason || candidate.reason,
-      riskTip: riskTip || candidate.riskTip
+      matchedTags: finalTags,
+      matchedTagsText: finalTags.join("、"),
+      reason: normalizeAiShortText(reason, candidate.reason, 26),
+      riskTip: normalizeAiShortText(riskTip, candidate.riskTip, 24)
     });
   }
 
   return cards;
+}
+
+function normalizeAiShortTags(aiTags: string[], fallbackTags: string[]) {
+  const tags = uniqueStrings(aiTags).slice(0, 2);
+  return tags.length ? tags : fallbackTags.slice(0, 2);
+}
+
+function normalizeAiShortText(value: string, fallback: string, maxChars: number) {
+  const source = readString(value) || fallback;
+  const firstSentence = source.split(/[。；;\n]/).map((item) => item.trim()).find(Boolean) || source;
+
+  return firstSentence.length > maxChars ? `${firstSentence.slice(0, maxChars - 1)}…` : firstSentence;
 }
 
 function readSelectedDecisionArray(payload: StringMap) {
