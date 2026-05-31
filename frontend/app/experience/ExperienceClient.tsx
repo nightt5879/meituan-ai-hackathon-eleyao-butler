@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
+import { type CSSProperties, type FormEvent, type MouseEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 type PhoneView = "login" | "home" | "food" | "group-create" | "group-fill" | "group-board" | "weekend" | "memory";
 
@@ -689,13 +689,22 @@ const fallbackRecommendations: RecommendationCard[] = [
 ];
 
 const themeCards = [
-  { id: "sky-blue", name: "天蓝色", description: "清爽、天空、轻盈", className: "theme-sky-blue", primary: "#6EC6FF", soft: "#BDEBFF", accent: "#4F9FE6", warn: "#F2B84B" },
-  { id: "sakura-pink", name: "樱花粉", description: "柔和、可爱、温暖", className: "theme-sakura-pink", primary: "#FF9FBC", soft: "#FFD6E3", accent: "#7EC6A4", warn: "#D58B2D" },
-  { id: "lemon-yellow", name: "柠檬黄", description: "明亮、元气、活泼", className: "theme-lemon-yellow", primary: "#FFD84D", soft: "#FFF0A6", accent: "#5AD8B2", warn: "#D88724" },
-  { id: "black-pink", name: "黑粉", description: "酷、潮流、音乐感", className: "theme-black-pink", primary: "#FF4FA3", soft: "#3A2230", accent: "#FFB3D9", warn: "#FFD166" },
-  { id: "night", name: "夜间模式", description: "低亮度、护眼、安静", className: "theme-night", primary: "#7C8CFF", soft: "#2F3A5F", accent: "#5AD8B2", warn: "#FBBF24" },
-  { id: "mint-green", name: "薄荷绿", description: "清新、健康、轻食感", className: "theme-mint-green", primary: "#5AD8B2", soft: "#BDF4E5", accent: "#3CB995", warn: "#D68C21" }
+  { id: "sky-blue", name: "天蓝色", description: "清爽、天空、轻盈", className: "theme-sky-blue", primary: "#6EC6FF", soft: "#BDEBFF", accent: "#4F9FE6", warn: "#F2B84B", bg1: "#f2faff", bg2: "#e2f1ff" },
+  { id: "sakura-pink", name: "樱花粉", description: "柔和、可爱、温暖", className: "theme-sakura-pink", primary: "#FF9FBC", soft: "#FFD6E3", accent: "#7EC6A4", warn: "#D58B2D", bg1: "#fff5f9", bg2: "#ffe7f0" },
+  { id: "lemon-yellow", name: "柠檬黄", description: "明亮、元气、活泼", className: "theme-lemon-yellow", primary: "#FFD84D", soft: "#FFF0A6", accent: "#5AD8B2", warn: "#D88724", bg1: "#fffdf2", bg2: "#fff4c9" },
+  { id: "black-pink", name: "暗夜粉", description: "酷、潮流、音乐感", className: "theme-black-pink", primary: "#FF4FA3", soft: "#3A2230", accent: "#FFB3D9", warn: "#FFD166", bg1: "#181018", bg2: "#0b080b" },
+  { id: "night", name: "午夜蓝", description: "低亮度、护眼、安静", className: "theme-night", primary: "#7C8CFF", soft: "#2F3A5F", accent: "#5AD8B2", warn: "#FBBF24", bg1: "#0f172a", bg2: "#0a0f1e" },
+  { id: "mint-green", name: "薄荷绿", description: "清新、健康、轻食感", className: "theme-mint-green", primary: "#5AD8B2", soft: "#BDF4E5", accent: "#3CB995", warn: "#D68C21", bg1: "#f7fbf7", bg2: "#eef8f5" }
 ];
+
+const themeStorageKey = "ey-theme";
+
+type ExperienceTheme = (typeof themeCards)[number];
+type ThemeReveal = { themeId: string; x: number; y: number; radius: number; phase: "fill" | "fade" };
+
+function findTheme(themeId: string): ExperienceTheme {
+  return themeCards.find((theme) => theme.id === themeId) || themeCards[themeCards.length - 1];
+}
 
 const weekendInterestOptions = [
   { value: "咖啡", emoji: "☕", label: "咖啡" },
@@ -1391,11 +1400,13 @@ export default function ExperienceClient() {
   const [browserJudgeId, setBrowserJudgeId] = useState("");
   const [identityNotice, setIdentityNotice] = useState("");
   const [themeId, setThemeId] = useState("mint-green");
+  const [themeReveal, setThemeReveal] = useState<ThemeReveal | null>(null);
   const [showThemePanel, setShowThemePanel] = useState(false);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
   const [showFavoritesPanel, setShowFavoritesPanel] = useState(false);
   const [showReviewSheet, setShowReviewSheet] = useState(false);
   const [authError, setAuthError] = useState("");
+  const themeTimerRef = useRef<number[]>([]);
 
   const [memory, setMemory] = useState<MemorySettings>(defaultMemory);
   const [memoryCustomAvoid, setMemoryCustomAvoid] = useState("");
@@ -1481,7 +1492,15 @@ export default function ExperienceClient() {
   const [weekendError, setWeekendError] = useState("");
   const [weekendAiProgress, setWeekendAiProgress] = useState<AiProgressSnapshot | null>(null);
 
-  const themeClass = useMemo(() => themeCards.find((theme) => theme.id === themeId)?.className || "theme-mint-green", [themeId]);
+  const activeTheme = useMemo(() => findTheme(themeId), [themeId]);
+  const revealTheme = themeReveal ? findTheme(themeReveal.themeId) : activeTheme;
+  const themeClass = activeTheme.className;
+  const themeRevealStyle = themeReveal ? {
+    "--reveal-x": `${themeReveal.x}px`,
+    "--reveal-y": `${themeReveal.y}px`,
+    "--reveal-radius": `${themeReveal.radius}px`,
+    background: `radial-gradient(circle at ${themeReveal.x}px ${themeReveal.y}px, ${revealTheme.primary} 0%, ${revealTheme.soft} 54%, ${revealTheme.bg2} 100%)`
+  } as CSSProperties : undefined;
   const resolvedFoodQuestions = useMemo(() => buildFoodQuestions(foodSlots.mealPurpose), [foodSlots.mealPurpose]);
   const activeFoodQuestions = activeFoodQuestionOverride || (activeFoodQuestionIds ? resolvedFoodQuestions.filter((question) => activeFoodQuestionIds.includes(question.id)) : resolvedFoodQuestions);
   const currentQuestion = activeFoodQuestions[foodIndex] || activeFoodQuestions[activeFoodQuestions.length - 1] || resolvedFoodQuestions[0] || foodQuestions[0];
@@ -1504,6 +1523,10 @@ export default function ExperienceClient() {
     const localJudgeId = getOrCreateBrowserJudgeId();
     const storedJudgeId = normalizeJudgeId(window.localStorage.getItem(judgeInputKey) || "");
     const stored = safeJsonParse<Identity | null>(window.localStorage.getItem(identityKey), null);
+    const storedThemeId = window.localStorage.getItem(themeStorageKey) || "";
+    if (storedThemeId && findTheme(storedThemeId).id === storedThemeId) {
+      setThemeId(storedThemeId);
+    }
     setBrowserJudgeId(localJudgeId);
     setJudgeIdInput(stored?.demoUserId || storedJudgeId || localJudgeId);
     if (stored?.sessionToken && stored.userId) {
@@ -1527,6 +1550,54 @@ export default function ExperienceClient() {
     if (view !== "food") return;
     void refreshFoodConnectionStatus();
   }, [view]);
+
+  useEffect(() => {
+    return () => {
+      themeTimerRef.current.forEach((timerId) => window.clearTimeout(timerId));
+      themeTimerRef.current = [];
+    };
+  }, []);
+
+  function clearThemeTimers() {
+    themeTimerRef.current.forEach((timerId) => window.clearTimeout(timerId));
+    themeTimerRef.current = [];
+  }
+
+  function queueThemeTimer(callback: () => void, delay: number) {
+    const timerId = window.setTimeout(() => {
+      themeTimerRef.current = themeTimerRef.current.filter((item) => item !== timerId);
+      callback();
+    }, delay);
+    themeTimerRef.current.push(timerId);
+  }
+
+  function applyTheme(nextThemeId: string) {
+    setThemeId(nextThemeId);
+    window.localStorage.setItem(themeStorageKey, nextThemeId);
+  }
+
+  function selectTheme(nextThemeId: string, event?: MouseEvent<HTMLElement>) {
+    const nextTheme = findTheme(nextThemeId);
+    if (nextTheme.id !== nextThemeId || nextThemeId === themeId) return;
+
+    clearThemeTimers();
+    const prefersReducedMotion = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) {
+      setThemeReveal(null);
+      applyTheme(nextThemeId);
+      return;
+    }
+
+    const x = event?.clientX ?? window.innerWidth - 48;
+    const y = event?.clientY ?? 48;
+    const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y)) + 80;
+    setThemeReveal({ themeId: nextThemeId, x, y, radius, phase: "fill" });
+    queueThemeTimer(() => {
+      applyTheme(nextThemeId);
+      setThemeReveal((current) => current && current.themeId === nextThemeId ? { ...current, phase: "fade" } : current);
+      queueThemeTimer(() => setThemeReveal(null), 260);
+    }, 460);
+  }
 
   function persistMemory(next: MemorySettings) {
     if (!identity) return;
@@ -2588,6 +2659,51 @@ export default function ExperienceClient() {
     return [...preamble, ...answers];
   }
 
+  function renderThemeListPanel() {
+    return (
+      <aside className="review-panel theme-list-panel" aria-label="六主题统一换肤">
+        <div className="tlp-head">
+          <span
+            className="tlp-mark"
+            style={{ "--orb-primary": activeTheme.primary, "--orb-soft": activeTheme.soft, "--orb-accent": activeTheme.accent } as CSSProperties}
+          />
+          <div>
+            <div className="tlp-eyebrow">统一主题服务</div>
+            <div className="tlp-title">六主题换肤</div>
+          </div>
+        </div>
+        <p className="tlp-desc">Web 外壳与手机界面共用同一份主题状态，刷新后保留当前选择。</p>
+        <div className="theme-list">
+          {themeCards.map((theme) => {
+            const selected = theme.id === themeId;
+            return (
+              <button
+                aria-pressed={selected}
+                className={`tl-row ${selected ? "active" : ""}`}
+                key={theme.id}
+                onClick={(event) => selectTheme(theme.id, event)}
+                style={{ "--tl-primary": theme.primary, "--tl-soft": theme.soft, "--tl-accent": theme.accent } as CSSProperties}
+                type="button"
+              >
+                <span className="tl-swatch" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </span>
+                <span className="tl-meta">
+                  <span className="tl-name">{theme.name}</span>
+                  <span className="tl-key">{theme.description}</span>
+                </span>
+                <span className="tl-check" aria-hidden="true">✓</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="tlp-sync"><span className="lk" /><span>右侧列表与手机内「主题换装」同步。</span></div>
+      </aside>
+    );
+  }
+
   return (
     <main className={`experience-stage ${themeClass}`}>
       <div className="experience-shell">
@@ -2619,20 +2735,23 @@ export default function ExperienceClient() {
           <div className="phone-screen">{renderPhone()}</div>
         </section>
 
-        <aside className="review-panel right-panel">
-          <h2>当前体验状态</h2>
-          <p>最近偏好记录：{records.length} 条</p>
-          <p>收藏店铺：{favorites.length} 家</p>
-          <p>多人约饭任务：{groupTaskId || "未创建"}</p>
-          <p>周末规划：{weekendPlan?.planId || "未生成"}</p>
-          <h2>验收覆盖</h2>
-          <p>登录/demo 身份初始化</p>
-          <p>首页、历史、收藏、主题</p>
-          <p>今天吃什么问答与推荐</p>
-          <p>多人约饭创建、填写、看板</p>
-          <p>周末规划生成与 fallback</p>
-          <p>记忆设置与本地持久化</p>
-        </aside>
+        <div className="right-col">
+          <aside className="review-panel right-panel">
+            <h2>当前体验状态</h2>
+            <p>最近偏好记录：{records.length} 条</p>
+            <p>收藏店铺：{favorites.length} 家</p>
+            <p>多人约饭任务：{groupTaskId || "未创建"}</p>
+            <p>周末规划：{weekendPlan?.planId || "未生成"}</p>
+            <h2>验收覆盖</h2>
+            <p>登录/demo 身份初始化</p>
+            <p>首页、历史、收藏、主题</p>
+            <p>今天吃什么问答与推荐</p>
+            <p>多人约饭创建、填写、看板</p>
+            <p>周末规划生成与 fallback</p>
+            <p>记忆设置与本地持久化</p>
+          </aside>
+          {renderThemeListPanel()}
+        </div>
       </div>
 
       <button className="review-fab" onClick={() => setShowReviewSheet(true)} type="button" aria-label="评审说明">
@@ -2658,6 +2777,7 @@ export default function ExperienceClient() {
           <button className="review-sheet-close" onClick={() => setShowReviewSheet(false)} type="button">收起</button>
         </div>
       </div>
+      {themeReveal ? <div aria-hidden="true" className={`theme-reveal ${themeReveal.phase === "fade" ? "is-fading" : ""}`} style={themeRevealStyle} /> : null}
     </main>
   );
 
@@ -3917,7 +4037,7 @@ export default function ExperienceClient() {
           </div>
           <div className="theme-grid">
             {themeCards.map((theme) => (
-              <button className={`theme-card ${themeId === theme.id ? "selected active" : ""}`} key={theme.id} onClick={() => { setThemeId(theme.id); setShowThemePanel(false); }} type="button">
+              <button className={`theme-card ${themeId === theme.id ? "selected active" : ""}`} key={theme.id} onClick={(event) => { selectTheme(theme.id, event); setShowThemePanel(false); }} type="button">
                 <div className="theme-preview" style={{ background: theme.soft }}>
                   <div className="swatch-row">
                     <span className="swatch" style={{ background: theme.primary }}></span>
