@@ -113,8 +113,21 @@ Page({
     const inviteToken = query && query.inviteToken ? query.inviteToken : 'group_mock_token';
 
     if (!userIdentityAdapter.hasSession()) {
-      userIdentityAdapter.requireLoginRedirect('/pages/group/fill/fill?taskId=' + encodeURIComponent(taskId) + '&inviteToken=' + encodeURIComponent(inviteToken));
-      return;
+      // Only strict 'real' mode forces a blocking login. In auto/mock mode keep
+      // the fill page usable so a member can still submit into the local
+      // fallback task when the backend (and therefore login) is unavailable.
+      // Auto mode also kicks off a best-effort background login.
+      const mode = groupDiningAdapter.getCurrentMode();
+      if (mode === 'real') {
+        userIdentityAdapter.requireLoginRedirect('/pages/group/fill/fill?taskId=' + encodeURIComponent(taskId) + '&inviteToken=' + encodeURIComponent(inviteToken));
+        return;
+      }
+      if (mode === 'auto') {
+        const app = getApp();
+        if (app && app.ensureLogin) {
+          app.ensureLogin().catch(function () {});
+        }
+      }
     }
 
     this.setData({
