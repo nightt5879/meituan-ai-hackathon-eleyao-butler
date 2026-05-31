@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { ThemeNavPicker, ThemePipPicker } from "@/components/SiteThemeProvider";
 import { SurveyWordCloud } from "@/components/SurveyWordCloud";
+import { TechRouteShowcase } from "@/components/TechRouteShowcase";
 import "./ey-design.css";
+import "./tech-route.css";
 
 const demoVideoUrl = process.env.NEXT_PUBLIC_DEMO_VIDEO_URL || "";
 
@@ -110,20 +112,6 @@ const checks = [
   ["氛围匹配", "通过 · 安静适合聊天", "pass"],
   ["排队风险", "低 · 高峰建议确认", "warn"],
   ["公平性", "通过 · 无人被牺牲", "pass"]
-];
-
-const layers = [
-  ["L1", "体验层", "微信小程序与 Web 体验并行。Web 版复刻小程序流程，用 demo session 替代 wx.login。"],
-  ["L2", "服务层", "Next.js App Router 同时承载作品页、在线体验页面与 API routes。"],
-  ["L3", "AI 管家层", "OpenClaw 负责单人推荐与动态追问；不可用时降级到本地推荐，保证评审流程不断。"],
-  ["L4", "数据层", "任务、登录 session、周末规划写入服务端 JSON store；浏览器本地保留记忆、收藏与草稿。"]
-];
-
-const apiFlows = [
-  ["今天吃什么", "POST /api/food/recommend", "OpenClaw 推荐，失败时使用本地候选方案兜底。"],
-  ["多人约饭", "POST /api/group-tasks", "生成 invite token，看板按 token 读取与提交成员。"],
-  ["周末轻规划", "POST /api/weekend/plans", "服务端路线生成，天气失败时保守 fallback。"],
-  ["记忆设置", "localStorage + profile", "Web 端即时生效，后续可接入服务端画像。"]
 ];
 
 function Icon({ name, size = 28 }: { name: string; size?: number }) {
@@ -442,15 +430,10 @@ export default function PortfolioHomePage() {
         <div className="container">
           <div className="sec-head reveal">
             <div className="sec-eyebrow">技术架构 · Architecture</div>
-            <h2 className="sec-title">四层协作，<br />一个 Next.js 服务承载</h2>
-            <p className="sec-lead">Web 作品页是面向评审的可访问镜像：保持产品能力一致，复用现有后端链路，用浏览器友好的身份、路由与存储承载完整体验。</p>
+            <h2 className="sec-title">三大功能技术路线，<br />把 AI 管家怎么工作讲清楚</h2>
+            <p className="sec-lead">这一段复刻设计包里的技术栈表达：从输入、服务端 API、OpenClaw 决策、自检兜底到最终输出，展示「今天吃什么」「多人约饭」「周末轻规划」三条链路如何共用同一套管家能力。</p>
           </div>
-          <div className="layers reveal">
-            {layers.map(([ix, title, desc]) => <div className="layer" key={ix}><div className="ix">{ix}</div><h3>{title}</h3><p>{desc}</p></div>)}
-          </div>
-          <div className="flows reveal d1">
-            {apiFlows.map(([name, endpoint, desc]) => <div className="flow-row" key={name}><div className="fn">{name}</div><code>{endpoint}</code><div className="fd">{desc}</div></div>)}
-          </div>
+          <TechRouteShowcase />
         </div>
       </section>
 
