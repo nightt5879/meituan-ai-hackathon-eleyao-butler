@@ -593,7 +593,7 @@
 }
 
 .section--paper {
-  background: #ffffff;
+  background: var(--ey-card);
 }
 
 .section--forest {
@@ -657,7 +657,7 @@
   padding: 28px 26px;
   border: 1px solid var(--ey-line);
   border-radius: 20px;
-  background: #ffffff;
+  background: var(--ey-card);
   box-shadow: var(--ey-shadow-sm);
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.3s;
 }
@@ -731,7 +731,7 @@
   padding: 34px;
   border: 1px solid var(--ey-line);
   border-radius: 24px;
-  background: #ffffff;
+  background: var(--ey-card);
   box-shadow: var(--ey-shadow-sm);
 }
 
@@ -1163,7 +1163,11 @@ body.t-night .cloud-word.c-warn {
   padding: 16px 18px;
   border: 1px solid var(--ey-emerald-200);
   border-radius: 16px;
-  background: linear-gradient(135deg, var(--ey-emerald-50), #ffffff);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ey-emerald-50) 72%, var(--ey-card)),
+    color-mix(in srgb, var(--ey-card) 88%, var(--ey-bg))
+  );
 }
 
 .cd-selected div {
@@ -1211,7 +1215,7 @@ body.t-night .cloud-word.c-warn {
   border: 1px solid var(--ey-emerald-200);
   border-radius: var(--ey-pill);
   padding: 5px 10px;
-  background: #ffffff;
+  background: var(--ey-card);
   color: var(--ey-emerald-d);
   font-size: 11.5px;
   font-weight: 900;
@@ -1231,7 +1235,11 @@ body.t-night .cloud-word.c-warn {
   padding: 15px;
   border: 1px solid var(--ey-line);
   border-radius: 16px;
-  background: linear-gradient(135deg, #ffffff, var(--ey-bg));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ey-card) 92%, var(--ey-bg)),
+    var(--ey-bg)
+  );
 }
 
 .cd-scenario-icon {
@@ -1694,7 +1702,7 @@ body.t-night .cloud-word.c-warn {
   padding: 13px 14px;
   border: 1px solid var(--ey-line);
   border-radius: 14px;
-  background: #ffffff;
+  background: var(--ey-card);
 }
 
 .cd-example span {
@@ -1735,7 +1743,7 @@ body.t-night .cloud-word.c-warn {
   padding: 14px 15px;
   border: 1px solid var(--ey-line);
   border-radius: 16px;
-  background: #ffffff;
+  background: var(--ey-card);
 }
 
 .cd-import strong,
@@ -1794,13 +1802,13 @@ body.t-night .cloud-word.c-warn {
   overflow: hidden;
   border: 1px solid var(--ey-line);
   border-radius: 16px;
-  background: #ffffff;
+  background: var(--ey-card);
 }
 
 .cd-source-title {
   padding: 14px 15px;
   border-bottom: 1px solid var(--ey-line);
-  background: var(--ey-bg);
+  background: color-mix(in srgb, var(--ey-card) 72%, var(--ey-bg));
 }
 
 .cd-source-title strong {
@@ -1895,7 +1903,7 @@ body.t-night .cloud-word.c-warn {
   margin: 0 auto 14px;
   border: 2px solid var(--ey-emerald);
   border-radius: 50%;
-  background: #ffffff;
+  background: var(--ey-card);
   color: var(--ey-emerald);
   font-size: 15px;
   font-weight: 900;
@@ -1943,7 +1951,7 @@ body.t-night .cloud-word.c-warn {
   padding: 24px;
   border: 1px solid var(--ey-line);
   border-radius: 20px;
-  background: #ffffff;
+  background: var(--ey-card);
   box-shadow: var(--ey-shadow-sm);
 }
 
@@ -2268,7 +2276,7 @@ body.t-night .cloud-word.c-warn {
   padding: 18px 20px;
   border: 1px solid var(--ey-line);
   border-radius: 16px;
-  background: #ffffff;
+  background: var(--ey-card);
 }
 
 .shot .sn {
@@ -2543,7 +2551,7 @@ body.t-night .cloud-word.c-warn {
     padding: 18px;
     border: 1px solid var(--ey-line);
     border-radius: 18px;
-    background: #ffffff;
+    background: var(--ey-card);
     box-shadow: 0 1px 2px rgba(2, 44, 34, 0.05), 0 8px 22px rgba(2, 44, 34, 0.06);
     align-items: flex-start;
     justify-content: flex-start;
