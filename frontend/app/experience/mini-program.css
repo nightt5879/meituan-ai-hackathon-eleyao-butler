@@ -2,6 +2,14 @@
 
 .experience-stage {
   min-height: 100vh;
+  --ai-progress-card-glow: rgba(90, 216, 178, 0.16);
+  --ai-progress-card-end: #effff8;
+  --ai-mascot-body-start: #8be7c8;
+  --ai-mascot-body-end: #5ad8b2;
+  --ai-mascot-face: #073b31;
+  --ai-mascot-spark: #fff7c8;
+  --ai-mascot-spark-ring: rgba(255, 247, 200, 0.28);
+  --ai-mascot-shadow: rgba(36, 143, 109, 0.22);
   background:
     radial-gradient(1100px 680px at 50% -14%, var(--shell-glow, rgba(110, 231, 183, 0.42)), transparent 62%),
     radial-gradient(760px 560px at 8% 18%, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 64%),
@@ -237,6 +245,14 @@
   --theme-risk-text: #fde68a;
   --theme-shadow-card: 0 9px 24px rgba(0, 0, 0, 0.34);
   --theme-shadow-button: 0 6px 15px rgba(255, 79, 163, 0.28);
+  --ai-progress-card-glow: rgba(255, 79, 163, 0.08);
+  --ai-progress-card-end: #1e1e1e;
+  --ai-mascot-body-start: #9df3d8;
+  --ai-mascot-body-end: #69d7b9;
+  --ai-mascot-face: #093a31;
+  --ai-mascot-spark: #ffe9a8;
+  --ai-mascot-spark-ring: rgba(255, 233, 168, 0.22);
+  --ai-mascot-shadow: rgba(90, 216, 178, 0.2);
 }
 
 .experience-stage.theme-night {
@@ -281,6 +297,14 @@
   --theme-risk-text: #fde68a;
   --theme-shadow-card: 0 9px 24px rgba(0, 0, 0, 0.34);
   --theme-shadow-button: 0 6px 15px rgba(124, 140, 255, 0.26);
+  --ai-progress-card-glow: rgba(124, 140, 255, 0.1);
+  --ai-progress-card-end: #172033;
+  --ai-mascot-body-start: #9df3d8;
+  --ai-mascot-body-end: #65d6ba;
+  --ai-mascot-face: #093a31;
+  --ai-mascot-spark: #fff0b8;
+  --ai-mascot-spark-ring: rgba(255, 240, 184, 0.24);
+  --ai-mascot-shadow: rgba(90, 216, 178, 0.18);
 }
 
 .experience-shell {
@@ -1861,8 +1885,8 @@
   border: 1px solid var(--theme-border);
   border-radius: 14px;
   background:
-    radial-gradient(circle at 88% 14%, rgba(90, 216, 178, 0.16), transparent 30%),
-    linear-gradient(180deg, var(--theme-card-muted), #effff8);
+    radial-gradient(circle at 88% 14%, var(--ai-progress-card-glow), transparent 30%),
+    linear-gradient(180deg, var(--theme-card-muted), var(--ai-progress-card-end));
   color: var(--theme-text);
   box-shadow: var(--theme-shadow-card);
 }
@@ -1885,8 +1909,8 @@
   width: 34px;
   height: 34px;
   border-radius: 12px 12px 14px 14px;
-  background: linear-gradient(145deg, #80e0bd, var(--theme-primary));
-  box-shadow: 0 9px 18px rgba(36, 143, 109, 0.22);
+  background: linear-gradient(145deg, var(--ai-mascot-body-start), var(--ai-mascot-body-end));
+  box-shadow: 0 9px 18px var(--ai-mascot-shadow);
   animation: aiCatBreathe 1.8s ease-in-out infinite;
 }
 
@@ -1917,7 +1941,7 @@
   width: 4px;
   height: 5px;
   border-radius: 999px;
-  background: var(--theme-text);
+  background: var(--ai-mascot-face);
   animation: aiCatBlink 4s ease-in-out infinite;
 }
 
@@ -1936,7 +1960,7 @@
   z-index: 1;
   width: 8px;
   height: 4px;
-  border-bottom: 2px solid rgba(7, 59, 49, 0.78);
+  border-bottom: 2px solid var(--ai-mascot-face);
   border-radius: 0 0 999px 999px;
   transform: translateX(-50%);
 }
@@ -1947,8 +1971,8 @@
   width: 4px;
   height: 4px;
   border-radius: 999px;
-  background: #fff7c8;
-  box-shadow: 0 0 0 2px rgba(255, 247, 200, 0.28);
+  background: var(--ai-mascot-spark);
+  box-shadow: 0 0 0 2px var(--ai-mascot-spark-ring);
 }
 
 .ai-progress-cat-spark-left {
