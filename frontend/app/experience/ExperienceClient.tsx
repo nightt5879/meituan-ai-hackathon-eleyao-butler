@@ -1507,6 +1507,19 @@ export default function ExperienceClient() {
   }, []);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sharedTaskId = params.get("groupTaskId") || params.get("taskId") || "";
+    const sharedInviteToken = params.get("inviteToken") || "";
+
+    if (!sharedTaskId || !sharedInviteToken) return;
+
+    setGroupTaskId(sharedTaskId);
+    setGroupInviteToken(sharedInviteToken);
+    setView(params.get("view") === "group-board" ? "group-board" : "group-fill");
+    void loadSharedGroupBoard(sharedTaskId, sharedInviteToken);
+  }, []);
+
+  useEffect(() => {
     if (!identity) return;
 
     const storedMemory = safeJsonParse(window.localStorage.getItem(storageKey(identity.userId, "memory")), defaultMemory);
@@ -1717,6 +1730,65 @@ export default function ExperienceClient() {
 
   function goHome() {
     setView("home");
+  }
+
+  function buildGroupShareUrl() {
+    if (!groupTaskId || !groupInviteToken) return "";
+
+    const url = new URL("/experience", window.location.origin);
+    url.searchParams.set("view", "group-fill");
+    url.searchParams.set("groupTaskId", groupTaskId);
+    url.searchParams.set("inviteToken", groupInviteToken);
+    return url.toString();
+  }
+
+  async function writeClipboardText(value: string) {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value);
+      return;
+    }
+
+    const textarea = document.createElement("textarea");
+    textarea.value = value;
+    textarea.setAttribute("readonly", "true");
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    try {
+      document.execCommand("copy");
+    } finally {
+      document.body.removeChild(textarea);
+    }
+  }
+
+  function copyGroupShareLink() {
+    const shareUrl = buildGroupShareUrl();
+
+    if (!shareUrl) {
+      setGroupNotice("还没有可分享的约饭任务。");
+      return;
+    }
+
+    void writeClipboardText(shareUrl)
+      .then(() => setGroupNotice("分享链接已复制；无痕浏览器打开也会进入同一个任务。"))
+      .catch(() => setGroupNotice(`复制失败，请手动复制：${shareUrl}`));
+  }
+
+  async function loadSharedGroupBoard(taskId: string, inviteToken: string) {
+    setGroupLoading(true);
+    setGroupNotice("");
+
+    try {
+      const board = await requestJson<GroupBoard>(`/api/group-tasks/${encodeURIComponent(taskId)}?inviteToken=${encodeURIComponent(inviteToken)}`, {}, identity?.sessionToken);
+      setGroupBoard(board);
+      setGroupPeople(board.task.expectedPeopleCount || groupPeople);
+    } catch (error) {
+      setGroupNotice(error instanceof Error ? error.message : String(error));
+    } finally {
+      setGroupLoading(false);
+    }
   }
 
   function toggleGroupArrayField(field: "days" | "dietaryTags" | "cuisineTags", value: string, resetValue?: string) {
@@ -2289,7 +2361,7 @@ export default function ExperienceClient() {
 
   async function submitGroupParticipant(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
-    if (!identity || !groupTaskId || !groupInviteToken) return;
+    if (!groupTaskId || !groupInviteToken) return;
     if (!groupParticipant.nickname.trim()) {
       setGroupNotice("先填一下昵称");
       return;
@@ -2302,6 +2374,7 @@ export default function ExperienceClient() {
     setGroupNotice("");
 
     try {
+      const clientId = identity?.userId || getOrCreateBrowserJudgeId();
       const hardRequirements = [
         groupFill.priority.hours === "must" && groupFill.timeMode !== "allDay" ? `${groupFill.startTime}-${groupFill.endTime}` : "",
         groupFill.priority.timeText === "must" ? groupFill.timeCustomText : "",
@@ -2344,6 +2417,7 @@ export default function ExperienceClient() {
         method: "POST",
         body: JSON.stringify({
           inviteToken: groupInviteToken,
+          clientId,
           nickname: groupParticipant.nickname,
           visibility: groupFill.visibility,
           rawPreference,
@@ -2368,7 +2442,7 @@ export default function ExperienceClient() {
             leaveBefore: groupFill.timeMode === "allDay" ? undefined : groupFill.endTime || groupParticipant.leaveBefore || undefined
           }
         })
-      }, identity.sessionToken);
+      }, identity?.sessionToken);
       setGroupBoard(board);
       setView("group-board");
     } catch (error) {
@@ -2414,12 +2488,12 @@ export default function ExperienceClient() {
   }
 
   async function refreshGroupBoard() {
-    if (!identity || !groupTaskId || !groupInviteToken) return;
+    if (!groupTaskId || !groupInviteToken) return;
     setGroupLoading(true);
     setGroupNotice("");
 
     try {
-      const board = await requestJson<GroupBoard>(`/api/group-tasks/${encodeURIComponent(groupTaskId)}?inviteToken=${encodeURIComponent(groupInviteToken)}`, {}, identity.sessionToken);
+      const board = await requestJson<GroupBoard>(`/api/group-tasks/${encodeURIComponent(groupTaskId)}?inviteToken=${encodeURIComponent(groupInviteToken)}`, {}, identity?.sessionToken);
       setGroupBoard(board);
     } catch (error) {
       if (!handleAuthError(error)) {
@@ -2540,16 +2614,16 @@ export default function ExperienceClient() {
 
     if (view === "home") {
       content = renderHomePage();
+    } else if (view === "group-fill") {
+      content = renderGroupFillPage();
+    } else if (view === "group-board" && groupTaskId && groupInviteToken) {
+      content = renderGroupBoardPage();
     } else if (!identity || view === "login") {
       content = renderLoginPage();
     } else if (view === "food") {
       content = renderFoodPage();
     } else if (view === "group-create") {
       content = renderGroupCreatePage();
-    } else if (view === "group-fill") {
-      content = renderGroupFillPage();
-    } else if (view === "group-board") {
-      content = renderGroupBoardPage();
     } else if (view === "weekend") {
       content = renderWeekendPage();
     } else {
@@ -3202,7 +3276,7 @@ export default function ExperienceClient() {
             </div>
             <div className="button-stack">
               <button className="primary-button" onClick={() => setView("group-fill")} type="button">我也填写偏好</button>
-              <button className="primary-button" onClick={() => void navigator.clipboard?.writeText(`/experience?groupTaskId=${groupTaskId}&inviteToken=${groupInviteToken}`)} type="button">分享到群里</button>
+              <button className="primary-button" onClick={copyGroupShareLink} type="button">分享到群里</button>
               <button className="primary-button" onClick={() => setView("group-board")} type="button">查看任务看板</button>
               <button className="primary-button" onClick={() => { setGroupTaskId(""); setGroupInviteToken(""); setGroupBoard(null); setGroupAiProgress(null); }} type="button">再发起一个</button>
             </div>
