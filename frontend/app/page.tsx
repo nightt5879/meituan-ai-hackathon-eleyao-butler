@@ -159,6 +159,11 @@ export default function PortfolioHomePage() {
 
   useEffect(() => {
     const revealed = Array.from(document.querySelectorAll<HTMLElement>(".ey-page .reveal"));
+    if (!siteOpen) {
+      revealed.forEach((item) => item.classList.remove("in"));
+      return;
+    }
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -169,7 +174,7 @@ export default function PortfolioHomePage() {
     }, { rootMargin: "0px 0px -8% 0px", threshold: 0.14 });
     revealed.forEach((item) => observer.observe(item));
     return () => observer.disconnect();
-  }, []);
+  }, [siteOpen]);
 
   useEffect(() => {
     const hub = hubRef.current;
@@ -234,17 +239,20 @@ export default function PortfolioHomePage() {
   }, []);
 
   function enterSite(hash?: string) {
+    const behavior: ScrollBehavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
     setSiteOpen(true);
     requestAnimationFrame(() => {
-      if (hash) document.querySelector(hash)?.scrollIntoView();
-      else window.scrollTo({ top: 0 });
+      requestAnimationFrame(() => {
+        if (hash) document.querySelector(hash)?.scrollIntoView({ behavior, block: "start" });
+        else window.scrollTo({ top: 0, behavior });
+      });
     });
   }
 
   function returnToStage(event: MouseEvent<HTMLAnchorElement>) {
     event.preventDefault();
+    window.scrollTo({ top: 0, behavior: "auto" });
     setSiteOpen(false);
-    window.scrollTo({ top: 0 });
   }
 
   function handleInternalLink(event: MouseEvent<HTMLAnchorElement>, href: string) {
