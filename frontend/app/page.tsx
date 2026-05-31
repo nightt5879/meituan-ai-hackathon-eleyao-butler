@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { ThemeNavPicker, ThemePipPicker } from "@/components/SiteThemeProvider";
 import { SurveyWordCloud } from "@/components/SurveyWordCloud";
-import { TechRouteShowcase } from "@/components/TechRouteShowcase";
+import { TechRouteSelfCheck, TechRouteShowcase } from "@/components/TechRouteShowcase";
 import "./ey-design.css";
 import "./tech-route.css";
 
@@ -112,6 +112,13 @@ const checks = [
   ["氛围匹配", "通过 · 安静适合聊天", "pass"],
   ["排队风险", "低 · 高峰建议确认", "warn"],
   ["公平性", "通过 · 无人被牺牲", "pass"]
+];
+
+const architectureLayers = [
+  ["L1", "体验层", "微信小程序与 Web 体验并行。Web 版复刻小程序流程，用 demo session 替代 wx.login。"],
+  ["L2", "服务层", "Next.js App Router 同时承载作品页、在线体验页面与 API routes。"],
+  ["L3", "AI 管家层", "OpenClaw 负责单人推荐与动态追问；不可用时降级到本地推荐，保证评审流程不断。"],
+  ["L4", "数据层", "任务、登录 session、周末规划写入服务端 JSON store；浏览器本地保留记忆、收藏与草稿。"]
 ];
 
 function Icon({ name, size = 28 }: { name: string; size?: number }) {
@@ -259,7 +266,7 @@ export default function PortfolioHomePage() {
         </a>
         <nav aria-label="作品站导航">
           <a href="#design" onClick={(event) => handleInternalLink(event, "#design")}>设计与思路</a>
-          <a href="#arch" onClick={(event) => handleInternalLink(event, "#arch")}>技术架构</a>
+          <a href="#route" onClick={(event) => handleInternalLink(event, "#route")}>技术架构</a>
           <a href="#video" onClick={(event) => handleInternalLink(event, "#video")}>演示视频</a>
           <a href="https://github.com/nightt5879/meituan_prj" target="_blank" rel="noreferrer">GitHub</a>
         </nav>
@@ -426,14 +433,32 @@ export default function PortfolioHomePage() {
         </div>
       </section>
 
+      <section className="section section--paper" id="route">
+        <div className="container">
+          <div className="sec-head reveal">
+            <div className="sec-eyebrow">三大功能 · 技术路线</div>
+            <h2 className="sec-title">三个功能，<br />一条会自检的执行链路</h2>
+            <p className="sec-lead">把每个功能拆成真实的 输入 → 处理 → 输出：用到哪些接口、抽取哪些字段、怎么自检、怎么兜底，以及和普通 AI 的不同点。三种框架视图可切换看，点任意节点展开细节，或「跑一遍流程」。</p>
+          </div>
+          <TechRouteShowcase />
+        </div>
+      </section>
+
       <section className="section section--forest" id="arch">
         <div className="container">
           <div className="sec-head reveal">
             <div className="sec-eyebrow">技术架构 · Architecture</div>
-            <h2 className="sec-title">三大功能技术路线，<br />把 AI 管家怎么工作讲清楚</h2>
-            <p className="sec-lead">这一段复刻设计包里的技术栈表达：从输入、服务端 API、OpenClaw 决策、自检兜底到最终输出，展示「今天吃什么」「多人约饭」「周末轻规划」三条链路如何共用同一套管家能力。</p>
+            <h2 className="sec-title">四层协作，<br />一个 Next.js 服务承载</h2>
+            <p className="sec-lead">Web 作品页是面向评审的可访问镜像：保持产品能力一致，复用现有后端链路，用浏览器友好的身份、路由与存储承载完整体验。</p>
           </div>
-          <TechRouteShowcase />
+          <div className="layers reveal">
+            {architectureLayers.map(([ix, title, desc]) => <div className="layer" key={ix}><div className="ix">{ix}</div><h3>{title}</h3><p>{desc}</p></div>)}
+          </div>
+          <div className="reveal d1" style={{ marginTop: 40 }}>
+            <div className="sec-eyebrow" style={{ marginBottom: 8 }}>自检评测闭环 · Self-Audit Loop</div>
+            <p className="sec-lead" style={{ margin: "0 0 24px", maxWidth: "56ch" }}>把命题 02 的评测思想嵌进管家每一次回答：输出前先逐项审计，不合格就修正或追问。七项检查 × 对应动作，构成「计划前—计划中—计划后—下一次」的闭环。</p>
+            <TechRouteSelfCheck />
+          </div>
         </div>
       </section>
 
@@ -482,7 +507,7 @@ export default function PortfolioHomePage() {
       <footer className="footer">
         <div className="fbrand"><span className="mini"><Seal size={16} /></span>饿了幺 · 全天候私人管家</div>
         <div>美团 OpenClaw 赛道 · 最终提交作品 · 2026</div>
-        <div className="footer-links"><a href="https://github.com/nightt5879/meituan_prj" target="_blank" rel="noreferrer">GitHub</a><a href="#arch" onClick={(event) => handleInternalLink(event, "#arch")}>架构</a><a href="/experience">在线体验</a></div>
+        <div className="footer-links"><a href="https://github.com/nightt5879/meituan_prj" target="_blank" rel="noreferrer">GitHub</a><a href="#route" onClick={(event) => handleInternalLink(event, "#route")}>架构</a><a href="/experience">在线体验</a></div>
       </footer>
     </main>
   );

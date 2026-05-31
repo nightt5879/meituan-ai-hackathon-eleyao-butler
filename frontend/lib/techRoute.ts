@@ -75,6 +75,7 @@ export const techRouteData = {
           sub: "PROCESS",
           nodes: [
             { t: "动态追问", desc: "信息不足先补关键问题", detail: "缺场景、预算、忌口时，先问最影响结果的一项，不硬生成。" },
+            { t: "OpenClaw Gateway", desc: "WebSocket 调云端管家", detail: "后端代理调用 OpenClaw Gateway，token 只在服务端，前端和小程序不接触密钥。" },
             { t: "候选压缩", desc: "轻量候选表交给 AI 决策", detail: "服务端只做去重、多样性和基础可执行性整理，最终选择仍由 OpenClaw 完成。" },
             { t: "自检过滤", desc: "预算 / 忌口 / 距离逐项检查", detail: "推荐前后都检查硬约束，不合格则重筛或提示风险。" }
           ]
@@ -92,6 +93,7 @@ export const techRouteData = {
       ],
       fields: [
         { name: "后端配置", note: "密钥只在服务端", items: ["OPENCLAW_GATEWAY_URL", "OPENCLAW_GATEWAY_TOKEN", "session: food-recommendation", "timeout 90000ms"] },
+        { name: "小程序 / Web 端", note: "不泄露密钥", items: ["只配置 foodRecommendApiBaseUrl", "origin 指向同源后端", "状态和进度由服务端返回", "本地 fallback 可离线兜底"] },
         { name: "候选输入", note: "AI 最终决策", items: ["场景 / 预算 / 距离 / 忌口", "12 个轻量候选", "店名 / 品类 / 价格 / 标签", "why / warning 由 AI 输出"] }
       ],
       features: [
@@ -129,6 +131,7 @@ export const techRouteData = {
             { t: "抽取约束", desc: "硬约束 vs 软偏好", detail: "不吃辣、预算上限、几点前离开、过敏为硬约束；想吃辣、想安静用于排序。" },
             { t: "冲突识别", desc: "口味 / 时间 / 预算", detail: "显式列出冲突在哪里，让人感觉 AI 理解了局面，而非随机推荐。" },
             { t: "候选生成", desc: "2-3 个策略不同方案", detail: "最公平折中、最省时稳妥、最有新鲜感，各自说明牺牲了什么。" },
+            { t: "自检评测", desc: "七项逐条检查", detail: "预算、时间、距离、忌口、氛围、公平性、可执行性逐条过，不合格则重排或追问。" },
             { t: "公平性排序", desc: "看最低满意度", detail: "避免两个人满意、一个人完全不能接受的平均分陷阱。" }
           ]
         },
