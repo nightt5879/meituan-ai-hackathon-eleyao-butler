@@ -80,9 +80,16 @@ type OpenClawFoodOptions = {
   context?: OpenClawDataContext;
 };
 
+type HardFoodFilterPolicy = {
+  budgetMax?: number;
+  noSpicy: boolean;
+  avoidTerms: string[];
+  avoidCategories: string[];
+};
+
 const DEFAULT_TIMEOUT_MS = 130_000;
 const DEFAULT_MAX_RESPONSE_CHARS = 4000;
-const DEFAULT_CANDIDATE_LIMIT = 28;
+const DEFAULT_CANDIDATE_LIMIT = 12;
 
 export function sanitizeFoodRecommendRequest(input: unknown): FoodRecommendRequest {
   const payload = isRecord(input) ? input : {};
@@ -192,12 +199,13 @@ function buildFoodRecommendationPrompt(
   return {
     payload,
     content: [
-      "Task: choose 2-3 food shops from decisionPayload.candidates for the user's current request.",
+      "Task: choose 2-3 food shops from decisionPayload.candidates.",
       "AI owns the final selection. The server only prepared a compact, non-ranked candidate catalog.",
       "Candidate order is NOT a recommendation ranking. Decide from constraints and candidate facts.",
       "Hard constraints in decisionPayload.constraints are mandatory; avoid spicy/high-spice shops when no-spicy is requested.",
-      "Use exact candidate ids only. Do not invent shops. Do not output display fields the backend can fill.",
-      "Return ONLY strict JSON: {\"selected\":[{\"id\":\"candidate_id\",\"reason\":\"中文短理由\",\"riskTip\":\"中文风险提示\",\"matchedTags\":[\"最多4个短标签\"]}]}",
+      "Use exact candidate ids only. Do not invent shops. Backend fills display fields.",
+      "Return ONLY minified JSON, no markdown, no extra text.",
+      "Schema: {\"selected\":[{\"id\":\"candidate_id\",\"r\":\"18字内中文理由\",\"risk\":\"16字内中文风险\",\"tags\":[\"最多2个短标签\"]}]}",
       `decisionPayload=${payload}`
     ].join("\n")
   };
@@ -271,11 +279,10 @@ function toCompactDecisionCandidate(candidate: FoodRecommendationCard) {
     name: candidate.name,
     category: candidate.type,
     priceYuan: readNumberFromText(candidate.perCapita),
-    area: "大学城",
     rating: candidate.rating > 0 ? Number(candidate.rating.toFixed(1)) : undefined,
-    tags: candidate.matchedTags.slice(0, 4),
-    signals: splitCompactText(candidate.reason, 2),
-    risks: splitCompactText(candidate.riskTip, 2)
+    tags: candidate.matchedTags.slice(0, 3),
+    signal: splitCompactText(candidate.reason, 1)[0],
+    risk: splitCompactText(candidate.riskTip, 1)[0]
   });
 }
 
@@ -296,7 +303,8 @@ async function buildLocalFoodCandidates(request: FoodRecommendRequest): Promise<
   const limit = readNumberEnv("OPENCLAW_FOOD_CANDIDATE_LIMIT", DEFAULT_CANDIDATE_LIMIT);
   const data = await loadRestaurantData();
   const excludedIds = new Set(request.requestContext?.excludeIds ?? []);
-  const candidates = buildDiverseAiCatalog(data, limit, excludedIds).map((shop) => {
+  const hardFilter = buildHardFoodFilterPolicy(request);
+  const candidates = buildDiverseAiCatalog(data, limit, excludedIds, hardFilter).map((shop) => {
     return toFoodCandidateCard(shop, data.featuresByShopId.get(shop.id), data.sceneFitByShopId.get(shop.id));
   });
 
@@ -307,14 +315,121 @@ async function buildLocalFoodCandidates(request: FoodRecommendRequest): Promise<
   return candidates;
 }
 
-function buildDiverseAiCatalog(data: RestaurantDataSet, limit: number, excludedIds: Set<string>) {
-  // Keep this catalog preference-agnostic: OpenClaw owns selection, ranking, and explanation.
+function buildDiverseAiCatalog(
+  data: RestaurantDataSet,
+  limit: number,
+  excludedIds: Set<string>,
+  hardFilter: HardFoodFilterPolicy
+) {
+  // Keep this catalog non-ranked: hard filters remove impossible options, OpenClaw owns final selection and ranking.
   const sourceOrder: RestaurantSource[] = ["manual_sample", "manual_public_curated", "synthetic_mvp"];
-  const bySource = sourceOrder.flatMap((source) => data.shops.filter((shop) => shop.source === source && !excludedIds.has(shop.id)));
-  const remaining = data.shops.filter((shop) => !sourceOrder.includes(shop.source) && !excludedIds.has(shop.id));
+  const allowedShops = data.shops.filter((shop) => {
+    return !excludedIds.has(shop.id) && isHardFoodCandidateAllowed(shop, data, hardFilter);
+  });
+  const fallbackShops = data.shops.filter((shop) => !excludedIds.has(shop.id));
+  const pool = allowedShops.length >= 2 ? allowedShops : fallbackShops;
+  const bySource = sourceOrder.flatMap((source) => pool.filter((shop) => shop.source === source));
+  const remaining = pool.filter((shop) => !sourceOrder.includes(shop.source));
   const ordered = [...bySource, ...remaining];
 
   return roundRobinByCategory(ordered).slice(0, Math.max(2, limit));
+}
+
+function buildHardFoodFilterPolicy(request: FoodRecommendRequest): HardFoodFilterPolicy {
+  const stableFoodPreferences = request.memoryProfile?.stableFoodPreferences;
+  const adjustment = request.requestContext?.adjustment;
+  const rawAvoidTerms = uniqueStrings([
+    ...request.preferences.avoidTags,
+    ...(stableFoodPreferences?.avoidTags ?? [])
+  ]);
+  const spicyText = [
+    request.preferences.spicyLevel,
+    stableFoodPreferences?.spicyLevel,
+    ...rawAvoidTerms
+  ].join(" ");
+
+  return {
+    budgetMax: extractBudgetMax(request.slots.budget),
+    noSpicy: /(不吃辣|不要辣|忌辣|不能吃辣|无辣|no.?spicy|non.?spicy)/i.test(spicyText),
+    avoidTerms: rawAvoidTerms.filter((term) => {
+      return term.length >= 2 && !/(不吃辣|不要辣|忌辣|不能吃辣|无辣|辣度)/i.test(term);
+    }),
+    avoidCategories: uniqueStrings([
+      ...(adjustment?.avoidCategories ?? []),
+      ...(adjustment?.types ?? []).filter((item) => /^不想|^不要|^避开/.test(item))
+    ])
+  };
+}
+
+function isHardFoodCandidateAllowed(shop: Shop, data: RestaurantDataSet, hardFilter: HardFoodFilterPolicy) {
+  const features = data.featuresByShopId.get(shop.id);
+  const dishes = data.dishesByShopId.get(shop.id) ?? [];
+  const text = buildFoodCandidateSearchText(shop, features, dishes);
+
+  if (hardFilter.budgetMax && shop.avgPrice !== null && shop.avgPrice > hardFilter.budgetMax + budgetTolerance(hardFilter.budgetMax)) {
+    return false;
+  }
+
+  if (hardFilter.noSpicy && isClearlySpicyCandidate(text, features)) {
+    return false;
+  }
+
+  if (hardFilter.avoidCategories.some((term) => candidateTextIncludes(text, term))) {
+    return false;
+  }
+
+  if (hardFilter.avoidTerms.some((term) => candidateTextIncludes(text, term))) {
+    return false;
+  }
+
+  return true;
+}
+
+function buildFoodCandidateSearchText(shop: Shop, features: ShopFeature | undefined, dishes: Array<{ name: string; category: string; tags: string[] }>) {
+  return [
+    shop.name,
+    shop.category,
+    ...(shop.cuisines ?? []),
+    ...shop.tags,
+    ...(features?.featureTags ?? []),
+    ...(features?.tasteTags ?? []),
+    ...(features?.sceneTags ?? []),
+    ...(features?.avoidTags ?? []),
+    ...dishes.flatMap((dish) => [dish.name, dish.category, ...dish.tags])
+  ].join(" ").toLowerCase();
+}
+
+function isClearlySpicyCandidate(text: string, features?: ShopFeature) {
+  if (features?.supportsNonSpicy === false) {
+    return true;
+  }
+
+  const nonSpicyAvailable = /(不辣可选|不辣|无辣|清淡|non_spicy|non-spicy|no spicy)/i.test(text);
+  const highSpice = /(麻辣|香辣|重辣|中辣|川菜|湘菜|火锅|冒菜|串串|烤鱼|酸辣粉|螺蛳粉|mala|hotpot|sichuan|hunan)/i.test(text);
+
+  return highSpice && !nonSpicyAvailable;
+}
+
+function candidateTextIncludes(text: string, term: string) {
+  return text.includes(term.trim().toLowerCase());
+}
+
+function budgetTolerance(budgetMax: number) {
+  return Math.max(6, Math.round(budgetMax * 0.2));
+}
+
+function extractBudgetMax(value: string) {
+  const text = value.trim();
+  if (!text || /(以上|起|不设限|不限|无所谓)/.test(text)) {
+    return undefined;
+  }
+
+  const numbers = Array.from(text.matchAll(/\d+(?:\.\d+)?/g)).map((match) => Number(match[0])).filter(Number.isFinite);
+  if (!numbers.length) {
+    return undefined;
+  }
+
+  return Math.max(...numbers);
 }
 
 function roundRobinByCategory(shops: Shop[]) {
@@ -538,7 +653,7 @@ function normalizeRecommendations(input: unknown, localCandidates: FoodRecommend
       "average_price"
     ]);
     const distance = readStringFrom(raw, ["distance", "distanceText", "distance_text"]);
-    const reason = readStringFrom(raw, ["reason", "rationale", "why", "recommendReason", "recommend_reason"]);
+    const reason = readStringFrom(raw, ["reason", "r", "rationale", "why", "recommendReason", "recommend_reason"]);
     const riskTip = readStringFrom(raw, ["riskTip", "risk_tip", "risk", "tips", "tip", "note"]);
 
     return {
@@ -588,7 +703,7 @@ function enrichSelectedRecommendations(rawSelected: unknown[], localCandidates: 
 
     usedIds.add(candidate.id);
     const matchedTags = readStringArrayFrom(raw, ["matchedTags", "matched_tags", "tags", "labels"]);
-    const reason = readStringFrom(raw, ["reason", "rationale", "why", "recommendReason", "recommend_reason"]);
+    const reason = readStringFrom(raw, ["reason", "r", "rationale", "why", "recommendReason", "recommend_reason"]);
     const riskTip = readStringFrom(raw, ["riskTip", "risk_tip", "risk", "tips", "tip", "note"]);
 
     cards.push({
