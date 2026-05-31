@@ -23,7 +23,20 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   const startedAt = Date.now();
+  const timings: Array<{ name: string; durationMs: number; atMs: number }> = [];
+  let phaseStartedAt = startedAt;
+  const markTiming = (name: string) => {
+    const now = Date.now();
+    timings.push({
+      name,
+      durationMs: now - phaseStartedAt,
+      atMs: now - startedAt
+    });
+    phaseStartedAt = now;
+  };
+
   const auth = await requireMiniProgramUser(request);
+  markTiming("auth");
 
   if (!auth.ok) {
     return auth.response;
@@ -36,8 +49,10 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON request body." }, { status: 400 });
   }
+  markTiming("parse_request");
 
   const sanitizedRequest = sanitizeFoodRecommendRequest(body);
+  markTiming("sanitize_request");
   const bodyRecord = body && typeof body === "object" ? body as Record<string, unknown> : {};
   const aiProgress = await startAiProgress("food_recommendation", {
     traceId: normalizeAiProgressTraceId(bodyRecord.aiProgressTraceId),
@@ -47,6 +62,7 @@ export async function POST(request: Request) {
   await advanceAiProgress(aiProgress.traceId, "retrieve", {
     message: "正在准备候选店铺、账号画像和本次偏好上下文。"
   });
+  markTiming("start_progress");
   const profile = await ensureUserProfile(auth.user.userId);
   const openclawContext = createOpenClawDataContext("food_recommendation", {
     userId: auth.user.userId,
@@ -59,6 +75,7 @@ export async function POST(request: Request) {
   await advanceAiProgress(aiProgress.traceId, "filter", {
     message: "正在按预算、距离、忌口和临时偏好筛选。"
   });
+  markTiming("profile_context");
 
   if (bodyRecord.openclawFeedOnly === true) {
     await advanceAiProgress(aiProgress.traceId, "compose", {
@@ -66,6 +83,7 @@ export async function POST(request: Request) {
       note: "这次只验证上下文传递，不生成最终推荐。"
     });
     const openclawContextResult = await submitOpenClawDataFeed(openclawContext);
+    markTiming("openclaw_data_feed");
     const finalProgress = await completeAiProgress(
       aiProgress.traceId,
       openclawContextResult.submitted ? "done" : "error",
@@ -74,12 +92,14 @@ export async function POST(request: Request) {
         note: openclawContextResult.detail
       }
     );
+    markTiming("record_progress");
 
     return NextResponse.json({
       ok: openclawContextResult.submitted,
       source: "openclaw-feed",
       diagnostics: {
         durationMs: Date.now() - startedAt,
+        timings,
         openclawContext: openclawContextResult,
         aiProgress: finalProgress || aiProgress
       }
@@ -93,10 +113,12 @@ export async function POST(request: Request) {
     await advanceAiProgress(aiProgress.traceId, "compose", {
       message: "OpenClaw 正在生成推荐卡片和管家提醒。"
     });
+    markTiming("pre_openclaw_progress");
     const result = await generateFoodRecommendationsWithOpenClaw(sanitizedRequest, {
       userId: auth.user.userId,
       context: openclawContext
     });
+    markTiming("openclaw_recommendation");
     const openclawContextResult = createOpenClawDataFeedResult(openclawContext, "submitted", {
       durationMs: Date.now() - startedAt,
       detail: "Context was included in the OpenClaw recommendation prompt."
@@ -106,16 +128,20 @@ export async function POST(request: Request) {
       message: "AI 管家已生成 2-3 个可执行推荐方案。",
       note: openclawContextResult.detail
     });
+    markTiming("record_progress");
 
     return NextResponse.json({
       ...result,
       diagnostics: {
         durationMs: Date.now() - startedAt,
+        timings,
+        openclawFood: result.diagnostics,
         openclawContext: openclawContextResult,
         aiProgress: finalProgress || aiProgress
       }
     });
   } catch (error) {
+    markTiming("openclaw_recommendation_failed");
     const detail = error instanceof Error ? error.message : String(error);
     const openclawContextResult = createOpenClawDataFeedResult(openclawContext, "failed", {
       durationMs: Date.now() - startedAt,
@@ -126,6 +152,7 @@ export async function POST(request: Request) {
       message: "OpenClaw 生成中断，本次推荐没有完成。",
       note: detail
     });
+    markTiming("record_progress_failed");
 
     console.error("OpenClaw food recommendation failed", {
       durationMs: Date.now() - startedAt,
@@ -138,6 +165,7 @@ export async function POST(request: Request) {
         detail,
         diagnostics: {
           durationMs: Date.now() - startedAt,
+          timings,
           openclawContext: openclawContextResult,
           aiProgress: finalProgress || aiProgress
         }

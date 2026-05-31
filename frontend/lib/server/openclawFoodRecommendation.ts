@@ -58,6 +58,19 @@ export type FoodRecommendRequest = {
 export type FoodRecommendResponse = {
   recommendations: FoodRecommendationCard[];
   source: "openclaw";
+  diagnostics: FoodOpenClawDiagnostics;
+};
+
+export type FoodOpenClawDiagnostics = {
+  localCandidateMs: number;
+  promptChars: number;
+  candidateCount: number;
+  cliMs: number;
+  responseChars: number;
+  parseMs: number;
+  normalizeMs: number;
+  outputMode: "selected" | "legacy";
+  selectedCount: number;
 };
 
 type OpenClawFoodOptions = {
@@ -124,17 +137,36 @@ export async function generateFoodRecommendationsWithOpenClaw(
   request: FoodRecommendRequest,
   options: OpenClawFoodOptions = {}
 ): Promise<FoodRecommendResponse> {
+  const localCandidateStartedAt = Date.now();
   const localCandidates = await buildLocalFoodCandidates(request);
+  const localCandidateMs = Date.now() - localCandidateStartedAt;
   const prompt = buildFoodRecommendationPrompt(request, options.context, localCandidates);
+  const cliStartedAt = Date.now();
   const rawContent = await runOpenClawAgentCli(prompt, buildFoodOpenClawSessionId(request, options));
+  const cliMs = Date.now() - cliStartedAt;
+  const parseStartedAt = Date.now();
   const parsed = parseOpenClawRecommendation(rawContent);
-  const recommendations = normalizeRecommendations(parsed, localCandidates);
+  const parseMs = Date.now() - parseStartedAt;
+  const normalizeStartedAt = Date.now();
+  const normalized = normalizeRecommendations(parsed, localCandidates);
+  const normalizeMs = Date.now() - normalizeStartedAt;
 
-  assertNoHardConstraintViolation(recommendations, request.preferences);
+  assertNoHardConstraintViolation(normalized.recommendations, request.preferences);
 
   return {
-    recommendations,
-    source: "openclaw"
+    recommendations: normalized.recommendations,
+    source: "openclaw",
+    diagnostics: {
+      localCandidateMs,
+      promptChars: prompt.length,
+      candidateCount: localCandidates.length,
+      cliMs,
+      responseChars: rawContent.length,
+      parseMs,
+      normalizeMs,
+      outputMode: normalized.outputMode,
+      selectedCount: normalized.recommendations.length
+    }
   };
 }
 
@@ -438,7 +470,7 @@ function parseOpenClawRecommendation(rawContent: string): unknown {
   }
 }
 
-function normalizeRecommendations(input: unknown, localCandidates: FoodRecommendationCard[]): FoodRecommendationCard[] {
+function normalizeRecommendations(input: unknown, localCandidates: FoodRecommendationCard[]) {
   const payload = isRecord(input) ? input : {};
   const selected = readSelectedDecisionArray(payload);
 
@@ -446,7 +478,10 @@ function normalizeRecommendations(input: unknown, localCandidates: FoodRecommend
     const enriched = enrichSelectedRecommendations(selected, localCandidates);
 
     if (enriched.length >= 2) {
-      return enriched;
+      return {
+        recommendations: enriched,
+        outputMode: "selected" as const
+      };
     }
   }
 
@@ -494,7 +529,10 @@ function normalizeRecommendations(input: unknown, localCandidates: FoodRecommend
     throw new Error("OpenClaw returned fewer than 2 valid recommendations.");
   }
 
-  return valid;
+  return {
+    recommendations: valid,
+    outputMode: "legacy" as const
+  };
 }
 
 function enrichSelectedRecommendations(rawSelected: unknown[], localCandidates: FoodRecommendationCard[]) {
