@@ -664,6 +664,60 @@ body.t-night .nt-row .nm {
   }
 }
 
+@media (min-width: 761px) {
+  .stage .grid {
+    gap: 0 !important;
+  }
+
+  .quad::after {
+    box-shadow: none !important;
+  }
+
+  .q1 {
+    background:
+      radial-gradient(130% 130% at 0% 0%, color-mix(in srgb, #ffffff 70%, var(--ey-bg)) 0%, color-mix(in srgb, var(--ey-bg) 84%, transparent) 46%, transparent 78%),
+      linear-gradient(135deg, color-mix(in srgb, #ffffff 22%, transparent), transparent 58%) !important;
+  }
+
+  .q2 {
+    background:
+      radial-gradient(130% 130% at 100% 0%, color-mix(in srgb, #ffffff 64%, var(--ey-bg)) 0%, color-mix(in srgb, var(--ey-bg) 82%, transparent) 46%, transparent 78%),
+      linear-gradient(225deg, color-mix(in srgb, #ffffff 18%, transparent), transparent 58%) !important;
+  }
+
+  .q3 {
+    background:
+      radial-gradient(130% 130% at 0% 100%, color-mix(in srgb, #ffffff 58%, var(--ey-bg)) 0%, color-mix(in srgb, var(--ey-bg) 80%, transparent) 46%, transparent 78%),
+      linear-gradient(45deg, color-mix(in srgb, #ffffff 16%, transparent), transparent 58%) !important;
+  }
+
+  .q4 {
+    background:
+      radial-gradient(135% 135% at 100% 100%, color-mix(in srgb, var(--ey-emerald-200) 78%, var(--ey-bg)) 0%, color-mix(in srgb, var(--ey-emerald-100) 58%, transparent) 48%, transparent 80%),
+      linear-gradient(315deg, color-mix(in srgb, var(--ey-emerald-100) 42%, transparent), transparent 60%) !important;
+  }
+
+  body.t-black-pink .q1,
+  body.t-night .q1 {
+    background: radial-gradient(130% 130% at 0% 0%, color-mix(in srgb, var(--ey-emerald) 16%, var(--ey-bg)) 0%, color-mix(in srgb, var(--ey-bg) 86%, transparent) 50%, transparent 82%) !important;
+  }
+
+  body.t-black-pink .q2,
+  body.t-night .q2 {
+    background: radial-gradient(130% 130% at 100% 0%, color-mix(in srgb, var(--ey-emerald) 13%, var(--ey-bg)) 0%, color-mix(in srgb, var(--ey-bg) 86%, transparent) 50%, transparent 82%) !important;
+  }
+
+  body.t-black-pink .q3,
+  body.t-night .q3 {
+    background: radial-gradient(130% 130% at 0% 100%, color-mix(in srgb, var(--ey-emerald) 12%, var(--ey-bg)) 0%, color-mix(in srgb, var(--ey-bg) 86%, transparent) 50%, transparent 82%) !important;
+  }
+
+  body.t-black-pink .q4,
+  body.t-night .q4 {
+    background: radial-gradient(135% 135% at 100% 100%, color-mix(in srgb, var(--ey-emerald) 42%, var(--ey-bg)) 0%, color-mix(in srgb, var(--ey-emerald) 18%, transparent) 50%, transparent 84%) !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .theme-reveal {
     animation: none;
