@@ -47,7 +47,7 @@ function syncThemeScrollbar(theme: SiteTheme) {
 
   root.style.setProperty("color-scheme", isDarkTheme ? "dark" : "light");
   root.style.setProperty("--sb", theme.siteAccent);
-  root.style.setProperty("--sb-track", isDarkTheme ? theme.bg2 : `color-mix(in srgb, ${theme.bg2} 72%, #ffffff)`);
+  root.style.setProperty("--sb-track", "transparent");
   root.style.setProperty("--sb-thumb", `color-mix(in srgb, ${theme.siteAccent} ${isDarkTheme ? 62 : 46}%, ${isDarkTheme ? theme.bg1 : "#ffffff"})`);
   root.style.setProperty("--sb-thumb-hover", `color-mix(in srgb, ${theme.siteAccent} ${isDarkTheme ? 84 : 68}%, ${isDarkTheme ? theme.bg1 : "#ffffff"})`);
 }

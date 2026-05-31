@@ -30,7 +30,7 @@ html {
   --ey-shadow: 0 10px 30px rgba(2, 44, 34, 0.09);
   --ey-shadow-lg: 0 24px 60px rgba(2, 44, 34, 0.16);
   --sb: #047857;
-  --sb-track: #eef8f5;
+  --sb-track: transparent;
   --sb-thumb: color-mix(in srgb, var(--sb) 46%, #ffffff);
   --sb-thumb-hover: color-mix(in srgb, var(--sb) 68%, #ffffff);
 }
@@ -113,7 +113,7 @@ body.t-black-pink {
   --ey-line: rgba(255, 255, 255, 0.1);
   --ey-line-2: rgba(255, 255, 255, 0.06);
   --sb: #ff4fa3;
-  --sb-track: #0b0309;
+  --sb-track: transparent;
   --sb-thumb: color-mix(in srgb, #ff4fa3 62%, #160a12);
   --sb-thumb-hover: color-mix(in srgb, #ff4fa3 84%, #160a12);
   color-scheme: dark;
@@ -141,7 +141,7 @@ body.t-night {
   --ey-line: rgba(203, 213, 225, 0.14);
   --ey-line-2: rgba(203, 213, 225, 0.08);
   --sb: #7c8cff;
-  --sb-track: #070b16;
+  --sb-track: transparent;
   --sb-thumb: color-mix(in srgb, #7c8cff 62%, #0f172a);
   --sb-thumb-hover: color-mix(in srgb, #7c8cff 84%, #0f172a);
   color-scheme: dark;
@@ -149,7 +149,7 @@ body.t-night {
 
 html:has(> body.t-black-pink) {
   --sb: #ff4fa3;
-  --sb-track: #0b0309;
+  --sb-track: transparent;
   --sb-thumb: color-mix(in srgb, #ff4fa3 62%, #160a12);
   --sb-thumb-hover: color-mix(in srgb, #ff4fa3 84%, #160a12);
   color-scheme: dark;
@@ -157,7 +157,7 @@ html:has(> body.t-black-pink) {
 
 html:has(> body.t-night) {
   --sb: #7c8cff;
-  --sb-track: #070b16;
+  --sb-track: transparent;
   --sb-thumb: color-mix(in srgb, #7c8cff 62%, #0f172a);
   --sb-thumb-hover: color-mix(in srgb, #7c8cff 84%, #0f172a);
   color-scheme: dark;
@@ -165,7 +165,6 @@ html:has(> body.t-night) {
 
 html {
   scrollbar-color: var(--sb-thumb) var(--sb-track);
-  scrollbar-gutter: stable;
   scrollbar-width: thin;
 }
 
@@ -177,11 +176,11 @@ html {
 ::-webkit-scrollbar {
   width: 11px;
   height: 11px;
-  background: var(--sb-track);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--sb-track);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -466,7 +465,7 @@ body.in-site .topnav nav,
 }
 
 .stage {
-  background: radial-gradient(120% 95% at 50% 50%, var(--ey-emerald-50) 0%, var(--ey-emerald-100) 48%, var(--ey-emerald-200) 100%) !important;
+  background: linear-gradient(180deg, var(--ey-bg), var(--ey-bg-2)) !important;
   transition: background 0.6s ease;
 }
 
