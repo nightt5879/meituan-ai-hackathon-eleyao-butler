@@ -2,76 +2,63 @@
 
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 
-type SurveyWord = {
-  text: string;
-  weight: 1 | 2 | 3 | 4 | 5;
-  percent: number;
-  tone?: "warn" | "hard";
+type CloudWord = {
+  t: string;
+  w: 1 | 2 | 3 | 4 | 5;
+  pct: number;
+  c?: "warn" | "hard";
 };
 
-const surveyWords: SurveyWord[] = [
-  { text: "都说随便", weight: 5, percent: 72 },
-  { text: "没人定地方", weight: 5, percent: 65 },
-  { text: "众口难调", weight: 4, percent: 58 },
-  { text: "时间凑不齐", weight: 4, percent: 55, tone: "warn" },
-  { text: "选择困难", weight: 4, percent: 52 },
-  { text: "没人拍板", weight: 4, percent: 50 },
-  { text: "临时放鸽子", weight: 4, percent: 47, tone: "hard" },
-  { text: "排队太久", weight: 3, percent: 44, tone: "warn" },
-  { text: "有人不吃辣", weight: 3, percent: 41, tone: "hard" },
-  { text: "太远懒得去", weight: 3, percent: 40, tone: "warn" },
-  { text: "找店花时间", weight: 3, percent: 39, tone: "warn" },
-  { text: "预算难开口", weight: 3, percent: 38 },
-  { text: "群里没人回", weight: 3, percent: 36 },
-  { text: "怕踩雷", weight: 3, percent: 34 },
-  { text: "AA 算账麻烦", weight: 2, percent: 31 },
-  { text: "等人迟到", weight: 2, percent: 30, tone: "warn" },
-  { text: "改来改去", weight: 2, percent: 29 },
-  { text: "忌口太多", weight: 2, percent: 27, tone: "hard" },
-  { text: "人多难协调", weight: 2, percent: 26 },
-  { text: "想去的店没位", weight: 2, percent: 24, tone: "warn" },
-  { text: "谁付钱尴尬", weight: 2, percent: 22 },
-  { text: "减肥又想吃", weight: 1, percent: 18 }
+const WORDS: CloudWord[] = [
+  { t: '都说"随便"', w: 5, pct: 72 },
+  { t: "没人定地方", w: 5, pct: 65 },
+  { t: "众口难调", w: 4, pct: 58 },
+  { t: "没人拍板", w: 4, pct: 50 },
+  { t: "选择困难", w: 4, pct: 52 },
+  { t: "时间凑不齐", w: 4, pct: 55, c: "warn" },
+  { t: "临时放鸽子", w: 4, pct: 47, c: "hard" },
+  { t: "有人不吃辣", w: 3, pct: 41, c: "hard" },
+  { t: "排队太久", w: 3, pct: 44, c: "warn" },
+  { t: "太远懒得去", w: 3, pct: 40, c: "warn" },
+  { t: "找店花时间", w: 3, pct: 39, c: "warn" },
+  { t: "预算难开口", w: 3, pct: 38 },
+  { t: "怕踩雷", w: 3, pct: 34 },
+  { t: "群里没人回", w: 3, pct: 36 },
+  { t: "AA算账麻烦", w: 2, pct: 31 },
+  { t: "等人迟到", w: 2, pct: 30, c: "warn" },
+  { t: "改来改去", w: 2, pct: 29 },
+  { t: "忌口太多", w: 2, pct: 27, c: "hard" },
+  { t: "人多难协调", w: 2, pct: 26 },
+  { t: "想去的店没位", w: 2, pct: 24, c: "warn" },
+  { t: "谁付钱尴尬", w: 2, pct: 22 },
+  { t: "减肥又想吃", w: 1, pct: 18 }
 ];
 
-const surveyStats = [
-  { value: "128", label: "mock 问卷" },
-  { value: "3.2", label: "人均提及" },
-  { value: "22", label: "归类标签" }
+const STATS = [
+  { v: "128", k: "有效问卷" },
+  { v: "3.2", k: "人均提到 / 条" },
+  { v: "22", k: "归类标签" }
 ];
 
 type CloudNode = {
-  element: HTMLButtonElement;
-  homeX: number;
-  homeY: number;
+  el: HTMLButtonElement;
+  hx: number;
+  hy: number;
   x: number;
   y: number;
   vx: number;
   vy: number;
-  phase: number;
-  amplitude: number;
-  speed: number;
+  ph: number;
+  amp: number;
+  sp: number;
 };
 
-function randomBetween(min: number, max: number) {
-  return min + Math.random() * (max - min);
+function rand(a: number, b: number) {
+  return a + Math.random() * (b - a);
 }
 
-function toneClass(tone?: SurveyWord["tone"]) {
-  if (tone === "warn") return "is-warn";
-  if (tone === "hard") return "is-hard";
-  return "is-main";
-}
-
-function fontSizeFor(weight: SurveyWord["weight"]) {
-  const sizes: Record<SurveyWord["weight"], number> = {
-    5: 48,
-    4: 36,
-    3: 27,
-    2: 20,
-    1: 16
-  };
-  return sizes[weight];
+function wordClass(word: CloudWord) {
+  return `cloud-word${word.c ? ` c-${word.c}` : ""}`;
 }
 
 export function SurveyWordCloud() {
@@ -83,118 +70,117 @@ export function SurveyWordCloud() {
   const nodesRef = useRef<CloudNode[]>([]);
   const frameRef = useRef(0);
   const mouseRef = useRef({ x: -9999, y: -9999, active: false });
-  const topWords = useMemo(() => surveyWords.slice().sort((a, b) => b.percent - a.percent).slice(0, 14), []);
+  const topWords = useMemo(() => WORDS.slice().sort((a, b) => b.pct - a.pct).slice(0, 14), []);
 
   useEffect(() => {
     const stage = stageRef.current;
     if (!stage) return;
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timeoutIds: number[] = [];
 
     const layout = () => {
-      const rect = stage.getBoundingClientRect();
-      const width = rect.width;
-      const height = rect.height;
+      const W = stage.clientWidth;
+      const H = stage.clientHeight;
+      if (!W || !H) return;
 
-      if (!width || !height) return;
-
-      const centerX = width * 0.58;
-      const centerY = height * 0.52;
+      const cx = W / 2;
+      const cy = H / 2;
+      const k = Math.max(0.78, Math.min(1.22, W / 940));
+      const sizes: Record<CloudWord["w"], number> = { 5: 50, 4: 37, 3: 28, 2: 20, 1: 16 };
       const placed: Array<{ x: number; y: number; w: number; h: number }> = [];
       const intro = introRef.current;
 
       if (intro) {
-        const introRect = intro.getBoundingClientRect();
+        const ir = intro.getBoundingClientRect();
+        const sr = stage.getBoundingClientRect();
         placed.push({
-          x: introRect.left - rect.left + introRect.width / 2,
-          y: introRect.top - rect.top + introRect.height / 2,
-          w: introRect.width + 58,
-          h: introRect.height + 54
+          x: ir.left - sr.left + ir.width / 2,
+          y: ir.top - sr.top + ir.height / 2,
+          w: ir.width + 48,
+          h: ir.height + 48
         });
       }
 
-      const scale = Math.max(0.78, Math.min(1.14, width / 980));
       const nodes: CloudNode[] = [];
-      const sorted = surveyWords.slice().sort((a, b) => b.weight - a.weight || b.percent - a.percent);
+      const list = WORDS.slice().sort((a, b) => b.w - a.w);
 
-      sorted.forEach((word, index) => {
-        const element = wordRefs.current[word.text];
-        if (!element) return;
+      list.forEach((word, index) => {
+        const el = wordRefs.current[word.t];
+        if (!el) return;
 
-        element.style.fontSize = `${(fontSizeFor(word.weight) * scale).toFixed(1)}px`;
-        const boxWidth = element.offsetWidth;
-        const boxHeight = element.offsetHeight;
-        let x = centerX;
-        let y = centerY;
+        el.classList.remove("show");
+        el.style.fontSize = `${(sizes[word.w] * k).toFixed(1)}px`;
+
+        const bw = el.offsetWidth;
+        const bh = el.offsetHeight;
+        let px = cx;
+        let py = cy;
 
         for (let t = 0; t < 1400; t += 0.22) {
-          const radius = 3.8 * t;
-          const candidateX = centerX + radius * Math.cos(t);
-          const candidateY = centerY + radius * Math.sin(t) * 0.62;
+          const r = 3.6 * t;
+          const x = cx + r * Math.cos(t);
+          const y = cy + r * Math.sin(t) * 0.6;
 
-          if (
-            candidateX - boxWidth / 2 < 18 ||
-            candidateX + boxWidth / 2 > width - 18 ||
-            candidateY - boxHeight / 2 < 34 ||
-            candidateY + boxHeight / 2 > height - 28
-          ) {
+          if (x - bw / 2 < 12 || x + bw / 2 > W - 12 || y - bh / 2 < 74 || y + bh / 2 > H - 16) {
             continue;
           }
 
-          const overlaps = placed.some((item) => (
-            Math.abs(candidateX - item.x) < (boxWidth + item.w) / 2 + 12 &&
-            Math.abs(candidateY - item.y) < (boxHeight + item.h) / 2 + 9
+          const hit = placed.some((q) => (
+            Math.abs(x - q.x) < (bw + q.w) / 2 + 10 &&
+            Math.abs(y - q.y) < (bh + q.h) / 2 + 8
           ));
 
-          if (!overlaps) {
-            x = candidateX;
-            y = candidateY;
+          if (!hit) {
+            px = x;
+            py = y;
             break;
           }
         }
 
-        placed.push({ x, y, w: boxWidth, h: boxHeight });
-        element.style.left = `${x}px`;
-        element.style.top = `${y}px`;
-        window.setTimeout(() => element.classList.add("is-visible"), 50 + index * 22);
+        placed.push({ x: px, y: py, w: bw, h: bh });
+        el.style.left = `${px}px`;
+        el.style.top = `${py}px`;
+        el.style.transform = "translate(-50%,-50%)";
 
+        timeoutIds.push(window.setTimeout(() => el.classList.add("show"), 40 + index * 26));
         nodes.push({
-          element,
-          homeX: x,
-          homeY: y,
-          x,
-          y,
+          el,
+          hx: px,
+          hy: py,
+          x: px,
+          y: py,
           vx: 0,
           vy: 0,
-          phase: randomBetween(0, Math.PI * 2),
-          amplitude: randomBetween(4, 10),
-          speed: randomBetween(0.42, 0.82)
+          ph: rand(0, 6.28),
+          amp: rand(5, 11),
+          sp: rand(0.45, 0.85)
         });
       });
 
       nodesRef.current = nodes;
     };
 
-    const tick = (timestamp: number) => {
-      const seconds = timestamp * 0.001;
+    const tick = (now: number) => {
+      const t = now * 0.001;
       const mouse = mouseRef.current;
 
       nodesRef.current.forEach((node) => {
-        const targetX = node.homeX + Math.sin(seconds * node.speed + node.phase) * node.amplitude;
-        const targetY = node.homeY + Math.cos(seconds * node.speed * 0.9 + node.phase) * node.amplitude * 0.78;
+        const tx = node.hx + Math.sin(t * node.sp + node.ph) * node.amp;
+        const ty = node.hy + Math.cos(t * node.sp * 0.9 + node.ph) * node.amp * 0.78;
 
-        node.vx += (targetX - node.x) * 0.022;
-        node.vy += (targetY - node.y) * 0.022;
+        node.vx += (tx - node.x) * 0.02;
+        node.vy += (ty - node.y) * 0.02;
 
         if (mouse.active) {
           const dx = node.x - mouse.x;
           const dy = node.y - mouse.y;
           const distance = Math.sqrt(dx * dx + dy * dy) || 0.001;
-          const radius = 178;
+          const radius = 185;
 
           if (distance < radius) {
-            const force = 1 - distance / radius;
-            const push = force * force * 6;
+            const f = 1 - distance / radius;
+            const push = f * f * 6.4;
             node.vx += (dx / distance) * push;
             node.vy += (dy / distance) * push;
           }
@@ -205,10 +191,10 @@ export function SurveyWordCloud() {
         node.x += node.vx;
         node.y += node.vy;
 
-        const offsetX = node.x - node.homeX;
-        const offsetY = node.y - node.homeY;
-        const rotation = Math.max(-7, Math.min(7, node.vx * 0.8));
-        node.element.style.transform = `translate(-50%,-50%) translate(${offsetX.toFixed(2)}px,${offsetY.toFixed(2)}px) rotate(${rotation.toFixed(2)}deg)`;
+        const ox = node.x - node.hx;
+        const oy = node.y - node.hy;
+        const rot = Math.max(-7, Math.min(7, node.vx * 0.8));
+        node.el.style.transform = `translate(-50%,-50%) translate(${ox.toFixed(2)}px,${oy.toFixed(2)}px) rotate(${rot.toFixed(2)}deg)`;
       });
 
       frameRef.current = window.requestAnimationFrame(tick);
@@ -224,17 +210,18 @@ export function SurveyWordCloud() {
 
     const fontReady = document.fonts?.ready ?? Promise.resolve();
     void fontReady.then(start);
-    const fallbackTimer = window.setTimeout(start, 260);
+    const fallbackTimer = window.setTimeout(start, 240);
     let resizeTimer = 0;
     const resizeObserver = new ResizeObserver(() => {
       window.clearTimeout(resizeTimer);
-      resizeTimer = window.setTimeout(layout, 180);
+      resizeTimer = window.setTimeout(layout, 220);
     });
     resizeObserver.observe(stage);
 
     return () => {
       window.clearTimeout(fallbackTimer);
       window.clearTimeout(resizeTimer);
+      timeoutIds.forEach((id) => window.clearTimeout(id));
       resizeObserver.disconnect();
       window.cancelAnimationFrame(frameRef.current);
     };
@@ -248,101 +235,114 @@ export function SurveyWordCloud() {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     mouseRef.current = { x, y, active: true };
-    rippleRef.current?.style.setProperty("transform", `translate(${x}px, ${y}px)`);
-    stage.classList.add("is-touching");
+    stage.classList.add("touch");
+    rippleRef.current?.style.setProperty("transform", `translate(${x}px,${y}px)`);
   }
 
   function handlePointerLeave() {
     mouseRef.current = { x: -9999, y: -9999, active: false };
-    stageRef.current?.classList.remove("is-touching");
+    stageRef.current?.classList.remove("touch");
+  }
+
+  function openDrawer() {
+    setDrawerOpen(true);
+  }
+
+  function closeDrawer() {
+    setDrawerOpen(false);
   }
 
   return (
     <>
-      <section className="survey-cloud-section reveal" aria-labelledby="survey-cloud-title">
+      <section className="cloud-section" id="design" aria-labelledby="cloud-title">
         <div
-          className="survey-cloud-stage"
+          className="cloud-stage"
           ref={stageRef}
-          onPointerMove={handlePointerMove}
           onPointerLeave={handlePointerLeave}
+          onPointerMove={handlePointerMove}
         >
-          <span className="survey-cloud-ripple" ref={rippleRef} />
-          {surveyWords.map((word) => (
+          <span className="cloud-ripple" ref={rippleRef} />
+          {WORDS.map((word) => (
             <button
-              aria-label={`查看“${word.text}”调研数据`}
-              className={`survey-cloud-word ${toneClass(word.tone)}`}
-              data-weight={word.weight}
-              key={word.text}
-              onClick={() => setDrawerOpen(true)}
-              ref={(node) => { wordRefs.current[word.text] = node; }}
+              aria-label={`查看“${word.t}”调研数据`}
+              className={wordClass(word)}
+              data-w={word.w}
+              key={word.t}
+              onClick={openDrawer}
+              ref={(node) => {
+                wordRefs.current[word.t] = node;
+              }}
               type="button"
             >
-              <span>{word.text}</span>
+              <span className="inner">
+                <span className="tx">{word.t}</span>
+              </span>
             </button>
           ))}
         </div>
 
-        <div className="survey-cloud-intro" ref={introRef}>
-          <div className="sec-eyebrow">用户调研 · Mock Word Cloud</div>
-          <h2 className="survey-cloud-title" id="survey-cloud-title">
-            约饭最烦的，<br />到底是哪件事？
+        <div className="cloud-intro" ref={introRef}>
+          <div className="sec-eyebrow">设计与思路 · 用户调研</div>
+          <h2 className="cloud-title" id="cloud-title">
+            约饭，最让你烦的<br />是<em>哪件事</em>？
           </h2>
-          <p className="survey-cloud-sub">
-            先用 mock 高频词模拟开放问卷结果。字越大表示越多人提到；颜色区分协调决策、时间距离和硬约束忌口。
+          <p className="cloud-sub">
+            128 份开放问卷里，大家自己写下的原话。字越大 = 越多人提到；鼠标滑过水面，把它们推开。
           </p>
         </div>
 
-        <button className="survey-cloud-handle" onClick={() => setDrawerOpen(true)} type="button">
+        <button className="cloud-handle" onClick={openDrawer} type="button" aria-label="拉开调研数据">
           <span className="dot" />
           调研数据
         </button>
       </section>
 
-      <div className={`survey-cloud-scrim ${drawerOpen ? "is-open" : ""}`} onClick={() => setDrawerOpen(false)} />
-      <aside className={`survey-cloud-drawer ${drawerOpen ? "is-open" : ""}`} aria-hidden={!drawerOpen} aria-label="用户调研数据预览">
-        <div className="survey-drawer-head">
+      <div className={`cloud-scrim ${drawerOpen ? "open" : ""}`} onClick={closeDrawer} />
+      <aside className={`cloud-drawer ${drawerOpen ? "open" : ""}`} aria-hidden={!drawerOpen} aria-label="约饭调研数据">
+        <div className="cd-head">
           <div>
-            <div className="sec-eyebrow">开放题汇总 · Survey Preview</div>
-            <h3>约饭最烦的 14 件事</h3>
+            <div className="eyebrow">开放题汇总 · Survey Insights</div>
+            <h4>约饭最烦的 14 件事</h4>
           </div>
-          <button className="survey-drawer-close" onClick={() => setDrawerOpen(false)} type="button" aria-label="关闭调研数据">
-            ×
+          <button className="cd-close" onClick={closeDrawer} type="button" aria-label="关闭">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
           </button>
         </div>
 
-        <div className="survey-drawer-stats">
-          {surveyStats.map((item) => (
-            <div className="survey-drawer-stat" key={item.label}>
-              <div className="value">{item.value}</div>
-              <div className="label">{item.label}</div>
+        <div className="cd-stats">
+          {STATS.map((stat) => (
+            <div className="cd-stat" key={stat.k}>
+              <div className="v">{stat.v}</div>
+              <div className="k">{stat.k}</div>
             </div>
           ))}
         </div>
 
-        <div className="survey-drawer-body">
-          <div className="survey-drawer-section-title">被提到最多的烦恼</div>
-          <div className="survey-drawer-legend">
-            <span><i className="main" />协调 / 决策</span>
-            <span><i className="warn" />时间 / 距离</span>
-            <span><i className="hard" />硬约束 / 忌口</span>
+        <div className="cd-body">
+          <div className="cd-section-h">被提到最多的烦恼</div>
+          <div className="cd-legend">
+            <span><i style={{ background: "var(--ey-emerald)" }} />协调 / 决策</span>
+            <span><i style={{ background: "var(--ey-amber)" }} />时间 / 距离</span>
+            <span><i style={{ background: "var(--ey-rose)" }} />硬约束 / 忌口</span>
           </div>
-
-          <div className="survey-bars">
+          <div>
             {topWords.map((word) => (
-              <div className={`survey-bar ${toneClass(word.tone)}`} key={word.text}>
-                <div className="survey-bar-label">
-                  <span>{word.text}</span>
-                  <strong>{word.percent}%</strong>
+              <div className={`cd-bar${word.c ? ` c-${word.c}` : ""}`} key={word.t}>
+                <div className="lbl">
+                  <span className="t">{word.t}</span>
+                  <span className="n">{word.pct}%</span>
                 </div>
-                <div className="survey-bar-track">
-                  <span style={{ width: drawerOpen ? `${word.percent}%` : 0 }} />
+                <div className="track">
+                  <span className="fill" style={{ width: drawerOpen ? `${word.pct}%` : 0 }} />
                 </div>
               </div>
             ))}
           </div>
-
-          <div className="survey-drawer-note">
-            这里暂时是 mock 数据。后续把真实问卷或本地分析工具产出的词频结果替换到同一份数据结构，词云和条形图会同步更新。
+          <div className="cd-note">
+            把真实问卷的标签与占比替换进同一份 <code>WORDS</code> 数据结构即可，词云与图表会自动同步。
           </div>
         </div>
       </aside>
