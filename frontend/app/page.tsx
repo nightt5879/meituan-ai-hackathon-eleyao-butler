@@ -322,7 +322,9 @@ export default function PortfolioHomePage() {
         <div className="meta meta-bottom"><span className="pulse" /><span>最终提交作品 · 点任意象限进入</span></div>
       </div>
 
-      <section className="section section--paper" id="design">
+      <SurveyWordCloud />
+
+      <section className="section section--paper design-detail">
         <div className="container">
           <div className="sec-head reveal">
             <div className="sec-eyebrow">设计与思路 · Design & Thinking</div>
@@ -339,8 +341,6 @@ export default function PortfolioHomePage() {
               </div>
             ))}
           </div>
-
-          <SurveyWordCloud />
 
           <div className="persona reveal">
             <div className="avatar"><div><div className="big">小林</div><div className="avatar-note">用户照片占位</div></div></div>
