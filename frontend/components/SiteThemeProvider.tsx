@@ -41,6 +41,17 @@ function syncThemeFavicon(theme: SiteTheme) {
   document.head.appendChild(iconLink);
 }
 
+function syncThemeScrollbar(theme: SiteTheme) {
+  const isDarkTheme = theme.id === "black-pink" || theme.id === "night";
+  const root = document.documentElement;
+
+  root.style.setProperty("color-scheme", isDarkTheme ? "dark" : "light");
+  root.style.setProperty("--sb", theme.siteAccent);
+  root.style.setProperty("--sb-track", isDarkTheme ? theme.bg2 : `color-mix(in srgb, ${theme.bg2} 72%, #ffffff)`);
+  root.style.setProperty("--sb-thumb", `color-mix(in srgb, ${theme.siteAccent} ${isDarkTheme ? 62 : 46}%, ${isDarkTheme ? theme.bg1 : "#ffffff"})`);
+  root.style.setProperty("--sb-thumb-hover", `color-mix(in srgb, ${theme.siteAccent} ${isDarkTheme ? 84 : 68}%, ${isDarkTheme ? theme.bg1 : "#ffffff"})`);
+}
+
 export function SiteThemeProvider({ children }: { children: ReactNode }) {
   const [themeId, setThemeId] = useState("mint-green");
   const [themeReveal, setThemeReveal] = useState<ThemeReveal | null>(null);
@@ -62,8 +73,8 @@ export function SiteThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.body.classList.remove(...bodyThemeClasses);
     document.body.classList.add(activeTheme.bodyClassName);
-    document.documentElement.style.setProperty("--sb", activeTheme.siteAccent);
     document.documentElement.style.setProperty("--theme-color", activeTheme.siteAccent);
+    syncThemeScrollbar(activeTheme);
 
     syncThemeFavicon(activeTheme);
     const themeColorMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');

@@ -2,6 +2,9 @@
 
 .experience-stage {
   min-height: 100vh;
+  --sb-track: var(--theme-bg, #effff8);
+  --sb-thumb: color-mix(in srgb, var(--theme-primary, #5ad8b2) 46%, var(--theme-bg, #effff8));
+  --sb-thumb-hover: color-mix(in srgb, var(--theme-primary, #5ad8b2) 68%, var(--theme-bg, #effff8));
   --ai-progress-card-glow: rgba(90, 216, 178, 0.16);
   --ai-progress-card-end: #effff8;
   --ai-mascot-body-start: #8be7c8;
@@ -202,6 +205,7 @@
 }
 
 .experience-stage.theme-black-pink {
+  color-scheme: dark;
   --shell-bg-1: #181018;
   --shell-bg-2: #0b080b;
   --shell-glow: rgba(255, 79, 163, 0.3);
@@ -253,9 +257,13 @@
   --ai-mascot-spark: #ffe9a8;
   --ai-mascot-spark-ring: rgba(255, 233, 168, 0.22);
   --ai-mascot-shadow: rgba(90, 216, 178, 0.2);
+  --sb-track: #0b080b;
+  --sb-thumb: color-mix(in srgb, var(--theme-primary) 62%, var(--theme-bg));
+  --sb-thumb-hover: color-mix(in srgb, var(--theme-primary) 84%, var(--theme-bg));
 }
 
 .experience-stage.theme-night {
+  color-scheme: dark;
   --shell-bg-1: #0f172a;
   --shell-bg-2: #0a0f1e;
   --shell-glow: rgba(124, 140, 255, 0.3);
@@ -305,6 +313,9 @@
   --ai-mascot-spark: #fff0b8;
   --ai-mascot-spark-ring: rgba(255, 240, 184, 0.24);
   --ai-mascot-shadow: rgba(90, 216, 178, 0.18);
+  --sb-track: #0a0f1e;
+  --sb-thumb: color-mix(in srgb, var(--theme-primary) 62%, var(--theme-bg));
+  --sb-thumb-hover: color-mix(in srgb, var(--theme-primary) 84%, var(--theme-bg));
 }
 
 .experience-shell {
