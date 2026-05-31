@@ -2423,7 +2423,7 @@ export default function ExperienceClient() {
     return (
       <>
         {view !== "home" ? (
-          <button className="phone-home-shortcut" onClick={goHome} type="button" aria-label="返回四象限首页">首页</button>
+          <button className="phone-home-shortcut" onClick={goHome} type="button" aria-label="返回手机首页">首页</button>
         ) : null}
         {content}
       </>
@@ -2494,7 +2494,7 @@ export default function ExperienceClient() {
           <p>当前身份：{identity?.displayName || "未登录"}</p>
           <p className="mono">demoId: {identity?.demoUserId || judgeIdInput || browserJudgeId || "待生成"}</p>
           <p className="mono">userId: {identity?.userId || "等待登录"}</p>
-          <button className="panel-outline-button compact" onClick={goHome} type="button">回到四象限首页</button>
+          <a className="panel-outline-button compact" href="/">回到四象限首页</a>
           <form className="identity-form" onSubmit={handleIdentitySubmit}>
             <label className="identity-label" htmlFor="judge-id-panel">评委 ID</label>
             <input
@@ -2545,7 +2545,7 @@ export default function ExperienceClient() {
           <p>当前身份：{identity?.displayName || "未登录"}</p>
           <p className="mono">demoId: {identity?.demoUserId || judgeIdInput || browserJudgeId || "待生成"}</p>
           <p className="mono">userId: {identity?.userId || "等待登录"}</p>
-          <button className="panel-outline-button compact" onClick={goHome} type="button">回到四象限首页</button>
+          <a className="panel-outline-button compact" href="/">回到四象限首页</a>
           <h2>当前体验状态</h2>
           <p>最近偏好记录：{records.length} 条 · 收藏店铺：{favorites.length} 家</p>
           <p>多人约饭任务：{groupTaskId || "未创建"} · 周末规划：{weekendPlan?.planId || "未生成"}</p>
