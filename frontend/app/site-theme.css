@@ -105,13 +105,23 @@ body.t-black-pink {
   --ey-bg: #160a12;
   --ey-bg-2: #0b0309;
   --ey-card: #1d1019;
+  --ey-screen: #120710;
   --ey-ink: #ffffff;
   --ey-ink-2: #f6dce8;
   --ey-slate: #cdb5c2;
   --ey-slate-2: #a88f9c;
   --ey-slate-3: #86707c;
+  --ey-amber-50: #2d2113;
+  --ey-amber-100: #4a3219;
+  --ey-amber: #ffbf5c;
+  --ey-amber-900: #ffe2aa;
+  --ey-rose-50: #321421;
+  --ey-rose: #ff8aa8;
   --ey-line: rgba(255, 255, 255, 0.1);
   --ey-line-2: rgba(255, 255, 255, 0.06);
+  --ey-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2), 0 10px 26px rgba(0, 0, 0, 0.22);
+  --ey-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+  --ey-shadow-lg: 0 26px 70px rgba(0, 0, 0, 0.44);
   --sb: #ff4fa3;
   --sb-track: transparent;
   --sb-thumb: color-mix(in srgb, #ff4fa3 62%, #160a12);
@@ -133,13 +143,23 @@ body.t-night {
   --ey-bg: #0f172a;
   --ey-bg-2: #070b16;
   --ey-card: #16203a;
+  --ey-screen: #0b1222;
   --ey-ink: #ffffff;
   --ey-ink-2: #dfe4f5;
   --ey-slate: #b9c2dc;
   --ey-slate-2: #94a0c0;
   --ey-slate-3: #73809f;
+  --ey-amber-50: #2c2412;
+  --ey-amber-100: #4b3519;
+  --ey-amber: #f6c15d;
+  --ey-amber-900: #ffe5ad;
+  --ey-rose-50: #311827;
+  --ey-rose: #ff8aa8;
   --ey-line: rgba(203, 213, 225, 0.14);
   --ey-line-2: rgba(203, 213, 225, 0.08);
+  --ey-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2), 0 10px 26px rgba(0, 0, 0, 0.22);
+  --ey-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+  --ey-shadow-lg: 0 26px 70px rgba(0, 0, 0, 0.44);
   --sb: #7c8cff;
   --sb-track: transparent;
   --sb-thumb: color-mix(in srgb, #7c8cff 62%, #0f172a);
@@ -549,19 +569,42 @@ body.t-night .section--paper {
   background: var(--ey-bg) !important;
 }
 
+body.t-black-pink .section--tint,
+body.t-night .section--tint,
+body.t-black-pink .cloud-section,
+body.t-night .cloud-section {
+  background: var(--ey-bg) !important;
+}
+
 body.t-black-pink .card,
 body.t-night .card,
 body.t-black-pink .persona,
 body.t-night .persona,
 body.t-black-pink .panel,
-body.t-night .panel {
+body.t-night .panel,
+body.t-black-pink .shot,
+body.t-night .shot,
+body.t-black-pink .cd-chart-card,
+body.t-night .cd-chart-card,
+body.t-black-pink .cd-source,
+body.t-night .cd-source,
+body.t-black-pink .cd-import,
+body.t-night .cd-import {
   border-color: var(--ey-line) !important;
-  background: var(--ey-card) !important;
+  background: color-mix(in srgb, var(--ey-card) 94%, var(--ey-bg)) !important;
 }
 
 body.t-black-pink .member,
-body.t-night .member {
-  background: rgba(255, 255, 255, 0.04) !important;
+body.t-night .member,
+body.t-black-pink .cd-stat,
+body.t-night .cd-stat,
+body.t-black-pink .cd-insight,
+body.t-night .cd-insight,
+body.t-black-pink .cd-note,
+body.t-night .cd-note,
+body.t-black-pink .group-msg,
+body.t-night .group-msg {
+  background: color-mix(in srgb, var(--ey-card) 70%, var(--ey-bg)) !important;
 }
 
 body.t-black-pink .flow .step .dot,
@@ -579,6 +622,76 @@ body.t-night .hero-theme-menu,
 body.t-black-pink .nav-theme-menu,
 body.t-night .nav-theme-menu {
   background: color-mix(in srgb, var(--ey-card) 94%, transparent) !important;
+}
+
+body.t-black-pink .cloud-drawer,
+body.t-night .cloud-drawer {
+  background: color-mix(in srgb, var(--ey-card) 98%, var(--ey-bg)) !important;
+}
+
+body.t-black-pink .cloud-stage,
+body.t-night .cloud-stage {
+  background:
+    radial-gradient(40% 50% at 24% 32%, color-mix(in srgb, var(--ey-emerald) 22%, transparent) 0%, transparent 64%),
+    radial-gradient(38% 46% at 80% 66%, color-mix(in srgb, var(--ey-emerald-400) 20%, transparent) 0%, transparent 62%),
+    radial-gradient(120% 110% at 50% 45%, var(--ey-bg) 0%, var(--ey-bg-2) 100%) !important;
+}
+
+body.t-black-pink .persona .avatar,
+body.t-night .persona .avatar,
+body.t-black-pink .cd-scenario,
+body.t-night .cd-scenario,
+body.t-black-pink .cd-selected,
+body.t-night .cd-selected,
+body.t-black-pink .cd-focus-card,
+body.t-night .cd-focus-card,
+body.t-black-pink .cd-age-card,
+body.t-night .cd-age-card {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ey-card) 86%, var(--ey-bg)),
+    color-mix(in srgb, var(--ey-card) 58%, var(--ey-bg))
+  ) !important;
+}
+
+body.t-black-pink .cd-donut::after,
+body.t-night .cd-donut::after {
+  background: var(--ey-card) !important;
+}
+
+body.t-black-pink .cd-breakdown span,
+body.t-night .cd-breakdown span,
+body.t-black-pink .cd-chip-row span,
+body.t-night .cd-chip-row span,
+body.t-black-pink .cd-note code,
+body.t-night .cd-note code,
+body.t-black-pink .t-soft,
+body.t-night .t-soft,
+body.t-black-pink .chk.pass,
+body.t-night .chk.pass {
+  border-color: color-mix(in srgb, var(--ey-emerald) 22%, transparent) !important;
+  background: color-mix(in srgb, var(--ey-emerald) 16%, var(--ey-bg)) !important;
+  color: var(--ey-emerald-dd) !important;
+}
+
+body.t-black-pink .t-hard,
+body.t-night .t-hard {
+  background: color-mix(in srgb, var(--ey-rose) 16%, var(--ey-bg)) !important;
+  color: var(--ey-rose) !important;
+}
+
+body.t-black-pink .conflict,
+body.t-night .conflict,
+body.t-black-pink .chk.warn,
+body.t-night .chk.warn {
+  border-color: color-mix(in srgb, var(--ey-amber) 28%, transparent) !important;
+  background: color-mix(in srgb, var(--ey-amber) 14%, var(--ey-bg)) !important;
+  color: var(--ey-amber-900) !important;
+}
+
+body.t-black-pink .conflict p,
+body.t-night .conflict p {
+  color: var(--ey-amber-900) !important;
 }
 
 body.t-black-pink .nt-row .nm,
