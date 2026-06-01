@@ -1384,6 +1384,7 @@ export default function ExperienceClient() {
   const [judgeIdInput, setJudgeIdInput] = useState("");
   const [browserJudgeId, setBrowserJudgeId] = useState("");
   const [identityNotice, setIdentityNotice] = useState("");
+  const [copyToast, setCopyToast] = useState<{ id: number; message: string; tone: "success" | "error" } | null>(null);
   const [showThemePanel, setShowThemePanel] = useState(false);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
   const [showFavoritesPanel, setShowFavoritesPanel] = useState(false);
@@ -1476,6 +1477,14 @@ export default function ExperienceClient() {
   const [weekendAiProgress, setWeekendAiProgress] = useState<AiProgressSnapshot | null>(null);
 
   const themeClass = activeTheme.className;
+
+  useEffect(() => {
+    if (!copyToast) return;
+
+    const timer = window.setTimeout(() => setCopyToast(null), 1800);
+    return () => window.clearTimeout(timer);
+  }, [copyToast]);
+
   const resolvedFoodQuestions = useMemo(() => buildFoodQuestions(foodSlots.mealPurpose), [foodSlots.mealPurpose]);
   const activeFoodQuestions = activeFoodQuestionOverride || (activeFoodQuestionIds ? resolvedFoodQuestions.filter((question) => activeFoodQuestionIds.includes(question.id)) : resolvedFoodQuestions);
   const currentQuestion = activeFoodQuestions[foodIndex] || activeFoodQuestions[activeFoodQuestions.length - 1] || resolvedFoodQuestions[0] || foodQuestions[0];
@@ -1757,9 +1766,32 @@ export default function ExperienceClient() {
     textarea.select();
 
     try {
-      document.execCommand("copy");
+      const copied = document.execCommand("copy");
+      if (!copied) {
+        throw new Error("copy command failed");
+      }
     } finally {
       document.body.removeChild(textarea);
+    }
+  }
+
+  function showCopyToast(message: string, tone: "success" | "error" = "success") {
+    setCopyToast({ id: Date.now(), message, tone });
+  }
+
+  async function copyTextWithFeedback(value: string, successMessage: string, failureContext: string) {
+    if (!value.trim()) {
+      showCopyToast("没有可复制内容", "error");
+      return false;
+    }
+
+    try {
+      await writeClipboardText(value);
+      showCopyToast(successMessage);
+      return true;
+    } catch {
+      showCopyToast(`${failureContext}失败，请长按文本手动复制`, "error");
+      return false;
     }
   }
 
@@ -1768,12 +1800,28 @@ export default function ExperienceClient() {
 
     if (!shareUrl) {
       setGroupNotice("还没有可分享的约饭任务。");
+      showCopyToast("还没有可分享的约饭任务", "error");
       return;
     }
 
-    void writeClipboardText(shareUrl)
-      .then(() => setGroupNotice("分享链接已复制；无痕浏览器打开也会进入同一个任务。"))
-      .catch(() => setGroupNotice(`复制失败，请手动复制：${shareUrl}`));
+    void copyTextWithFeedback(shareUrl, "分享链接已复制", "复制分享链接")
+      .then((copied) => {
+        setGroupNotice(copied ? "分享链接已复制；无痕浏览器打开也会进入同一个任务。" : `复制失败，请手动复制：${shareUrl}`);
+      });
+  }
+
+  function copyGroupMessage(message: string) {
+    void copyTextWithFeedback(message, "群消息已复制", "复制群消息")
+      .then((copied) => {
+        setGroupNotice(copied ? "群消息已复制，可以直接粘贴到群里。" : "复制群消息失败，请长按文案手动复制。");
+      });
+  }
+
+  function copyWeekendInvite(inviteText: string) {
+    void copyTextWithFeedback(inviteText, "邀约文案已复制", "复制邀约")
+      .then((copied) => {
+        setWeekendNotice(copied ? "邀约文案已复制，可以直接发给朋友。" : "复制邀约失败，请长按文案手动复制。");
+      });
   }
 
   async function loadSharedGroupBoard(taskId: string, inviteToken: string) {
@@ -2636,6 +2684,11 @@ export default function ExperienceClient() {
           <button className="phone-home-shortcut" onClick={goHome} type="button" aria-label="返回手机首页">首页</button>
         ) : null}
         {content}
+        {copyToast ? (
+          <div className={`copy-toast ${copyToast.tone === "error" ? "error" : ""}`} role="status" aria-live="polite">
+            {copyToast.message}
+          </div>
+        ) : null}
       </>
     );
   }
@@ -3671,7 +3724,7 @@ export default function ExperienceClient() {
         <div className="field">
           <div className="field-label">群里发这条</div>
           <div className="field-hint">{result.groupMessage}</div>
-          <button className="primary-button" onClick={() => void navigator.clipboard?.writeText(result.groupMessage)} type="button">复制群消息</button>
+          <button className="primary-button" onClick={() => copyGroupMessage(result.groupMessage)} type="button">复制群消息</button>
         </div>
         <div className="field last">
           <div className="field-label">全部候选 ({result.candidates.length})</div>
@@ -3981,7 +4034,7 @@ export default function ExperienceClient() {
             {route.inviteText ? (
               <div className="planner-route-invite">
                 <div className="planner-route-invite-text">{route.inviteText}</div>
-                <button className="planner-secondary-button" onClick={() => void navigator.clipboard?.writeText(route.inviteText || "")} type="button">复制邀约</button>
+                <button className="planner-secondary-button" onClick={() => copyWeekendInvite(route.inviteText || "")} type="button">复制邀约</button>
               </div>
             ) : null}
           </div>
