@@ -156,6 +156,34 @@ function request(options) {
   });
 }
 
+// On a 401 from a real request, refresh the session ONCE and retry. Clears only
+// the identity/session keys via userIdentityAdapter.clearIdentity() (never
+// wx.clearStorageSync), so preference memory, recommendation history, local
+// profile, food preferences and group fallback data are all preserved. Then
+// forces a fresh login and retries the request a single time. The retry's
+// result/rejection flows into the caller's existing auto-fallback (auto mode)
+// or surfaced-error (real mode) handling. No infinite retry; no token is logged.
+function requestWithAuthRetry(options) {
+  return request(options).catch(function (error) {
+    if (!error || error.statusCode !== 401) {
+      throw error;
+    }
+
+    userIdentityAdapter.clearIdentity();
+
+    return userIdentityAdapter.ensureLogin({ force: true }).then(
+      function () {
+        return request(options);
+      },
+      function () {
+        // Forced re-login failed: surface the original 401 so the caller's
+        // mode-aware handling decides (auto falls back to mock; real prompts login).
+        throw error;
+      }
+    );
+  });
+}
+
 function getClientId() {
   try {
     const existing = wx.getStorageSync(CLIENT_ID_STORAGE_KEY);
@@ -1177,7 +1205,7 @@ function createTask(payload) {
     data.dinnerTime = dinnerTime;
   }
 
-  return request({
+  return requestWithAuthRetry({
     path: '/api/group-tasks',
     method: 'POST',
     data: data
@@ -1308,7 +1336,7 @@ function submitPreference(taskId, inviteToken, payload) {
 
   const data = buildPreferenceRequestData(inviteToken, safePayload);
 
-  return request({
+  return requestWithAuthRetry({
     path: '/api/group-tasks/' + encodeURIComponent(taskId || 'group_mock_task') + '/participants',
     method: 'POST',
     data: data
@@ -1348,7 +1376,7 @@ function getTaskBoard(taskId, inviteToken) {
     ));
   }
 
-  return request({
+  return requestWithAuthRetry({
     path: '/api/group-tasks/' + encodeURIComponent(taskId || 'group_mock_task') + '?inviteToken=' + encodeURIComponent(inviteToken || '')
   }).then(function (res) {
     let board = normalizeTaskBoard(taskId, inviteToken, res);
@@ -1389,6 +1417,7 @@ function generateRecommendation(taskId, inviteToken) {
   }
 
   return request({
+  return requestWithAuthRetry({
     path: '/api/group-tasks/' + encodeURIComponent(taskId || 'group_mock_task') + '/recommend',
     method: 'POST',
     data: data
@@ -1432,7 +1461,7 @@ function submitAdjustmentRequest(taskId, inviteToken, payload) {
     note: safePayload.note || ''
   };
 
-  return request({
+  return requestWithAuthRetry({
     path: '/api/group-tasks/' + encodeURIComponent(taskId || 'group_mock_task') + '/adjustment-requests',
     method: 'POST',
     data: data
