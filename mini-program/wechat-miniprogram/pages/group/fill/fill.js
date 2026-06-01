@@ -430,11 +430,22 @@ Page({
       return;
     }
 
+    // No fabrication: keep the user's typed preference exactly; otherwise derive
+    // a summary ONLY from fields the user actually selected/typed. If both are
+    // empty, block the submit instead of sending an empty preference.
+    const typedRawPreference = (form.rawPreference || '').trim();
+    const derivedRawPreference = buildDerivedRawPreference(form);
+    const effectiveRawPreference = typedRawPreference || derivedRawPreference;
+    if (!effectiveRawPreference) {
+      wx.showToast({ title: '请至少选择或填写一项偏好', icon: 'none' });
+      return;
+    }
+
     const page = this;
     const payload = {
       nickname: form.nickname,
       visibility: form.visibility || 'public',
-      rawPreference: form.rawPreference,
+      rawPreference: effectiveRawPreference,
       availability: {
         availableDays: form.availableDays,
         availableHours: form.availableHours,
@@ -592,6 +603,91 @@ function buildHardRequirements(form) {
 
 function buildSoftPreferences(form) {
   return buildRequirementBuckets(form).soft;
+}
+
+// Build a human-readable preference summary from ONLY the fields the user
+// actually selected or typed. Never invents defaults: "no-preference" chips
+// ('都可以' / '无忌口' / spicy 'any') and the form's default time range (no day
+// picked, default specified hours) are intentionally excluded. Returns '' when
+// the user has chosen nothing, so the caller can block submitting.
+function buildDerivedRawPreference(form) {
+  const safeForm = form || {};
+  const parts = [];
+  const clean = function (value) {
+    return String(value == null ? '' : value).trim();
+  };
+
+  const budgetTag = clean(safeForm.budgetTag);
+  if (budgetTag && budgetTag !== '都可以') {
+    parts.push('预算 ' + budgetTag);
+  }
+  const budgetCustom = clean(safeForm.budgetCustomText);
+  if (budgetCustom) {
+    parts.push('预算补充：' + budgetCustom);
+  }
+
+  const spicyText = spicyRequirementText(safeForm.spicyPreference);
+  if (spicyText) {
+    parts.push(spicyText);
+  }
+  const spiceCustom = clean(safeForm.spiceCustomText);
+  if (spiceCustom) {
+    parts.push('辣度补充：' + spiceCustom);
+  }
+
+  (safeForm.dietaryRestrictions || []).forEach(function (tag) {
+    const value = clean(tag);
+    if (value && value !== '无忌口') {
+      parts.push(value);
+    }
+  });
+  const restrictionCustom = clean(safeForm.restrictionCustomText);
+  if (restrictionCustom) {
+    parts.push('忌口补充：' + restrictionCustom);
+  }
+
+  (safeForm.cuisinePreferences || []).forEach(function (cuisine) {
+    const value = clean(cuisine);
+    if (value && value !== '都可以') {
+      parts.push('想吃 ' + value);
+    }
+  });
+  const cuisineCustom = clean(safeForm.cuisineCustomText);
+  if (cuisineCustom) {
+    parts.push('品类补充：' + cuisineCustom);
+  }
+
+  // Time counts only when the user picked day(s), chose all-day, or typed time
+  // text — never the bare default range.
+  const days = (safeForm.availableDays || []).map(clean).filter(Boolean);
+  if (safeForm.timeMode === 'allDay') {
+    parts.push(days.length ? (days.join('、') + ' 全天有空') : '全天有空');
+  } else if (days.length) {
+    parts.push(days.join('、') + ' ' + (clean(safeForm.startTime) || '14:00') + '-' + (clean(safeForm.endTime) || '17:00'));
+  }
+  (safeForm.availableHours || []).forEach(function (hour) {
+    const value = clean(hour);
+    if (value) {
+      parts.push(value);
+    }
+  });
+  const timeCustom = clean(safeForm.timeCustomText);
+  if (timeCustom) {
+    parts.push('时间补充：' + timeCustom);
+  }
+
+  splitCustomText(safeForm.customHardRequirement).forEach(function (item) {
+    parts.push(item);
+  });
+  splitCustomText(safeForm.customSoftPreference).forEach(function (item) {
+    parts.push(item);
+  });
+  const extraCustom = clean(safeForm.extraCustomText);
+  if (extraCustom) {
+    parts.push(extraCustom);
+  }
+
+  return uniqueList(parts).join('；');
 }
 
 function buildRequirementBuckets(form) {
