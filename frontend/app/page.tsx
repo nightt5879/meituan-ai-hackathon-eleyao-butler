@@ -4,8 +4,10 @@ import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { ThemeNavPicker, ThemePipPicker } from "@/components/SiteThemeProvider";
 import { SurveyWordCloud } from "@/components/SurveyWordCloud";
 import { TechRouteSelfCheck, TechRouteShowcase } from "@/components/TechRouteShowcase";
+import { PainEvidenceChain } from "@/components/PainEvidenceChain";
 import "./ey-design.css";
 import "./tech-route.css";
+import "./pain-chain.css";
 
 const demoVideoUrl = process.env.NEXT_PUBLIC_DEMO_VIDEO_URL || "";
 
@@ -51,27 +53,6 @@ const quadrants = [
     cta: "开始体验",
     icon: "spark",
     primary: true
-  }
-];
-
-const painPoints = [
-  {
-    tag: "痛点 01",
-    title: "工具很多，缺一个“管事的入口”",
-    desc: "美团、点评、地图、微信、小红书来回切，信息都在，却还得自己比较、筛选、协调和拍板。",
-    icon: "layers"
-  },
-  {
-    tag: "痛点 02",
-    title: "AI 说得像真的，却不一定靠谱",
-    desc: "忘预算、忘忌口、路线不现实、信息不足也硬生成。看着漂亮，真去执行就踩坑。",
-    icon: "warn"
-  },
-  {
-    tag: "痛点 03",
-    title: "多人场景高频，却是现有产品的弱点",
-    desc: "难的不是找店，是每个人都有不能违反的限制：不吃辣、赶时间、预算紧，很难有人折中。",
-    icon: "users"
   }
 ];
 
@@ -322,21 +303,10 @@ export default function PortfolioHomePage() {
       <section className="section section--paper design-detail">
         <div className="container">
           <div className="sec-head reveal">
-            <div className="sec-eyebrow">设计与思路 · Design & Thinking</div>
+            <div className="sec-eyebrow">设计与思路 · DESIGN & THINKING</div>
             <h1 className="sec-title">不是“问一句答一句”，<br />是会替你把事办成的管家</h1>
             <p className="sec-lead">围绕年轻人本地生活的高频决策：吃饭、约局、周末、突发，做一个会主动出现、能协调多人、会自检方案的 AI 管家。命题 01：基于 OpenClaw 的全天候私人管家。</p>
           </div>
-          <div className="grid3">
-            {painPoints.map((item, index) => (
-              <div className={`card reveal d${index + 1}`} key={item.title}>
-                <div className="ic"><Icon name={item.icon} size={26} /></div>
-                <div className="num-tag">{item.tag}</div>
-                <h2>{item.title}</h2>
-                <p>{item.desc}</p>
-              </div>
-            ))}
-          </div>
-
           <div className="persona reveal">
             <div className="avatar"><div><div className="big">小林</div><div className="avatar-note">用户照片占位</div></div></div>
             <div>
@@ -348,6 +318,8 @@ export default function PortfolioHomePage() {
               </div>
             </div>
           </div>
+
+          <PainEvidenceChain />
         </div>
       </section>
 

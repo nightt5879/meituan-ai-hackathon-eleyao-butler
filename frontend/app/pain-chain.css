@@ -1,0 +1,713 @@
+/* Theme-aware tarot-style evidence cards for the Design & Thinking section. */
+
+.pc {
+  --pc-accent: var(--ey-emerald);
+  --pc-accent-d: var(--ey-emerald-d);
+  --pc-accent-dd: var(--ey-emerald-dd);
+  --pc-soft: var(--ey-emerald-50);
+  --pc-soft-2: var(--ey-emerald-100);
+  --pc-glow: var(--ey-emerald-300);
+  --pc-front-ink: var(--ey-ink);
+  --pc-front-muted: var(--ey-ink-2);
+  --pc-back-ink: color-mix(in srgb, #ffffff 92%, var(--pc-soft-2));
+  --pc-back-muted: color-mix(in srgb, #ffffff 70%, var(--pc-soft-2));
+  --pc-front-bg-1: color-mix(in srgb, var(--ey-card) 92%, var(--pc-soft));
+  --pc-front-bg-2: color-mix(in srgb, var(--pc-soft) 72%, var(--ey-bg));
+  --pc-front-bg-3: color-mix(in srgb, var(--pc-soft-2) 54%, var(--ey-bg-2));
+  --pc-back-bg-1: color-mix(in srgb, var(--pc-accent) 58%, var(--ey-forest));
+  --pc-back-bg-2: color-mix(in srgb, var(--pc-accent-d) 34%, var(--ey-forest));
+  --pc-back-bg-3: var(--ey-forest);
+  --pc-line: color-mix(in srgb, var(--pc-accent) 32%, var(--ey-line));
+  --pc-inner-line: color-mix(in srgb, var(--pc-accent) 48%, transparent);
+  --pc-ornament: color-mix(in srgb, var(--pc-accent) 74%, var(--pc-front-ink));
+  --pc-pill-bg: color-mix(in srgb, var(--pc-accent) 10%, var(--ey-card));
+  --pc-pill-line: color-mix(in srgb, var(--pc-accent) 22%, transparent);
+  --pc-feature-bg: color-mix(in srgb, var(--pc-accent) 28%, #ffffff);
+  --pc-shadow: color-mix(in srgb, var(--ey-ink) 18%, transparent);
+  --pc-title-ink: color-mix(in srgb, var(--ey-ink) 92%, var(--pc-accent-dd));
+  --pc-display-font: "Yuanti SC", "YouYuan", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", var(--ey-sans);
+  --pc-body-font: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", var(--ey-sans);
+  --pc-sun-opacity: 0.52;
+  --pc-star-opacity: 0.62;
+  margin-top: clamp(52px, 7vw, 88px);
+}
+
+body.t-lemon-yellow .pc {
+  --pc-sun-opacity: 0.78;
+}
+
+body.t-black-pink .pc,
+body.t-night .pc {
+  --pc-star-opacity: 0.82;
+  --pc-sun-opacity: 0.66;
+}
+
+.pc-head {
+  max-width: 680px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.pc-title {
+  color: var(--ey-ink);
+  font-family: var(--pc-display-font);
+  font-size: clamp(26px, 3.4vw, 36px);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.pc-sub {
+  margin-top: 12px;
+  color: var(--ey-slate);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.pc-motto {
+  display: inline-flex;
+  margin-top: 18px;
+  padding: 7px 16px;
+  border: 1px solid color-mix(in srgb, var(--pc-accent) 18%, transparent);
+  border-radius: var(--ey-pill);
+  background: color-mix(in srgb, var(--pc-accent) 9%, var(--ey-card));
+  color: var(--pc-accent-d);
+  font-family: var(--pc-display-font);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.pc-deck-scroll {
+  margin-top: 30px;
+  overflow-x: auto;
+  padding: 8px 4px 18px;
+  scrollbar-color: var(--ey-emerald-200) transparent;
+  scrollbar-width: thin;
+}
+
+.pc-deck {
+  display: grid;
+  width: max-content;
+  margin: 0 auto;
+  grid-template-columns: repeat(5, 208px);
+  gap: 18px;
+}
+
+.pc-card {
+  --pc-gradient-angle: 145deg;
+  --pc-orbit-x: 86%;
+  --pc-orbit-y: 84%;
+  --pc-float-y: -4px;
+  position: relative;
+  width: 208px;
+  height: 392px;
+  padding: 0;
+  border: 0;
+  border-radius: 22px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  perspective: 1300px;
+  text-align: left;
+  translate: 0 0;
+  animation: pcCardFloat 4.4s ease-in-out infinite;
+  transition: filter 0.28s ease, translate 0.28s ease;
+  will-change: filter, transform, translate;
+}
+
+.pc-card:hover {
+  animation-play-state: paused;
+  filter: drop-shadow(0 22px 26px color-mix(in srgb, var(--pc-accent) 24%, var(--pc-shadow)));
+  translate: 0 -6px;
+}
+
+.pc-card:focus-visible {
+  outline: 3px solid var(--pc-accent);
+  outline-offset: 4px;
+}
+
+.pc-card-inner {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 580ms cubic-bezier(0.2, 0.72, 0.22, 1);
+}
+
+.pc-card.is-flipped .pc-card-inner {
+  transform: rotateY(180deg);
+}
+
+.pc-face {
+  --pc-face-bg: var(--pc-front-bg-2);
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--pc-line);
+  border-radius: 22px;
+  backface-visibility: hidden;
+  isolation: isolate;
+  transition: border-color 0.28s ease, box-shadow 0.28s ease;
+}
+
+.pc-card:hover .pc-face {
+  border-color: color-mix(in srgb, var(--pc-accent) 68%, var(--pc-line));
+  box-shadow: 0 19px 38px color-mix(in srgb, var(--pc-accent) 18%, transparent);
+}
+
+.pc-face::before {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-image:
+    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--pc-accent) 46%, transparent) 0 0.7px, transparent 0.9px),
+    radial-gradient(circle at 82% 64%, color-mix(in srgb, var(--pc-accent) 34%, transparent) 0 0.65px, transparent 0.9px);
+  background-position: 0 0, 8px 7px;
+  background-size: 17px 17px, 21px 21px;
+  content: "";
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.pc-face::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at var(--pc-orbit-x) var(--pc-orbit-y), color-mix(in srgb, var(--pc-glow) 25%, transparent), transparent 40%),
+    linear-gradient(115deg, transparent 4%, color-mix(in srgb, var(--ey-card) 32%, transparent) 46%, transparent 72%);
+  content: "";
+  pointer-events: none;
+}
+
+.pc-card-front {
+  background:
+    radial-gradient(circle at 50% 8%, color-mix(in srgb, var(--ey-card) 74%, transparent), transparent 22%),
+    linear-gradient(var(--pc-gradient-angle), var(--pc-front-bg-1), var(--pc-front-bg-2) 56%, var(--pc-front-bg-3));
+  box-shadow: 0 16px 30px var(--pc-shadow);
+  color: var(--pc-front-ink);
+}
+
+.pc-card-back {
+  --pc-face-bg: var(--pc-back-bg-2);
+  border-color: color-mix(in srgb, var(--pc-glow) 38%, transparent);
+  background:
+    radial-gradient(circle at 50% 5%, color-mix(in srgb, var(--pc-glow) 20%, transparent), transparent 27%),
+    linear-gradient(var(--pc-gradient-angle), var(--pc-back-bg-1), var(--pc-back-bg-2) 54%, var(--pc-back-bg-3));
+  box-shadow: 0 18px 34px color-mix(in srgb, var(--ey-forest) 48%, transparent);
+  color: var(--pc-back-ink);
+  transform: rotateY(180deg);
+}
+
+.pc-card-back::before {
+  background-image:
+    radial-gradient(circle at 14% 16%, color-mix(in srgb, var(--pc-glow) 70%, transparent) 0 0.7px, transparent 0.9px),
+    radial-gradient(circle at 86% 62%, color-mix(in srgb, var(--pc-soft-2) 58%, transparent) 0 0.65px, transparent 0.9px);
+  opacity: 0.34;
+}
+
+.pc-card-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  padding: 22px 20px 20px;
+}
+
+.pc-card-front .pc-card-content {
+  align-items: center;
+  padding: 57px 18px 20px;
+  text-align: center;
+}
+
+.pc-card-back .pc-card-content {
+  padding: 69px 20px 27px;
+}
+
+/* The ornament layer mirrors the reference card: edge decoration with a clear
+   center for content. Its colors inherit from the active site theme. */
+.pc-ornaments {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  overflow: hidden;
+  color: var(--pc-ornament);
+  pointer-events: none;
+}
+
+.pc-card-back .pc-ornaments {
+  color: color-mix(in srgb, var(--pc-glow) 78%, var(--pc-back-ink));
+}
+
+.pc-tarot-frame,
+.pc-tarot-frame::before,
+.pc-tarot-frame::after {
+  position: absolute;
+  border: 1px solid currentColor;
+  border-radius: 15px;
+  content: "";
+}
+
+.pc-tarot-frame {
+  inset: 9px;
+  opacity: 0.38;
+}
+
+.pc-tarot-frame::before {
+  inset: 5px;
+  opacity: 0.48;
+}
+
+.pc-tarot-frame::after {
+  inset: 11px 8px;
+  border-bottom-color: transparent;
+  border-top-color: transparent;
+  opacity: 0.28;
+}
+
+.pc-moon {
+  position: absolute;
+  left: 50%;
+  top: 17px;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.64;
+  transform: translateX(-50%);
+}
+
+.pc-moon::after {
+  position: absolute;
+  left: 7px;
+  top: -3px;
+  width: 18px;
+  height: 18px;
+  border-radius: inherit;
+  background: var(--pc-face-bg);
+  content: "";
+}
+
+.pc-star {
+  position: absolute;
+  opacity: var(--pc-star-opacity);
+  transition: filter 0.28s ease, opacity 0.28s ease;
+}
+
+.pc-card:hover .pc-star {
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--pc-glow) 76%, transparent));
+  opacity: 1;
+}
+
+.pc-star::before {
+  content: "✦";
+  font-size: 10px;
+}
+
+.pc-star--left {
+  left: 49px;
+  top: 25px;
+}
+
+.pc-star--right {
+  right: 48px;
+  top: 39px;
+}
+
+.pc-star--right::before {
+  content: "✧";
+  font-size: 12px;
+}
+
+.pc-star--low {
+  bottom: 43px;
+  right: 29px;
+}
+
+.pc-star--low::before {
+  content: "✦ ·";
+  font-size: 8px;
+  letter-spacing: 0.22em;
+}
+
+.pc-vine {
+  position: absolute;
+  width: 36px;
+  height: 68px;
+  border-left: 1px solid currentColor;
+  border-radius: 70% 0 0;
+  opacity: 0.44;
+  transform-origin: 50% 50%;
+}
+
+.pc-vine i {
+  position: absolute;
+  left: -1px;
+  display: block;
+  width: 16px;
+  height: 8px;
+  border: 1px solid currentColor;
+  border-bottom: 0;
+  border-left: 0;
+  border-radius: 100% 0;
+  transform: rotate(-25deg);
+}
+
+.pc-vine i:nth-child(1) {
+  top: 10px;
+}
+
+.pc-vine i:nth-child(2) {
+  top: 28px;
+  transform: translateX(-12px) scaleX(-1) rotate(-25deg);
+}
+
+.pc-vine i:nth-child(3) {
+  top: 46px;
+}
+
+.pc-vine--tl {
+  left: 21px;
+  top: 12px;
+  transform: rotate(-31deg);
+}
+
+.pc-vine--tr {
+  right: 21px;
+  top: 12px;
+  transform: scaleX(-1) rotate(-31deg);
+}
+
+.pc-vine--bl {
+  bottom: 9px;
+  left: 20px;
+  transform: scaleY(-1) rotate(-31deg);
+}
+
+.pc-vine--br {
+  bottom: 9px;
+  right: 20px;
+  transform: scale(-1) rotate(-31deg);
+}
+
+.pc-sun {
+  position: absolute;
+  bottom: 9px;
+  left: 50%;
+  width: 78px;
+  height: 38px;
+  overflow: hidden;
+  opacity: var(--pc-sun-opacity);
+  transform: translateX(-50%);
+}
+
+.pc-sun::before {
+  position: absolute;
+  bottom: -18px;
+  left: 0;
+  width: 78px;
+  height: 56px;
+  background: repeating-conic-gradient(from -59deg at 50% 100%, transparent 0 8deg, currentColor 8deg 9deg, transparent 9deg 15deg);
+  content: "";
+}
+
+.pc-sun::after {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  width: 43px;
+  height: 43px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--pc-face-bg) 82%, transparent);
+  content: "";
+  transform: translateX(-50%);
+}
+
+.pc-card--02 {
+  --pc-gradient-angle: 155deg;
+  --pc-orbit-x: 15%;
+  --pc-orbit-y: 92%;
+  --pc-float-y: -3px;
+  animation-delay: -1.1s;
+  animation-duration: 4.8s;
+}
+
+.pc-card--03 {
+  --pc-gradient-angle: 132deg;
+  --pc-orbit-x: 98%;
+  --pc-orbit-y: 58%;
+  --pc-float-y: -5px;
+  animation-delay: -2.4s;
+  animation-duration: 4.1s;
+}
+
+.pc-card--04 {
+  --pc-gradient-angle: 162deg;
+  --pc-orbit-x: 3%;
+  --pc-orbit-y: 71%;
+  --pc-float-y: -3px;
+  animation-delay: -3.2s;
+  animation-duration: 4.7s;
+}
+
+.pc-card--05 {
+  --pc-gradient-angle: 138deg;
+  --pc-orbit-x: 76%;
+  --pc-orbit-y: 106%;
+  --pc-float-y: -4px;
+  animation-delay: -1.8s;
+  animation-duration: 4.3s;
+}
+
+@keyframes pcCardFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(var(--pc-float-y));
+  }
+}
+
+.pc-card-number {
+  color: var(--pc-accent);
+  font-family: var(--pc-display-font);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  line-height: 1.1;
+}
+
+.pc-card-title {
+  display: flex;
+  min-height: 101px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 7px;
+  color: var(--pc-title-ink);
+  font-family: var(--pc-display-font);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.pc-card-logic {
+  display: block;
+  width: 100%;
+  margin-top: 17px;
+  text-align: center;
+}
+
+.pc-card-label {
+  display: block;
+  color: color-mix(in srgb, var(--pc-front-muted) 92%, transparent);
+  font-family: var(--pc-body-font);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+}
+
+.pc-keywords {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px 6px;
+  margin-top: 11px;
+}
+
+.pc-keyword {
+  display: inline-flex;
+  padding: 5px 9px;
+  border: 1px solid var(--pc-pill-line);
+  border-radius: var(--ey-pill);
+  background: var(--pc-pill-bg);
+  color: var(--pc-accent-d);
+  font-family: var(--pc-body-font);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.pc-card-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 21px;
+  color: color-mix(in srgb, var(--pc-accent-d) 90%, transparent);
+  font-family: var(--pc-display-font);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+}
+
+.pc-card-hint i {
+  font-size: 15px;
+  font-style: normal;
+  line-height: 1;
+}
+
+.pc-back-section + .pc-back-section {
+  margin-top: 18px;
+}
+
+.pc-card-back .pc-card-label {
+  color: color-mix(in srgb, var(--pc-back-ink) 88%, var(--pc-glow));
+}
+
+.pc-action-badge,
+.pc-feature-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  margin-top: 9px;
+  border: 1px solid color-mix(in srgb, var(--pc-glow) 26%, transparent);
+  border-radius: 999px;
+  font-family: var(--pc-display-font);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.pc-action-badge {
+  padding: 6px 12px;
+  background: color-mix(in srgb, var(--ey-forest) 76%, transparent);
+  color: var(--pc-back-ink);
+  font-size: 16px;
+}
+
+.pc-feature-badge {
+  padding: 7px 13px;
+  background: var(--pc-feature-bg);
+  color: var(--ey-forest);
+  font-size: 18px;
+}
+
+.pc-solution {
+  display: block;
+  margin-top: 23px;
+}
+
+.pc-solution-line {
+  display: block;
+  color: color-mix(in srgb, var(--pc-back-ink) 96%, var(--pc-glow));
+  font-family: var(--pc-body-font);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.72;
+}
+
+.pc-solution .pc-card-label {
+  margin-bottom: 9px;
+}
+
+.pc-card-hint--back {
+  margin-top: auto;
+  margin-bottom: 5px;
+  color: color-mix(in srgb, var(--pc-back-ink) 82%, var(--pc-glow));
+}
+
+@media (max-width: 640px) {
+  .pc {
+    margin-top: 46px;
+  }
+
+  .pc-head {
+    text-align: left;
+  }
+
+  .pc-title {
+    font-size: 28px;
+  }
+
+  .pc-sub {
+    font-size: 14px;
+  }
+
+  .pc-deck-scroll {
+    overflow: visible;
+    padding: 4px 0 0;
+  }
+
+  .pc-deck {
+    width: 100%;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .pc-card {
+    width: 100%;
+    height: 368px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pc-card {
+    animation: none;
+    filter: none;
+    transform: none;
+    translate: 0 0;
+    transition: none;
+  }
+
+  .pc-card:hover {
+    filter: none;
+    transform: none;
+    translate: 0 0 !important;
+  }
+
+  .pc-card:hover .pc-face {
+    box-shadow: none;
+  }
+
+  .pc-card:hover .pc-card-front {
+    border-color: var(--pc-line);
+  }
+
+  .pc-card:hover .pc-card-back {
+    border-color: color-mix(in srgb, var(--pc-glow) 38%, transparent);
+  }
+
+  .pc-card-inner {
+    transform: none !important;
+    transition: none;
+  }
+
+  .pc-face {
+    transition: opacity 120ms ease, visibility 120ms ease;
+  }
+
+  .pc-star {
+    filter: none;
+    transition: none;
+  }
+
+  .pc-card:hover .pc-star {
+    filter: none;
+    opacity: var(--pc-star-opacity);
+  }
+
+  .pc-card-back {
+    opacity: 0;
+    transform: none;
+    visibility: hidden;
+  }
+
+  .pc-card.is-flipped .pc-card-front {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .pc-card.is-flipped .pc-card-back {
+    opacity: 1;
+    visibility: visible;
+  }
+}
