@@ -742,7 +742,12 @@
   place-items: center;
   border: 1px dashed var(--ey-emerald-200);
   border-radius: 20px;
-  background: radial-gradient(120% 120% at 30% 25%, #effff8, #d6f3e4 70%, #b9e8d2);
+  background: radial-gradient(
+    120% 120% at 30% 25%,
+    color-mix(in srgb, var(--ey-emerald-50) 78%, var(--ey-card)),
+    color-mix(in srgb, var(--ey-emerald-100) 78%, var(--ey-bg)) 70%,
+    color-mix(in srgb, var(--ey-emerald-200) 70%, var(--ey-bg))
+  );
   color: var(--ey-emerald-d);
   text-align: center;
 }
@@ -1326,8 +1331,8 @@ body.t-night .cloud-word.c-warn {
   padding: 16px;
   border: 1px solid var(--ey-line);
   border-radius: 18px;
-  background: #ffffff;
-  box-shadow: 0 8px 24px rgba(2, 44, 34, 0.05);
+  background: color-mix(in srgb, var(--ey-card) 94%, var(--ey-bg));
+  box-shadow: var(--ey-shadow-sm);
 }
 
 .cd-chart-card.wide {
@@ -1443,7 +1448,7 @@ body.t-night .cloud-word.c-warn {
   position: absolute;
   inset: 28px;
   border-radius: 50%;
-  background: #ffffff;
+  background: var(--ey-card);
   box-shadow: inset 0 0 0 1px var(--ey-line);
 }
 
@@ -1516,7 +1521,11 @@ body.t-night .cloud-word.c-warn {
   padding: 15px;
   border: 1px solid var(--ey-line);
   border-radius: 17px;
-  background: linear-gradient(135deg, #ffffff, var(--ey-bg));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ey-card) 94%, var(--ey-bg)),
+    color-mix(in srgb, var(--ey-card) 68%, var(--ey-bg))
+  );
 }
 
 .cd-focus-head {
