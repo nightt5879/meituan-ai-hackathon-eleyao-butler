@@ -19,6 +19,7 @@ const STATUS = FALLBACK_STATUS;
 const CLIENT_ID_STORAGE_KEY = 'groupDiningClientId';
 const API_BASE_STORAGE_KEY = 'MINIPROGRAM_API_BASE_URL';
 const API_MODE_STORAGE_KEY = 'MINIPROGRAM_API_MODE';
+const OPENCLAW_RECOMMENDATION_STORAGE_KEY = 'MINIPROGRAM_GROUP_RECOMMENDATION_USE_OPENCLAW';
 const VALID_MODES = { auto: true, real: true, mock: true };
 const userIdentityAdapter = require('./userIdentityAdapter');
 
@@ -48,6 +49,22 @@ function getCurrentMode() {
   }
 
   return 'auto';
+}
+
+// OpenClaw recommendation requests are enabled by default outside mock mode.
+// This storage key is only a developer override; explicitly set it to false
+// to test the backend path without OpenClaw, without changing app.js.
+function isOpenClawRecommendationEnabled() {
+  try {
+    const stored = wx.getStorageSync(OPENCLAW_RECOMMENDATION_STORAGE_KEY);
+    if (stored === false || stored === 0 || stored === 'false' || stored === '0') {
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.warn('[groupDiningAdapter] read OpenClaw recommendation flag failed', error);
+    return true;
+  }
 }
 
 function mockSuccess(result, message) {
@@ -365,6 +382,11 @@ function buildFallbackBoardFromRecord(taskId, inviteToken, record) {
       updatedAt: '',
       dirtyReason: ''
     },
+    recommendationMetadata: {
+      recommendationSource: 'mock_fallback',
+      candidateDataSource: 'mock',
+      openclawStatus: 'skipped'
+    },
     adjustmentRequests: [],
     adjustmentRequestCount: 0,
     task: task
@@ -674,6 +696,74 @@ function normalizeTimeMode(value) {
   return value === 'allDay' ? 'allDay' : 'specified';
 }
 
+const RECOMMENDATION_METADATA_CONTAINER_KEYS = [
+  'metadata',
+  'openclawContext',
+  'openclaw_context',
+  'aiProgress',
+  'ai_progress',
+  'recommendationState',
+  'recommendation_state',
+  'recommendationResult',
+  'recommendation_result'
+];
+
+function collectRecommendationMetadataSources(roots) {
+  const queue = Array.isArray(roots) ? roots.slice() : [roots];
+  const sources = [];
+
+  while (queue.length) {
+    const current = queue.shift();
+    if (!current || typeof current !== 'object' || Array.isArray(current) || sources.indexOf(current) >= 0) {
+      continue;
+    }
+    sources.push(current);
+    RECOMMENDATION_METADATA_CONTAINER_KEYS.forEach(function (key) {
+      const nested = current[key];
+      if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+        queue.push(nested);
+      }
+    });
+  }
+
+  return sources;
+}
+
+function firstRecommendationMetadataText(sources, keys) {
+  for (let i = 0; i < sources.length; i += 1) {
+    for (let j = 0; j < keys.length; j += 1) {
+      const value = sources[i][keys[j]];
+      if (value !== undefined && value !== null && String(value).trim()) {
+        return String(value).trim();
+      }
+    }
+  }
+  return '';
+}
+
+function firstRecommendationMetadataObject(sources, keys) {
+  for (let i = 0; i < sources.length; i += 1) {
+    for (let j = 0; j < keys.length; j += 1) {
+      const value = sources[i][keys[j]];
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        return value;
+      }
+    }
+  }
+  return null;
+}
+
+function normalizeRecommendationMetadata(data, board, task) {
+  const sources = collectRecommendationMetadataSources([data, board, task]);
+  const openclawContext = firstRecommendationMetadataObject(sources, ['openclawContext', 'openclaw_context']);
+  return {
+    recommendationSource: firstRecommendationMetadataText(sources, ['recommendationSource', 'recommendation_source']),
+    candidateDataSource: firstRecommendationMetadataText(sources, ['candidateDataSource', 'candidate_data_source']),
+    openclawStatus: firstRecommendationMetadataText(sources, ['openclawStatus', 'openclaw_status'])
+      || firstRecommendationMetadataText(openclawContext ? [openclawContext] : [], ['status'])
+  };
+}
+
 function normalizeCustomTexts(source, payload, availability) {
   const raw = source || {};
   const safePayload = payload || {};
@@ -870,7 +960,8 @@ function buildAvailabilitySummary(days, hours, freeText, timeInfo) {
 }
 
 function normalizeTaskBoard(taskId, inviteToken, data) {
-  const board = data.board || data;
+  const response = data || {};
+  const board = response.board || response;
   const task = board.task || {};
   const rawParticipants = firstArray([
     board.participants,
@@ -921,6 +1012,7 @@ function normalizeTaskBoard(taskId, inviteToken, data) {
     : [];
 
   const recommendationStateRaw = board.recommendationState || board.recommendation_state || {};
+  const recommendationMetadata = normalizeRecommendationMetadata(response, board, task);
 
   // Real backend stubs sometimes return synthetic conflict rows (e.g.
   // "atmosphere · low") even when no one has submitted yet. Suppress them
@@ -955,6 +1047,7 @@ function normalizeTaskBoard(taskId, inviteToken, data) {
       updatedAt: recommendationStateRaw.updatedAt || recommendationStateRaw.updated_at || '',
       dirtyReason: recommendationStateRaw.dirtyReason || recommendationStateRaw.dirty_reason || ''
     },
+    recommendationMetadata: recommendationMetadata,
     adjustmentRequests: adjustmentRequests,
     adjustmentRequestCount: adjustmentRequests.length,
     task: normalizedTask,
@@ -1288,12 +1381,17 @@ function generateRecommendation(taskId, inviteToken) {
     ));
   }
 
+  const data = {
+    inviteToken: inviteToken
+  };
+  if (isOpenClawRecommendationEnabled()) {
+    data.useOpenClaw = true;
+  }
+
   return request({
     path: '/api/group-tasks/' + encodeURIComponent(taskId || 'group_mock_task') + '/recommend',
     method: 'POST',
-    data: {
-      inviteToken: inviteToken
-    }
+    data: data
   }).then(function (res) {
     let board = normalizeTaskBoard(taskId, inviteToken, res);
     if (mode === 'auto') {
@@ -1358,6 +1456,7 @@ function submitAdjustmentRequest(taskId, inviteToken, payload) {
 module.exports = {
   API_BASE_URL: DEFAULT_API_BASE_URL,
   API_MODE_STORAGE_KEY,
+  OPENCLAW_RECOMMENDATION_STORAGE_KEY,
   REAL_STATUS,
   MOCK_STATUS,
   FALLBACK_STATUS,
@@ -1365,6 +1464,7 @@ module.exports = {
   ADJUSTMENT_REASON_LABELS,
   getApiBaseUrl,
   getCurrentMode,
+  isOpenClawRecommendationEnabled,
   createTask,
   submitPreference,
   getTaskBoard,

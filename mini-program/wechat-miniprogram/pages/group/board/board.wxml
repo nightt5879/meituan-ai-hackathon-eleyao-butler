@@ -96,6 +96,12 @@
     </block>
 
     <block wx:if="{{step.key === 'recommendation'}}">
+      <view class="panel-card">
+        <view class="field-label">推荐来源信息</view>
+        <view class="field-hint">推荐来源：{{board.recommendationMetadataDisplay.recommendationSource}}</view>
+        <view class="field-hint">候选数据：{{board.recommendationMetadataDisplay.candidateDataSource}}</view>
+        <view class="field-hint">OpenClaw 状态：{{board.recommendationMetadataDisplay.openclawStatus}}</view>
+      </view>
       <view wx:if="{{board.recommendationResult}}" class="panel-card">
         <view class="field">
           <view class="field-label">最终推荐 · {{board.recommendationResult.finalChoice.name}}</view>

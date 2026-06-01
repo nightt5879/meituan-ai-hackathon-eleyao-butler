@@ -26,7 +26,7 @@ const VISIBILITY_CHIPS = [
 ];
 const PROMPT_CHIPS = [
   '想去近一点', '不想排太久', '适合聊天', '想吃点暖和的',
-  '预算 50 以下', '想试试新店', '清淡不油腻'
+  '预算 50 以下', '想试试新店', '清淡不油腻', '可以远一点'
 ];
 const PRIORITY_OPTIONS = [
   { label: '必须满足', value: 'must' },
