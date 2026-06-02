@@ -11,12 +11,14 @@
     "diagnose:openclaw-food": "node scripts/diagnose-openclaw-food.mjs"
   },
   "dependencies": {
+    "leaflet": "^1.9.4",
     "next": "^16.2.5",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "ws": "^8.20.1"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.21",
     "@types/node": "20.14.10",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

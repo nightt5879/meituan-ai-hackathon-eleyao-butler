@@ -112,6 +112,271 @@
   font-family: var(--ey-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
 }
 
+.leafletCanvas {
+  position: relative;
+  min-height: 430px;
+  height: clamp(430px, 54vw, 610px);
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--ey-bg-2);
+}
+
+.leafletMap {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  min-height: 100%;
+}
+
+.leafletStatus {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  z-index: 5;
+  padding: 10px 12px;
+  border: 1px solid var(--ey-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 90%, transparent);
+  color: var(--ey-ink);
+  font-size: 0.82rem;
+  font-weight: 800;
+  box-shadow: var(--ey-shadow-sm);
+}
+
+.fallbackNotice {
+  margin: 16px 20px 0;
+  padding: 12px 14px;
+  border: 1px dashed color-mix(in srgb, var(--ey-amber) 48%, var(--ey-line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-amber-50) 48%, var(--ey-card));
+  color: var(--ey-amber-900);
+  font-size: 0.88rem;
+  font-weight: 800;
+  line-height: 1.65;
+}
+
+.section :global(.leaflet-container) {
+  width: 100%;
+  height: 100%;
+  background: var(--ey-bg-2);
+  color: var(--ey-ink);
+  font-family: var(--ey-sans, "Noto Sans SC", -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif);
+  outline: none;
+}
+
+.section :global(.leaflet-pane),
+.section :global(.leaflet-tile),
+.section :global(.leaflet-marker-icon),
+.section :global(.leaflet-marker-shadow),
+.section :global(.leaflet-tile-container),
+.section :global(.leaflet-pane > svg),
+.section :global(.leaflet-pane > canvas),
+.section :global(.leaflet-zoom-box),
+.section :global(.leaflet-image-layer),
+.section :global(.leaflet-layer) {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.section :global(.leaflet-container) {
+  overflow: hidden;
+}
+
+.section :global(.leaflet-pane) {
+  z-index: 1;
+}
+
+.section :global(.leaflet-tile-pane) {
+  z-index: 2;
+}
+
+.section :global(.leaflet-overlay-pane) {
+  z-index: 4;
+}
+
+.section :global(.leaflet-shadow-pane) {
+  z-index: 5;
+}
+
+.section :global(.leaflet-marker-pane) {
+  z-index: 6;
+}
+
+.section :global(.leaflet-tooltip-pane) {
+  z-index: 7;
+}
+
+.section :global(.leaflet-control-container) {
+  position: relative;
+  z-index: 8;
+}
+
+.section :global(.leaflet-interactive) {
+  cursor: pointer;
+}
+
+.section :global(.leaflet-tile),
+.section :global(.leaflet-marker-icon),
+.section :global(.leaflet-marker-shadow) {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.section :global(.leaflet-tile) {
+  border: 0;
+  filter: saturate(0.95) contrast(0.98);
+}
+
+.section :global(.leaflet-control-container .leaflet-top),
+.section :global(.leaflet-control-container .leaflet-bottom) {
+  position: absolute;
+  z-index: 7;
+  pointer-events: none;
+}
+
+.section :global(.leaflet-top) {
+  top: 0;
+}
+
+.section :global(.leaflet-right) {
+  right: 0;
+}
+
+.section :global(.leaflet-bottom) {
+  bottom: 0;
+}
+
+.section :global(.leaflet-control) {
+  position: relative;
+  z-index: 7;
+  clear: both;
+  pointer-events: auto;
+}
+
+.section :global(.leaflet-bottom .leaflet-control) {
+  margin-bottom: 14px;
+}
+
+.section :global(.leaflet-right .leaflet-control) {
+  margin-right: 14px;
+}
+
+.section :global(.leaflet-control-zoom) {
+  overflow: hidden;
+  border: 1px solid var(--ey-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 94%, transparent);
+  box-shadow: var(--ey-shadow-sm);
+}
+
+.section :global(.leaflet-control-zoom a) {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-bottom: 1px solid var(--ey-line);
+  color: var(--ey-ink);
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.section :global(.leaflet-control-zoom a:last-child) {
+  border-bottom: 0;
+}
+
+.section :global(.leaflet-control-attribution) {
+  margin: 0 0 8px 8px;
+  padding: 4px 7px;
+  border: 1px solid var(--ey-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-card) 88%, transparent);
+  color: var(--ey-slate);
+  font-size: 0.68rem;
+  line-height: 1.2;
+}
+
+.section :global(.leaflet-control-attribution a) {
+  color: var(--ey-emerald-d);
+  font-weight: 800;
+}
+
+.section :global(.leaflet-tooltip) {
+  position: absolute;
+  padding: 7px 9px;
+  border: 1px solid var(--ey-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 94%, transparent);
+  color: var(--ey-ink);
+  box-shadow: var(--ey-shadow-sm);
+  font-size: 0.76rem;
+  line-height: 1.35;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.section :global(.leaflet-tooltip span) {
+  color: var(--ey-slate-2);
+  font-size: 0.68rem;
+}
+
+.leafletPointIcon {
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+}
+
+.leafletPointPin {
+  position: relative;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 2px solid color-mix(in srgb, var(--ey-card) 88%, var(--ey-ink));
+  border-radius: 999px;
+  background: var(--ey-emerald);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ey-card) 70%, transparent), var(--ey-shadow-sm);
+}
+
+.leafletPointCore {
+  position: absolute;
+  inset: 9px;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--ey-card) 80%, transparent);
+}
+
+.leafletPointText {
+  position: relative;
+  z-index: 1;
+  color: var(--ey-forest);
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.leafletPointPin.manual_sample {
+  background: var(--sandbox-manual);
+}
+
+.leafletPointPin.synthetic_mvp {
+  background: var(--sandbox-synthetic);
+}
+
+.leafletPointPin.weekend_poi {
+  background: var(--sandbox-poi);
+}
+
+.activePin {
+  transform: scale(1.12);
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--ey-card) 76%, transparent),
+    0 0 0 9px color-mix(in srgb, var(--ey-emerald) 24%, transparent),
+    var(--ey-shadow);
+}
+
 .mapCanvas {
   position: relative;
   min-height: 430px;
@@ -425,16 +690,25 @@
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--ey-card) 80%, transparent);
 }
 
-.legendMarker.manual {
+.legendMarker.manual,
+.legendMarker.manual_sample {
   background: var(--sandbox-manual);
 }
 
-.legendMarker.synthetic {
+.legendMarker.synthetic,
+.legendMarker.synthetic_mvp {
   background: var(--sandbox-synthetic);
 }
 
-.legendMarker.poi {
+.legendMarker.poi,
+.legendMarker.weekend_poi {
   background: var(--sandbox-poi);
+}
+
+.legendMarker.selected {
+  border: 2px solid var(--ey-emerald);
+  background: color-mix(in srgb, var(--ey-card) 68%, var(--ey-emerald));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ey-emerald) 22%, transparent);
 }
 
 .legendMarker.walk {
@@ -471,6 +745,12 @@
 
 .radarPanel {
   grid-row: span 2;
+}
+
+.profilePanel {
+  display: grid;
+  align-content: start;
+  gap: 14px;
 }
 
 .panelTitle {
@@ -526,6 +806,80 @@
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--ey-emerald-300), var(--ey-emerald), var(--ey-amber));
+}
+
+.profileGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.infoChip {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--ey-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-bg) 74%, var(--ey-card));
+}
+
+.infoChip span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--ey-slate-3);
+  font-family: var(--ey-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.infoChip strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--ey-ink);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.profileTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profileTags span {
+  padding: 6px 9px;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 28%, var(--ey-line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-emerald-50) 66%, var(--ey-card));
+  color: var(--ey-emerald-d);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.whyList {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.whyList li {
+  position: relative;
+  padding-left: 15px;
+  color: var(--ey-slate);
+  font-size: 0.84rem;
+  line-height: 1.65;
+}
+
+.whyList li::before {
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--ey-emerald);
+  content: "";
 }
 
 .statsGrid {
@@ -585,6 +939,12 @@
   line-height: 1.25;
 }
 
+.tagCloud span.activeTag {
+  border-color: color-mix(in srgb, var(--ey-emerald) 58%, var(--ey-line));
+  background: color-mix(in srgb, var(--ey-emerald) 16%, var(--ey-card));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ey-card) 60%, transparent);
+}
+
 .boundaryText {
   margin-top: 15px;
   padding: 13px;
@@ -619,6 +979,29 @@
   color: var(--ey-ink);
 }
 
+:global(body.t-night) .leafletStatus,
+:global(body.t-black-pink) .leafletStatus,
+:global(body.t-night) .section :global(.leaflet-control-attribution),
+:global(body.t-black-pink) .section :global(.leaflet-control-attribution),
+:global(body.t-night) .section :global(.leaflet-tooltip),
+:global(body.t-black-pink) .section :global(.leaflet-tooltip),
+:global(body.t-night) .section :global(.leaflet-control-zoom),
+:global(body.t-black-pink) .section :global(.leaflet-control-zoom) {
+  background: color-mix(in srgb, var(--ey-card) 88%, transparent);
+  color: var(--ey-ink);
+}
+
+:global(body.t-night) .fallbackNotice,
+:global(body.t-black-pink) .fallbackNotice {
+  background: color-mix(in srgb, var(--ey-amber-50) 58%, var(--ey-card));
+  color: var(--ey-amber-900);
+}
+
+:global(body.t-night) .leafletPointText,
+:global(body.t-black-pink) .leafletPointText {
+  color: var(--ey-bg);
+}
+
 :global(body.t-night) .pointDot,
 :global(body.t-black-pink) .pointDot {
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--ey-bg) 72%, transparent), var(--ey-shadow-sm);
@@ -640,6 +1023,11 @@
   .mapCanvas {
     min-height: 560px;
     height: 560px;
+  }
+
+  .leafletCanvas {
+    min-height: 500px;
+    height: 500px;
   }
 
   .pointLabel {
@@ -677,6 +1065,11 @@
   .mapCanvas {
     min-height: 650px;
     height: 650px;
+  }
+
+  .leafletCanvas {
+    min-height: 420px;
+    height: 420px;
   }
 
   .campusZone,
@@ -722,5 +1115,14 @@
 
   .statsGrid {
     grid-template-columns: 1fr;
+  }
+
+  .profileGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .section :global(.leaflet-control-attribution) {
+    max-width: calc(100vw - 74px);
+    white-space: normal;
   }
 }
