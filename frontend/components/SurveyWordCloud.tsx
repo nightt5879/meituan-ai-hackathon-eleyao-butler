@@ -132,6 +132,10 @@ type SurveyInsights = {
 const SURVEY = surveyInsights as SurveyInsights;
 const WORDS = SURVEY.words.slice(0, 64);
 
+function wordKey(word: CloudWord, index: number) {
+  return `${word.id}-${index}`;
+}
+
 type CloudNode = {
   el: HTMLButtonElement;
   hx: number;
@@ -267,10 +271,12 @@ export function SurveyWordCloud() {
       }
 
       const nodes: CloudNode[] = [];
-      const list = WORDS.slice().sort((a, b) => b.w - a.w || b.count - a.count);
+      const list = WORDS
+        .map((word, index) => ({ word, index }))
+        .sort((a, b) => b.word.w - a.word.w || b.word.count - a.word.count);
 
-      list.forEach((word, index) => {
-        const el = wordRefs.current[word.id];
+      list.forEach(({ word, index }) => {
+        const el = wordRefs.current[wordKey(word, index)];
         if (!el) return;
 
         el.classList.remove("show");
@@ -453,15 +459,17 @@ export function SurveyWordCloud() {
           onPointerMove={handlePointerMove}
         >
           <span className="cloud-ripple" ref={rippleRef} />
-          {WORDS.map((word) => (
+          {WORDS.map((word, index) => {
+            const key = wordKey(word, index);
+            return (
             <button
               aria-label={`查看“${word.t}”调研数据`}
               className={wordClass(word)}
               data-w={word.w}
-              key={word.id}
+              key={key}
               onClick={() => openDrawer(word)}
               ref={(node) => {
-                wordRefs.current[word.id] = node;
+                wordRefs.current[key] = node;
               }}
               type="button"
             >
@@ -469,7 +477,8 @@ export function SurveyWordCloud() {
                 <span className="tx">{word.t}</span>
               </span>
             </button>
-          ))}
+            );
+          })}
         </div>
 
         <div className="cloud-intro" ref={introRef}>
@@ -647,10 +656,10 @@ export function SurveyWordCloud() {
             <span><i style={{ background: "var(--ey-rose)" }} />多人 / 忌口 / 风险项</span>
           </div>
           <div className="cd-bars">
-            {topWords.map((word) => (
+            {topWords.map((word, index) => (
               <div
                 className={`cd-bar${word.c ? ` c-${word.c}` : ""}${selectedWord?.id === word.id ? " active" : ""}`}
-                key={word.id}
+                key={wordKey(word, index)}
                 onClick={() => setSelectedWord(word)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") {

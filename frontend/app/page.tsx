@@ -4,8 +4,10 @@ import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { ThemeNavPicker, ThemePipPicker } from "@/components/SiteThemeProvider";
 import { SurveyWordCloud } from "@/components/SurveyWordCloud";
 import { TechRouteSelfCheck, TechRouteShowcase } from "@/components/TechRouteShowcase";
+import { PainEvidenceChain } from "@/components/PainEvidenceChain";
 import "./ey-design.css";
 import "./tech-route.css";
+import "./pain-chain.css";
 
 const demoVideoUrl = process.env.NEXT_PUBLIC_DEMO_VIDEO_URL || "";
 
@@ -51,27 +53,6 @@ const quadrants = [
     cta: "开始体验",
     icon: "spark",
     primary: true
-  }
-];
-
-const painPoints = [
-  {
-    tag: "痛点 01",
-    title: "工具很多，缺一个“管事的入口”",
-    desc: "美团、点评、地图、微信、小红书来回切，信息都在，却还得自己比较、筛选、协调和拍板。",
-    icon: "layers"
-  },
-  {
-    tag: "痛点 02",
-    title: "AI 说得像真的，却不一定靠谱",
-    desc: "忘预算、忘忌口、路线不现实、信息不足也硬生成。看着漂亮，真去执行就踩坑。",
-    icon: "warn"
-  },
-  {
-    tag: "痛点 03",
-    title: "多人场景高频，却是现有产品的弱点",
-    desc: "难的不是找店，是每个人都有不能违反的限制：不吃辣、赶时间、预算紧，很难有人折中。",
-    icon: "users"
   }
 ];
 
@@ -319,24 +300,60 @@ export default function PortfolioHomePage() {
 
       <SurveyWordCloud />
 
+      <section className="section section--paper design-pain-section" id="pain">
+        <div className="pain-constellation" aria-hidden="true">
+          <svg viewBox="0 0 430 250" role="presentation">
+            <g className="pain-constellation__glow">
+              <circle cx="342" cy="52" r="38" />
+              <circle cx="218" cy="119" r="25" />
+              <circle cx="391" cy="182" r="29" />
+            </g>
+            <g className="pain-constellation__lines">
+              <path d="M78 74 151 40 218 119 297 88 342 52 391 182 314 205 247 169 174 202" />
+              <path d="M218 119 247 169 314 205" />
+              <path d="M151 40 109 144 174 202" />
+            </g>
+            <g className="pain-constellation__stars">
+              <circle cx="78" cy="74" r="3.4" />
+              <circle cx="151" cy="40" r="4.6" />
+              <circle cx="218" cy="119" r="3.8" />
+              <circle cx="297" cy="88" r="3" />
+              <circle cx="342" cy="52" r="5.2" />
+              <circle cx="391" cy="182" r="4.1" />
+              <circle cx="314" cy="205" r="3.1" />
+              <circle cx="247" cy="169" r="3.6" />
+              <circle cx="174" cy="202" r="2.8" />
+              <circle cx="109" cy="144" r="3.3" />
+            </g>
+            <g className="pain-constellation__specks">
+              <circle cx="52" cy="123" r="1.8" />
+              <circle cx="126" cy="92" r="1.4" />
+              <circle cx="184" cy="67" r="1.7" />
+              <circle cx="266" cy="46" r="1.5" />
+              <circle cx="371" cy="105" r="1.9" />
+              <circle cx="351" cy="160" r="1.3" />
+              <circle cx="282" cy="225" r="1.6" />
+              <circle cx="202" cy="230" r="1.4" />
+            </g>
+          </svg>
+        </div>
+        <div className="container">
+          <div className="sec-head reveal">
+            <div className="sec-eyebrow">设计与思路 · 核心痛点</div>
+            <h2 className="sec-title">真实调研之后，<br />我们发现用户累在这五个瞬间</h2>
+            <p className="sec-lead">不是选择少，而是筛选、协调、验证、变更和重复输入都要自己来。</p>
+          </div>
+          <PainEvidenceChain />
+        </div>
+      </section>
+
       <section className="section section--paper design-detail">
         <div className="container">
           <div className="sec-head reveal">
-            <div className="sec-eyebrow">设计与思路 · Design & Thinking</div>
+            <div className="sec-eyebrow">设计与思路 · DESIGN & THINKING</div>
             <h1 className="sec-title">不是“问一句答一句”，<br />是会替你把事办成的管家</h1>
             <p className="sec-lead">围绕年轻人本地生活的高频决策：吃饭、约局、周末、突发，做一个会主动出现、能协调多人、会自检方案的 AI 管家。命题 01：基于 OpenClaw 的全天候私人管家。</p>
           </div>
-          <div className="grid3">
-            {painPoints.map((item, index) => (
-              <div className={`card reveal d${index + 1}`} key={item.title}>
-                <div className="ic"><Icon name={item.icon} size={26} /></div>
-                <div className="num-tag">{item.tag}</div>
-                <h2>{item.title}</h2>
-                <p>{item.desc}</p>
-              </div>
-            ))}
-          </div>
-
           <div className="persona reveal">
             <div className="avatar"><div><div className="big">小林</div><div className="avatar-note">用户照片占位</div></div></div>
             <div>
