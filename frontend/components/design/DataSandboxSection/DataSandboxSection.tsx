@@ -142,6 +142,18 @@ const defaultLayerFilters: Record<LayerKey, boolean> = {
   weekend_poi: true
 };
 
+const sceneTags = [
+  "今天吃什么",
+  "多人约饭",
+  "周末规划",
+  "雨天友好",
+  "低预算",
+  "适合聊天",
+  "不辣可选",
+  "距离近",
+  "排队低风险"
+];
+
 const sandboxPoints: SandboxPoint[] = [
   ...manualShopRows.map((shop, index) => createRestaurantPoint(shop, "manual_sample", index)),
   ...syntheticShopRows.map((shop, index) => createRestaurantPoint(shop, "synthetic_mvp", index)),
@@ -179,18 +191,6 @@ const radarMetrics: Array<{
   { key: "distance", label: "距离友好", note: "步行圈" },
   { key: "rainy", label: "雨天友好", note: "备选区" },
   { key: "queueRisk", label: "排队低风险", note: "风险标签" }
-];
-
-const sceneTags = [
-  "今天吃什么",
-  "多人约饭",
-  "周末规划",
-  "雨天友好",
-  "低预算",
-  "适合聊天",
-  "不辣可选",
-  "距离近",
-  "排队低风险"
 ];
 
 const stats = [
