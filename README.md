@@ -71,25 +71,30 @@ flowchart TD
 
 ---
 
-## ✦ 三大场景
+## ✦ 小程序真实截图
 
 > 完整可交互演示见线上 Demo 👉 **[meituan-ai-hackathon.cn](https://meituan-ai-hackathon.cn)**
 
 <table>
 <tr>
-<td width="33%" valign="top">
+<td width="25%" valign="top">
+<img src="docs/readme/shot-home.png" alt="小程序首页" />
+<h3 align="center">① 首页入口</h3>
+<p>把单人推荐、多人约饭、周边规划和偏好记忆收束到同一个小程序入口。</p>
+</td>
+<td width="25%" valign="top">
 <img src="docs/readme/shot-food.png" alt="今天吃什么" />
-<h3 align="center">① 今天吃什么 · 单人</h3>
+<h3 align="center">② 今天吃什么</h3>
 <p>问答收集偏好 → OpenClaw 云端推荐 → 本地偏好记忆。远端不可用时<b>自动降级</b>到本地 mock 推荐，流程不中断。</p>
 </td>
-<td width="33%" valign="top">
+<td width="25%" valign="top">
 <img src="docs/readme/shot-group.png" alt="多人约饭" />
-<h3 align="center">② 多人约饭 · 协同</h3>
+<h3 align="center">③ 多人约饭</h3>
 <p>发起任务（服务端只存 <code>sha256(inviteToken)</code>）→ 成员填偏好 → 识别冲突 → 生成候选 → 自检 → 推荐 + 一键邀约。</p>
 </td>
-<td width="33%" valign="top">
+<td width="25%" valign="top">
 <img src="docs/readme/shot-weekend.png" alt="周末轻规划" />
-<h3 align="center">③ 周末轻规划</h3>
+<h3 align="center">④ 周边规划</h3>
 <p>结合 Open-Meteo 实时天气 + Mock POI，生成 3 条带时间线 / 预算 / 自检 / 风险提示的路线，天气失败也有保守兜底。</p>
 </td>
 </tr>
