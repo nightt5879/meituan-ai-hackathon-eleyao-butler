@@ -347,27 +347,6 @@ export default function PortfolioHomePage() {
         </div>
       </section>
 
-      <section className="section section--paper design-detail">
-        <div className="container">
-          <div className="sec-head reveal">
-            <div className="sec-eyebrow">设计与思路 · DESIGN & THINKING</div>
-            <h1 className="sec-title">不是“问一句答一句”，<br />是会替你把事办成的管家</h1>
-            <p className="sec-lead">围绕年轻人本地生活的高频决策：吃饭、约局、周末、突发，做一个会主动出现、能协调多人、会自检方案的 AI 管家。命题 01：基于 OpenClaw 的全天候私人管家。</p>
-          </div>
-          <div className="persona reveal">
-            <div className="avatar"><div><div className="big">小林</div><div className="avatar-note">用户照片占位</div></div></div>
-            <div>
-              <h2>小林 · 22 岁</h2>
-              <div className="persona-meta">大学生 / 研究生 · 住在学校周边</div>
-              <p>学习、项目、实习都忙，每天都在“吃什么、去哪、和谁约、怎么安排”的小决策里打转。一个人查店还行，多人约饭就乱了：口味、预算、时间、距离全在打架，最后谁都说“随便”。</p>
-              <div className="quotes">
-                {["不想随便，但也懒得查", "选择成本太高", "朋友偏好冲突，没人拍板", "怕踩雷：太辣 / 太远 / 排队久"].map((tag) => <span className="taglet t-soft" key={tag}>{tag}</span>)}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section className="section section--forest" id="core">
         <div className="container">
           <div className="sec-head reveal">
