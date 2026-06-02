@@ -995,58 +995,86 @@
 
 .controlDeck {
   display: grid;
-  grid-template-columns: minmax(0, 1.18fr) minmax(260px, 0.82fr);
-  gap: 16px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: start;
+  gap: 14px;
   width: min(1180px, 100%);
   margin: 16px auto 0;
 }
 
 .controlPanel {
+  align-self: start;
   min-width: 0;
-  padding: 18px;
+  padding: 16px;
   border: 1px solid var(--ey-line);
   border-radius: 8px;
-  background: var(--sandbox-panel);
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--sandbox-panel) 92%, var(--ey-card)),
+      color-mix(in srgb, var(--sandbox-panel) 78%, var(--ey-bg))
+    );
   box-shadow: var(--ey-shadow-sm);
 }
 
 .radarPanel {
-  grid-row: span 2;
+  grid-column: span 4;
 }
 
 .profilePanel {
   display: grid;
+  grid-column: span 5;
   align-content: start;
-  gap: 14px;
+  gap: 13px;
+}
+
+.statsPanel {
+  grid-column: span 3;
 }
 
 .panelTitle {
   display: grid;
-  gap: 5px;
-  margin-bottom: 16px;
+  gap: 4px;
+  margin-bottom: 12px;
 }
 
 .panelTitle h3 {
   color: var(--ey-ink);
-  font-size: 1.04rem;
+  font-size: 1rem;
   line-height: 1.35;
+}
+
+.panelTitle p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--ey-slate);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.45;
 }
 
 .radarList {
   display: grid;
-  gap: 13px;
+  gap: 9px;
 }
 
 .radarItem {
   display: grid;
-  grid-template-columns: minmax(118px, 0.38fr) minmax(160px, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 13px;
+  gap: 7px 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--ey-line) 72%, transparent);
+}
+
+.radarItem:last-child {
+  border-bottom: 0;
 }
 
 .radarMeta {
   display: grid;
-  gap: 3px;
+  gap: 2px;
+  min-width: 0;
 }
 
 .radarMeta span {
@@ -1060,8 +1088,16 @@
   font-size: 0.72rem;
 }
 
+.radarValue {
+  color: var(--ey-emerald-d);
+  font-family: var(--ey-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 0.82rem;
+  line-height: 1;
+}
+
 .barTrack {
-  height: 12px;
+  grid-column: 1 / -1;
+  height: 8px;
   overflow: hidden;
   border: 1px solid var(--ey-line);
   border-radius: 999px;
@@ -1075,45 +1111,77 @@
   background: linear-gradient(90deg, var(--ey-emerald-300), var(--ey-emerald), var(--ey-amber));
 }
 
-.profileGrid {
+.profileBadgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.profileBadgeRow span {
+  padding: 6px 9px;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 24%, var(--ey-line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-emerald-50) 64%, var(--ey-card));
+  color: var(--ey-emerald-d);
+  font-size: 0.74rem;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.profileMeta {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.infoChip {
-  min-width: 0;
+  gap: 7px;
+  margin: 0;
   padding: 10px;
-  border: 1px solid var(--ey-line);
+  border: 1px solid color-mix(in srgb, var(--ey-line) 84%, transparent);
   border-radius: 8px;
-  background: color-mix(in srgb, var(--ey-bg) 74%, var(--ey-card));
+  background: color-mix(in srgb, var(--ey-bg) 66%, var(--ey-card));
 }
 
-.infoChip span {
-  display: block;
-  margin-bottom: 5px;
+.profileMeta div {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+}
+
+.profileMeta dt {
   color: var(--ey-slate-3);
   font-family: var(--ey-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
   font-size: 0.68rem;
   font-weight: 900;
 }
 
-.infoChip strong {
-  display: block;
+.profileMeta dd {
+  min-width: 0;
+  margin: 0;
   overflow-wrap: anywhere;
   color: var(--ey-ink);
+  font-size: 0.76rem;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.profileBlock {
+  display: grid;
+  gap: 8px;
+}
+
+.profileBlockTitle {
+  color: var(--ey-slate);
   font-size: 0.78rem;
-  line-height: 1.4;
+  font-weight: 900;
+  line-height: 1.2;
 }
 
 .profileTags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 7px;
 }
 
 .profileTags span {
-  padding: 6px 9px;
+  padding: 5px 8px;
   border: 1px solid color-mix(in srgb, var(--ey-emerald) 28%, var(--ey-line));
   border-radius: 999px;
   background: color-mix(in srgb, var(--ey-emerald-50) 66%, var(--ey-card));
@@ -1124,7 +1192,7 @@
 
 .whyList {
   display: grid;
-  gap: 9px;
+  gap: 7px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1134,8 +1202,8 @@
   position: relative;
   padding-left: 15px;
   color: var(--ey-slate);
-  font-size: 0.84rem;
-  line-height: 1.65;
+  font-size: 0.8rem;
+  line-height: 1.58;
 }
 
 .whyList li::before {
@@ -1151,17 +1219,14 @@
 
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 8px;
 }
 
 .visibleSummary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-  padding: 11px 12px;
+  display: grid;
+  gap: 7px;
+  margin-bottom: 12px;
+  padding: 13px;
   border: 1px solid color-mix(in srgb, var(--ey-emerald) 28%, var(--ey-line));
   border-radius: 8px;
   background: color-mix(in srgb, var(--ey-emerald-50) 58%, var(--ey-card));
@@ -1175,20 +1240,27 @@
 
 .visibleSummary strong {
   color: var(--ey-emerald-d);
-  font-size: 1rem;
+  font-size: 1.9rem;
   line-height: 1;
 }
 
+.visibleSummary small {
+  color: var(--ey-slate-2);
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
 .statItem {
-  display: grid;
-  gap: 3px;
-  padding: 0 0 12px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 0;
   border-bottom: 1px solid var(--ey-line);
 }
 
 .statItem strong {
   color: var(--ey-emerald-d);
-  font-size: 1.8rem;
+  font-size: 1.18rem;
   line-height: 1;
 }
 
@@ -1200,22 +1272,66 @@
 }
 
 .credibility {
-  margin-top: 14px;
-  padding-top: 13px;
+  margin-top: 12px;
+  padding-top: 11px;
   border-top: 1px dashed var(--ey-line);
   color: var(--ey-slate);
-  font-size: 0.86rem;
-  line-height: 1.7;
+  font-size: 0.78rem;
+  line-height: 1.62;
 }
 
 .boundaryPanel {
   display: grid;
-  align-content: start;
+  grid-column: 1 / -1;
+  grid-template-columns: auto minmax(0, 1fr) minmax(250px, 0.82fr);
+  align-items: center;
+  gap: 14px;
+  padding: 15px 16px;
+}
+
+.boundaryPanel .panelTitle {
+  margin-bottom: 6px;
+}
+
+.boundaryLead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.boundaryPill,
+.boundaryPillMuted {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.boundaryPill {
+  border: 1px solid color-mix(in srgb, var(--ey-rose) 40%, var(--ey-line));
+  background: color-mix(in srgb, var(--ey-rose-50) 58%, var(--ey-card));
+  color: var(--ey-rose);
+}
+
+.boundaryPillMuted {
+  border: 1px solid color-mix(in srgb, var(--ey-amber) 34%, var(--ey-line));
+  background: color-mix(in srgb, var(--ey-amber-50) 56%, var(--ey-card));
+  color: var(--ey-amber-900);
+}
+
+.boundaryBody {
+  min-width: 0;
 }
 
 .tagCloud {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
 }
 
@@ -1237,15 +1353,11 @@
 }
 
 .boundaryText {
-  margin-top: 15px;
-  padding: 13px;
-  border: 1px dashed color-mix(in srgb, var(--ey-rose) 42%, var(--ey-line));
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--ey-rose-50) 46%, var(--ey-card));
+  margin: 0;
   color: var(--ey-ink-2);
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   font-weight: 700;
-  line-height: 1.75;
+  line-height: 1.65;
 }
 
 :global(body.t-night) .section,
@@ -1280,6 +1392,12 @@
 :global(body.t-black-pink) .visibleCount,
 :global(body.t-night) .visibleSummary,
 :global(body.t-black-pink) .visibleSummary,
+:global(body.t-night) .profileMeta,
+:global(body.t-black-pink) .profileMeta,
+:global(body.t-night) .profileBadgeRow span,
+:global(body.t-black-pink) .profileBadgeRow span,
+:global(body.t-night) .tagCloud span,
+:global(body.t-black-pink) .tagCloud span,
 :global(body.t-night) .zoomHint,
 :global(body.t-black-pink) .zoomHint,
 :global(body.t-night) .section :global(.leaflet-control-attribution),
@@ -1290,6 +1408,18 @@
 :global(body.t-black-pink) .section :global(.leaflet-control-zoom) {
   background: color-mix(in srgb, var(--ey-card) 88%, transparent);
   color: var(--ey-ink);
+}
+
+:global(body.t-night) .boundaryPill,
+:global(body.t-black-pink) .boundaryPill {
+  background: color-mix(in srgb, var(--ey-rose) 16%, var(--ey-card));
+  color: var(--ey-rose);
+}
+
+:global(body.t-night) .boundaryPillMuted,
+:global(body.t-black-pink) .boundaryPillMuted {
+  background: color-mix(in srgb, var(--ey-amber) 14%, var(--ey-card));
+  color: var(--ey-amber);
 }
 
 :global(body.t-night) .fallbackNotice,
@@ -1332,8 +1462,24 @@
     grid-template-columns: 1fr;
   }
 
+  .profilePanel,
+  .radarPanel,
+  .statsPanel,
+  .boundaryPanel {
+    grid-column: 1 / -1;
+  }
+
   .radarPanel {
     grid-row: auto;
+  }
+
+  .boundaryPanel {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .tagCloud {
+    justify-content: flex-start;
   }
 
   .mapCanvas {
@@ -1465,17 +1611,13 @@
     font-size: 0.52rem;
   }
 
-  .radarItem {
-    grid-template-columns: 1fr;
-    gap: 7px;
-  }
-
   .statsGrid {
     grid-template-columns: 1fr;
   }
 
-  .profileGrid {
+  .profileMeta div {
     grid-template-columns: 1fr;
+    gap: 3px;
   }
 
   .section :global(.leaflet-control-attribution) {
