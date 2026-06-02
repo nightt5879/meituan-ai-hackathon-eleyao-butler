@@ -91,10 +91,10 @@ body.t-night .pc {
 
 .pc-click-cue {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  gap: 9px;
-  margin-top: 12px;
+  gap: 12px;
+  margin-top: 10px;
   color: var(--pc-accent-d);
   pointer-events: none;
 }
@@ -110,10 +110,10 @@ body.t-night .pc {
 }
 
 .pc-click-cue-arrow {
-  width: 134px;
-  height: 42px;
+  width: 60px;
+  height: 66px;
   overflow: visible;
-  transform: rotate(2deg) translateY(13px);
+  transform: rotate(-5deg) translateY(18px);
 }
 
 .pc-click-cue-line,
@@ -134,7 +134,7 @@ body.t-night .pc {
 }
 
 .pc-deck-scroll {
-  margin-top: 20px;
+  margin-top: 8px;
   overflow-x: auto;
   padding: 18px 4px 24px;
   scrollbar-color: var(--ey-emerald-200) transparent;
@@ -706,6 +706,7 @@ body.t-night .pc {
     justify-content: flex-start;
     margin-top: 10px;
     padding-left: 6px;
+    gap: 8px;
   }
 
   .pc-click-cue-text {
@@ -713,13 +714,14 @@ body.t-night .pc {
   }
 
   .pc-click-cue-arrow {
-    width: 98px;
-    transform: rotate(2deg) translateY(10px);
+    width: 46px;
+    height: 56px;
+    transform: rotate(-5deg) translateY(14px);
   }
 
   .pc-deck-scroll {
     overflow: visible;
-    padding: 4px 0 0;
+    padding: 12px 0 0;
   }
 
   .pc-deck {

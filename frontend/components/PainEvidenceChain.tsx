@@ -99,9 +99,9 @@ export function PainEvidenceChain() {
 
       <div className="pc-click-cue" aria-hidden="true">
         <span className="pc-click-cue-text">点卡牌，看背面</span>
-        <svg className="pc-click-cue-arrow" viewBox="0 0 150 48" role="presentation" focusable="false">
-          <path className="pc-click-cue-line" d="M7 10 C 42 34, 91 39, 132 25" />
-          <path className="pc-click-cue-head" d="M120 18 L134 25 L119 31" />
+        <svg className="pc-click-cue-arrow" viewBox="0 0 68 72" role="presentation" focusable="false">
+          <path className="pc-click-cue-line" d="M27 5 C 45 17, 14 27, 27 40 C 37 50, 31 59, 30 66" />
+          <path className="pc-click-cue-head" d="M18 56 L30 68 L43 56" />
         </svg>
       </div>
 
