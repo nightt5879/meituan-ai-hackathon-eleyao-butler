@@ -569,10 +569,15 @@
 
 .leafletPointPin {
   position: relative;
-  display: grid;
-  width: 34px;
-  height: 34px;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+  width: fit-content;
+  min-width: 58px;
+  max-width: 92px;
+  height: 30px;
+  padding: 0 9px 0 8px;
   border: 2px solid color-mix(in srgb, var(--ey-card) 88%, var(--ey-ink));
   border-radius: 999px;
   background: var(--ey-emerald);
@@ -580,19 +585,26 @@
 }
 
 .leafletPointCore {
-  position: absolute;
-  inset: 7px;
-  border-radius: inherit;
-  background: color-mix(in srgb, var(--ey-card) 80%, transparent);
+  position: relative;
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-card) 88%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ey-ink) 12%, transparent);
 }
 
 .leafletPointText {
   position: relative;
   z-index: 1;
+  display: block;
+  max-width: 62px;
+  overflow: hidden;
   color: var(--ey-forest);
-  font-size: 0.54rem;
+  font-size: 0.66rem;
   font-weight: 900;
   line-height: 1;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -995,41 +1007,65 @@
 
 .controlDeck {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  align-items: start;
   gap: 14px;
   width: min(1180px, 100%);
   margin: 16px auto 0;
-}
-
-.controlPanel {
-  align-self: start;
-  min-width: 0;
   padding: 16px;
   border: 1px solid var(--ey-line);
   border-radius: 8px;
   background:
     linear-gradient(
-      145deg,
-      color-mix(in srgb, var(--sandbox-panel) 92%, var(--ey-card)),
-      color-mix(in srgb, var(--sandbox-panel) 78%, var(--ey-bg))
+      135deg,
+      color-mix(in srgb, var(--sandbox-panel) 94%, var(--ey-card)),
+      color-mix(in srgb, var(--sandbox-stage) 84%, var(--ey-bg))
     );
-  box-shadow: var(--ey-shadow-sm);
+  box-shadow: var(--ey-shadow);
 }
 
-.radarPanel {
-  grid-column: span 4;
-}
-
-.profilePanel {
+.consoleHeader {
   display: grid;
-  grid-column: span 5;
-  align-content: start;
-  gap: 13px;
+  grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
+  align-items: start;
+  gap: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ey-line) 86%, transparent);
 }
 
-.statsPanel {
-  grid-column: span 3;
+.selectedSummary {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.consoleEyebrow,
+.panelTitle span {
+  color: var(--ey-emerald-d);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.selectedSummary h3 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--ey-ink);
+  font-size: clamp(1.15rem, 2vw, 1.48rem);
+  line-height: 1.25;
+}
+
+.consoleMain {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.88fr) minmax(0, 1.12fr);
+  align-items: start;
+  gap: 14px;
+}
+
+.consolePanel {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--ey-line) 88%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 72%, var(--ey-bg));
 }
 
 .panelTitle {
@@ -1044,18 +1080,16 @@
   line-height: 1.35;
 }
 
-.panelTitle p {
+.panelTitle h4 {
   margin: 0;
-  overflow-wrap: anywhere;
-  color: var(--ey-slate);
-  font-size: 0.78rem;
-  font-weight: 700;
-  line-height: 1.45;
+  color: var(--ey-ink);
+  font-size: 0.98rem;
+  line-height: 1.35;
 }
 
 .radarList {
   display: grid;
-  gap: 9px;
+  gap: 7px;
 }
 
 .radarItem {
@@ -1063,7 +1097,7 @@
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 7px 10px;
-  padding: 8px 0;
+  padding: 6px 0;
   border-bottom: 1px solid color-mix(in srgb, var(--ey-line) 72%, transparent);
 }
 
@@ -1079,7 +1113,7 @@
 
 .radarMeta span {
   color: var(--ey-ink);
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   font-weight: 800;
 }
 
@@ -1091,7 +1125,7 @@
 .radarValue {
   color: var(--ey-emerald-d);
   font-family: var(--ey-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   line-height: 1;
 }
 
@@ -1128,55 +1162,10 @@
   line-height: 1.2;
 }
 
-.profileMeta {
-  display: grid;
-  gap: 7px;
-  margin: 0;
-  padding: 10px;
-  border: 1px solid color-mix(in srgb, var(--ey-line) 84%, transparent);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--ey-bg) 66%, var(--ey-card));
-}
-
-.profileMeta div {
-  display: grid;
-  grid-template-columns: 74px minmax(0, 1fr);
-  align-items: start;
-  gap: 8px;
-}
-
-.profileMeta dt {
-  color: var(--ey-slate-3);
-  font-family: var(--ey-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
-  font-size: 0.68rem;
-  font-weight: 900;
-}
-
-.profileMeta dd {
-  min-width: 0;
-  margin: 0;
-  overflow-wrap: anywhere;
-  color: var(--ey-ink);
-  font-size: 0.76rem;
-  font-weight: 750;
-  line-height: 1.45;
-}
-
-.profileBlock {
-  display: grid;
-  gap: 8px;
-}
-
-.profileBlockTitle {
-  color: var(--ey-slate);
-  font-size: 0.78rem;
-  font-weight: 900;
-  line-height: 1.2;
-}
-
 .profileTags {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 7px;
 }
 
@@ -1188,6 +1177,54 @@
   color: var(--ey-emerald-d);
   font-size: 0.75rem;
   font-weight: 800;
+}
+
+.sourceNarrative {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.75fr) minmax(0, 1.25fr);
+  gap: 12px;
+}
+
+.sourceBlock {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--ey-line) 82%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-bg) 58%, var(--ey-card));
+}
+
+.sourceBlock > strong {
+  color: var(--ey-ink);
+  font-size: 0.86rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.sourceBlock p {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding-bottom: 7px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ey-line) 68%, transparent);
+  color: var(--ey-ink);
+  font-size: 0.76rem;
+  font-weight: 750;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.sourceBlock p:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.sourceBlock p span {
+  color: var(--ey-slate-3);
+  font-family: var(--ey-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 0.66rem;
+  font-weight: 900;
 }
 
 .whyList {
@@ -1217,45 +1254,54 @@
   content: "";
 }
 
-.statsGrid {
+.consoleFooter {
   display: grid;
-  gap: 8px;
+  gap: 12px;
 }
 
-.visibleSummary {
+.consoleStats {
   display: grid;
-  gap: 7px;
-  margin-bottom: 12px;
-  padding: 13px;
+  grid-template-columns: minmax(160px, 1.18fr) repeat(4, minmax(96px, 1fr));
+  align-items: stretch;
+  gap: 0;
+  overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--ey-emerald) 28%, var(--ey-line));
   border-radius: 8px;
   background: color-mix(in srgb, var(--ey-emerald-50) 58%, var(--ey-card));
 }
 
-.visibleSummary span {
+.visibleStat,
+.statItem {
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 12px;
+  border-right: 1px solid color-mix(in srgb, var(--ey-line) 72%, transparent);
+}
+
+.statItem:last-child {
+  border-right: 0;
+}
+
+.visibleStat span,
+.statItem span {
   color: var(--ey-slate);
   font-size: 0.78rem;
   font-weight: 800;
+  line-height: 1.35;
 }
 
-.visibleSummary strong {
+.visibleStat strong {
   color: var(--ey-emerald-d);
   font-size: 1.9rem;
   line-height: 1;
 }
 
-.visibleSummary small {
+.visibleStat small {
   color: var(--ey-slate-2);
   font-size: 0.88rem;
   font-weight: 800;
-}
-
-.statItem {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--ey-line);
 }
 
 .statItem strong {
@@ -1264,32 +1310,18 @@
   line-height: 1;
 }
 
-.statItem span {
-  color: var(--ey-slate);
-  font-size: 0.82rem;
-  font-weight: 700;
-  line-height: 1.45;
-}
-
-.credibility {
-  margin-top: 12px;
-  padding-top: 11px;
-  border-top: 1px dashed var(--ey-line);
-  color: var(--ey-slate);
-  font-size: 0.78rem;
-  line-height: 1.62;
-}
-
-.boundaryPanel {
+.complianceRibbon {
   display: grid;
-  grid-column: 1 / -1;
   grid-template-columns: auto minmax(0, 1fr) minmax(250px, 0.82fr);
   align-items: center;
   gap: 14px;
-  padding: 15px 16px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--ey-rose) 26%, var(--ey-line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-rose-50) 34%, var(--ey-card));
 }
 
-.boundaryPanel .panelTitle {
+.complianceRibbon .panelTitle {
   margin-bottom: 6px;
 }
 
@@ -1390,10 +1422,14 @@
 :global(body.t-black-pink) .layerButton,
 :global(body.t-night) .visibleCount,
 :global(body.t-black-pink) .visibleCount,
-:global(body.t-night) .visibleSummary,
-:global(body.t-black-pink) .visibleSummary,
-:global(body.t-night) .profileMeta,
-:global(body.t-black-pink) .profileMeta,
+:global(body.t-night) .consolePanel,
+:global(body.t-black-pink) .consolePanel,
+:global(body.t-night) .sourceBlock,
+:global(body.t-black-pink) .sourceBlock,
+:global(body.t-night) .consoleStats,
+:global(body.t-black-pink) .consoleStats,
+:global(body.t-night) .complianceRibbon,
+:global(body.t-black-pink) .complianceRibbon,
 :global(body.t-night) .profileBadgeRow span,
 :global(body.t-black-pink) .profileBadgeRow span,
 :global(body.t-night) .tagCloud span,
@@ -1430,7 +1466,12 @@
 
 :global(body.t-night) .leafletPointText,
 :global(body.t-black-pink) .leafletPointText {
-  color: var(--ey-bg);
+  color: var(--ey-ink);
+}
+
+:global(body.t-night) .leafletPointCore,
+:global(body.t-black-pink) .leafletPointCore {
+  background: color-mix(in srgb, var(--ey-ink) 88%, transparent);
 }
 
 :global(body.t-night) .clusterBubble,
@@ -1459,27 +1500,27 @@
   }
 
   .controlDeck {
+    padding: 14px;
+  }
+
+  .consoleHeader,
+  .consoleMain,
+  .sourceNarrative,
+  .complianceRibbon {
     grid-template-columns: 1fr;
   }
 
-  .profilePanel,
-  .radarPanel,
-  .statsPanel,
-  .boundaryPanel {
-    grid-column: 1 / -1;
-  }
-
-  .radarPanel {
-    grid-row: auto;
-  }
-
-  .boundaryPanel {
-    grid-template-columns: 1fr;
-    align-items: start;
-  }
-
+  .profileTags,
   .tagCloud {
     justify-content: flex-start;
+  }
+
+  .consoleStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .visibleStat {
+    grid-column: 1 / -1;
   }
 
   .mapCanvas {
@@ -1611,13 +1652,30 @@
     font-size: 0.52rem;
   }
 
-  .statsGrid {
+  .leafletPointPin {
+    min-width: 52px;
+    max-width: 82px;
+    height: 28px;
+    padding: 0 8px 0 7px;
+  }
+
+  .leafletPointText {
+    max-width: 50px;
+    font-size: 0.62rem;
+  }
+
+  .consoleStats {
     grid-template-columns: 1fr;
   }
 
-  .profileMeta div {
-    grid-template-columns: 1fr;
-    gap: 3px;
+  .visibleStat,
+  .statItem {
+    border-right: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--ey-line) 72%, transparent);
+  }
+
+  .statItem:last-child {
+    border-bottom: 0;
   }
 
   .section :global(.leaflet-control-attribution) {

@@ -32,6 +32,7 @@ type SandboxPoint = {
   category: string;
   address: string;
   markerLabel: string;
+  shortName: string;
   source: string;
   sourceId: string;
   seedFile: string;
@@ -238,7 +239,7 @@ export function DataSandboxSection() {
   return (
     <section className={styles.section} aria-labelledby="data-sandbox-title">
       <div className={styles.header}>
-        <p className={styles.eyebrow}>数据沙盘 / Leaflet v0.5</p>
+        <p className={styles.eyebrow}>数据沙盘 / Leaflet v0.6</p>
         <h2 id="data-sandbox-title">我们为大学城搭了一个可解释的本地生活沙盘</h2>
         <p className={styles.subtitle}>
           让 AI 管家的建议落在具体候选、地点、标签和约束上，而不是凭空生成一段“看起来合理”的话。
@@ -254,12 +255,7 @@ export function DataSandboxSection() {
         visiblePoints={visiblePoints}
       />
 
-      <div className={styles.controlDeck}>
-        <SelectedPointProfile point={selectedPoint} />
-        <FilterRadar point={selectedPoint} />
-        <DataStats visibleCount={visiblePoints.length} />
-        <BoundaryNote selectedTags={selectedPoint.scenarioTags} />
-      </div>
+      <SandboxConsole point={selectedPoint} visibleCount={visiblePoints.length} />
     </section>
   );
 }
@@ -587,7 +583,7 @@ function StaticSandboxMap({
 }) {
   const staticMapPoints = visiblePoints.slice(0, 34).map((point) => ({
     id: point.id,
-    label: point.markerLabel,
+    label: point.shortName,
     name: point.name,
     kind: typeToPointKind(point.type),
     x: lngToStaticX(point.latlng[1]),
@@ -661,8 +657,8 @@ function StaticSandboxMap({
           >
             <span className={styles.pointDot} aria-hidden="true" />
             <span className={styles.pointLabel}>
-              <strong>{point.name}</strong>
-              <small>{point.label} / {point.meta}</small>
+              <strong>{point.label}</strong>
+              <small>{point.name}</small>
             </span>
           </div>
         ))}
@@ -728,66 +724,21 @@ function MapLegend() {
   );
 }
 
-function FilterRadar({ point }: { point: SandboxPoint }) {
+function SandboxConsole({ point, visibleCount }: { point: SandboxPoint; visibleCount: number }) {
   return (
-    <section className={`${styles.controlPanel} ${styles.radarPanel}`} aria-labelledby="filter-radar-title">
-      <div className={styles.panelTitle}>
-        <span>筛选雷达</span>
-        <h3 id="filter-radar-title">当前点位能力画像</h3>
-        <p>{point.name}</p>
-      </div>
-      <div className={styles.radarList}>
-        {radarMetrics.map((item) => {
-          const value = point.radar[item.key];
-          return (
-            <div className={styles.radarItem} key={item.key}>
-              <div className={styles.radarMeta}>
-                <span>{item.label}</span>
-                <small>{item.note}</small>
-              </div>
-              <strong className={styles.radarValue}>{value}%</strong>
-              <div className={styles.barTrack} aria-label={`${item.label} ${value}%`}>
-                <span className={styles.barFill} style={{ width: `${value}%` }} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-function SelectedPointProfile({ point }: { point: SandboxPoint }) {
-  return (
-    <section className={`${styles.controlPanel} ${styles.profilePanel}`} aria-labelledby="selected-point-title">
-      <div className={styles.panelTitle}>
-        <span>当前候选画像</span>
-        <h3 id="selected-point-title">{point.name}</h3>
-      </div>
-
-      <div className={styles.profileBadgeRow} aria-label="当前候选来源摘要">
-        <span>{typeLabel(point.type)}</span>
-        <span>{point.synthetic ? "MVP 合成或场景数据" : "人工样本"}</span>
-        <span>{confidenceLabel(point.confidence)}</span>
-      </div>
-
-      <dl className={styles.profileMeta} aria-label="当前候选来源边界">
-        <div>
-          <dt>source</dt>
-          <dd>{point.source}</dd>
+    <section className={styles.controlDeck} aria-labelledby="sandbox-console-title">
+      <div className={styles.consoleHeader}>
+        <div className={styles.selectedSummary}>
+          <span className={styles.consoleEyebrow}>沙盘控制台</span>
+          <h3 id="sandbox-console-title">当前选中：{point.name}</h3>
+          <div className={styles.profileBadgeRow} aria-label="当前候选来源摘要">
+            <span>{typeLabel(point.type)}</span>
+            <span>来源：{sourceCompactLabel(point.source)}</span>
+            <span>{point.synthetic ? "MVP 合成数据" : "人工样本"}</span>
+            <span>{confidenceBadgeLabel(point.confidence)}</span>
+            <span>能力：{point.markerLabel}</span>
+          </div>
         </div>
-        <div>
-          <dt>sourceId</dt>
-          <dd>{point.sourceId}</dd>
-        </div>
-        <div>
-          <dt>seedFile</dt>
-          <dd>{point.seedFile}</dd>
-        </div>
-      </dl>
-
-      <div className={styles.profileBlock}>
-        <strong className={styles.profileBlockTitle}>场景标签</strong>
         <div className={styles.profileTags} aria-label="当前点位适配场景标签">
           {point.scenarioTags.map((tag) => (
             <span key={tag}>{tag}</span>
@@ -795,71 +746,119 @@ function SelectedPointProfile({ point }: { point: SandboxPoint }) {
         </div>
       </div>
 
-      <div className={styles.profileBlock}>
-        <strong className={styles.profileBlockTitle}>为什么这个点有用</strong>
-        <ul className={styles.whyList}>
-          {point.why.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  );
-}
-
-function DataStats({ visibleCount }: { visibleCount: number }) {
-  return (
-    <section className={`${styles.controlPanel} ${styles.statsPanel}`} aria-labelledby="data-stats-title">
-      <div className={styles.panelTitle}>
-        <span>候选规模</span>
-        <h3 id="data-stats-title">MVP 候选世界</h3>
-      </div>
-      <div className={styles.visibleSummary}>
-        <span>当前图层可见</span>
-        <strong>
-          {visibleCount}
-          <small> / {totalPointCount}</small>
-        </strong>
-      </div>
-      <div className={styles.statsGrid}>
-        {stats.map((item) => (
-          <div className={styles.statItem} key={item.label}>
-            <strong>{item.value}</strong>
-            <span>{item.label}</span>
+      <div className={styles.consoleMain}>
+        <div className={styles.consolePanel} aria-labelledby="console-radar-title">
+          <div className={styles.panelTitle}>
+            <span>能力画像</span>
+            <h4 id="console-radar-title">当前点位筛选雷达</h4>
           </div>
-        ))}
+          <RadarBars point={point} />
+        </div>
+
+        <div className={styles.consolePanel} aria-labelledby="console-source-title">
+          <div className={styles.panelTitle}>
+            <span>数据来源与用途</span>
+            <h4 id="console-source-title">候选从哪里来，为什么可解释</h4>
+          </div>
+          <div className={styles.sourceNarrative}>
+            <div className={styles.sourceBlock}>
+              <strong>来源</strong>
+              <p>
+                <span>source</span>
+                {point.source}
+              </p>
+              <p>
+                <span>sourceId</span>
+                {point.sourceId}
+              </p>
+              <p>
+                <span>seed</span>
+                {seedFileShortLabel(point.seedFile)}
+              </p>
+              <p>
+                <span>synthetic</span>
+                {point.synthetic ? "true / MVP 合成或场景数据" : "false / 人工样本"}
+              </p>
+              <p>
+                <span>confidence</span>
+                {confidenceLabel(point.confidence)}
+              </p>
+            </div>
+            <div className={styles.sourceBlock}>
+              <strong>用途</strong>
+              <ul className={styles.whyList}>
+                {point.why.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
-      <p className={styles.credibility}>
-        每个候选都保留 source / synthetic / confidence 等来源标注，让 demo 明确知道哪些是人工样本，哪些是 MVP 合成数据，哪些只用于场景验证。
-      </p>
+
+      <div className={styles.consoleFooter}>
+        <div className={styles.consoleStats} aria-label="候选规模统计">
+          <div className={styles.visibleStat}>
+            <span>当前可见</span>
+            <strong>
+              {visibleCount}
+              <small> / {totalPointCount}</small>
+            </strong>
+          </div>
+          {stats.map((item) => (
+            <div className={styles.statItem} key={item.label}>
+              <strong>{item.value}</strong>
+              <span>{item.label}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className={styles.complianceRibbon} aria-labelledby="console-boundary-title">
+          <div className={styles.boundaryLead}>
+            <span className={styles.boundaryPill}>MVP 边界</span>
+            <span className={styles.boundaryPillMuted}>非真实平台数据</span>
+          </div>
+          <div className={styles.boundaryBody}>
+            <div className={styles.panelTitle}>
+              <span>边界说明</span>
+              <h4 id="console-boundary-title">只验证推荐与路线逻辑</h4>
+            </div>
+            <p className={styles.boundaryText}>
+              当前沙盘用于 Hackathon MVP 的推荐与路线逻辑验证，不代表真实美团 / 点评评分、销量、库存、排队时间或平台认证数据。
+            </p>
+          </div>
+          <div className={styles.tagCloud} aria-label="场景标签">
+            {sceneTags.map((tag) => (
+              <span className={point.scenarioTags.includes(tag) ? styles.activeTag : undefined} key={tag}>
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
 
-function BoundaryNote({ selectedTags }: { selectedTags: string[] }) {
+function RadarBars({ point }: { point: SandboxPoint }) {
   return (
-    <section className={`${styles.controlPanel} ${styles.boundaryPanel}`} aria-labelledby="boundary-note-title">
-      <div className={styles.boundaryLead}>
-        <span className={styles.boundaryPill}>MVP 边界</span>
-        <span className={styles.boundaryPillMuted}>非真实平台数据</span>
-      </div>
-      <div className={styles.boundaryBody}>
-        <div className={styles.panelTitle}>
-          <span>边界说明</span>
-          <h3 id="boundary-note-title">只验证推荐与路线逻辑</h3>
-        </div>
-        <p className={styles.boundaryText}>
-          当前沙盘用于 Hackathon MVP 的推荐与路线逻辑验证，不代表真实美团 / 点评评分、销量、库存、排队时间或平台认证数据。
-        </p>
-      </div>
-      <div className={styles.tagCloud} aria-label="场景标签">
-        {sceneTags.map((tag) => (
-          <span className={selectedTags.includes(tag) ? styles.activeTag : undefined} key={tag}>
-            {tag}
-          </span>
-        ))}
-      </div>
-    </section>
+    <div className={styles.radarList}>
+      {radarMetrics.map((item) => {
+        const value = point.radar[item.key];
+        return (
+          <div className={styles.radarItem} key={item.key}>
+            <div className={styles.radarMeta}>
+              <span>{item.label}</span>
+              <small>{item.note}</small>
+            </div>
+            <strong className={styles.radarValue}>{value}%</strong>
+            <div className={styles.barTrack} aria-label={`${item.label} ${value}%`}>
+              <span className={styles.barFill} style={{ width: `${value}%` }} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -874,15 +873,17 @@ function createRestaurantPoint(shop: SeedRestaurantShop, layer: Extract<LayerKey
       ? "frontend/data/restaurant/shops.gut.seed.json"
       : "frontend/data/restaurant/shops.synthetic.seed.json";
   const sourceId = shop.sourceId ?? shop.id ?? `${layer}_${index + 1}`;
+  const name = shop.name || `餐饮候选 ${index + 1}`;
 
   return {
     id: `${layer}:${shop.id ?? index}`,
-    name: shop.name || `餐饮候选 ${index + 1}`,
+    name,
     type: layer,
     latlng,
     category,
     address: shop.address ?? "大学城附近沙盘地址",
     markerLabel: deriveRestaurantMarkerLabel(tags, shop.avgPrice),
+    shortName: derivePointShortName(name, layer),
     source: `${shop.source ?? layer} / ${sourceId}`,
     sourceId,
     seedFile,
@@ -910,15 +911,17 @@ function createWeekendPoint(poi: SeedWeekendPoi, index: number): SandboxPoint {
   const radar = buildWeekendRadar(poi, tags, latlng);
   const scenarioTags = deriveWeekendScenarioTags(poi, tags, radar);
   const sourceId = poi.sourceId ?? poi.id ?? `weekend_poi_${index + 1}`;
+  const name = poi.name || `周末 POI ${index + 1}`;
 
   return {
     id: `weekend_poi:${poi.id ?? index}`,
-    name: poi.name || `周末 POI ${index + 1}`,
+    name,
     type: "weekend_poi",
     latlng,
     category: type,
     address: poi.addressText ?? "大学城附近周末 POI 沙盘地址",
     markerLabel: deriveWeekendMarkerLabel(poi, tags),
+    shortName: derivePointShortName(name, "weekend_poi"),
     source: `${poi.source ?? "synthetic_weekend_mvp"} / ${sourceId}`,
     sourceId,
     seedFile: "frontend/data/weekend/weekend-pois.seed.json",
@@ -1045,10 +1048,38 @@ function typeLabel(type: SandboxPointType) {
   return "weekend POI";
 }
 
+function sourceCompactLabel(source: string) {
+  return source.split(" / ")[0] || source;
+}
+
+function seedFileShortLabel(seedFile: string) {
+  return seedFile.replace(/^frontend\/data\//, "");
+}
+
 function confidenceLabel(confidence: Confidence) {
   if (confidence === "high") return "high / 人工确认或高置信样本";
   if (confidence === "medium") return "medium / 规则验证";
   return "demo / 场景验证";
+}
+
+function confidenceBadgeLabel(confidence: Confidence) {
+  if (confidence === "high") return "高置信";
+  if (confidence === "medium") return "中置信";
+  return "场景验证";
+}
+
+function derivePointShortName(name: string, type: SandboxPointType) {
+  const fallback = type === "weekend_poi" ? "周末POI" : "餐饮点";
+  const compact = name
+    .replace(/[（(].*?[）)]/g, "")
+    .replace(/广州大学城|大学城|广州|番禺|附近/g, "")
+    .replace(/[·•｜|]/g, "")
+    .replace(/\s+/g, "")
+    .trim();
+  const candidate = compact || name.replace(/\s+/g, "").trim() || fallback;
+  const maxLength = type === "weekend_poi" ? 6 : 5;
+
+  return Array.from(candidate).slice(0, maxLength).join("");
 }
 
 function buildMapRenderItems(points: SandboxPoint[], zoom: number): MapRenderItem[] {
@@ -1193,10 +1224,10 @@ function createPointIcon(
 
   return L.divIcon({
     className: styles.leafletPointIcon,
-    html: `<span class="${classNames}"><span class="${styles.leafletPointCore}"></span><span class="${styles.leafletPointText}">${escapeHtml(point.markerLabel)}</span></span>`,
-    iconAnchor: [17, 17],
-    iconSize: [34, 34],
-    tooltipAnchor: [0, -18]
+    html: `<span class="${classNames}"><span class="${styles.leafletPointCore}"></span><span class="${styles.leafletPointText}">${escapeHtml(point.shortName)}</span></span>`,
+    iconAnchor: [46, 17],
+    iconSize: [92, 34],
+    tooltipAnchor: [0, -20]
   });
 }
 
