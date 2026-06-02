@@ -25,10 +25,14 @@
   --pc-feature-bg: color-mix(in srgb, var(--pc-accent) 28%, #ffffff);
   --pc-shadow: color-mix(in srgb, var(--ey-ink) 18%, transparent);
   --pc-title-ink: color-mix(in srgb, var(--ey-ink) 92%, var(--pc-accent-dd));
-  --pc-display-font: "Yuanti SC", "YouYuan", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", var(--ey-sans);
-  --pc-body-font: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", var(--ey-sans);
+  --pc-display-font: "LXGW WenKai", "霞鹜文楷", "Microsoft YaHei", "PingFang SC", sans-serif;
+  --pc-body-font: "LXGW WenKai", "霞鹜文楷", "Microsoft YaHei", "PingFang SC", sans-serif;
   --pc-sun-opacity: 0.52;
   --pc-star-opacity: 0.62;
+  /* LXGW WenKai mainly ships a single regular weight. Disable synthetic bold so
+     the literary font stays soft and light at every weight (no faux-bold), and
+     hierarchy comes from size rather than heaviness. */
+  font-synthesis: none;
   margin-top: clamp(52px, 7vw, 88px);
 }
 
@@ -221,12 +225,12 @@ body.t-night .pc {
 
 .pc-card-front .pc-card-content {
   align-items: center;
-  padding: 57px 18px 20px;
+  padding: 52px 18px 22px;
   text-align: center;
 }
 
 .pc-card-back .pc-card-content {
-  padding: 69px 20px 27px;
+  padding: 54px 18px 26px;
 }
 
 /* The ornament layer mirrors the reference card: edge decoration with a clear
@@ -480,31 +484,43 @@ body.t-night .pc {
 .pc-card-number {
   color: var(--pc-accent);
   font-family: var(--pc-display-font);
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   line-height: 1.1;
 }
 
 .pc-card-title {
   display: flex;
-  min-height: 101px;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 7px;
+  gap: 3px;
+  min-height: 58px;
+  /* Slight negative side margin gives the longest explicit line (card 04's
+     "需要重新查很多信息") room to sit on one line without auto-wrapping; the
+     centered text still stays clear of the tarot frame. */
+  margin: 4px -7px 0;
   color: var(--pc-title-ink);
   font-family: var(--pc-display-font);
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: 0.035em;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0;
   line-height: 1.2;
   text-align: center;
+}
+
+/* Each explicit title line never auto-wraps: the only line breaks come from
+   titleLines in PainEvidenceChain.tsx, so all 5 cards read as intentional. */
+.pc-card-title span {
+  display: block;
+  white-space: nowrap;
 }
 
 .pc-card-logic {
   display: block;
   width: 100%;
-  margin-top: 17px;
+  margin-top: auto;
   text-align: center;
 }
 
@@ -513,8 +529,8 @@ body.t-night .pc {
   color: color-mix(in srgb, var(--pc-front-muted) 92%, transparent);
   font-family: var(--pc-body-font);
   font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   line-height: 1.2;
 }
 
@@ -528,14 +544,14 @@ body.t-night .pc {
 
 .pc-keyword {
   display: inline-flex;
-  padding: 5px 9px;
+  padding: 5px 10px;
   border: 1px solid var(--pc-pill-line);
   border-radius: var(--ey-pill);
   background: var(--pc-pill-bg);
   color: var(--pc-accent-d);
   font-family: var(--pc-body-font);
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 500;
   line-height: 1.2;
 }
 
@@ -543,16 +559,16 @@ body.t-night .pc {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 21px;
+  margin-top: auto;
   color: color-mix(in srgb, var(--pc-accent-d) 90%, transparent);
   font-family: var(--pc-display-font);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.035em;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 .pc-card-hint i {
-  font-size: 15px;
+  font-size: 14px;
   font-style: normal;
   line-height: 1;
 }
@@ -561,34 +577,42 @@ body.t-night .pc {
   margin-top: 18px;
 }
 
+/* Vertically balance the back face: float the action/feature/solution block
+   toward the middle and pin the hint to the bottom (both via auto margins), so
+   it reads as a designed tarot card instead of a top-packed form panel. */
+.pc-card-back .pc-back-section:first-child {
+  margin-top: auto;
+}
+
 .pc-card-back .pc-card-label {
   color: color-mix(in srgb, var(--pc-back-ink) 88%, var(--pc-glow));
+  font-size: 14px;
 }
 
 .pc-action-badge,
 .pc-feature-badge {
   display: inline-flex;
   align-self: flex-start;
-  margin-top: 9px;
+  margin-top: 7px;
   border: 1px solid color-mix(in srgb, var(--pc-glow) 26%, transparent);
   border-radius: 999px;
   font-family: var(--pc-display-font);
-  font-weight: 800;
-  letter-spacing: 0.06em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .pc-action-badge {
-  padding: 6px 12px;
+  padding: 6px 14px;
   background: color-mix(in srgb, var(--ey-forest) 76%, transparent);
   color: var(--pc-back-ink);
-  font-size: 16px;
+  font-size: 21px;
 }
 
 .pc-feature-badge {
-  padding: 7px 13px;
+  padding: 7px 15px;
   background: var(--pc-feature-bg);
   color: var(--ey-forest);
-  font-size: 18px;
+  font-size: 21px;
 }
 
 .pc-solution {
@@ -600,9 +624,9 @@ body.t-night .pc {
   display: block;
   color: color-mix(in srgb, var(--pc-back-ink) 96%, var(--pc-glow));
   font-family: var(--pc-body-font);
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 1.72;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.66;
 }
 
 .pc-solution .pc-card-label {

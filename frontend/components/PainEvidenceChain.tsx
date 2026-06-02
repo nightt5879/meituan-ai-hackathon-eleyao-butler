@@ -5,6 +5,7 @@ import { useState } from "react";
 type PainEvidence = {
   id: string;
   title: string;
+  titleLines: string[];
   logic: string[];
   action: string;
   feature: string;
@@ -15,6 +16,7 @@ const painEvidenceCards: PainEvidence[] = [
   {
     id: "01",
     title: "信息太多，不知道怎么选",
+    titleLines: ["信息太多", "不知道怎么选"],
     logic: ["信息过载", "多 App 切换", "决策疲劳"],
     action: "会追问",
     feature: "今天吃什么",
@@ -23,6 +25,7 @@ const painEvidenceCards: PainEvidence[] = [
   {
     id: "02",
     title: "和朋友意见不统一",
+    titleLines: ["和朋友", "意见不统一"],
     logic: ["口味冲突", "预算不同", "距离不一", "群聊低效"],
     action: "会协调",
     feature: "发起约饭",
@@ -31,6 +34,7 @@ const painEvidenceCards: PainEvidence[] = [
   {
     id: "03",
     title: "推荐看起来不错，但实际去不了",
+    titleLines: ["推荐看起来不错", "但实际去不了"],
     logic: ["太远", "超预算", "已打烊", "排队久"],
     action: "会自检",
     feature: "方案检查",
@@ -39,6 +43,7 @@ const painEvidenceCards: PainEvidence[] = [
   {
     id: "04",
     title: "临时计划变化，需要重新查很多信息",
+    titleLines: ["临时计划变化", "需要重新查很多信息"],
     logic: ["计划失效", "时间变化", "需要 Plan B"],
     action: "会兜底",
     feature: "替代方案",
@@ -47,6 +52,7 @@ const painEvidenceCards: PainEvidence[] = [
   {
     id: "05",
     title: "每次都要重复说偏好",
+    titleLines: ["每次都要", "重复说偏好"],
     logic: ["重复输入", "偏好稳定", "用户可控"],
     action: "会记忆",
     feature: "偏好档案",
@@ -109,7 +115,11 @@ export function PainEvidenceChain() {
                     <TarotOrnaments />
                     <span className="pc-card-content">
                       <span className="pc-card-number">痛点 {item.id}</span>
-                      <span className="pc-card-title">{item.title}</span>
+                      <span className="pc-card-title">
+                        {item.titleLines.map((line) => (
+                          <span key={line}>{line}</span>
+                        ))}
+                      </span>
                       <span className="pc-card-logic">
                         <span className="pc-card-label">逻辑链</span>
                         <span className="pc-keywords">
