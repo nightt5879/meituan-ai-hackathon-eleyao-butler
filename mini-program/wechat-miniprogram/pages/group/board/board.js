@@ -145,12 +145,13 @@ Page({
     }
 
     return groupDiningAdapter.getTaskBoard(taskId, this.data.inviteToken).then(function (board) {
+      const displayBoard = decorateBoardForDisplay(board);
       if (!opts.silent) {
         wx.hideLoading();
       }
       page.setData({
-        board,
-        statusLabel: statusLabel(boardStatus(board)),
+        board: displayBoard,
+        statusLabel: statusLabel(boardStatus(displayBoard)),
         isLoading: false,
         hasInitialized: true,
         errorMessage: ''
@@ -162,7 +163,7 @@ Page({
           wx.showToast({ title: '网络暂不可用，已切换为体验数据', icon: 'none' });
         }
       }
-      return board;
+      return displayBoard;
     }).catch(function (error) {
       if (!opts.silent) {
         wx.hideLoading();
@@ -175,12 +176,13 @@ Page({
         const fallbackBoard = groupDiningAdapter.getFallbackTaskBoard
           ? groupDiningAdapter.getFallbackTaskBoard(page.data.taskId, page.data.inviteToken, error)
           : null;
+        const displayBoard = decorateBoardForDisplay(fallbackBoard);
         page.setData({
-          board: fallbackBoard,
-          statusLabel: statusLabel(boardStatus(fallbackBoard)),
+          board: displayBoard,
+          statusLabel: statusLabel(boardStatus(displayBoard)),
           isLoading: false,
           hasInitialized: true,
-          errorMessage: fallbackBoard ? '' : '加载失败：' + ((error && (error.errMsg || error.message)) || 'unknown')
+          errorMessage: displayBoard ? '' : '加载失败：' + ((error && (error.errMsg || error.message)) || 'unknown')
         });
       }
       return Promise.reject(error);
@@ -191,12 +193,24 @@ Page({
     if (!this.data.taskId || this.data.isRecommending) {
       return;
     }
+    const expectedCount = expectedRecommendationParticipantCount(this.data.board);
+    const submittedCount = submittedRecommendationParticipantCount(this.data.board);
+    if (expectedCount > 0 && submittedCount < expectedCount) {
+      wx.showModal({
+        title: '暂时无法生成推荐',
+        content: '当前已有 ' + submittedCount + '/' + expectedCount + ' 人填写偏好，需达到目标人数后才能生成多人推荐。请先分享链接邀请剩余成员填写。',
+        showCancel: false,
+        confirmText: '知道了'
+      });
+      return;
+    }
     this.stopPolling();
     this.setData({ isRecommending: true });
     wx.showLoading({ title: '生成推荐…', mask: true });
 
     const page = this;
     groupDiningAdapter.generateRecommendation(this.data.taskId, this.data.inviteToken).then(function (board) {
+      const displayBoard = decorateBoardForDisplay(board);
       wx.hideLoading();
       if (board.status === groupDiningAdapter.MOCK_STATUS) {
         wx.showToast({
@@ -210,8 +224,8 @@ Page({
         });
       }
       page.setData({
-        board,
-        statusLabel: statusLabel(boardStatus(board)),
+        board: displayBoard,
+        statusLabel: statusLabel(boardStatus(displayBoard)),
         isRecommending: false
       });
       page.startPolling();
@@ -339,10 +353,11 @@ Page({
       reasonType: this.data.adjustmentReasonType,
       note: this.data.adjustmentNote
     }).then(function (board) {
+      const displayBoard = decorateBoardForDisplay(board);
       wx.hideLoading();
       page.setData({
-        board,
-        statusLabel: statusLabel(boardStatus(board)),
+        board: displayBoard,
+        statusLabel: statusLabel(boardStatus(displayBoard)),
         isSubmittingAdjustment: false,
         adjustmentTargetCandidate: null,
         adjustmentReasonType: '',
@@ -395,6 +410,88 @@ function statusLabel(status) {
     return '待加载';
   }
   return STATUS_LABELS[status] || status;
+}
+
+const UNKNOWN_RECOMMENDATION_METADATA = '未知 / 待后端返回';
+
+function decorateBoardForDisplay(board) {
+  if (!board) {
+    return board;
+  }
+  const metadata = board.recommendationMetadata || {};
+  return Object.assign({}, board, {
+    recommendationMetadataDisplay: {
+      recommendationSource: recommendationSourceLabel(metadata.recommendationSource),
+      candidateDataSource: recommendationMetadataValue(metadata.candidateDataSource),
+      openclawStatus: recommendationMetadataValue(metadata.openclawStatus)
+    }
+  });
+}
+
+function recommendationSourceLabel(value) {
+  const source = String(value || '').trim();
+  const normalized = source.toLowerCase();
+  if (normalized === 'openclaw') {
+    return 'OpenClaw';
+  }
+  if (normalized === 'local_rule' || normalized === 'local_rules' || normalized === 'rule_based') {
+    return '本地规则';
+  }
+  if (normalized === 'mock' || normalized === 'mock_fallback' || normalized === 'fallback') {
+    return 'Mock fallback';
+  }
+  return source || UNKNOWN_RECOMMENDATION_METADATA;
+}
+
+function recommendationMetadataValue(value) {
+  return String(value || '').trim() || UNKNOWN_RECOMMENDATION_METADATA;
+}
+
+function expectedRecommendationParticipantCount(board) {
+  const safeBoard = board || {};
+  const safeTask = safeBoard.task || {};
+  return positiveCount([
+    safeBoard.expectedCount,
+    safeBoard.expected_count,
+    safeTask.expectedPeopleCount,
+    safeTask.expected_people_count
+  ]);
+}
+
+function submittedRecommendationParticipantCount(board) {
+  const safeBoard = board || {};
+  if (Array.isArray(safeBoard.participants)) {
+    return safeBoard.participants.length;
+  }
+  return nonNegativeCount([safeBoard.submittedCount, safeBoard.submitted_count]);
+}
+
+function positiveCount(values) {
+  for (let i = 0; i < values.length; i += 1) {
+    const value = values[i];
+    if (value === undefined || value === null || value === '') {
+      continue;
+    }
+    const count = Number(value);
+    if (isFinite(count) && count > 0) {
+      return Math.floor(count);
+    }
+  }
+  return 0;
+}
+
+function nonNegativeCount(values) {
+  for (let i = 0; i < values.length; i += 1) {
+    const value = values[i];
+    if (value === undefined || value === null || value === '') {
+      continue;
+    }
+    const count = Number(value);
+    if (isFinite(count) && count >= 0) {
+      return Math.floor(count);
+    }
+  }
+  return 0;
 }
 
 function boardStatus(board) {

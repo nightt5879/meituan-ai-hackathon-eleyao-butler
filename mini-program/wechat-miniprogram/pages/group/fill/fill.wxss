@@ -307,16 +307,22 @@
 
 .prompt-chip-grid {
   display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
-  gap: 14rpx;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .prompt-chip-item {
   box-sizing: border-box;
+  flex: 0 0 48%;
+  width: 48%;
+  max-width: 48%;
+  min-width: 0;
+  margin: 0 0 14rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: calc(50% - 7rpx);
   height: 76rpx;
   padding: 0 20rpx;
   border: 1rpx solid var(--theme-border-strong, rgba(45, 30, 15, 0.14));
