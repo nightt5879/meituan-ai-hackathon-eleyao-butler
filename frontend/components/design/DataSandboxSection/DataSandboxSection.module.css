@@ -112,6 +112,109 @@
   font-family: var(--ey-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
 }
 
+.mapTools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--ey-line);
+  background: color-mix(in srgb, var(--ey-card) 72%, var(--ey-bg));
+}
+
+.layerControls {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 9px;
+  min-width: 0;
+}
+
+.layerButton {
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  gap: 9px;
+  padding: 8px 10px;
+  border: 1px solid var(--ey-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 76%, transparent);
+  color: var(--ey-ink);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  box-shadow: var(--ey-shadow-sm);
+}
+
+.layerButton:hover {
+  border-color: color-mix(in srgb, var(--ey-emerald) 34%, var(--ey-line));
+  transform: translateY(-1px);
+}
+
+.layerButtonActive {
+  border-color: color-mix(in srgb, var(--ey-emerald) 52%, var(--ey-line));
+  background: color-mix(in srgb, var(--ey-emerald-50) 56%, var(--ey-card));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ey-card) 58%, transparent), var(--ey-shadow-sm);
+}
+
+.layerButton > span:last-child {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.layerButton strong {
+  color: var(--ey-ink);
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+.layerButton small {
+  max-width: 184px;
+  overflow-wrap: anywhere;
+  color: var(--ey-slate-2);
+  font-size: 0.68rem;
+  line-height: 1.25;
+}
+
+.layerDot {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  border: 2px solid color-mix(in srgb, var(--ey-card) 82%, var(--ey-ink));
+  border-radius: 999px;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ey-card) 66%, transparent);
+}
+
+.layerDot.manual_sample {
+  background: var(--sandbox-manual);
+}
+
+.layerDot.synthetic_mvp {
+  background: var(--sandbox-synthetic);
+}
+
+.layerDot.weekend_poi {
+  background: var(--sandbox-poi);
+}
+
+.visibleCount {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  border: 1px solid var(--ey-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 82%, transparent);
+  color: var(--ey-slate);
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.visibleCount strong {
+  color: var(--ey-emerald-d);
+}
+
 .leafletCanvas {
   position: relative;
   min-height: 430px;
@@ -162,6 +265,8 @@
   color: var(--ey-ink);
   font-family: var(--ey-sans, "Noto Sans SC", -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif);
   outline: none;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .section :global(.leaflet-pane),
@@ -177,10 +282,6 @@
   position: absolute;
   left: 0;
   top: 0;
-}
-
-.section :global(.leaflet-container) {
-  overflow: hidden;
 }
 
 .section :global(.leaflet-pane) {
@@ -216,6 +317,18 @@
   cursor: pointer;
 }
 
+.section :global(.leaflet-container.leaflet-touch-zoom) {
+  touch-action: pan-x pan-y;
+}
+
+.section :global(.leaflet-container.leaflet-touch-drag) {
+  touch-action: pinch-zoom;
+}
+
+.section :global(.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom) {
+  touch-action: none;
+}
+
 .section :global(.leaflet-tile),
 .section :global(.leaflet-marker-icon),
 .section :global(.leaflet-marker-shadow) {
@@ -223,9 +336,39 @@
   -webkit-user-drag: none;
 }
 
+.section :global(.leaflet-marker-icon),
+.section :global(.leaflet-marker-shadow) {
+  display: block;
+}
+
+.section :global(.leaflet-container .leaflet-overlay-pane svg) {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+.section :global(.leaflet-container .leaflet-marker-pane img),
+.section :global(.leaflet-container .leaflet-shadow-pane img),
+.section :global(.leaflet-container .leaflet-tile-pane img),
+.section :global(.leaflet-container img.leaflet-image-layer),
+.section :global(.leaflet-container .leaflet-tile) {
+  width: auto;
+  max-width: none !important;
+  max-height: none !important;
+  padding: 0;
+}
+
 .section :global(.leaflet-tile) {
   border: 0;
   filter: saturate(0.95) contrast(0.98);
+  visibility: hidden;
+}
+
+.section :global(.leaflet-tile-loaded) {
+  visibility: inherit;
+}
+
+.section :global(.leaflet-container img.leaflet-tile) {
+  mix-blend-mode: normal;
 }
 
 .section :global(.leaflet-control-container .leaflet-top),
@@ -332,8 +475,8 @@
 .leafletPointPin {
   position: relative;
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 34px;
+  height: 34px;
   place-items: center;
   border: 2px solid color-mix(in srgb, var(--ey-card) 88%, var(--ey-ink));
   border-radius: 999px;
@@ -343,7 +486,7 @@
 
 .leafletPointCore {
   position: absolute;
-  inset: 9px;
+  inset: 7px;
   border-radius: inherit;
   background: color-mix(in srgb, var(--ey-card) 80%, transparent);
 }
@@ -352,9 +495,10 @@
   position: relative;
   z-index: 1;
   color: var(--ey-forest);
-  font-size: 0.62rem;
+  font-size: 0.54rem;
   font-weight: 900;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .leafletPointPin.manual_sample {
@@ -375,6 +519,34 @@
     0 0 0 5px color-mix(in srgb, var(--ey-card) 76%, transparent),
     0 0 0 9px color-mix(in srgb, var(--ey-emerald) 24%, transparent),
     var(--ey-shadow);
+}
+
+.zoomHint {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  z-index: 6;
+  display: grid;
+  max-width: min(360px, calc(100% - 190px));
+  gap: 3px;
+  padding: 9px 11px;
+  border: 1px solid var(--ey-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 88%, transparent);
+  color: var(--ey-ink);
+  box-shadow: var(--ey-shadow-sm);
+  pointer-events: none;
+}
+
+.zoomHint strong {
+  font-size: 0.76rem;
+  line-height: 1.2;
+}
+
+.zoomHint span {
+  color: var(--ey-slate-2);
+  font-size: 0.68rem;
+  line-height: 1.35;
 }
 
 .mapCanvas {
@@ -888,6 +1060,30 @@
   gap: 12px;
 }
 
+.visibleSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 11px 12px;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 28%, var(--ey-line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-emerald-50) 58%, var(--ey-card));
+}
+
+.visibleSummary span {
+  color: var(--ey-slate);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.visibleSummary strong {
+  color: var(--ey-emerald-d);
+  font-size: 1rem;
+  line-height: 1;
+}
+
 .statItem {
   display: grid;
   gap: 3px;
@@ -981,6 +1177,16 @@
 
 :global(body.t-night) .leafletStatus,
 :global(body.t-black-pink) .leafletStatus,
+:global(body.t-night) .mapTools,
+:global(body.t-black-pink) .mapTools,
+:global(body.t-night) .layerButton,
+:global(body.t-black-pink) .layerButton,
+:global(body.t-night) .visibleCount,
+:global(body.t-black-pink) .visibleCount,
+:global(body.t-night) .visibleSummary,
+:global(body.t-black-pink) .visibleSummary,
+:global(body.t-night) .zoomHint,
+:global(body.t-black-pink) .zoomHint,
 :global(body.t-night) .section :global(.leaflet-control-attribution),
 :global(body.t-black-pink) .section :global(.leaflet-control-attribution),
 :global(body.t-night) .section :global(.leaflet-tooltip),
@@ -1062,6 +1268,29 @@
     flex-direction: column;
   }
 
+  .mapTools {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .layerControls {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .layerButton {
+    width: 100%;
+  }
+
+  .layerButton small {
+    max-width: none;
+  }
+
+  .visibleCount {
+    width: 100%;
+    white-space: normal;
+  }
+
   .mapCanvas {
     min-height: 650px;
     height: 650px;
@@ -1106,6 +1335,13 @@
     left: 18px;
     right: auto;
     top: 18px;
+  }
+
+  .zoomHint {
+    left: 18px;
+    top: auto;
+    bottom: 46px;
+    max-width: calc(100% - 36px);
   }
 
   .radarItem {
