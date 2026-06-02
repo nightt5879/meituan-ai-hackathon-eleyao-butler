@@ -124,13 +124,12 @@ body.t-night .pc {
   text-align: left;
   translate: 0 0;
   animation: pcCardFloat 4.4s ease-in-out infinite;
-  transition: filter 0.28s ease, translate 0.28s ease;
-  will-change: filter, transform, translate;
+  transition: translate 0.24s ease;
+  will-change: transform, translate;
 }
 
 .pc-card:hover {
   animation-play-state: paused;
-  filter: drop-shadow(0 22px 26px color-mix(in srgb, var(--pc-accent) 24%, var(--pc-shadow)));
   translate: 0 -6px;
 }
 
@@ -162,12 +161,11 @@ body.t-night .pc {
   border-radius: 22px;
   backface-visibility: hidden;
   isolation: isolate;
-  transition: border-color 0.28s ease, box-shadow 0.28s ease;
+  transition: border-color 0.22s ease;
 }
 
 .pc-card:hover .pc-face {
   border-color: color-mix(in srgb, var(--pc-accent) 68%, var(--pc-line));
-  box-shadow: 0 19px 38px color-mix(in srgb, var(--pc-accent) 18%, transparent);
 }
 
 .pc-face::before {
@@ -311,12 +309,7 @@ body.t-night .pc {
 .pc-star {
   position: absolute;
   opacity: var(--pc-star-opacity);
-  transition: filter 0.28s ease, opacity 0.28s ease;
-}
-
-.pc-card:hover .pc-star {
-  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--pc-glow) 76%, transparent));
-  opacity: 1;
+  transition: opacity 0.22s ease;
 }
 
 .pc-star::before {
