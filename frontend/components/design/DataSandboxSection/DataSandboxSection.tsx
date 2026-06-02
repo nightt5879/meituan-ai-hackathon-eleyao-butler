@@ -10,6 +10,7 @@ import styles from "./DataSandboxSection.module.css";
 
 type SandboxPointType = "manual_sample" | "synthetic_mvp" | "weekend_poi";
 type LayerKey = SandboxPointType;
+type ClusterTone = SandboxPointType | "mixed";
 type Confidence = "high" | "medium" | "demo";
 type PointKind = "manual" | "synthetic" | "poi";
 type LegendTone = SandboxPointType | "walk" | "rain" | "lowBudget" | "selected";
@@ -40,6 +41,21 @@ type SandboxPoint = {
   radar: RadarProfile;
   why: string[];
 };
+
+type SandboxCluster = {
+  id: string;
+  count: number;
+  counts: Record<SandboxPointType, number>;
+  dominantType: ClusterTone;
+  label: string;
+  latlng: [number, number];
+  bounds: [[number, number], [number, number]];
+  points: SandboxPoint[];
+};
+
+type MapRenderItem =
+  | { kind: "point"; point: SandboxPoint }
+  | { cluster: SandboxCluster; kind: "cluster" };
 
 type SeedRestaurantShop = {
   id: string;
@@ -84,6 +100,8 @@ type SeedWeekendPoi = {
 const UNIVERSITY_TOWN_CENTER: [number, number] = [23.05, 113.39];
 const OSM_TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 const OSM_ATTRIBUTION = "&copy; OpenStreetMap contributors";
+const SINGLE_POINT_ZOOM = 16;
+const LARGE_CLUSTER_MAX_ZOOM = 13;
 const FALLBACK_COPY =
   "地图底图暂不可用，已切换为静态 MVP 数据沙盘。推荐与路线逻辑仍基于候选、标签和边界声明展示。";
 
@@ -219,7 +237,7 @@ export function DataSandboxSection() {
   return (
     <section className={styles.section} aria-labelledby="data-sandbox-title">
       <div className={styles.header}>
-        <p className={styles.eyebrow}>Data Sandbox / Leaflet v0.3</p>
+        <p className={styles.eyebrow}>Data Sandbox / Leaflet v0.4</p>
         <h2 id="data-sandbox-title">我们为大学城搭了一个可解释的本地生活沙盘</h2>
         <p className={styles.subtitle}>
           让 AI 管家的建议落在具体候选、地点、标签和约束上，而不是凭空生成一段“看起来合理”的话。
@@ -268,6 +286,7 @@ function LeafletSandboxMap({
   const [mapStatus, setMapStatus] = useState<"loading" | "ready" | "fallback">("loading");
   const [fallbackReason, setFallbackReason] = useState(FALLBACK_COPY);
   const [wheelZoomEnabled, setWheelZoomEnabled] = useState(false);
+  const [mapZoom, setMapZoom] = useState(14);
   const visiblePointKey = useMemo(
     () => visiblePoints.map((point) => point.id).join("|"),
     [visiblePoints]
@@ -328,6 +347,7 @@ function LeafletSandboxMap({
         });
 
         mapRef.current = map;
+        setMapZoom(map.getZoom());
         L.control.zoom({ position: "bottomright" }).addTo(map);
 
         const tileLayer = L.tileLayer(OSM_TILE_URL, {
@@ -378,6 +398,9 @@ function LeafletSandboxMap({
           map.scrollWheelZoom.disable();
           setWheelZoomEnabled(false);
         });
+        map.on("zoomend", () => {
+          setMapZoom(map.getZoom());
+        });
 
         window.requestAnimationFrame(() => {
           if (!disposed) {
@@ -424,23 +447,40 @@ function LeafletSandboxMap({
     const map = mapRef.current;
     if (!L || !map || mapStatus === "fallback") return;
 
-    const visibleIds = new Set(visiblePoints.map((point) => point.id));
-    Object.entries(markersRef.current).forEach(([id, marker]) => {
-      if (!visibleIds.has(id)) {
-        marker.remove();
-        delete markersRef.current[id];
-      }
-    });
+    Object.values(markersRef.current).forEach((marker) => marker.remove());
+    markersRef.current = {};
 
-    visiblePoints.forEach((point) => {
-      const currentMarker = markersRef.current[point.id];
-      if (currentMarker) {
-        currentMarker.setLatLng(point.latlng);
+    buildMapRenderItems(visiblePoints, mapZoom).forEach((item) => {
+      if (item.kind === "cluster") {
+        const marker = L.marker(item.cluster.latlng, {
+          icon: createClusterIcon(L, item.cluster),
+          title: `${item.cluster.count} 个候选点`,
+          riseOnHover: true
+        });
+
+        marker.on("click", () => {
+          const bounds = L.latLngBounds(item.cluster.bounds);
+          const nextZoom = map.getZoom() <= LARGE_CLUSTER_MAX_ZOOM ? 15 : 17;
+          if (bounds.isValid()) {
+            map.fitBounds(bounds, { animate: true, maxZoom: nextZoom, padding: [56, 56] });
+          } else {
+            map.setView(item.cluster.latlng, Math.min(map.getZoom() + 2, map.getMaxZoom()), { animate: true });
+          }
+        });
+
+        marker.bindTooltip(clusterTooltip(item.cluster), {
+          direction: "top",
+          offset: [0, -18],
+          opacity: 0.96
+        });
+        marker.addTo(map);
+        markersRef.current[item.cluster.id] = marker;
         return;
       }
 
+      const { point } = item;
       const marker = L.marker(point.latlng, {
-        icon: createPointIcon(L, point, false),
+        icon: createPointIcon(L, point, point.id === selectedPointId),
         title: point.name,
         riseOnHover: true
       });
@@ -459,6 +499,12 @@ function LeafletSandboxMap({
       marker.addTo(map);
       markersRef.current[point.id] = marker;
     });
+  }, [mapStatus, mapZoom, onSelectPoint, selectedPointId, visiblePointKey, visiblePoints]);
+
+  useEffect(() => {
+    const L = leafletRef.current;
+    const map = mapRef.current;
+    if (!L || !map || mapStatus === "fallback") return;
 
     if (visiblePoints.length > 1) {
       const bounds = L.latLngBounds(visiblePoints.map((point) => point.latlng));
@@ -466,22 +512,7 @@ function LeafletSandboxMap({
     } else if (visiblePoints[0]) {
       map.setView(visiblePoints[0].latlng, 15, { animate: false });
     }
-  }, [mapStatus, onSelectPoint, visiblePointKey, visiblePoints]);
-
-  useEffect(() => {
-    const L = leafletRef.current;
-    const map = mapRef.current;
-    if (!L || !map || mapStatus === "fallback") return;
-
-    visiblePoints.forEach((point) => {
-      markersRef.current[point.id]?.setIcon(createPointIcon(L, point, point.id === selectedPointId));
-    });
-
-    const selectedPoint = visiblePoints.find((point) => point.id === selectedPointId);
-    if (selectedPoint) {
-      map.panTo(selectedPoint.latlng, { animate: true });
-    }
-  }, [mapStatus, selectedPointId, visiblePoints]);
+  }, [mapStatus, visiblePointKey, visiblePoints]);
 
   if (mapStatus === "fallback") {
     return (
@@ -989,6 +1020,129 @@ function confidenceLabel(confidence: Confidence) {
   if (confidence === "high") return "high / 人工确认或高置信样本";
   if (confidence === "medium") return "medium / 规则验证";
   return "demo / 场景验证";
+}
+
+function buildMapRenderItems(points: SandboxPoint[], zoom: number): MapRenderItem[] {
+  if (zoom >= SINGLE_POINT_ZOOM || points.length <= 1) {
+    return points.map((point) => ({ kind: "point", point }));
+  }
+
+  const grid = getClusterGridSize(zoom);
+  const buckets = new Map<string, SandboxPoint[]>();
+
+  points.forEach((point) => {
+    const latBucket = Math.floor(point.latlng[0] / grid.lat);
+    const lngBucket = Math.floor(point.latlng[1] / grid.lng);
+    const key = `${grid.id}:${latBucket}:${lngBucket}`;
+    const bucket = buckets.get(key) ?? [];
+    bucket.push(point);
+    buckets.set(key, bucket);
+  });
+
+  return Array.from(buckets.entries()).map(([key, bucket]) => {
+    if (bucket.length === 1) {
+      return { kind: "point", point: bucket[0] };
+    }
+
+    return {
+      cluster: createCluster(key, bucket),
+      kind: "cluster"
+    };
+  });
+}
+
+function getClusterGridSize(zoom: number) {
+  if (zoom <= LARGE_CLUSTER_MAX_ZOOM) {
+    return { id: "large", lat: 0.0135, lng: 0.017 };
+  }
+
+  return { id: "medium", lat: 0.0055, lng: 0.007 };
+}
+
+function createCluster(key: string, points: SandboxPoint[]): SandboxCluster {
+  const counts: Record<SandboxPointType, number> = {
+    manual_sample: 0,
+    synthetic_mvp: 0,
+    weekend_poi: 0
+  };
+  let latSum = 0;
+  let lngSum = 0;
+  let minLat = Number.POSITIVE_INFINITY;
+  let minLng = Number.POSITIVE_INFINITY;
+  let maxLat = Number.NEGATIVE_INFINITY;
+  let maxLng = Number.NEGATIVE_INFINITY;
+
+  points.forEach((point) => {
+    counts[point.type] += 1;
+    latSum += point.latlng[0];
+    lngSum += point.latlng[1];
+    minLat = Math.min(minLat, point.latlng[0]);
+    minLng = Math.min(minLng, point.latlng[1]);
+    maxLat = Math.max(maxLat, point.latlng[0]);
+    maxLng = Math.max(maxLng, point.latlng[1]);
+  });
+
+  return {
+    id: `cluster:${key}`,
+    count: points.length,
+    counts,
+    dominantType: getDominantClusterType(counts, points.length),
+    label: getClusterLabel(counts, points.length),
+    latlng: [latSum / points.length, lngSum / points.length],
+    bounds: [[minLat, minLng], [maxLat, maxLng]],
+    points
+  };
+}
+
+function getDominantClusterType(counts: Record<SandboxPointType, number>, total: number): ClusterTone {
+  const sorted = (Object.entries(counts) as Array<[SandboxPointType, number]>)
+    .sort((left, right) => right[1] - left[1]);
+  const [topType, topCount] = sorted[0];
+  const activeTypeCount = sorted.filter(([, count]) => count > 0).length;
+
+  if (activeTypeCount === 1 || topCount >= Math.ceil(total * 0.62)) {
+    return topType;
+  }
+
+  return "mixed";
+}
+
+function getClusterLabel(counts: Record<SandboxPointType, number>, total: number) {
+  if (counts.weekend_poi === total) return "周末";
+  if (counts.manual_sample + counts.synthetic_mvp === total) return "餐饮";
+  return "候选点";
+}
+
+function clusterSizeClass(count: number) {
+  if (count >= 30) return styles.clusterLarge;
+  if (count >= 12) return styles.clusterMedium;
+  return styles.clusterSmall;
+}
+
+function clusterTooltip(cluster: SandboxCluster) {
+  return `<strong>${cluster.count} 个候选点</strong><br/><span>manual ${cluster.counts.manual_sample} · synthetic ${cluster.counts.synthetic_mvp} · weekend ${cluster.counts.weekend_poi}</span>`;
+}
+
+function createClusterIcon(
+  L: typeof import("leaflet"),
+  cluster: SandboxCluster
+): DivIcon {
+  const baseSize = cluster.count >= 30 ? 68 : cluster.count >= 12 ? 58 : 50;
+  const compact = typeof window !== "undefined" && window.matchMedia("(max-width: 680px)").matches;
+  const size = compact ? Math.max(42, baseSize - 8) : baseSize;
+  const classNames = [
+    styles.clusterBubble,
+    styles[cluster.dominantType],
+    clusterSizeClass(cluster.count)
+  ].filter(Boolean).join(" ");
+
+  return L.divIcon({
+    className: styles.leafletClusterIcon,
+    html: `<span class="${classNames}"><span class="${styles.clusterGlow}"></span><strong>${cluster.count}</strong><small>${escapeHtml(cluster.label)}</small></span>`,
+    iconAnchor: [size / 2, size / 2],
+    iconSize: [size, size],
+    tooltipAnchor: [0, -(size / 2)]
+  });
 }
 
 function createPointIcon(

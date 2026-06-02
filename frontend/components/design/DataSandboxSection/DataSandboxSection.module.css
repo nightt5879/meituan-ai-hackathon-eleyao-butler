@@ -465,6 +465,101 @@
   font-size: 0.68rem;
 }
 
+.leafletClusterIcon {
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+}
+
+.clusterBubble {
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  align-content: center;
+  gap: 1px;
+  overflow: visible;
+  border: 2px solid color-mix(in srgb, var(--ey-card) 78%, var(--ey-ink));
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 34% 24%, color-mix(in srgb, var(--ey-card) 82%, transparent), transparent 36%),
+    linear-gradient(145deg, var(--ey-emerald), color-mix(in srgb, var(--ey-emerald) 62%, var(--ey-forest)));
+  color: var(--sandbox-on-accent);
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--ey-card) 62%, transparent),
+    0 12px 28px color-mix(in srgb, var(--ey-forest) 22%, transparent),
+    var(--ey-shadow-sm);
+  isolation: isolate;
+}
+
+.clusterGlow {
+  position: absolute;
+  inset: -9px;
+  z-index: -1;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--ey-emerald) 24%, transparent);
+  filter: blur(1px);
+  opacity: 0.85;
+}
+
+.clusterBubble strong {
+  position: relative;
+  z-index: 1;
+  color: currentColor;
+  font-size: 1.08rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.clusterBubble small {
+  position: relative;
+  z-index: 1;
+  color: currentColor;
+  font-size: 0.58rem;
+  font-weight: 900;
+  line-height: 1;
+  opacity: 0.88;
+  white-space: nowrap;
+}
+
+.clusterBubble.clusterSmall strong {
+  font-size: 1.08rem;
+}
+
+.clusterBubble.clusterMedium strong {
+  font-size: 1.24rem;
+}
+
+.clusterBubble.clusterLarge strong {
+  font-size: 1.42rem;
+}
+
+.clusterBubble.manual_sample {
+  background:
+    radial-gradient(circle at 34% 24%, color-mix(in srgb, var(--ey-card) 80%, transparent), transparent 36%),
+    linear-gradient(145deg, var(--sandbox-manual), color-mix(in srgb, var(--sandbox-manual) 68%, var(--ey-forest)));
+}
+
+.clusterBubble.synthetic_mvp {
+  background:
+    radial-gradient(circle at 34% 24%, color-mix(in srgb, var(--ey-card) 78%, transparent), transparent 36%),
+    linear-gradient(145deg, color-mix(in srgb, var(--ey-emerald-300) 72%, var(--ey-card)), color-mix(in srgb, var(--ey-emerald) 72%, var(--ey-bg-2)));
+}
+
+.clusterBubble.weekend_poi {
+  background:
+    radial-gradient(circle at 34% 24%, color-mix(in srgb, var(--ey-card) 76%, transparent), transparent 36%),
+    linear-gradient(145deg, color-mix(in srgb, var(--ey-emerald-300) 46%, var(--ey-slate)), color-mix(in srgb, var(--ey-emerald) 52%, var(--ey-slate)));
+}
+
+.clusterBubble.mixed {
+  background:
+    radial-gradient(circle at 34% 24%, color-mix(in srgb, var(--ey-card) 78%, transparent), transparent 36%),
+    conic-gradient(from 220deg, var(--sandbox-manual), color-mix(in srgb, var(--ey-emerald) 64%, var(--ey-bg-2)), var(--sandbox-poi), var(--sandbox-manual));
+}
+
 .leafletPointIcon {
   display: grid;
   place-items: center;
@@ -1208,6 +1303,21 @@
   color: var(--ey-bg);
 }
 
+:global(body.t-night) .clusterBubble,
+:global(body.t-black-pink) .clusterBubble {
+  border-color: color-mix(in srgb, var(--ey-ink) 42%, var(--ey-card));
+  color: var(--ey-ink);
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--ey-bg) 54%, transparent),
+    0 14px 30px color-mix(in srgb, var(--ey-forest) 30%, transparent),
+    var(--ey-shadow-sm);
+}
+
+:global(body.t-night) .clusterGlow,
+:global(body.t-black-pink) .clusterGlow {
+  opacity: 0.72;
+}
+
 :global(body.t-night) .pointDot,
 :global(body.t-black-pink) .pointDot {
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--ey-bg) 72%, transparent), var(--ey-shadow-sm);
@@ -1342,6 +1452,17 @@
     top: auto;
     bottom: 46px;
     max-width: calc(100% - 36px);
+  }
+
+  .clusterBubble {
+    box-shadow:
+      0 0 0 4px color-mix(in srgb, var(--ey-card) 58%, transparent),
+      0 8px 18px color-mix(in srgb, var(--ey-forest) 18%, transparent),
+      var(--ey-shadow-sm);
+  }
+
+  .clusterBubble small {
+    font-size: 0.52rem;
   }
 
   .radarItem {
