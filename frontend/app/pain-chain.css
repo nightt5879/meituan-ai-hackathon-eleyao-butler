@@ -1,5 +1,11 @@
 /* Theme-aware tarot-style evidence cards for the Design & Thinking section. */
 
+@font-face {
+  font-family: "PC WenKai Local";
+  src: local("霞鹜文楷"), local("LXGW WenKai");
+  font-display: swap;
+}
+
 .pc {
   --pc-accent: var(--ey-emerald);
   --pc-accent-d: var(--ey-emerald-d);
@@ -25,14 +31,15 @@
   --pc-feature-bg: color-mix(in srgb, var(--pc-accent) 28%, #ffffff);
   --pc-shadow: color-mix(in srgb, var(--ey-ink) 18%, transparent);
   --pc-title-ink: color-mix(in srgb, var(--ey-ink) 92%, var(--pc-accent-dd));
-  --pc-display-font: "LXGW WenKai", "霞鹜文楷", "Microsoft YaHei", "PingFang SC", sans-serif;
-  --pc-body-font: "LXGW WenKai", "霞鹜文楷", "Microsoft YaHei", "PingFang SC", sans-serif;
+  --pc-display-font: "PC WenKai Local", "霞鹜文楷", "LXGW WenKai", "Microsoft YaHei", "PingFang SC", sans-serif;
+  --pc-body-font: "PC WenKai Local", "霞鹜文楷", "LXGW WenKai", "Microsoft YaHei", "PingFang SC", sans-serif;
   --pc-sun-opacity: 0.52;
   --pc-star-opacity: 0.62;
   /* LXGW WenKai mainly ships a single regular weight. Disable synthetic bold so
      the literary font stays soft and light at every weight (no faux-bold), and
      hierarchy comes from size rather than heaviness. */
   font-synthesis: none;
+  font-family: var(--pc-body-font);
   margin-top: clamp(52px, 7vw, 88px);
 }
 
@@ -112,7 +119,7 @@ body.t-night .pc {
   background: transparent;
   color: inherit;
   cursor: pointer;
-  font-family: inherit;
+  font-family: var(--pc-body-font);
   perspective: 1300px;
   text-align: left;
   translate: 0 0;
@@ -230,7 +237,10 @@ body.t-night .pc {
 }
 
 .pc-card-back .pc-card-content {
-  padding: 54px 18px 26px;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 18px 56px;
+  text-align: center;
 }
 
 /* The ornament layer mirrors the reference card: edge decoration with a clear
@@ -574,68 +584,67 @@ body.t-night .pc {
 }
 
 .pc-back-section + .pc-back-section {
-  margin-top: 18px;
+  margin-top: 15px;
 }
 
-/* Vertically balance the back face: float the action/feature/solution block
-   toward the middle and pin the hint to the bottom (both via auto margins), so
-   it reads as a designed tarot card instead of a top-packed form panel. */
+/* Center the full back-face story as one unit. Every card uses the same rhythm,
+   with enough room around the moon and sun ornaments. */
 .pc-card-back .pc-back-section:first-child {
-  margin-top: auto;
+  margin-top: 0;
 }
 
 .pc-card-back .pc-card-label {
   color: color-mix(in srgb, var(--pc-back-ink) 88%, var(--pc-glow));
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .pc-action-badge,
 .pc-feature-badge {
   display: inline-flex;
-  align-self: flex-start;
-  margin-top: 7px;
-  border: 1px solid color-mix(in srgb, var(--pc-glow) 26%, transparent);
+  align-self: center;
+  margin-top: 5px;
+  padding: 5px 11px;
+  border: 1px solid color-mix(in srgb, var(--pc-glow) 24%, transparent);
   border-radius: 999px;
   font-family: var(--pc-display-font);
+  font-size: 17px;
   font-weight: 600;
   letter-spacing: 0.02em;
+  line-height: 1.15;
 }
 
 .pc-action-badge {
-  padding: 6px 14px;
   background: color-mix(in srgb, var(--ey-forest) 76%, transparent);
   color: var(--pc-back-ink);
-  font-size: 21px;
 }
 
 .pc-feature-badge {
-  padding: 7px 15px;
   background: var(--pc-feature-bg);
   color: var(--ey-forest);
-  font-size: 21px;
 }
 
 .pc-solution {
   display: block;
-  margin-top: 23px;
+  margin-top: 17px;
 }
 
 .pc-solution-line {
   display: block;
-  color: color-mix(in srgb, var(--pc-back-ink) 96%, var(--pc-glow));
+  color: color-mix(in srgb, var(--pc-back-ink) 88%, var(--pc-glow));
   font-family: var(--pc-body-font);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  line-height: 1.66;
+  line-height: 1.62;
 }
 
 .pc-solution .pc-card-label {
-  margin-bottom: 9px;
+  margin-bottom: 7px;
 }
 
 .pc-card-hint--back {
-  margin-top: auto;
-  margin-bottom: 5px;
+  margin-top: 21px;
+  margin-bottom: 0;
   color: color-mix(in srgb, var(--pc-back-ink) 82%, var(--pc-glow));
 }
 
