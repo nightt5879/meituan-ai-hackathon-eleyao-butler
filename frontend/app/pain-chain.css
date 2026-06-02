@@ -90,9 +90,9 @@ body.t-night .pc {
 }
 
 .pc-deck-scroll {
-  margin-top: 30px;
+  margin-top: 20px;
   overflow-x: auto;
-  padding: 8px 4px 18px;
+  padding: 18px 4px 24px;
   scrollbar-color: var(--ey-emerald-200) transparent;
   scrollbar-width: thin;
 }
