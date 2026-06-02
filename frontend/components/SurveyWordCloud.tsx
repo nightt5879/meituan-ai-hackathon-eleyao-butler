@@ -475,8 +475,9 @@ export function SurveyWordCloud() {
         <div className="cloud-intro" ref={introRef}>
           <div className="sec-eyebrow">{SURVEY.hero.eyebrow}</div>
           <h2 className="cloud-title" id="cloud-title">
-            {SURVEY.hero.title}
-            <br />
+            {SURVEY.hero.title.split("，").map((line, index, lines) => (
+              <span key={`${line}-${index}`}>{line}{index < lines.length - 1 ? "，" : ""}</span>
+            ))}
             <em>{SURVEY.hero.emphasis}</em>
           </h2>
           <p className="cloud-sub">{SURVEY.hero.subtitle}</p>

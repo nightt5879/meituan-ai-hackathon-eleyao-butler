@@ -823,8 +823,8 @@
   position: absolute;
   z-index: 6;
   left: clamp(22px, 6vw, 90px);
-  top: clamp(94px, 15vh, 172px);
-  max-width: min(620px, 78vw);
+  top: clamp(116px, 18vh, 204px);
+  max-width: min(860px, 80vw);
   pointer-events: none;
   animation: cloudIntroIn 0.8s 0.1s both cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -840,32 +840,41 @@
 
 .cloud-intro .sec-eyebrow {
   color: var(--ey-emerald);
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  transform: translateY(-6px);
 }
 
 .cloud-title {
   margin: 12px 0 0;
   color: var(--ey-ink);
-  font-size: clamp(34px, 4rem, 68px);
+  font-size: clamp(48px, 4.8vw, 68px);
   font-weight: 900;
   letter-spacing: 0;
   line-height: 1.04;
 }
 
+.cloud-title span,
+.cloud-title em {
+  display: block;
+  white-space: nowrap;
+}
+
 .cloud-title em {
   color: var(--ey-emerald);
+  font-size: 0.92em;
   font-style: normal;
+  line-height: 1.1;
 }
 
 .cloud-sub {
-  max-width: 52ch;
-  margin: 16px 0 0;
+  max-width: 660px;
+  margin: 24px 0 0;
   color: var(--ey-slate);
-  font-size: 17px;
-  line-height: 1.76;
+  font-size: 16px;
+  line-height: 1.65;
 }
 
 .cloud-stage {
@@ -2645,15 +2654,15 @@ body.t-night .cloud-word.c-warn {
   .cloud-intro {
     left: 22px;
     top: 88px;
-    max-width: min(82vw, 360px);
+    max-width: min(88vw, 400px);
   }
 
   .cloud-title {
-    font-size: 30px;
+    font-size: clamp(22px, 7.8vw, 30px);
   }
 
   .cloud-sub {
-    max-width: 32ch;
+    max-width: min(84vw, 360px);
     font-size: 13.5px;
   }
 
