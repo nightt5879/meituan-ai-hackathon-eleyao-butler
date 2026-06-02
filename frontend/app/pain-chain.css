@@ -89,6 +89,50 @@ body.t-night .pc {
   letter-spacing: 0.1em;
 }
 
+.pc-click-cue {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 12px;
+  color: var(--pc-accent-d);
+  pointer-events: none;
+}
+
+.pc-click-cue-text {
+  font-family: "Comic Sans MS", "KaiTi", "STKaiti", var(--pc-display-font);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  opacity: 0.84;
+  transform: rotate(-3deg) translateY(-4px);
+}
+
+.pc-click-cue-arrow {
+  width: 134px;
+  height: 42px;
+  overflow: visible;
+  transform: rotate(2deg) translateY(13px);
+}
+
+.pc-click-cue-line,
+.pc-click-cue-head {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pc-click-cue-line {
+  stroke-width: 3;
+  stroke-dasharray: 5 5;
+}
+
+.pc-click-cue-head {
+  stroke-width: 3.2;
+}
+
 .pc-deck-scroll {
   margin-top: 20px;
   overflow-x: auto;
@@ -656,6 +700,21 @@ body.t-night .pc {
 
   .pc-sub {
     font-size: 14px;
+  }
+
+  .pc-click-cue {
+    justify-content: flex-start;
+    margin-top: 10px;
+    padding-left: 6px;
+  }
+
+  .pc-click-cue-text {
+    font-size: 14px;
+  }
+
+  .pc-click-cue-arrow {
+    width: 98px;
+    transform: rotate(2deg) translateY(10px);
   }
 
   .pc-deck-scroll {
