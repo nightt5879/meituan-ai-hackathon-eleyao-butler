@@ -35,6 +35,7 @@ export type FoodRecommendRequest = {
   preferences: {
     tasteTags: string[];
     needTags: string[];
+    temporaryAvoidTags: string[];
     avoidTags: string[];
     spicyLevel: string;
   };
@@ -85,9 +86,24 @@ type OpenClawFoodOptions = {
 
 type HardFoodFilterPolicy = {
   budgetMax?: number;
+  distanceMaxMeters?: number;
   noSpicy: boolean;
+  allowedCategories: string[];
+  blockedCategories: string[];
+  preferredTerms: string[];
   avoidTerms: string[];
   avoidCategories: string[];
+  temporaryAvoidTags: string[];
+  hardDynamicTerms: string[];
+};
+
+type FoodCandidateEvaluation = {
+  shop: Shop;
+  text: string;
+  strictMatch: boolean;
+  hardAllowed: boolean;
+  score: number;
+  hardViolations: string[];
 };
 
 const DEFAULT_TIMEOUT_MS = 130_000;
@@ -121,6 +137,7 @@ export function sanitizeFoodRecommendRequest(input: unknown): FoodRecommendReque
     preferences: {
       tasteTags: canUseTaste ? readStringArray(preferences.tasteTags) : [],
       needTags: canUseTaste ? readStringArray(preferences.needTags) : [],
+      temporaryAvoidTags: canUseTaste ? readStringArray(preferences.temporaryAvoidTags) : [],
       avoidTags: readStringArray(preferences.avoidTags),
       spicyLevel: readString(preferences.spicyLevel)
     },
@@ -162,12 +179,14 @@ export async function generateFoodRecommendationsWithOpenClaw(
   const parseMs = Date.now() - parseStartedAt;
   const normalizeStartedAt = Date.now();
   const normalized = normalizeRecommendations(parsed, localCandidates);
+  const hardFilter = buildHardFoodFilterPolicy(request);
+  const auditedRecommendations = auditAndRepairRecommendations(normalized.recommendations, localCandidates, hardFilter);
   const normalizeMs = Date.now() - normalizeStartedAt;
 
-  assertNoHardConstraintViolation(normalized.recommendations, request.preferences);
+  assertNoHardConstraintViolation(auditedRecommendations, request.preferences);
 
   return {
-    recommendations: normalized.recommendations,
+    recommendations: auditedRecommendations,
     source: "openclaw",
     diagnostics: {
       localCandidateMs,
@@ -203,8 +222,8 @@ function buildFoodRecommendationPrompt(
     payload,
     content: [
       "Task: choose 2-3 food shops from decisionPayload.candidates.",
-      "AI owns the final selection. The server only prepared a compact, non-ranked candidate catalog.",
-      "Candidate order is NOT a recommendation ranking. Decide from constraints and candidate facts.",
+      "AI owns the final selection inside the server-audited candidate catalog.",
+      "The server has already removed hard-constraint violations; never choose against category, budget, distance, spicy, or avoid constraints.",
       "Hard constraints in decisionPayload.constraints are mandatory; avoid spicy/high-spice shops when no-spicy is requested.",
       "Use exact candidate ids only. Do not invent shops. Backend fills display fields.",
       "Return exactly one JSON object that JSON.parse can parse.",
@@ -253,6 +272,7 @@ function buildCompactConstraints(request: FoodRecommendRequest) {
     distance: request.slots.distance,
     tasteTags: request.preferences.tasteTags,
     needTags: request.preferences.needTags,
+    temporaryAvoidTags: request.preferences.temporaryAvoidTags,
     avoidTags: uniqueStrings([
       ...request.preferences.avoidTags,
       ...(stableFoodPreferences?.avoidTags ?? [])
@@ -328,68 +348,427 @@ function buildDiverseAiCatalog(
   excludedIds: Set<string>,
   hardFilter: HardFoodFilterPolicy
 ) {
-  // Keep this catalog non-ranked: hard filters remove impossible options, OpenClaw owns final selection and ranking.
-  const sourceOrder: RestaurantSource[] = ["manual_sample", "manual_public_curated", "synthetic_mvp"];
-  const allowedShops = data.shops.filter((shop) => {
-    return !excludedIds.has(shop.id) && isHardFoodCandidateAllowed(shop, data, hardFilter);
-  });
-  const fallbackShops = data.shops.filter((shop) => !excludedIds.has(shop.id));
-  const pool = allowedShops.length >= 2 ? allowedShops : fallbackShops;
-  const bySource = sourceOrder.flatMap((source) => pool.filter((shop) => shop.source === source));
-  const remaining = pool.filter((shop) => !sourceOrder.includes(shop.source));
-  const ordered = [...bySource, ...remaining];
+  const evaluations = data.shops
+    .filter((shop) => !excludedIds.has(shop.id))
+    .map((shop) => evaluateFoodCandidate(shop, data, hardFilter))
+    .filter((evaluation) => evaluation.hardAllowed);
+  const strict = evaluations.filter((evaluation) => evaluation.strictMatch);
+  const relaxed = evaluations.filter((evaluation) => !evaluation.strictMatch);
+  const hasExplicitIntent = hardFilter.allowedCategories.length > 0 || hardFilter.preferredTerms.length > 0;
+  const ordered = hasExplicitIntent
+    ? [...sortCandidateEvaluations(strict), ...sortCandidateEvaluations(relaxed)]
+    : sortCandidateEvaluations(roundRobinByCategoryEvaluation(evaluations));
 
-  return roundRobinByCategory(ordered).slice(0, Math.max(2, limit));
+  return ordered.slice(0, Math.max(2, limit)).map((evaluation) => evaluation.shop);
 }
 
 function buildHardFoodFilterPolicy(request: FoodRecommendRequest): HardFoodFilterPolicy {
   const stableFoodPreferences = request.memoryProfile?.stableFoodPreferences;
   const adjustment = request.requestContext?.adjustment;
+  const hardDynamicDimensions = (request.decisionSheet?.dynamic ?? []).filter((dimension) => dimension.hard === true);
+  const categoryPolicy = buildCategoryPreferencePolicy([
+    request.slots.branchPreference,
+    ...hardDynamicDimensions.map((dimension) => dimension.value)
+  ]);
+  const temporaryAvoidPolicy = buildTemporaryAvoidPolicy(request.preferences.temporaryAvoidTags);
+  const adjustmentAvoidPolicy = buildTemporaryAvoidPolicy([
+    ...(adjustment?.avoidCategories ?? []),
+    ...(adjustment?.types ?? []).filter((item) => /^不想|^不要|^避开/.test(item))
+  ]);
   const rawAvoidTerms = uniqueStrings([
     ...request.preferences.avoidTags,
+    ...request.preferences.temporaryAvoidTags,
     ...(stableFoodPreferences?.avoidTags ?? [])
   ]);
   const spicyText = [
     request.preferences.spicyLevel,
     stableFoodPreferences?.spicyLevel,
-    ...rawAvoidTerms
+    ...rawAvoidTerms,
+    ...temporaryAvoidPolicy.avoidTerms
   ].join(" ");
 
   return {
     budgetMax: extractBudgetMax(request.slots.budget),
-    noSpicy: /(不吃辣|不要辣|忌辣|不能吃辣|无辣|no.?spicy|non.?spicy)/i.test(spicyText),
-    avoidTerms: rawAvoidTerms.filter((term) => {
-      return term.length >= 2 && !/(不吃辣|不要辣|忌辣|不能吃辣|无辣|辣度)/i.test(term);
-    }),
+    distanceMaxMeters: extractDistanceMaxMeters(request.slots.distance),
+    noSpicy: /(不吃辣|不要辣|忌辣|不能吃辣|无辣|不想吃太辣|不想吃重口|重口|no.?spicy|non.?spicy)/i.test(spicyText),
+    allowedCategories: categoryPolicy.allowedCategories,
+    blockedCategories: uniqueStrings([
+      ...categoryPolicy.blockedCategories,
+      ...temporaryAvoidPolicy.blockedCategories,
+      ...adjustmentAvoidPolicy.blockedCategories
+    ]),
+    preferredTerms: categoryPolicy.preferredTerms,
+    avoidTerms: uniqueStrings([
+      ...rawAvoidTerms.filter((term) => {
+        return term.length >= 2 && !/(不吃辣|不要辣|忌辣|不能吃辣|无辣|辣度)/i.test(term);
+      }),
+      ...temporaryAvoidPolicy.avoidTerms,
+      ...adjustmentAvoidPolicy.avoidTerms
+    ]),
     avoidCategories: uniqueStrings([
       ...(adjustment?.avoidCategories ?? []),
       ...(adjustment?.types ?? []).filter((item) => /^不想|^不要|^避开/.test(item))
-    ])
+    ]),
+    temporaryAvoidTags: request.preferences.temporaryAvoidTags,
+    hardDynamicTerms: hardDynamicDimensions
+      .flatMap((dimension) => splitPreferenceTokens(dimension.value))
+      .filter((term) => /^不想|^不要|^避开|^不能/.test(term))
   };
 }
 
-function isHardFoodCandidateAllowed(shop: Shop, data: RestaurantDataSet, hardFilter: HardFoodFilterPolicy) {
+function evaluateFoodCandidate(shop: Shop, data: RestaurantDataSet, hardFilter: HardFoodFilterPolicy): FoodCandidateEvaluation {
   const features = data.featuresByShopId.get(shop.id);
   const dishes = data.dishesByShopId.get(shop.id) ?? [];
   const text = buildFoodCandidateSearchText(shop, features, dishes);
+  const hardViolations = collectFoodCandidateHardViolations(shop, data, hardFilter, text, features);
+  const strictMatch = isStrictFoodCandidateMatch(shop, text, hardFilter);
+  const score = scoreFoodCandidate(shop, data, hardFilter, text, strictMatch);
+
+  return {
+    shop,
+    text,
+    strictMatch,
+    hardAllowed: hardViolations.length === 0,
+    score,
+    hardViolations
+  };
+}
+
+function collectFoodCandidateHardViolations(
+  shop: Shop,
+  data: RestaurantDataSet,
+  hardFilter: HardFoodFilterPolicy,
+  text: string,
+  features?: ShopFeature
+) {
+  const violations: string[] = [];
 
   if (hardFilter.budgetMax && shop.avgPrice !== null && shop.avgPrice > hardFilter.budgetMax + budgetTolerance(hardFilter.budgetMax)) {
-    return false;
+    violations.push("budget");
+  }
+
+  if (hardFilter.distanceMaxMeters) {
+    const distance = getShopDistanceInfo(shop, data.regions);
+    if (distance.distanceMeters !== undefined && distance.distanceMeters > hardFilter.distanceMaxMeters + distanceTolerance(hardFilter.distanceMaxMeters)) {
+      violations.push("distance");
+    }
   }
 
   if (hardFilter.noSpicy && isClearlySpicyCandidate(text, features)) {
-    return false;
+    violations.push("spicy");
+  }
+
+  if (hardFilter.blockedCategories.includes(shop.category)) {
+    violations.push("blocked_category");
   }
 
   if (hardFilter.avoidCategories.some((term) => candidateTextIncludes(text, term))) {
-    return false;
+    violations.push("avoid_category");
   }
 
   if (hardFilter.avoidTerms.some((term) => candidateTextIncludes(text, term))) {
-    return false;
+    violations.push("avoid_term");
   }
 
-  return true;
+  if (hardFilter.hardDynamicTerms.some((term) => candidateTextIncludes(text, stripNegativePrefix(term)))) {
+    violations.push("dynamic_hard");
+  }
+
+  return violations;
+}
+
+function isStrictFoodCandidateMatch(shop: Shop, text: string, hardFilter: HardFoodFilterPolicy) {
+  const hasAllowedCategory = hardFilter.allowedCategories.length > 0;
+  const hasPreferredTerms = hardFilter.preferredTerms.length > 0;
+
+  if (!hasAllowedCategory && !hasPreferredTerms) {
+    return true;
+  }
+
+  const categoryMatched = !hasAllowedCategory || hardFilter.allowedCategories.includes(shop.category);
+  const termMatched = !hasPreferredTerms || hardFilter.preferredTerms.some((term) => candidateTextIncludes(text, term));
+
+  return categoryMatched && (termMatched || !hasPreferredTerms);
+}
+
+function scoreFoodCandidate(
+  shop: Shop,
+  data: RestaurantDataSet,
+  hardFilter: HardFoodFilterPolicy,
+  text: string,
+  strictMatch: boolean
+) {
+  const features = data.featuresByShopId.get(shop.id);
+  const sceneFit = data.sceneFitByShopId.get(shop.id);
+  const distance = getShopDistanceInfo(shop, data.regions);
+  let score = strictMatch ? 100 : 40;
+
+  if (hardFilter.allowedCategories.includes(shop.category)) {
+    score += 42;
+  }
+
+  score += hardFilter.preferredTerms.filter((term) => candidateTextIncludes(text, term)).length * 10;
+
+  if (shop.source === "manual_sample" || shop.source === "manual_public_curated") {
+    score += 12;
+  }
+
+  if (shop.avgPrice !== null) {
+    score += Math.max(0, 18 - Math.round(shop.avgPrice / 8));
+  }
+
+  if (hardFilter.budgetMax && shop.avgPrice !== null && shop.avgPrice <= hardFilter.budgetMax) {
+    score += 18;
+  }
+
+  if (distance.distanceMeters !== undefined) {
+    score += Math.max(0, 18 - Math.round(distance.distanceMeters / 120));
+  }
+
+  if (hardFilter.distanceMaxMeters && distance.distanceMeters !== undefined && distance.distanceMeters <= hardFilter.distanceMaxMeters) {
+    score += 14;
+  }
+
+  if (features?.soloFriendly) {
+    score += 8;
+  }
+
+  if (features?.queueRisk === "low") {
+    score += 6;
+  }
+
+  score += Math.round(((sceneFit?.sceneScores.soloToday ?? 50) - 50) * 0.25);
+
+  return score;
+}
+
+function buildCategoryPreferencePolicy(values: string[]) {
+  const tokens = values.flatMap(splitPreferenceTokens);
+  const allowedCategories: string[] = [];
+  const blockedCategories: string[] = [];
+  const preferredTerms: string[] = [];
+  const allow = (categories: string[], terms: string[] = []) => {
+    allowedCategories.push(...categories);
+    preferredTerms.push(...terms);
+  };
+  const block = (categories: string[]) => blockedCategories.push(...categories);
+
+  tokens.forEach((token) => {
+    const clean = stripNegativePrefix(token);
+
+    if (!clean || /都可以|随便|没想法|不限/.test(clean)) {
+      return;
+    }
+
+    if (/中式简餐|中餐简餐|中式|中餐/.test(clean)) {
+      allow(["快餐", "粉面", "家常菜", "粤菜", "潮汕菜", "东北菜"], ["中式", "简餐", "饭", "粉", "面"]);
+      block(["西餐", "日料", "韩餐", "咖啡", "奶茶", "甜品", "轻食"]);
+      return;
+    }
+
+    if (/粉面|面条|汤粉|云吞|小面|粥粉面/.test(clean)) {
+      allow(["粉面"], ["粉", "面", "云吞", "汤粉"]);
+      block(["西餐", "日料", "韩餐", "咖啡", "奶茶", "甜品"]);
+      return;
+    }
+
+    if (/米饭|套餐|盖饭|便当|快餐|简餐/.test(clean)) {
+      allow(["快餐", "家常菜", "粤菜", "潮汕菜", "东北菜"], ["饭", "套餐", "便当", "简餐"]);
+      block(["咖啡", "奶茶", "甜品"]);
+      return;
+    }
+
+    if (/家常菜|下饭|炒菜/.test(clean)) {
+      allow(["家常菜", "粤菜", "川湘菜", "潮汕菜", "东北菜"], ["家常菜", "下饭", "炒菜"]);
+      block(["西餐", "日料", "韩餐", "咖啡", "奶茶", "甜品", "轻食"]);
+      return;
+    }
+
+    if (/轻食|沙拉|减脂|低脂/.test(clean)) {
+      allow(["轻食"], ["轻食", "沙拉", "清淡", "低脂"]);
+      block(["火锅", "烧烤", "川湘菜", "新疆菜"]);
+      return;
+    }
+
+    if (/西餐|披萨|意面|牛排/.test(clean)) {
+      allow(["西餐"], ["西餐", "披萨", "意面", "牛排"]);
+      return;
+    }
+
+    if (/日料|寿司|咖喱饭|日式/.test(clean)) {
+      allow(["日料"], ["日料", "寿司", "日式"]);
+      return;
+    }
+
+    if (/韩餐|韩式|年糕|部队锅/.test(clean)) {
+      allow(["韩餐"], ["韩餐", "韩式"]);
+      return;
+    }
+
+    if (/火锅|冒菜|麻辣烫/.test(clean)) {
+      allow(["火锅", "川湘菜"], ["火锅", "冒菜", "麻辣烫"]);
+      block(["咖啡", "奶茶", "甜品", "轻食"]);
+      return;
+    }
+
+    if (/烧烤|烤串|炸物|炸鸡/.test(clean)) {
+      allow(["烧烤", "快餐"], ["烧烤", "烤", "炸"]);
+      return;
+    }
+
+    if (/奶茶|茶饮/.test(clean)) {
+      allow(["奶茶"], ["奶茶", "茶饮"]);
+      return;
+    }
+
+    if (/咖啡/.test(clean)) {
+      allow(["咖啡"], ["咖啡"]);
+      return;
+    }
+
+    if (/甜品|糖水/.test(clean)) {
+      allow(["甜品"], ["甜品", "糖水"]);
+    }
+  });
+
+  return {
+    allowedCategories: uniqueStrings(allowedCategories),
+    blockedCategories: uniqueStrings(blockedCategories),
+    preferredTerms: uniqueStrings(preferredTerms)
+  };
+}
+
+function buildTemporaryAvoidPolicy(values: string[]) {
+  const blockedCategories: string[] = [];
+  const avoidTerms: string[] = [];
+  const block = (categories: string[], terms: string[] = []) => {
+    blockedCategories.push(...categories);
+    avoidTerms.push(...terms);
+  };
+
+  values.flatMap(splitPreferenceTokens).forEach((token) => {
+    const clean = stripNegativePrefix(token);
+
+    if (!clean || /没有忌口|无忌口|都可以/.test(clean)) {
+      return;
+    }
+
+    if (/油炸|炸物|炸鸡|薯条/.test(clean)) {
+      block([], ["油炸", "炸物", "炸鸡", "薯条", "炸"]);
+      return;
+    }
+
+    if (/太辣|重口|麻辣|香辣|辣/.test(clean)) {
+      block(["川湘菜", "火锅", "烧烤"], ["麻辣", "香辣", "重辣", "中辣", "重口"]);
+      return;
+    }
+
+    if (/米饭|饭|盖饭|便当|焗饭|炒饭|抓饭|套餐饭/.test(clean)) {
+      block([], ["米饭", "盖饭", "便当", "焗饭", "炒饭", "抓饭", "套餐饭", "饭"]);
+      return;
+    }
+
+    if (/汤粉|汤面|粉面|面条|面|云吞/.test(clean)) {
+      block(["粉面"], ["汤粉", "汤面", "粉面", "面条", "云吞面", "小面"]);
+      return;
+    }
+
+    if (/甜口|甜品|糖水|奶茶/.test(clean)) {
+      block(["甜品", "奶茶"], ["甜", "糖水", "奶茶"]);
+      return;
+    }
+
+    if (/冷食|沙拉/.test(clean)) {
+      block(["轻食"], ["沙拉", "冷食"]);
+      return;
+    }
+
+    if (/西餐|披萨|意面|牛排/.test(clean)) {
+      block(["西餐"], ["西餐", "披萨", "意面", "牛排"]);
+      return;
+    }
+
+    if (/日料|寿司|日式/.test(clean)) {
+      block(["日料"], ["日料", "寿司", "日式"]);
+      return;
+    }
+
+    if (/韩餐|韩式/.test(clean)) {
+      block(["韩餐"], ["韩餐", "韩式"]);
+      return;
+    }
+
+    avoidTerms.push(clean);
+  });
+
+  return {
+    blockedCategories: uniqueStrings(blockedCategories),
+    avoidTerms: uniqueStrings(avoidTerms)
+  };
+}
+
+function splitPreferenceTokens(value: string) {
+  return String(value || "")
+    .split(/[、,，/／;；|｜\s]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function stripNegativePrefix(value: string) {
+  return value
+    .trim()
+    .replace(/^(这次)?(不想吃|不想要|不要|别来|避开|不能吃|不吃)/, "")
+    .trim();
+}
+
+function sortCandidateEvaluations(evaluations: FoodCandidateEvaluation[]) {
+  return evaluations.slice().sort((a, b) => {
+    if (b.score !== a.score) {
+      return b.score - a.score;
+    }
+
+    return a.shop.name.localeCompare(b.shop.name, "zh-Hans-CN");
+  });
+}
+
+function roundRobinByCategoryEvaluation(evaluations: FoodCandidateEvaluation[]) {
+  const sourceOrder: RestaurantSource[] = ["manual_sample", "manual_public_curated", "synthetic_mvp"];
+  const orderedBySource = [
+    ...sourceOrder.flatMap((source) => evaluations.filter((evaluation) => evaluation.shop.source === source)),
+    ...evaluations.filter((evaluation) => !sourceOrder.includes(evaluation.shop.source))
+  ];
+  const groups = new Map<string, FoodCandidateEvaluation[]>();
+
+  for (const evaluation of orderedBySource) {
+    const key = evaluation.shop.category || "other";
+    groups.set(key, [...(groups.get(key) ?? []), evaluation]);
+  }
+
+  const keys = Array.from(groups.keys()).sort((a, b) => a.localeCompare(b, "zh-Hans-CN"));
+  const result: FoodCandidateEvaluation[] = [];
+  let index = 0;
+
+  while (result.length < orderedBySource.length) {
+    let added = false;
+
+    for (const key of keys) {
+      const group = groups.get(key) ?? [];
+      const item = group[index];
+
+      if (item) {
+        result.push(item);
+        added = true;
+      }
+    }
+
+    if (!added) {
+      break;
+    }
+
+    index += 1;
+  }
+
+  return result;
 }
 
 function buildFoodCandidateSearchText(shop: Shop, features: ShopFeature | undefined, dishes: Array<{ name: string; category: string; tags: string[] }>) {
@@ -425,6 +804,10 @@ function budgetTolerance(budgetMax: number) {
   return Math.max(6, Math.round(budgetMax * 0.2));
 }
 
+function distanceTolerance(distanceMaxMeters: number) {
+  return Math.max(80, Math.round(distanceMaxMeters * 0.15));
+}
+
 function extractBudgetMax(value: string) {
   const text = value.trim();
   if (!text || /(以上|起|不设限|不限|无所谓)/.test(text)) {
@@ -439,39 +822,23 @@ function extractBudgetMax(value: string) {
   return Math.max(...numbers);
 }
 
-function roundRobinByCategory(shops: Shop[]) {
-  const groups = new Map<string, Shop[]>();
-
-  for (const shop of shops) {
-    const key = shop.category || "other";
-    groups.set(key, [...(groups.get(key) ?? []), shop]);
+function extractDistanceMaxMeters(value: string) {
+  const text = value.trim().toLowerCase();
+  if (!text || /远一点|远点|都可以|不限|无所谓/.test(text)) {
+    return undefined;
   }
 
-  const keys = Array.from(groups.keys()).sort((a, b) => a.localeCompare(b, "zh-Hans-CN"));
-  const result: Shop[] = [];
-  let index = 0;
-
-  while (result.length < shops.length) {
-    let added = false;
-
-    for (const key of keys) {
-      const group = groups.get(key) ?? [];
-      const item = group[index];
-
-      if (item) {
-        result.push(item);
-        added = true;
-      }
-    }
-
-    if (!added) {
-      break;
-    }
-
-    index += 1;
+  const kmMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:公里|km|千米)/i);
+  if (kmMatch) {
+    return Math.round(Number(kmMatch[1]) * 1000);
   }
 
-  return result;
+  const meterMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:米|m)/i);
+  if (meterMatch) {
+    return Math.round(Number(meterMatch[1]));
+  }
+
+  return undefined;
 }
 
 function toFoodCandidateCard(
@@ -787,6 +1154,89 @@ function enrichSelectedRecommendations(rawSelected: unknown[], localCandidates: 
   }
 
   return cards;
+}
+
+function auditAndRepairRecommendations(
+  recommendations: FoodRecommendationCard[],
+  localCandidates: FoodRecommendationCard[],
+  hardFilter: HardFoodFilterPolicy
+) {
+  const usedIds = new Set<string>();
+  const accepted: FoodRecommendationCard[] = [];
+
+  recommendations.forEach((recommendation) => {
+    if (usedIds.has(recommendation.id) || !isRecommendationCardAllowed(recommendation, hardFilter)) {
+      return;
+    }
+
+    accepted.push(recommendation);
+    usedIds.add(recommendation.id);
+  });
+
+  localCandidates.forEach((candidate) => {
+    if (accepted.length >= 3 || usedIds.has(candidate.id) || !isRecommendationCardAllowed(candidate, hardFilter)) {
+      return;
+    }
+
+    accepted.push(candidate);
+    usedIds.add(candidate.id);
+  });
+
+  if (accepted.length < 2) {
+    throw new Error("Food recommendation audit left fewer than 2 valid recommendations.");
+  }
+
+  return accepted.slice(0, 3);
+}
+
+function isRecommendationCardAllowed(recommendation: FoodRecommendationCard, hardFilter: HardFoodFilterPolicy) {
+  const text = buildRecommendationCardSearchText(recommendation);
+  const price = readNumberFromText(recommendation.perCapita);
+
+  if (hardFilter.budgetMax && price !== undefined && price > hardFilter.budgetMax + budgetTolerance(hardFilter.budgetMax)) {
+    return false;
+  }
+
+  if (hardFilter.distanceMaxMeters && recommendation.distanceMeters !== undefined && recommendation.distanceMeters > hardFilter.distanceMaxMeters + distanceTolerance(hardFilter.distanceMaxMeters)) {
+    return false;
+  }
+
+  if (hardFilter.noSpicy && isClearlySpicyRecommendation(text)) {
+    return false;
+  }
+
+  if (hardFilter.blockedCategories.includes(recommendation.type)) {
+    return false;
+  }
+
+  if (hardFilter.avoidTerms.some((term) => candidateTextIncludes(text, term))) {
+    return false;
+  }
+
+  if (hardFilter.hardDynamicTerms.some((term) => candidateTextIncludes(text, stripNegativePrefix(term)))) {
+    return false;
+  }
+
+  return true;
+}
+
+function buildRecommendationCardSearchText(recommendation: FoodRecommendationCard) {
+  return [
+    recommendation.name,
+    recommendation.type,
+    recommendation.perCapita,
+    recommendation.distance,
+    recommendation.matchedTags.join(" "),
+    recommendation.reason,
+    recommendation.riskTip
+  ].join(" ").toLowerCase();
+}
+
+function isClearlySpicyRecommendation(text: string) {
+  const nonSpicyPattern = /(不辣可选|不辣|无辣|少辣|清淡|non.?spicy|no.?spicy)/i;
+  const spicyPattern = /(麻辣|香辣|重辣|中辣|川菜|湘菜|火锅|冒菜|串串|烤鱼|酸辣粉|螺蛳粉|spicy|mala|hotpot)/i;
+
+  return spicyPattern.test(text) && !nonSpicyPattern.test(text);
 }
 
 function normalizeAiShortTags(aiTags: string[], fallbackTags: string[]) {
