@@ -300,6 +300,53 @@ export default function PortfolioHomePage() {
 
       <SurveyWordCloud />
 
+      <section className="section section--paper design-pain-section" id="pain">
+        <div className="pain-constellation" aria-hidden="true">
+          <svg viewBox="0 0 430 250" role="presentation">
+            <g className="pain-constellation__glow">
+              <circle cx="342" cy="52" r="38" />
+              <circle cx="218" cy="119" r="25" />
+              <circle cx="391" cy="182" r="29" />
+            </g>
+            <g className="pain-constellation__lines">
+              <path d="M78 74 151 40 218 119 297 88 342 52 391 182 314 205 247 169 174 202" />
+              <path d="M218 119 247 169 314 205" />
+              <path d="M151 40 109 144 174 202" />
+            </g>
+            <g className="pain-constellation__stars">
+              <circle cx="78" cy="74" r="3.4" />
+              <circle cx="151" cy="40" r="4.6" />
+              <circle cx="218" cy="119" r="3.8" />
+              <circle cx="297" cy="88" r="3" />
+              <circle cx="342" cy="52" r="5.2" />
+              <circle cx="391" cy="182" r="4.1" />
+              <circle cx="314" cy="205" r="3.1" />
+              <circle cx="247" cy="169" r="3.6" />
+              <circle cx="174" cy="202" r="2.8" />
+              <circle cx="109" cy="144" r="3.3" />
+            </g>
+            <g className="pain-constellation__specks">
+              <circle cx="52" cy="123" r="1.8" />
+              <circle cx="126" cy="92" r="1.4" />
+              <circle cx="184" cy="67" r="1.7" />
+              <circle cx="266" cy="46" r="1.5" />
+              <circle cx="371" cy="105" r="1.9" />
+              <circle cx="351" cy="160" r="1.3" />
+              <circle cx="282" cy="225" r="1.6" />
+              <circle cx="202" cy="230" r="1.4" />
+            </g>
+          </svg>
+        </div>
+        <div className="container">
+          <div className="sec-head reveal">
+            <div className="sec-eyebrow">设计与思路 · 核心痛点</div>
+            <h2 className="sec-title">真实调研之后，<br />我们发现用户累在这五个瞬间</h2>
+            <p className="sec-lead">不是选择少，而是筛选、协调、验证、变更和重复输入都要自己来。</p>
+          </div>
+          <PainEvidenceChain />
+        </div>
+      </section>
+
       <section className="section section--paper design-detail">
         <div className="container">
           <div className="sec-head reveal">
@@ -318,8 +365,6 @@ export default function PortfolioHomePage() {
               </div>
             </div>
           </div>
-
-          <PainEvidenceChain />
         </div>
       </section>
 

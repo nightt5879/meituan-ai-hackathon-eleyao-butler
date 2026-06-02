@@ -638,6 +638,105 @@
   margin-bottom: clamp(36px, 5vh, 60px);
 }
 
+.design-pain-section {
+  --design-pain-font: "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --pain-constellation-color: color-mix(in srgb, var(--ey-emerald) 72%, var(--ey-line));
+  --pain-constellation-glow: color-mix(in srgb, var(--ey-emerald-300) 34%, transparent);
+  font-family: var(--design-pain-font);
+  isolation: isolate;
+}
+
+.design-pain-section > .container {
+  position: relative;
+  z-index: 1;
+}
+
+.pain-constellation {
+  position: absolute;
+  z-index: 0;
+  top: clamp(22px, 5vw, 72px);
+  right: clamp(16px, 5vw, 84px);
+  width: clamp(250px, 30vw, 430px);
+  color: var(--pain-constellation-color);
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+.pain-constellation svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.pain-constellation__lines {
+  fill: none;
+  opacity: 0.38;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1;
+}
+
+.pain-constellation__stars {
+  fill: currentColor;
+  opacity: 0.72;
+}
+
+.pain-constellation__specks {
+  fill: currentColor;
+  opacity: 0.46;
+}
+
+.pain-constellation__glow {
+  fill: var(--pain-constellation-glow);
+  filter: blur(13px);
+  opacity: 0.76;
+}
+
+.design-pain-section .sec-eyebrow,
+.design-pain-section .sec-title,
+.design-pain-section .sec-lead {
+  font-family: var(--design-pain-font);
+}
+
+.design-pain-section .pc {
+  --pc-display-font: var(--design-pain-font);
+  --pc-body-font: var(--design-pain-font);
+  font-synthesis: auto;
+  margin-top: 0;
+}
+
+.design-pain-section .sec-title {
+  max-width: 24ch;
+}
+
+.design-pain-section .pc-card-title {
+  margin-top: 10px;
+  font-size: 18px;
+  line-height: 1.22;
+}
+
+.design-pain-section .pc-head {
+  display: none;
+}
+
+@media (min-width: 641px) {
+  .design-pain-section .pc-deck-scroll {
+    overflow-x: auto;
+    padding-right: 18px;
+    padding-left: 18px;
+    scroll-padding-right: 18px;
+    scroll-padding-left: 18px;
+  }
+}
+
+@media (max-width: 900px) {
+  .pain-constellation {
+    display: none;
+  }
+}
+
 .grid3,
 .grid2,
 .grid4 {
