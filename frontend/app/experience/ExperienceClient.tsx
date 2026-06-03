@@ -2519,13 +2519,18 @@ export default function ExperienceClient() {
     const progressPolling = pollAiProgress(aiProgressTraceId, identity.sessionToken, setGroupAiProgress, () => stopProgressPolling);
 
     try {
-      const board = await requestJson<GroupBoard & { aiProgress?: AiProgressSnapshot }>(`/api/group-tasks/${encodeURIComponent(groupTaskId)}/recommend`, {
+      const board = await requestJson<GroupBoard & { aiProgress?: AiProgressSnapshot; recommendationSource?: "openclaw" | "mock"; openclawStatus?: string }>(`/api/group-tasks/${encodeURIComponent(groupTaskId)}/recommend`, {
         method: "POST",
-        body: JSON.stringify({ inviteToken: groupInviteToken, openclawFeed: true, aiProgressTraceId })
+        body: JSON.stringify({ inviteToken: groupInviteToken, useOpenClaw: true, aiProgressTraceId })
       }, identity.sessionToken);
       setGroupBoard(board);
       if (board.aiProgress) {
         setGroupAiProgress(board.aiProgress);
+      }
+      if (board.recommendationSource === "openclaw") {
+        setGroupNotice("本次多人推荐由 OpenClaw AI 在真实餐厅候选中生成。");
+      } else if (board.recommendationSource === "mock") {
+        setGroupNotice("OpenClaw 未生效，本次由服务端规则引擎兜底生成。");
       }
       setGroupAdjustmentRequests([]);
       setAdjustmentTargetCandidate(null);

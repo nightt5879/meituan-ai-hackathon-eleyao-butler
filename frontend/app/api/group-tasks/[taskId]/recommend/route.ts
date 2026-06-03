@@ -166,5 +166,10 @@ export async function POST(request: Request, { params }: RouteContext) {
     }
   );
 
-  return NextResponse.json({ ...result.value, aiProgress: finalProgress || aiProgress });
+  return NextResponse.json({
+    ...result.value,
+    recommendationSource: recommendation ? "openclaw" : "mock",
+    openclawStatus: openclawContextResult.status,
+    aiProgress: finalProgress || aiProgress
+  });
 }
