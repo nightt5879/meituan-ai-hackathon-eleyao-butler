@@ -2649,12 +2649,23 @@ body.t-night .cloud-word.c-warn {
   }
 
   .meta-bottom {
-    display: none;
+    order: 3;
+    position: static;
+    left: auto;
+    bottom: auto;
+    display: inline-flex;
+    align-self: center;
+    max-width: 100%;
+    margin: 0 auto 14px;
+    transform: none;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.45;
   }
 
   /* 网格 → 纵向卡片栈 */
   .stage .grid {
-    order: 3;
+    order: 4;
     position: static;
     inset: auto;
     display: flex;

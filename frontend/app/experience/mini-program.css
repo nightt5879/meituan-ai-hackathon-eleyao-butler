@@ -485,6 +485,17 @@
   line-height: 1.45;
 }
 
+.desktop-preview-note {
+  margin: 10px 0 0 !important;
+  padding: 10px 12px;
+  border: 1px solid var(--shell-field-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--shell-accent) 8%, var(--shell-panel));
+  color: var(--shell-ink-2) !important;
+  font-size: 12px !important;
+  line-height: 1.58 !important;
+}
+
 .phone-frame {
   width: 430px;
   height: min(812px, calc(100vh - 64px));
@@ -926,6 +937,11 @@
   border: 1px solid var(--theme-primary-soft);
   border-radius: 12px;
   background: var(--theme-primary-ghost);
+}
+
+.preview-note {
+  margin-top: -3px;
+  background: var(--theme-card);
 }
 
 .note-icon {
