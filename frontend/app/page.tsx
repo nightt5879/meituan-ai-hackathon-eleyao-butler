@@ -295,7 +295,7 @@ export default function PortfolioHomePage() {
           <div className="toppill"><span>美团 OpenClaw</span><span className="sep">·</span><span>全天候私人管家赛道</span></div>
           <ThemePipPicker />
         </div>
-        <div className="meta meta-bottom"><span className="pulse" /><span>最终提交作品 · 点任意象限进入</span></div>
+        <div className="meta meta-bottom"><span className="pulse" /><span>最终提交作品 · 点任意象限进入 · 电脑端体验更佳</span></div>
       </div>
 
       <SurveyWordCloud />

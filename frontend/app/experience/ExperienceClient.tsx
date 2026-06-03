@@ -315,6 +315,7 @@ type PrefSummaryRow = {
 const identityKey = "meituan_web_demo_identity";
 const judgeDeviceKey = "meituan_web_judge_device_id";
 const judgeInputKey = "meituan_web_judge_input";
+const desktopPreviewTip = "电脑端体验更佳：可同时查看手机复刻、评审状态和主题面板；手机端仍可继续体验核心流程。";
 const defaultFoodConnectionStatus: FoodConnectionStatus = {
   text: "正在检测远端 OpenClaw",
   className: "status-checking",
@@ -2808,6 +2809,7 @@ export default function ExperienceClient() {
           <p className="mono">demoId: {identity?.demoUserId || judgeIdInput || browserJudgeId || "待生成"}</p>
           <p className="mono">userId: {identity?.userId || "等待登录"}</p>
           <a className="panel-outline-button compact" href="/">回到四象限首页</a>
+          <p className="desktop-preview-note">{desktopPreviewTip}</p>
           <form className="identity-form" onSubmit={handleIdentitySubmit}>
             <label className="identity-label" htmlFor="judge-id-panel">评委 ID</label>
             <input
@@ -2862,6 +2864,7 @@ export default function ExperienceClient() {
           <p className="mono">demoId: {identity?.demoUserId || judgeIdInput || browserJudgeId || "待生成"}</p>
           <p className="mono">userId: {identity?.userId || "等待登录"}</p>
           <a className="panel-outline-button compact" href="/">回到四象限首页</a>
+          <p className="desktop-preview-note">{desktopPreviewTip}</p>
           <h2>当前体验状态</h2>
           <p>最近偏好记录：{records.length} 条 · 收藏店铺：{favorites.length} 家</p>
           <p>多人约饭任务：{groupTaskId || "未创建"} · 周末规划：{weekendPlan?.planId || "未生成"}</p>
@@ -2892,6 +2895,11 @@ export default function ExperienceClient() {
           <div className="mvp-note">
             <div className="note-icon">i</div>
             <div className="note-text">当前为 MVP 演示版本，评委身份只用于隔离 Demo 数据，不采集硬件指纹。</div>
+          </div>
+
+          <div className="mvp-note preview-note">
+            <div className="note-icon">桌</div>
+            <div className="note-text">{desktopPreviewTip}</div>
           </div>
 
           {authError ? <div className="inline-error">{authError}</div> : null}
