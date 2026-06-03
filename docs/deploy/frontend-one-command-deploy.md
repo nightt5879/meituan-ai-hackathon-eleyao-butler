@@ -1,6 +1,6 @@
 # 前端一键更新与部署
 
-对应 issue: https://github.com/nightt5879/meituan_prj/issues/113
+对应 issue: https://github.com/nightt5879/meituan-ai-hackathon-eleyao-butler/issues/113
 
 这个脚本用于服务器上更新仓库、构建 `frontend`，并只重启当前 `frontend` 目录对应的 Next 服务。
 

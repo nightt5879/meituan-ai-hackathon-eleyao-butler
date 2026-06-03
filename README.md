@@ -183,7 +183,7 @@ npm run dev   # http://localhost:3000
 ## ✦ 目录结构
 
 ```text
-meituan_prj/
+meituan-ai-hackathon-eleyao-butler/
 ├─ frontend/                 # Next.js 后端 + H5（API routes / Agent 代理 / mock）
 │  ├─ app/api/               # food / group-tasks / weekend / user ...
 │  └─ lib/                   # mockData · mockFunctions（规则版 mock Agent）
