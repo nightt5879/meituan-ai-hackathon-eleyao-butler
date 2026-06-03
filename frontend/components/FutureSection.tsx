@@ -46,9 +46,9 @@ const futureDirections: FutureDirection[] = [
   },
   {
     num: "未来 · 03",
-    title: "越用越懂你的长期记忆",
-    desc: "把每次选择、收藏、拒绝和临时偏好沉淀成用户画像，跨吃饭、约饭、周末规划复用。",
-    tech: "memory · profile graph",
+    title: "让已有记忆沉淀成长期画像",
+    desc: "当前已支持账号级记忆与偏好记录。下一步把历史选择、收藏、约饭和周边规划沉淀为更稳定的用户画像，用于跨场景复用和长期验证。",
+    tech: "memory store · profile insight",
     gate: "proof",
     icon: "memory"
   },
@@ -70,10 +70,10 @@ const futureDirections: FutureDirection[] = [
   },
   {
     num: "未来 · 06",
-    title: "评测闭环变成产品内监控",
-    desc: "把预算、距离、忌口、时间、天气和公平性检查做成持续监控，发现推荐跑偏就自动降级或追问。",
-    tech: "audit loop · eval traces",
-    gate: "proof",
+    title: "周边规划接入真实数据",
+    desc: "当前版本优先证明 AI 管家闭环能跑通：能理解需求、生成规划、失败兜底并留下评测反馈。后续接入真实 POI、天气和路线数据，把轻量 demo 扩展成可落地的周边生活服务。",
+    tech: "POI · weather · route",
+    gate: "api",
     icon: "check"
   }
 ];
