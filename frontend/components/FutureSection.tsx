@@ -118,7 +118,7 @@ export function FutureSection() {
       <div className="container">
         <div className="future-top">
           <div className="future-head reveal">
-            <div className="sec-eyebrow">未来展望 · On The Horizon</div>
+            <div className="sec-eyebrow">设计与思路 · 未来展望</div>
             <h2 className="sec-title">不是没想到，<br />而是还差真实接入</h2>
             <p className="sec-lead">现在版本先证明“管家链路能跑通”。下一步要把它从 demo 推到产品，需要补齐官方数据、长期记忆、交易履约和更完整的评测闭环。</p>
           </div>
