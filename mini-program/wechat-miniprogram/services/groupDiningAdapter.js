@@ -1416,7 +1416,6 @@ function generateRecommendation(taskId, inviteToken) {
     data.useOpenClaw = true;
   }
 
-  return request({
   return requestWithAuthRetry({
     path: '/api/group-tasks/' + encodeURIComponent(taskId || 'group_mock_task') + '/recommend',
     method: 'POST',
