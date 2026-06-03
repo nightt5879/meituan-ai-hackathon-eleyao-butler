@@ -56,45 +56,6 @@ const quadrants = [
   }
 ];
 
-const innovations = [
-  {
-    tag: "创新点 01",
-    title: "自检评测闭环",
-    desc: "生成方案前，先像审计员一样逐项检查预算、忌口、时间、距离、氛围、公平性、可执行性。不合格就自动修正或追问，再输出。",
-    icon: "shield"
-  },
-  {
-    tag: "创新点 02",
-    title: "多人协同决策",
-    desc: "抽取每个人的硬约束与软偏好，明确指出冲突在哪里，生成几个折中方案；用最低个人满意度而不只是平均分来排序。",
-    icon: "route"
-  }
-];
-
-const flowSteps = [
-  ["1", "发起任务", "明晚三人，人均≤100，适合聊天"],
-  ["2", "成员偏好", "各自补充口味、预算、时间"],
-  ["3", "冲突识别", "拆出硬约束与软偏好"],
-  ["4", "候选 + 自检", "逐项规则检查"],
-  ["5", "最终推荐", "最稳、最公平的一家"],
-  ["6", "群聊文案", "一键复制去推进"]
-];
-
-const members = [
-  { who: "小林（发起人）", say: "想吃辣，但不想吃火锅，太花时间。", soft: ["想吃辣", "不要火锅", "适合聊天"], hard: [] },
-  { who: "阿杰", say: "我完全不吃辣，预算最好别超过 80。", soft: [], hard: ["不吃辣", "预算 ≤ 80"] },
-  { who: "小周", say: "20:30 前要回宿舍，最好别排队，离学校近一点。", soft: ["不想排队"], hard: ["20:30 前离开", "离学校近"] }
-];
-
-const checks = [
-  ["预算检查", "通过 · 82≤100", "pass"],
-  ["忌口检查", "通过 · 有不辣菜", "pass"],
-  ["时间检查", "通过 · 步行 12 分钟", "pass"],
-  ["氛围匹配", "通过 · 安静适合聊天", "pass"],
-  ["排队风险", "低 · 高峰建议确认", "warn"],
-  ["公平性", "通过 · 无人被牺牲", "pass"]
-];
-
 const architectureLayers = [
   ["L1", "体验层", "微信小程序与 Web 体验并行。Web 版复刻小程序流程，用 demo session 替代 wx.login。"],
   ["L2", "服务层", "Next.js App Router 同时承载作品页、在线体验页面与 API routes。"],
@@ -344,88 +305,6 @@ export default function PortfolioHomePage() {
             <p className="sec-lead">不是选择少，而是筛选、协调、验证、变更和重复输入都要自己来。</p>
           </div>
           <PainEvidenceChain />
-        </div>
-      </section>
-
-      <section className="section section--forest" id="core">
-        <div className="container">
-          <div className="sec-head reveal">
-            <div className="sec-eyebrow">差异化 · Why Us</div>
-            <h2 className="sec-title">让它从“会聊天的助手”<br />升级成“会办事的管家”</h2>
-            <p className="sec-lead">两个增强点，把方案从“生成建议”变成“可靠执行”，避开 01 赛道的同质化。</p>
-          </div>
-          <div className="grid2">
-            {innovations.map((item, index) => (
-              <div className={`card card--dark reveal d${index + 1}`} key={item.title}>
-                <div className="ic"><Icon name={item.icon} size={26} /></div>
-                <div className="num-tag">{item.tag}</div>
-                <h2>{item.title}</h2>
-                <p>{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section section--tint" id="demo">
-        <div className="container">
-          <div className="sec-head reveal">
-            <div className="sec-eyebrow">核心 Demo · 三人周五约饭</div>
-            <h2 className="sec-title">从一句需求，<br />到“可以直接发群里的话”</h2>
-            <p className="sec-lead">一条完整链路，体现管家如何理解每个人、识别冲突、自检方案，再推进到可执行动作。</p>
-          </div>
-
-          <div className="flow reveal">
-            {flowSteps.map(([num, title, desc], index) => (
-              <div className={`step ${index === 4 ? "accent" : ""}`} key={num}>
-                <div className="dot">{num}</div>
-                <h3>{title}</h3>
-                <p>{desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="demo-wrap">
-            <div className="reveal d1">
-              <div className="panel panel-spaced">
-                <p className="panel-h">成员偏好</p>
-                {members.map((member) => (
-                  <div className="member" key={member.who}>
-                    <div className="who">{member.who}</div>
-                    <div className="say">“{member.say}”</div>
-                    <div className="tags">
-                      {member.hard.map((tag) => <span className="taglet t-hard" key={tag}>{tag}</span>)}
-                      {member.soft.map((tag) => <span className="taglet t-soft" key={tag}>{tag}</span>)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="panel">
-                <p className="panel-h">冲突识别</p>
-                <div className="conflict"><span className="badge-c">高</span><p>口味冲突：小林想吃辣，阿杰完全不吃辣。不吃辣为硬约束，优先保护。</p></div>
-                <div className="conflict"><span className="badge-c soft">中</span><p>时间冲突：小周 20:30 前要回，排队久 / 太远的店降权。</p></div>
-                <div className="conflict"><span className="badge-c soft">中</span><p>预算冲突：总体人均 100，但阿杰希望不超过 80。</p></div>
-              </div>
-            </div>
-
-            <div className="reveal d2">
-              <div className="rec-card">
-                <div className="rh"><span className="name">青禾小馆</span><span className="pin">★ 最终推荐</span></div>
-                <div className="info">家常融合菜 · 人均 82 元 · 步行 12 分钟 · 评分 4.7</div>
-                <div className="reason">有不辣菜也有可选辣度、不是火锅，照顾阿杰也兼顾小林；步行 12 分钟保证小周准时回去；环境安静，适合坐下来聊天。</div>
-                <div className="scores">
-                  {[["小林", "82"], ["阿杰", "94"], ["小周", "90"]].map(([name, score]) => <div className="s" key={name}><div className="n2">{name}</div><div className="v">{score}</div></div>)}
-                </div>
-              </div>
-              <div className="panel result-panel">
-                <p className="panel-h">方案自检</p>
-                <div className="audit">
-                  {checks.map(([label, value, type]) => <div className="audit-row" key={label}><span className="lbl">{label}</span><span className={`chk ${type}`}>{value}</span></div>)}
-                </div>
-                <div className="group-msg">“今晚 7 点青禾小馆怎么样？人均 70-80，步行 10 分钟，有不辣菜，环境也适合聊天。大家可以的话就定这个。”</div>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
