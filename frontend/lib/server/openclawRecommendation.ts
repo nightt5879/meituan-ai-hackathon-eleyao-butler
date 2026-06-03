@@ -1,8 +1,9 @@
 import { execFile } from "child_process";
 import { promisify } from "util";
 import type { OpenClawDataContext } from "@/lib/server/openclawDataFeed";
+import { buildGroupRestaurantCandidates } from "@/lib/server/groupRestaurantCandidates";
 import { buildScopedOpenClawSessionId, shortHash } from "@/lib/server/openclawSession";
-import type { Conflict, DinnerTask, Participant, RecommendationResult, RestaurantCandidate } from "@/lib/types";
+import type { Conflict, DinnerTask, MockRestaurant, Participant, RecommendationResult, RestaurantCandidate } from "@/lib/types";
 
 const execFileAsync = promisify(execFile);
 
@@ -94,30 +95,32 @@ function extractAssistantText(cliJson: unknown) {
   return payloadText ?? result?.meta?.finalAssistantVisibleText ?? result?.meta?.finalAssistantRawText ?? "";
 }
 
-function normalizeCandidate(raw: unknown, index: number, participants: Participant[]): RestaurantCandidate {
+function normalizeCandidate(raw: unknown, index: number, participants: Participant[], real?: MockRestaurant): RestaurantCandidate {
   const candidate = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
   const audit = candidate.audit && typeof candidate.audit === "object" ? (candidate.audit as Record<string, unknown>) : {};
-  const name = stringOr(candidate.name, `候选餐厅 ${index + 1}`);
-  const avgPrice = numberOr(candidate.avg_price ?? candidate.estimated_price ?? candidate.price, 60);
-  const distanceM = numberOr(candidate.distance_m ?? candidate.distance, 1000);
-  const walkMinutes = numberOr(candidate.walk_minutes, Math.max(5, Math.round(distanceM / 80)));
+  // Factual fields are taken from the server-side real candidate when the LLM picked a real shop,
+  // so the model can choose + explain + audit but cannot fabricate or alter the underlying facts.
+  const name = real?.name ?? stringOr(candidate.name, `候选餐厅 ${index + 1}`);
+  const avgPrice = real?.avg_price ?? numberOr(candidate.avg_price ?? candidate.estimated_price ?? candidate.price, 60);
+  const distanceM = real?.distance_m ?? numberOr(candidate.distance_m ?? candidate.distance, 1000);
+  const walkMinutes = real?.walk_minutes ?? numberOr(candidate.walk_minutes, Math.max(5, Math.round(distanceM / 80)));
 
   return {
-    restaurant_id: stringOr(candidate.restaurant_id ?? candidate.id, `openclaw_${index + 1}`),
+    restaurant_id: real?.restaurant_id ?? stringOr(candidate.restaurant_id ?? candidate.id, `openclaw_${index + 1}`),
     name,
-    category: stringOr(candidate.category, "单人友好餐厅"),
+    category: real?.category ?? stringOr(candidate.category, "餐厅"),
     avg_price: avgPrice,
     distance_m: distanceM,
     walk_minutes: walkMinutes,
-    open_time: stringOr(candidate.open_time, "待确认"),
-    close_time: stringOr(candidate.close_time, "待确认"),
-    supports_spicy: booleanOr(candidate.supports_spicy, true),
-    supports_non_spicy: booleanOr(candidate.supports_non_spicy, true),
-    is_hotpot: booleanOr(candidate.is_hotpot, false),
-    quiet_score: numberOr(candidate.quiet_score, 4),
-    chat_friendly: booleanOr(candidate.chat_friendly, true),
-    queue_risk: enumOr(candidate.queue_risk, ["low", "medium", "high"] as const, "medium"),
-    rating: numberOr(candidate.rating, 4.5),
+    open_time: real?.open_time ?? stringOr(candidate.open_time, "待确认"),
+    close_time: real?.close_time ?? stringOr(candidate.close_time, "待确认"),
+    supports_spicy: real?.supports_spicy ?? booleanOr(candidate.supports_spicy, true),
+    supports_non_spicy: real?.supports_non_spicy ?? booleanOr(candidate.supports_non_spicy, true),
+    is_hotpot: real?.is_hotpot ?? booleanOr(candidate.is_hotpot, false),
+    quiet_score: real?.quiet_score ?? numberOr(candidate.quiet_score, 4),
+    chat_friendly: real?.chat_friendly ?? booleanOr(candidate.chat_friendly, true),
+    queue_risk: real?.queue_risk ?? enumOr(candidate.queue_risk, ["low", "medium", "high"] as const, "medium"),
+    rating: real?.rating ?? numberOr(candidate.rating, 4.5),
     member_scores: recordStringNumberOr(candidate.member_scores, participants),
     score: numberOr(candidate.score, Math.max(60, 88 - index * 5)),
     audit: {
@@ -127,18 +130,36 @@ function normalizeCandidate(raw: unknown, index: number, participants: Participa
       llm_explanation: stringOr(audit.llm_explanation, stringOr(candidate.reason, `${name} 基本符合当前约束。`))
     },
     reason: stringOr(candidate.reason, `${name} 符合预算、距离和忌口约束。`),
-    tags: stringArrayOr(candidate.tags, ["OpenClaw", "单人友好"])
+    tags: real
+      ? Array.from(new Set([...(real.tags ?? []), ...stringArrayOr(candidate.tags, [])])).slice(0, 6)
+      : stringArrayOr(candidate.tags, ["OpenClaw"])
   };
 }
 
-function normalizeRecommendation(raw: unknown, task: DinnerTask, participants: Participant[]): RecommendationResult {
+function matchRealCandidate(raw: unknown, realById: Map<string, MockRestaurant>, realByName: Map<string, MockRestaurant>) {
+  const record = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const id = typeof record.restaurant_id === "string" ? record.restaurant_id : typeof record.id === "string" ? record.id : "";
+  const name = typeof record.name === "string" ? record.name.trim() : "";
+  return realById.get(id) ?? (name ? realByName.get(name) : undefined);
+}
+
+function normalizeRecommendation(
+  raw: unknown,
+  task: DinnerTask,
+  participants: Participant[],
+  realCandidates: MockRestaurant[] = []
+): RecommendationResult {
   const source = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const realById = new Map(realCandidates.map((candidate) => [candidate.restaurant_id, candidate]));
+  const realByName = new Map(realCandidates.map((candidate) => [candidate.name.trim(), candidate]));
   const rawCandidates = Array.isArray(source.candidates)
     ? source.candidates
     : Array.isArray(source.recommendations)
       ? source.recommendations
       : [];
-  const candidates = rawCandidates.slice(0, 3).map((candidate, index) => normalizeCandidate(candidate, index, participants));
+  const candidates = rawCandidates
+    .slice(0, 3)
+    .map((candidate, index) => normalizeCandidate(candidate, index, participants, matchRealCandidate(candidate, realById, realByName)));
 
   if (candidates.length < 2) {
     throw new Error("OpenClaw must return at least 2 candidates.");
@@ -162,7 +183,13 @@ function normalizeRecommendation(raw: unknown, task: DinnerTask, participants: P
   };
 }
 
-function buildPrompt(task: DinnerTask, participants: Participant[], conflicts: Conflict[], context?: OpenClawDataContext) {
+function buildPrompt(
+  task: DinnerTask,
+  participants: Participant[],
+  conflicts: Conflict[],
+  context?: OpenClawDataContext,
+  candidates: MockRestaurant[] = []
+) {
   const mockRestaurantData = [
     {
       restaurant_id: "mock_qingtang_noodle",
@@ -218,10 +245,10 @@ function buildPrompt(task: DinnerTask, participants: Participant[], conflicts: C
       extracted_constraints: participant.extracted_constraints
     })),
     conflicts,
-    candidate_restaurant_data: mockRestaurantData
+    candidate_restaurant_data: candidates.length > 0 ? candidates : mockRestaurantData
   };
 
-  return `系统角色：你是“饿了幺”多人约饭推荐 Agent。\n\n边界和硬规则：\n- 不能假装访问真实美团、大众点评、地图、商家库存或实时排队数据。\n- 不能说已经预订、下单、联系商家、锁座或确认营业。\n- 你只能基于输入里的 task、participants、conflicts、candidate/mock restaurant data 做保守推荐。\n- 必须只返回 JSON；不要 Markdown；不要 JSON 以外的解释。\n- 必须优先满足预算、忌口、时间、距离等硬约束；无法确认时标记为 risk，不要说成已确认。\n- 必须返回 3 个候选餐厅，final_choice 必须来自 candidates。\n- group_message 要像可以直接复制到微信群的一段话。\n\n输入：\n- task：约饭任务和全局约束。\n- participants：成员偏好和手工填写约束。\n- conflicts：约束冲突。\n- candidate/mock restaurant data：候选/模拟餐厅数据。\n\n输出 JSON schema：\n{\n  "candidates": [\n    {\n      "restaurant_id": "string",\n      "name": "string",\n      "category": "string",\n      "avg_price": 50,\n      "distance_m": 800,\n      "walk_minutes": 10,\n      "open_time": "待确认",\n      "close_time": "待确认",\n      "supports_spicy": true,\n      "supports_non_spicy": true,\n      "is_hotpot": false,\n      "quiet_score": 4,\n      "chat_friendly": true,\n      "queue_risk": "low|medium|high",\n      "rating": 4.5,\n      "member_scores": { "成员名": 80 },\n      "score": 85,\n      "audit": {\n        "passed": true,\n        "hard_rules": {\n          "budget": "pass|fail|risk",\n          "diet": "pass|fail|risk",\n          "time": "pass|fail|risk",\n          "distance": "pass|fail|risk"\n        },\n        "soft_checks": {\n          "queue": "pass|fail|risk",\n          "chat": "pass|fail|risk"\n        },\n        "llm_explanation": "逐项说明预算、忌口、时间、距离、排队、聊天环境的判断"\n      },\n      "reason": "具体说明为什么适合这一组人",\n      "tags": ["预算友好", "不辣可选", "适合聊天"]\n    }\n  ],\n  "final_choice": { "restaurant_id": "必须来自 candidates", "name": "必须来自 candidates", "reason": "string", "risks": ["string"], "backup": "候补餐厅名" },\n  "group_message": "可直接复制到微信群的一段自然中文，说明推荐哪家、预算、距离、不辣/聊天/排队等关键点和需要到店前确认的风险",\n  "normal_ai_message": "简短说明你如何检查了预算、忌口、时间、距离等硬约束"\n}\n\nslots/preferences JSON：\n${JSON.stringify(slots, null, 2)}`;
+  return `系统角色：你是“饿了幺”多人约饭推荐 Agent。\n\n边界和硬规则：\n- 不能假装访问真实美团、大众点评、地图、商家库存或实时排队数据。\n- 不能说已经预订、下单、联系商家、锁座或确认营业。\n- 你只能基于输入里的 task、participants、conflicts、candidate/mock restaurant data 做保守推荐。\n- 必须只返回 JSON；不要 Markdown；不要 JSON 以外的解释。\n- 必须优先满足预算、忌口、时间、距离等硬约束；无法确认时标记为 risk，不要说成已确认。\n- candidates 必须从输入的 candidate_restaurant_data 里选取，沿用其 restaurant_id 与 name，不要编造未提供的餐厅。\n- 必须返回 3 个候选餐厅，final_choice 必须来自 candidates。\n- group_message 要像可以直接复制到微信群的一段话。\n\n输入：\n- task：约饭任务和全局约束。\n- participants：成员偏好和手工填写约束。\n- conflicts：约束冲突。\n- candidate/mock restaurant data：候选/模拟餐厅数据。\n\n输出 JSON schema：\n{\n  "candidates": [\n    {\n      "restaurant_id": "string",\n      "name": "string",\n      "category": "string",\n      "avg_price": 50,\n      "distance_m": 800,\n      "walk_minutes": 10,\n      "open_time": "待确认",\n      "close_time": "待确认",\n      "supports_spicy": true,\n      "supports_non_spicy": true,\n      "is_hotpot": false,\n      "quiet_score": 4,\n      "chat_friendly": true,\n      "queue_risk": "low|medium|high",\n      "rating": 4.5,\n      "member_scores": { "成员名": 80 },\n      "score": 85,\n      "audit": {\n        "passed": true,\n        "hard_rules": {\n          "budget": "pass|fail|risk",\n          "diet": "pass|fail|risk",\n          "time": "pass|fail|risk",\n          "distance": "pass|fail|risk"\n        },\n        "soft_checks": {\n          "queue": "pass|fail|risk",\n          "chat": "pass|fail|risk"\n        },\n        "llm_explanation": "逐项说明预算、忌口、时间、距离、排队、聊天环境的判断"\n      },\n      "reason": "具体说明为什么适合这一组人",\n      "tags": ["预算友好", "不辣可选", "适合聊天"]\n    }\n  ],\n  "final_choice": { "restaurant_id": "必须来自 candidates", "name": "必须来自 candidates", "reason": "string", "risks": ["string"], "backup": "候补餐厅名" },\n  "group_message": "可直接复制到微信群的一段自然中文，说明推荐哪家、预算、距离、不辣/聊天/排队等关键点和需要到店前确认的风险",\n  "normal_ai_message": "简短说明你如何检查了预算、忌口、时间、距离等硬约束"\n}\n\nslots/preferences JSON：\n${JSON.stringify(slots, null, 2)}`;
 }
 
 function buildContextEnvelope(context: OpenClawDataContext) {
@@ -249,7 +276,8 @@ export async function generateOpenClawRecommendation(
   const sessionKey = buildScopedOpenClawSessionId(DEFAULT_SESSION_KEY, ["group", userPart, options.taskId || task.task_id]);
   const timeoutSeconds = numberOr(process.env.OPENCLAW_AGENT_TIMEOUT_SECONDS, DEFAULT_TIMEOUT_SECONDS);
   const openclawBin = process.env.OPENCLAW_BIN?.trim() || "openclaw";
-  const prompt = buildPrompt(task, participants, conflicts, options.context);
+  const realCandidates = await buildGroupRestaurantCandidates(task, participants).catch(() => [] as MockRestaurant[]);
+  const prompt = buildPrompt(task, participants, conflicts, options.context, realCandidates);
 
   const { stdout, stderr } = await execFileAsync(
     openclawBin,
@@ -272,5 +300,5 @@ export async function generateOpenClawRecommendation(
   }
 
   const recommendationJson = extractFirstJsonObject(text);
-  return normalizeRecommendation(recommendationJson, task, participants);
+  return normalizeRecommendation(recommendationJson, task, participants, realCandidates);
 }
