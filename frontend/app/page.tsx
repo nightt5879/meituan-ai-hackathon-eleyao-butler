@@ -5,9 +5,11 @@ import { ThemeNavPicker, ThemePipPicker } from "@/components/SiteThemeProvider";
 import { SurveyWordCloud } from "@/components/SurveyWordCloud";
 import { TechRouteSelfCheck, TechRouteShowcase } from "@/components/TechRouteShowcase";
 import { PainEvidenceChain } from "@/components/PainEvidenceChain";
+import { FutureSection } from "@/components/FutureSection";
 import "./ey-design.css";
 import "./tech-route.css";
 import "./pain-chain.css";
+import "./future-section.css";
 
 const demoVideoUrl = process.env.NEXT_PUBLIC_DEMO_VIDEO_URL || "";
 
@@ -94,6 +96,18 @@ export default function PortfolioHomePage() {
       window.removeEventListener("resize", setPad);
       document.documentElement.style.removeProperty("scroll-padding-top");
     };
+  }, []);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash || hash === "#top") return;
+
+    setSiteOpen(true);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.querySelector(hash)?.scrollIntoView({ behavior: "auto", block: "start" });
+      });
+    });
   }, []);
 
   useEffect(() => {
@@ -209,6 +223,7 @@ export default function PortfolioHomePage() {
         <nav aria-label="作品站导航">
           <a href="#design" onClick={(event) => handleInternalLink(event, "#design")}>设计与思路</a>
           <a href="#route" onClick={(event) => handleInternalLink(event, "#route")}>技术架构</a>
+          <a href="#future" onClick={(event) => handleInternalLink(event, "#future")}>未来展望</a>
           <a href="#video" onClick={(event) => handleInternalLink(event, "#video")}>演示视频</a>
           <a href="https://github.com/nightt5879/meituan_prj" target="_blank" rel="noreferrer">GitHub</a>
         </nav>
@@ -336,6 +351,8 @@ export default function PortfolioHomePage() {
           </div>
         </div>
       </section>
+
+      <FutureSection />
 
       <section className="section section--paper" id="video">
         <div className="container">
