@@ -48,7 +48,7 @@ function wantsNear(participant: Participant) {
   return participant.extracted_constraints.soft_preferences.some((item) => item.includes("近"));
 }
 
-function summarizeGroupConstraints(task: DinnerTask, participants: Participant[]): GroupHardConstraints {
+export function summarizeGroupConstraints(task: DinnerTask, participants: Participant[]): GroupHardConstraints {
   const globalBudget =
     task.global_constraints?.budget_max && task.global_constraints.budget_max > 0 ? task.global_constraints.budget_max : 100;
   const personalBudgets = participants
