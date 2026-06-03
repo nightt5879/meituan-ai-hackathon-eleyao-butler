@@ -395,6 +395,11 @@
         "id": "campus_anchor_010",
         "latitude": 23.051027,
         "longitude": 113.40229
+      },
+      {
+        "id": "campus_anchor_011",
+        "latitude": 23.0525,
+        "longitude": 113.393
       }
     ],
     "spatialSource": "manual_region_scaffold",

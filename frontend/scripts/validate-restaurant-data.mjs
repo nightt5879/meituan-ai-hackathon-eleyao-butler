@@ -422,8 +422,8 @@ forbiddenSyntheticPhrases.forEach((phrase) => {
   }
 });
 
-if (syntheticShops.length !== 100) {
-  pushError(errors, `Expected exactly 100 synthetic shops, got ${syntheticShops.length}.`);
+if (syntheticShops.length < 100) {
+  pushError(errors, `Expected at least 100 synthetic shops, got ${syntheticShops.length}.`);
 }
 
 if ((syntheticDishesFile.dishes ?? []).length < 500) {

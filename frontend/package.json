@@ -11,6 +11,7 @@
     "start": "next start -H 127.0.0.1 -p 3001",
     "build:survey-wordcloud": "node ../analysis/scripts/export_wordcloud_data.mjs",
     "verify:server-flow": "node scripts/verify-server-flow.mjs",
+    "verify:food-coverage": "node scripts/verify-food-candidate-coverage.mjs",
     "diagnose:openclaw-food": "node scripts/diagnose-openclaw-food.mjs"
   },
   "dependencies": {
