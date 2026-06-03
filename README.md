@@ -198,4 +198,4 @@ meituan_prj/
 - **线上提交**：[meituan-ai-hackathon.cn](https://meituan-ai-hackathon.cn)
 - **贡献规范**：见 [`CONTRIBUTING.md`](CONTRIBUTING.md)（每个 PR 需用 `Closes #xx` 关联 issue）
 
-<p align="center"><sub>会主动出现 · 理解多人 · 自检约束 · 修正方案 · 推进执行 · 持续学习</sub></p>
+<p align="center"><sub> 理解多人 · 自检约束 · 修正方案 · 推进执行 · 持续学习</sub></p>
