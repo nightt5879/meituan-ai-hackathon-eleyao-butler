@@ -29,6 +29,7 @@ type SandboxPoint = {
   name: string;
   type: SandboxPointType;
   latlng: [number, number];
+  displayLatLng: [number, number];
   category: string;
   address: string;
   markerLabel: string;
@@ -104,6 +105,10 @@ const OSM_ATTRIBUTION = "&copy; OpenStreetMap contributors";
 const SINGLE_POINT_ZOOM = 16;
 const LARGE_CLUSTER_MAX_ZOOM = 13;
 const ZOOM_STEP = 0.5;
+const DISPLAY_COORD_OFFSET = {
+  lat: 0.0027,
+  lng: -0.0055
+};
 const FALLBACK_COPY =
   "地图底图暂不可用，已切换为静态 MVP 数据沙盘。推荐与路线逻辑仍基于候选、标签和边界声明展示。";
 
@@ -484,7 +489,7 @@ function LeafletSandboxMap({
       }
 
       const { point } = item;
-      const marker = L.marker(point.latlng, {
+      const marker = L.marker(point.displayLatLng, {
         icon: createPointIcon(L, point, point.id === selectedPointId),
         title: point.name,
         riseOnHover: true
@@ -492,7 +497,7 @@ function LeafletSandboxMap({
 
       marker.on("click", () => {
         onSelectPoint(point.id);
-        map.panTo(point.latlng, { animate: true });
+        map.panTo(point.displayLatLng, { animate: true });
       });
 
       marker.bindTooltip(
@@ -512,10 +517,10 @@ function LeafletSandboxMap({
     if (!L || !map || mapStatus === "fallback") return;
 
     if (visiblePoints.length > 1) {
-      const bounds = L.latLngBounds(visiblePoints.map((point) => point.latlng));
+      const bounds = L.latLngBounds(visiblePoints.map((point) => point.displayLatLng));
       map.fitBounds(bounds, { animate: false, maxZoom: 15, padding: [34, 34] });
     } else if (visiblePoints[0]) {
-      map.setView(visiblePoints[0].latlng, 15, { animate: false });
+      map.setView(visiblePoints[0].displayLatLng, 15, { animate: false });
     }
   }, [mapStatus, visiblePointKey, visiblePoints]);
 
@@ -586,8 +591,8 @@ function StaticSandboxMap({
     label: point.shortName,
     name: point.name,
     kind: typeToPointKind(point.type),
-    x: lngToStaticX(point.latlng[1]),
-    y: latToStaticY(point.latlng[0]),
+    x: lngToStaticX(point.displayLatLng[1]),
+    y: latToStaticY(point.displayLatLng[0]),
     meta: point.scenarioTags.slice(0, 2).join(" / ")
   }));
 
@@ -880,6 +885,7 @@ function createRestaurantPoint(shop: SeedRestaurantShop, layer: Extract<LayerKey
     name,
     type: layer,
     latlng,
+    displayLatLng: applyDisplayOffset(latlng),
     category,
     address: shop.address ?? "大学城附近沙盘地址",
     markerLabel: deriveRestaurantMarkerLabel(tags, shop.avgPrice),
@@ -918,6 +924,7 @@ function createWeekendPoint(poi: SeedWeekendPoi, index: number): SandboxPoint {
     name,
     type: "weekend_poi",
     latlng,
+    displayLatLng: applyDisplayOffset(latlng),
     category: type,
     address: poi.addressText ?? "大学城附近周末 POI 沙盘地址",
     markerLabel: deriveWeekendMarkerLabel(poi, tags),
@@ -1068,6 +1075,11 @@ function confidenceBadgeLabel(confidence: Confidence) {
   return "场景验证";
 }
 
+function applyDisplayOffset(latlng: [number, number]): [number, number] {
+  // MVP 地图沙盘展示对齐偏移：不写回 seed 数据，也不代表真实商户地址修正。
+  return [latlng[0] + DISPLAY_COORD_OFFSET.lat, latlng[1] + DISPLAY_COORD_OFFSET.lng];
+}
+
 function derivePointShortName(name: string, type: SandboxPointType) {
   const fallback = type === "weekend_poi" ? "周末POI" : "餐饮点";
   const compact = name
@@ -1093,8 +1105,8 @@ function buildMapRenderItems(points: SandboxPoint[], zoom: number): MapRenderIte
   const buckets = new Map<string, SandboxPoint[]>();
 
   points.forEach((point) => {
-    const latBucket = Math.floor(point.latlng[0] / grid.lat);
-    const lngBucket = Math.floor(point.latlng[1] / grid.lng);
+    const latBucket = Math.floor(point.displayLatLng[0] / grid.lat);
+    const lngBucket = Math.floor(point.displayLatLng[1] / grid.lng);
     const key = `${grid.id}:${latBucket}:${lngBucket}`;
     const bucket = buckets.get(key) ?? [];
     bucket.push(point);
@@ -1140,12 +1152,12 @@ function createCluster(key: string, points: SandboxPoint[]): SandboxCluster {
 
   points.forEach((point) => {
     counts[point.type] += 1;
-    latSum += point.latlng[0];
-    lngSum += point.latlng[1];
-    minLat = Math.min(minLat, point.latlng[0]);
-    minLng = Math.min(minLng, point.latlng[1]);
-    maxLat = Math.max(maxLat, point.latlng[0]);
-    maxLng = Math.max(maxLng, point.latlng[1]);
+    latSum += point.displayLatLng[0];
+    lngSum += point.displayLatLng[1];
+    minLat = Math.min(minLat, point.displayLatLng[0]);
+    minLng = Math.min(minLng, point.displayLatLng[1]);
+    maxLat = Math.max(maxLat, point.displayLatLng[0]);
+    maxLng = Math.max(maxLng, point.displayLatLng[1]);
   });
 
   return {
