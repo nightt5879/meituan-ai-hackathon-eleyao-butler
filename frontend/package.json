@@ -24,7 +24,7 @@
     "postcss": "$postcss"
   },
   "devDependencies": {
-    "@types/node": "20.14.10",
+    "@types/node": "20.19.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/ws": "^8.18.1",
