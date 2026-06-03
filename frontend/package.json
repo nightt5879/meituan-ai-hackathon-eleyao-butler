@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "start": "next start -H 127.0.0.1 -p 3001",
     "build:survey-wordcloud": "node ../analysis/scripts/export_wordcloud_data.mjs",
     "verify:server-flow": "node scripts/verify-server-flow.mjs",
@@ -28,6 +30,7 @@
     "autoprefixer": "10.4.19",
     "postcss": "^8.5.15",
     "tailwindcss": "3.4.4",
-    "typescript": "5.5.3"
+    "typescript": "5.5.3",
+    "vitest": "^4.1.8"
   }
 }

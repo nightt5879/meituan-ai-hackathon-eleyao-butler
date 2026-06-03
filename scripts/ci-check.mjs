@@ -55,7 +55,7 @@ for (const rel of SCAN_DIRS) {
   if (existsSync(abs)) collectJsFiles(abs, files);
 }
 
-console.log(`\n[1/2] Syntax-checking ${files.length} JS files (node --check)...`);
+console.log(`\n[1/3] Syntax-checking ${files.length} JS files (node --check)...`);
 let syntaxFailures = 0;
 for (const file of files) {
   try {
@@ -74,13 +74,23 @@ if (syntaxFailures === 0) {
 }
 
 // 2) Frontend typecheck ----------------------------------------------------
-console.log("\n[2/2] Type-checking frontend (tsc --noEmit)...");
+console.log("\n[2/3] Type-checking frontend (tsc --noEmit)...");
 try {
   execSync("npx tsc --noEmit", { cwd: join(repoRoot, "frontend"), stdio: "inherit" });
   console.log("  ✓ frontend types OK");
 } catch {
   problems.push("frontend typecheck failed");
   console.error("  ✗ frontend typecheck failed (see output above)");
+}
+
+// 3) Frontend unit tests ---------------------------------------------------
+console.log("\n[3/3] Running frontend unit tests (vitest)...");
+try {
+  execSync("npm test", { cwd: join(repoRoot, "frontend"), stdio: "inherit" });
+  console.log("  ✓ unit tests passed");
+} catch {
+  problems.push("unit tests failed");
+  console.error("  ✗ unit tests failed (see output above)");
 }
 
 // Summary ------------------------------------------------------------------

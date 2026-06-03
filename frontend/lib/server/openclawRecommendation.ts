@@ -143,7 +143,7 @@ function matchRealCandidate(raw: unknown, realById: Map<string, MockRestaurant>,
   return realById.get(id) ?? (name ? realByName.get(name) : undefined);
 }
 
-function normalizeRecommendation(
+export function normalizeRecommendation(
   raw: unknown,
   task: DinnerTask,
   participants: Participant[],
