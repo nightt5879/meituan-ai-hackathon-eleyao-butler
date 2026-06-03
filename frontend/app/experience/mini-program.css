@@ -974,11 +974,28 @@
   color: #fff;
   font-size: 16px;
   font-weight: 800;
+  touch-action: manipulation;
 }
 
 .login-button.loading,
 .login-button:disabled {
   opacity: 0.72;
+}
+
+.login-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid var(--theme-primary-soft);
+  border-radius: 999px;
+  background: var(--theme-primary-ghost);
+  color: var(--theme-primary-deep);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: center;
 }
 
 .login-tip {

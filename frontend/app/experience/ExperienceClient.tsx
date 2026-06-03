@@ -1654,9 +1654,14 @@ export default function ExperienceClient() {
     }
   }
 
+  function startIdentityLogin() {
+    if (authLoading) return;
+    void login();
+  }
+
   function handleIdentitySubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    void login();
+    startIdentityLogin();
   }
 
   function logout() {
@@ -2815,7 +2820,7 @@ export default function ExperienceClient() {
             />
             <p className="identity-hint">不填会使用当前浏览器生成的本地匿名 ID；手动输入可复现同一评委身份。</p>
             {identityNotice ? <div className="identity-notice">{identityNotice}</div> : null}
-            <button className="panel-outline-button compact" disabled={authLoading} type="submit">{identity ? "切换评委身份" : "进入 demo 身份"}</button>
+            <button className="panel-outline-button compact" disabled={authLoading} onClick={startIdentityLogin} type="button">{authLoading ? "进入中..." : identity ? "切换评委身份" : "进入 demo 身份"}</button>
           </form>
           {identity ? <button className="panel-outline-button muted" onClick={logout} type="button">退出 demo 身份</button> : null}
         </aside>
@@ -2901,7 +2906,8 @@ export default function ExperienceClient() {
               placeholder={browserJudgeId || "judge-auto"}
               value={judgeIdInput}
             />
-            <button className={`login-button ${authLoading ? "loading" : ""}`} disabled={authLoading} type="submit">{authLoading ? "进入中" : "进入在线体验"}</button>
+            {authLoading ? <div className="login-status" role="status">正在建立 Demo 身份，请稍等...</div> : null}
+            <button aria-busy={authLoading} className={`login-button ${authLoading ? "loading" : ""}`} disabled={authLoading} onClick={startIdentityLogin} type="button">{authLoading ? "正在进入..." : "进入在线体验"}</button>
             <div className="login-tip">同一 ID 会复用同一份后端账号画像，方便评委多次回到同一体验状态。</div>
           </form>
         </div>
