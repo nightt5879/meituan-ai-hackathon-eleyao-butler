@@ -10,6 +10,10 @@
 </p>
 
 <p align="center">
+  <b>中文</b> · <a href="README.en.md">English README</a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Next.js-App_Router-000?logo=nextdotjs&logoColor=white" alt="nextjs" />
   <img src="https://img.shields.io/badge/微信小程序-原生-07C160?logo=wechat&logoColor=white" alt="wechat" />
   <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="ts" />
