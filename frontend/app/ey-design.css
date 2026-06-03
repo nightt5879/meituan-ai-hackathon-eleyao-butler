@@ -2746,29 +2746,51 @@ body.t-night .cloud-word.c-warn {
   }
 
   .cloud-section {
-    height: 100vh;
-    min-height: 620px;
+    height: 100svh;
+    min-height: 700px;
   }
 
   .cloud-intro {
     left: 22px;
     top: 88px;
-    max-width: min(88vw, 400px);
+    max-width: calc(100vw - 44px);
   }
 
   .cloud-title {
-    font-size: clamp(22px, 7.8vw, 30px);
+    font-size: clamp(30px, 9.5vw, 42px);
+    line-height: 1.08;
+  }
+
+  .cloud-title span,
+  .cloud-title em {
+    white-space: normal;
   }
 
   .cloud-sub {
-    max-width: min(84vw, 360px);
+    max-width: min(88vw, 380px);
+    margin-top: 14px;
     font-size: 13.5px;
+    line-height: 1.65;
+  }
+
+  .cloud-stage {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .cloud-word .inner {
+    filter: drop-shadow(0 8px 12px color-mix(in srgb, var(--ey-ink) 12%, transparent));
+  }
+
+  .cloud-word:hover .inner,
+  .cloud-word:focus-visible .inner {
+    transform: scale(1.08);
   }
 
   .cloud-handle {
     top: auto;
     right: 14px;
-    bottom: 16px;
+    bottom: 48px;
     padding: 10px 14px;
     border-radius: var(--ey-pill);
     font-size: 12px;

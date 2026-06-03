@@ -131,6 +131,7 @@ type SurveyInsights = {
 
 const SURVEY = surveyInsights as SurveyInsights;
 const WORDS = SURVEY.words.slice(0, 64);
+const MOBILE_WORD_COUNT = 36;
 
 function wordKey(word: CloudWord, index: number) {
   return `${word.id}-${index}`;
@@ -252,12 +253,27 @@ export function SurveyWordCloud() {
       const H = stage.clientHeight;
       if (!W || !H) return;
 
-      const cx = W * 0.6;
-      const cy = H * 0.53;
-      const k = Math.max(0.76, Math.min(1.22, W / 1260));
-      const sizes: Record<CloudWord["w"], number> = { 5: 78, 4: 58, 3: 42, 2: 31, 1: 23 };
+      const compact = W <= 640;
+      const activeWords = compact ? WORDS.slice(0, MOBILE_WORD_COUNT) : WORDS;
+      const activeKeys = new Set(activeWords.map((word, index) => wordKey(word, index)));
+      const cx = compact ? W * 0.54 : W * 0.6;
+      const cy = compact ? H * 0.62 : H * 0.53;
+      const k = compact ? Math.max(0.9, Math.min(1.08, W / 390)) : Math.max(0.76, Math.min(1.22, W / 1260));
+      const sizes: Record<CloudWord["w"], number> = compact
+        ? { 5: 42, 4: 34, 3: 27, 2: 21, 1: 17 }
+        : { 5: 78, 4: 58, 3: 42, 2: 31, 1: 23 };
+      const safeTop = compact ? Math.min(340, Math.max(270, H * 0.36)) : 82;
+      const xMargin = compact ? 12 : 18;
+      const bottomMargin = compact ? 28 : 24;
       const placed: Array<{ x: number; y: number; w: number; h: number }> = [];
       const intro = introRef.current;
+
+      Object.entries(wordRefs.current).forEach(([key, el]) => {
+        if (el && !activeKeys.has(key)) {
+          el.classList.remove("show");
+          el.style.pointerEvents = "none";
+        }
+      });
 
       if (intro) {
         const ir = intro.getBoundingClientRect();
@@ -271,7 +287,7 @@ export function SurveyWordCloud() {
       }
 
       const nodes: CloudNode[] = [];
-      const list = WORDS
+      const list = activeWords
         .map((word, index) => ({ word, index }))
         .sort((a, b) => b.word.w - a.word.w || b.word.count - a.word.count);
 
@@ -280,6 +296,7 @@ export function SurveyWordCloud() {
         if (!el) return;
 
         el.classList.remove("show");
+        el.style.pointerEvents = "";
         el.style.fontSize = `${(sizes[word.w] * k).toFixed(1)}px`;
 
         const bw = el.offsetWidth;
@@ -289,17 +306,17 @@ export function SurveyWordCloud() {
         let found = false;
 
         for (let t = 0; t < 2600; t += 0.16) {
-          const r = 3.05 * t;
-          const x = cx + r * Math.cos(t);
-          const y = cy + r * Math.sin(t) * 0.66;
+          const r = (compact ? 2.05 : 3.05) * t;
+          const x = cx + r * Math.cos(t) * (compact ? 0.76 : 1);
+          const y = cy + r * Math.sin(t) * (compact ? 0.82 : 0.66);
 
-          if (x - bw / 2 < 18 || x + bw / 2 > W - 18 || y - bh / 2 < 82 || y + bh / 2 > H - 24) {
+          if (x - bw / 2 < xMargin || x + bw / 2 > W - xMargin || y - bh / 2 < safeTop || y + bh / 2 > H - bottomMargin) {
             continue;
           }
 
           const hit = placed.some((q) => (
-            Math.abs(x - q.x) < (bw + q.w) / 2 + 10 &&
-            Math.abs(y - q.y) < (bh + q.h) / 2 + 8
+            Math.abs(x - q.x) < (bw + q.w) / 2 + (compact ? 5 : 10) &&
+            Math.abs(y - q.y) < (bh + q.h) / 2 + (compact ? 4 : 8)
           ));
 
           if (!hit) {
@@ -312,11 +329,11 @@ export function SurveyWordCloud() {
 
         if (!found) {
           for (let tries = 0; tries < 100; tries += 1) {
-            const x = rand(W * 0.18, W * 0.94);
-            const y = rand(H * 0.16, H * 0.9);
+            const x = compact ? rand(W * 0.08, W * 0.92) : rand(W * 0.18, W * 0.94);
+            const y = compact ? rand(safeTop, H * 0.92) : rand(H * 0.16, H * 0.9);
             const hit = placed.some((q) => (
-              Math.abs(x - q.x) < (bw + q.w) / 2 + 8 &&
-              Math.abs(y - q.y) < (bh + q.h) / 2 + 7
+              Math.abs(x - q.x) < (bw + q.w) / 2 + (compact ? 4 : 8) &&
+              Math.abs(y - q.y) < (bh + q.h) / 2 + (compact ? 4 : 7)
             ));
             if (!hit) {
               px = x;
