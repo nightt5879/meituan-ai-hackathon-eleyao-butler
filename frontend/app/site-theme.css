@@ -612,6 +612,21 @@ body.t-night .flow .step .dot {
   background: var(--ey-card) !important;
 }
 
+body.t-black-pink .meta-bottom,
+body.t-night .meta-bottom {
+  border-color: color-mix(in srgb, var(--ey-emerald) 34%, transparent) !important;
+  background: color-mix(in srgb, var(--ey-card) 76%, transparent) !important;
+  color: var(--ey-ink) !important;
+  box-shadow: 0 14px 36px color-mix(in srgb, #000 24%, transparent);
+}
+
+body.t-black-pink .meta-bottom .pulse,
+body.t-night .meta-bottom .pulse {
+  --meta-pulse-shadow: color-mix(in srgb, var(--ey-emerald) 48%, transparent);
+  --meta-pulse-shadow-end: color-mix(in srgb, var(--ey-emerald) 0%, transparent);
+  background: var(--ey-emerald) !important;
+}
+
 body.t-black-pink .hero-theme-btn,
 body.t-night .hero-theme-btn {
   background: rgba(255, 255, 255, 0.08) !important;
