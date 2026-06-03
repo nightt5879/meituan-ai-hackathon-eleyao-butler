@@ -41,7 +41,7 @@ const quadrants = [
     href: "#video",
     eyebrow: "VIDEO · 看实机",
     title: "演示视频",
-    desc: "小程序实机录屏：偏好确认、冲突识别、推荐生成全流程。",
+    desc: "小程序实机录屏：偏好权重确认、冲突识别、推荐生成全流程。",
     cta: "播放视频",
     icon: "play"
   },
@@ -359,7 +359,7 @@ export default function PortfolioHomePage() {
           <div className="sec-head reveal">
             <div className="sec-eyebrow">演示视频 · Demo Video</div>
             <h2 className="sec-title">小程序实机录屏</h2>
-            <p className="sec-lead">完整走一遍“偏好确认 → 冲突识别 → 推荐生成”，证明不是纸面方案，而是真的跑起来了。</p>
+            <p className="sec-lead">完整走一遍“偏好权重确认 → 冲突识别 → 推荐生成”，证明不是纸面方案，而是真的跑起来了。</p>
           </div>
           <div className="video-frame reveal">
             <span className="vtag">实机录屏</span>
@@ -374,8 +374,8 @@ export default function PortfolioHomePage() {
           </div>
           <div className="story">
             {[
-              ["镜头 01", "偏好确认", "问答收集场景、预算、距离、口味与忌口，缺信息时主动追问。"],
-              ["镜头 02", "冲突识别", "管家拆出每个人的硬约束与软偏好，明确指出冲突在哪里。"],
+              ["镜头 01", "偏好权重确认", "问答收集场景、预算、距离、口味与忌口，并让用户标记必须满足或希望满足。"],
+              ["镜头 02", "冲突识别", "管家按用户选择分流底线与偏好，明确指出冲突在哪里。"],
               ["镜头 03", "推荐生成", "候选自检 → 最终推荐 → 一键生成可发群里的邀约文案。"]
             ].map(([num, title, desc], index) => <div className={`shot reveal d${index + 1}`} key={num}><div className="sn">{num}</div><h3>{title}</h3><p>{desc}</p></div>)}
           </div>

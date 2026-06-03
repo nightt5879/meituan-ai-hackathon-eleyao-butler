@@ -157,7 +157,7 @@ export const techRouteData = {
         { kind: "tech", title: "最低满意度排序", body: "不只看平均分，避免两人满意、一人完全不能接受的平均分陷阱。" },
         { kind: "safe", title: "token 安全 + 跨设备共享", body: "返回明文 inviteToken，服务端只存哈希；JSON store 支持跨设备同看。" }
       ],
-      formula: { main: "方案总分 = 平均满意度 × 0.7 + 最低个人满意度 × 0.3", rule: "违反任一成员硬约束 → 方案直接淘汰" },
+      formula: { main: "方案总分 = 平均满意度 × 0.7 + 最低个人满意度 × 0.3", rule: "违反任一成员标记为必须满足的条件 → 方案直接淘汰" },
       fallback: { trigger: "成员变动或 OpenClaw 不可用", action: "旧推荐失效并提示重新生成，或退回本地可解释推荐。" },
       differentiator: "众口难调，难的不是找店，而是每个人都有不能违反的限制。我们把冲突摊开，再选一个谁都不难受的。"
     },
