@@ -98,11 +98,11 @@ export function PainEvidenceChain() {
       </div>
 
       <div className="pc-click-cue" aria-hidden="true">
-        <span className="pc-click-cue-text">点卡牌，看背面</span>
-        <svg className="pc-click-cue-arrow" viewBox="0 0 68 72" role="presentation" focusable="false">
-          <path className="pc-click-cue-line" d="M27 5 C 45 17, 14 27, 27 40 C 37 50, 31 59, 30 66" />
-          <path className="pc-click-cue-head" d="M18 56 L30 68 L43 56" />
-        </svg>
+        <span className="pc-click-cue-line" />
+        <span className="pc-click-cue-dot" />
+        <span className="pc-click-cue-text">点击查看卡牌信息</span>
+        <span className="pc-click-cue-dot" />
+        <span className="pc-click-cue-line" />
       </div>
 
       <div className="pc-deck-scroll">

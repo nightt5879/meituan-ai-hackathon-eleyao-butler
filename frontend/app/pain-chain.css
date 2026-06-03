@@ -93,44 +93,45 @@ body.t-night .pc {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  margin-top: 10px;
-  color: var(--pc-accent-d);
+  width: min(100%, 520px);
+  gap: 10px;
+  margin: 16px auto 0;
+  padding: 0 12px;
+  box-sizing: border-box;
+  color: color-mix(in srgb, var(--pc-accent-d) 84%, var(--pc-line));
   pointer-events: none;
 }
 
-.pc-click-cue-text {
-  font-family: "Comic Sans MS", "KaiTi", "STKaiti", var(--pc-display-font);
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  line-height: 1;
-  opacity: 0.84;
-  transform: rotate(-3deg) translateY(-4px);
-}
-
-.pc-click-cue-arrow {
-  width: 60px;
-  height: 66px;
-  overflow: visible;
-  transform: rotate(-5deg) translateY(18px);
-}
-
-.pc-click-cue-line,
-.pc-click-cue-head {
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 .pc-click-cue-line {
-  stroke-width: 3;
-  stroke-dasharray: 5 5;
+  position: relative;
+  flex: 1 1 64px;
+  max-width: 150px;
+  min-width: 32px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, currentColor 18%, currentColor 82%, transparent);
+  opacity: 0.58;
 }
 
-.pc-click-cue-head {
-  stroke-width: 3.2;
+.pc-click-cue-text {
+  flex: 0 0 auto;
+  color: var(--pc-accent-d);
+  font-family: var(--pc-body-font);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  opacity: 0.86;
+  white-space: nowrap;
+}
+
+.pc-click-cue-dot {
+  flex: 0 0 auto;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--pc-glow) 45%, transparent);
+  opacity: 0.72;
 }
 
 .pc-deck-scroll {
@@ -703,20 +704,21 @@ body.t-night .pc {
   }
 
   .pc-click-cue {
-    justify-content: flex-start;
-    margin-top: 10px;
-    padding-left: 6px;
+    width: 100%;
+    margin-top: 12px;
+    padding: 0;
     gap: 8px;
   }
 
-  .pc-click-cue-text {
-    font-size: 14px;
+  .pc-click-cue-line {
+    flex-basis: 28px;
+    max-width: 72px;
+    min-width: 18px;
   }
 
-  .pc-click-cue-arrow {
-    width: 46px;
-    height: 56px;
-    transform: rotate(-5deg) translateY(14px);
+  .pc-click-cue-text {
+    font-size: 12px;
+    letter-spacing: 0.05em;
   }
 
   .pc-deck-scroll {
