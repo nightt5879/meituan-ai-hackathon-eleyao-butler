@@ -11,10 +11,13 @@
     "diagnose:openclaw-food": "node scripts/diagnose-openclaw-food.mjs"
   },
   "dependencies": {
-    "next": "^16.2.5",
+    "next": "^16.2.7",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "ws": "^8.20.1"
+  },
+  "overrides": {
+    "postcss": "$postcss"
   },
   "devDependencies": {
     "@types/node": "20.14.10",
@@ -22,7 +25,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/ws": "^8.18.1",
     "autoprefixer": "10.4.19",
-    "postcss": "^8.5.14",
+    "postcss": "^8.5.15",
     "tailwindcss": "3.4.4",
     "typescript": "5.5.3"
   }
