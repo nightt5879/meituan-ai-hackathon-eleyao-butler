@@ -295,7 +295,7 @@
       "source": "synthetic_mvp",
       "title": "广州大学城虚拟餐饮数据库 MVP seed",
       "collectedAt": "2026-05-24",
-      "description": "基于广州大学城片区 polygon、校内 anchor 和 manual_sample 周边 jitter 生成的 100 家虚拟店铺、600 个虚拟菜品、100 条虚拟特征与 100 条 scene-fit；仅用于推荐联调和解释链路验证，不代表真实平台或真实商户数据。"
+      "description": "基于广州大学城片区 polygon、校内 anchor 和 manual_sample 周边 jitter 生成并扩充的 112 家虚拟店铺、660 个虚拟菜品、112 条虚拟特征与 112 条 scene-fit；仅用于推荐联调和解释链路验证，不代表真实平台或真实商户数据。"
     }
   ]
 }
