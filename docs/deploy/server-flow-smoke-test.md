@@ -1,6 +1,6 @@
 # 服务器完整信息流部署验证
 
-对应 issue: https://github.com/nightt5879/meituan_prj/issues/96
+对应 issue: https://github.com/nightt5879/meituan-ai-hackathon-eleyao-butler/issues/96
 
 ## 结论先行
 

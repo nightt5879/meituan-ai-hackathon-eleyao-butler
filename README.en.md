@@ -183,7 +183,7 @@ npm run dev   # http://localhost:3000
 ## Repository Layout
 
 ```text
-meituan_prj/
+meituan-ai-hackathon-eleyao-butler/
 ├─ frontend/                 # Next.js backend + H5: API routes, agent proxy, mock flows
 │  ├─ app/api/               # food / group-tasks / weekend / user ...
 │  └─ lib/                   # mock data and rule-based mock agent functions

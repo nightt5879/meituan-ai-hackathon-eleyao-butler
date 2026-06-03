@@ -17,7 +17,7 @@ const quadrants = [
   {
     id: "q1",
     number: "01",
-    href: "https://github.com/nightt5879/meituan_prj",
+    href: "https://github.com/nightt5879/meituan-ai-hackathon-eleyao-butler",
     eyebrow: "CODE · 看代码",
     title: "GitHub 仓库",
     desc: "完整源码、issue 推进记录与比赛交付分支，工程过程全公开。",
@@ -225,7 +225,7 @@ export default function PortfolioHomePage() {
           <a href="#route" onClick={(event) => handleInternalLink(event, "#route")}>技术路线</a>
           <a href="#future" onClick={(event) => handleInternalLink(event, "#future")}>未来展望</a>
           <a href="#video" onClick={(event) => handleInternalLink(event, "#video")}>演示视频</a>
-          <a href="https://github.com/nightt5879/meituan_prj" target="_blank" rel="noreferrer">GitHub</a>
+          <a href="https://github.com/nightt5879/meituan-ai-hackathon-eleyao-butler" target="_blank" rel="noreferrer">GitHub</a>
         </nav>
         <div className="nav-right">
           <ThemeNavPicker />
@@ -390,7 +390,7 @@ export default function PortfolioHomePage() {
             <p className="sec-lead">用一个 demo 身份进入，完整体验今天吃什么、多人约饭、周末规划与管家记忆。</p>
             <div className="btns">
               <a className="btn-lg btn-primary" href="/experience">开始在线体验 →</a>
-              <a className="btn-lg btn-ghost" href="https://github.com/nightt5879/meituan_prj" target="_blank" rel="noreferrer">查看 GitHub 仓库</a>
+              <a className="btn-lg btn-ghost" href="https://github.com/nightt5879/meituan-ai-hackathon-eleyao-butler" target="_blank" rel="noreferrer">查看 GitHub 仓库</a>
             </div>
           </div>
         </div>
@@ -399,7 +399,7 @@ export default function PortfolioHomePage() {
       <footer className="footer">
         <div className="fbrand"><span className="mini"><Seal size={16} /></span>饿了幺 · 全天候私人管家</div>
         <div>美团 OpenClaw 赛道 · 最终提交作品 · 2026</div>
-        <div className="footer-links"><a href="https://github.com/nightt5879/meituan_prj" target="_blank" rel="noreferrer">GitHub</a><a href="#route" onClick={(event) => handleInternalLink(event, "#route")}>技术路线</a><a href="/experience">在线体验</a></div>
+        <div className="footer-links"><a href="https://github.com/nightt5879/meituan-ai-hackathon-eleyao-butler" target="_blank" rel="noreferrer">GitHub</a><a href="#route" onClick={(event) => handleInternalLink(event, "#route")}>技术路线</a><a href="/experience">在线体验</a></div>
       </footer>
     </main>
   );
