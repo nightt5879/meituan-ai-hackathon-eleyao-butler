@@ -31,7 +31,7 @@ const quadrants = [
     href: "#design",
     eyebrow: "DESIGN · 读方案",
     title: "设计与思路",
-    desc: "选题推演、用户研究，到自检评测闭环与多人协同的完整设计。",
+    desc: "从调研证据、痛点拆解，到技术路线、系统架构与未来展望。",
     cta: "查看文档",
     icon: "doc"
   },
@@ -222,7 +222,7 @@ export default function PortfolioHomePage() {
         </a>
         <nav aria-label="作品站导航">
           <a href="#design" onClick={(event) => handleInternalLink(event, "#design")}>设计与思路</a>
-          <a href="#route" onClick={(event) => handleInternalLink(event, "#route")}>技术架构</a>
+          <a href="#route" onClick={(event) => handleInternalLink(event, "#route")}>技术路线</a>
           <a href="#future" onClick={(event) => handleInternalLink(event, "#future")}>未来展望</a>
           <a href="#video" onClick={(event) => handleInternalLink(event, "#video")}>演示视频</a>
           <a href="https://github.com/nightt5879/meituan_prj" target="_blank" rel="noreferrer">GitHub</a>
@@ -326,7 +326,7 @@ export default function PortfolioHomePage() {
       <section className="section section--paper" id="route">
         <div className="container">
           <div className="sec-head reveal">
-            <div className="sec-eyebrow">三大功能 · 技术路线</div>
+            <div className="sec-eyebrow">设计与思路 · 技术路线</div>
             <h2 className="sec-title">三个功能，<br />一条会自检的执行链路</h2>
             <p className="sec-lead">把每个功能拆成真实的 输入 → 处理 → 输出：用到哪些接口、抽取哪些字段、怎么自检、怎么兜底，以及和普通 AI 的不同点。三种框架视图可切换看，点任意节点展开细节，或「跑一遍流程」。</p>
           </div>
@@ -337,7 +337,7 @@ export default function PortfolioHomePage() {
       <section className="section section--forest" id="arch">
         <div className="container">
           <div className="sec-head reveal">
-            <div className="sec-eyebrow">技术架构 · Architecture</div>
+            <div className="sec-eyebrow">设计与思路 · 技术架构</div>
             <h2 className="sec-title">四层协作，<br />一个 Next.js 服务承载</h2>
             <p className="sec-lead">Web 作品页是面向评审的可访问镜像：保持产品能力一致，复用现有后端链路，用浏览器友好的身份、路由与存储承载完整体验。</p>
           </div>
@@ -345,7 +345,7 @@ export default function PortfolioHomePage() {
             {architectureLayers.map(([ix, title, desc]) => <div className="layer" key={ix}><div className="ix">{ix}</div><h3>{title}</h3><p>{desc}</p></div>)}
           </div>
           <div className="reveal d1" style={{ marginTop: 40 }}>
-            <div className="sec-eyebrow" style={{ marginBottom: 8 }}>自检评测闭环 · Self-Audit Loop</div>
+            <div className="sec-eyebrow" style={{ marginBottom: 8 }}>设计与思路 · 自检评测闭环</div>
             <p className="sec-lead" style={{ margin: "0 0 24px", maxWidth: "56ch" }}>把命题 02 的评测思想嵌进管家每一次回答：输出前先逐项审计，不合格就修正或追问。七项检查 × 对应动作，构成「计划前—计划中—计划后—下一次」的闭环。</p>
             <TechRouteSelfCheck />
           </div>
@@ -399,7 +399,7 @@ export default function PortfolioHomePage() {
       <footer className="footer">
         <div className="fbrand"><span className="mini"><Seal size={16} /></span>饿了幺 · 全天候私人管家</div>
         <div>美团 OpenClaw 赛道 · 最终提交作品 · 2026</div>
-        <div className="footer-links"><a href="https://github.com/nightt5879/meituan_prj" target="_blank" rel="noreferrer">GitHub</a><a href="#route" onClick={(event) => handleInternalLink(event, "#route")}>架构</a><a href="/experience">在线体验</a></div>
+        <div className="footer-links"><a href="https://github.com/nightt5879/meituan_prj" target="_blank" rel="noreferrer">GitHub</a><a href="#route" onClick={(event) => handleInternalLink(event, "#route")}>技术路线</a><a href="/experience">在线体验</a></div>
       </footer>
     </main>
   );
