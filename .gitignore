@@ -5,6 +5,7 @@ __pycache__/
 # Frontend dependencies and build output
 frontend/node_modules/
 frontend/.next/
+*.tsbuildinfo
 frontend/.npm-cache/
 frontend/.data/
 /.deploy-state/

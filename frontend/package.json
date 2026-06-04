@@ -5,27 +5,35 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "start": "next start -H 127.0.0.1 -p 3001",
     "build:survey-wordcloud": "node ../analysis/scripts/export_wordcloud_data.mjs",
     "verify:server-flow": "node scripts/verify-server-flow.mjs",
+    "verify:food-coverage": "node scripts/verify-food-candidate-coverage.mjs",
     "diagnose:openclaw-food": "node scripts/diagnose-openclaw-food.mjs"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
-    "next": "^16.2.5",
+    "next": "^16.2.7",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "ws": "^8.20.1"
   },
+  "overrides": {
+    "postcss": "$postcss"
+  },
   "devDependencies": {
     "@types/leaflet": "^1.9.21",
-    "@types/node": "20.14.10",
+    "@types/node": "20.19.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/ws": "^8.18.1",
     "autoprefixer": "10.4.19",
-    "postcss": "^8.5.14",
+    "postcss": "^8.5.15",
     "tailwindcss": "3.4.4",
-    "typescript": "5.5.3"
+    "typescript": "5.5.3",
+    "vitest": "^4.1.8"
   }
 }

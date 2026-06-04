@@ -7,7 +7,7 @@ This folder contains the Guangzhou University Town restaurant data layer MVP for
 - `regions/guangzhou_university_town.json`: region center, radius, validation radius, and future 20km expansion settings.
 - `regions/gut-business-districts.synthetic.json`: synthetic generation scaffold for Guangzhou University Town business districts, campus anchors, and manual-sample jitter points. It is not an exact administrative boundary file.
 - `shops.gut.seed.json`: 30 reviewed manual sample shops for Guangzhou University Town.
-- `shops.synthetic.seed.json`: 100 synthetic MVP shops generated inside the scaffolded Guangzhou University Town space.
+- `shops.synthetic.seed.json`: 112 synthetic MVP shops generated inside the scaffolded Guangzhou University Town space.
 - `dishes.gut.seed.json`: generated-from-hints dishes linked by `shopId`.
 - `dishes.synthetic.seed.json`: synthetic dishes linked to synthetic shops.
 - `shop-features.gut.seed.json`: generated-from-hints shop features for filtering and ranking.
@@ -35,9 +35,9 @@ Current formal seed status:
 - 30 shops, all `source: "manual_sample"`.
 - 150 dishes, all `source: "generated_from_hints"`.
 - 30 shop-feature records, all `source: "generated_from_hints"`.
-- 100 synthetic shops, all `source: "synthetic_mvp"` and `synthetic: true`.
-- 600 synthetic dishes, all `source: "synthetic_mvp"` and `synthetic: true`.
-- 100 synthetic shop-feature records and 100 synthetic scene-fit records.
+- 112 synthetic shops, all `source: "synthetic_mvp"` and `synthetic: true`.
+- 660 synthetic dishes, all `source: "synthetic_mvp"` and `synthetic: true`.
+- 112 synthetic shop-feature records and 112 synthetic scene-fit records.
 
 The shop base fields come from manual CSV organization. Dishes and features are generated from category and representative dish hints, and must not be presented as real menus, live prices, live queue risk, or verified environment facts. This project has not connected to real Meituan, Dianping, Amap, Tencent LBS, or other production POI APIs yet.
 

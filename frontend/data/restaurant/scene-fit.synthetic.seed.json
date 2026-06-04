@@ -3535,6 +3535,407 @@
       "sourceId": "synthetic_mvp_2026_05_24",
       "synthetic": true,
       "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_101",
+      "sceneScores": {
+        "soloToday": 94,
+        "groupMeetup": 54,
+        "weekendPlan": 63
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "更适合单人快吃，聚餐氛围一般",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [
+          "模拟风险：更偏快速简餐，不适合长时间聊天"
+        ],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_102",
+      "sceneScores": {
+        "soloToday": 96,
+        "groupMeetup": 48,
+        "weekendPlan": 58
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "更适合单人快吃，聚餐氛围一般",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [
+          "模拟风险：早餐快餐画像不适合正式约饭"
+        ],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_103",
+      "sceneScores": {
+        "soloToday": 93,
+        "groupMeetup": 56,
+        "weekendPlan": 60
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "更适合单人快吃，聚餐氛围一般",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [
+          "模拟风险：更偏工作日快餐，不适合长时间停留"
+        ],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_104",
+      "sceneScores": {
+        "soloToday": 95,
+        "groupMeetup": 60,
+        "weekendPlan": 64
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "适合一个人快速解决一餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "人均预算适合作为约饭参考",
+          "噪声模拟等级不过高"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [
+          "模拟风险：粉面类更偏快吃，正式聚餐体验有限"
+        ],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_105",
+      "sceneScores": {
+        "soloToday": 72,
+        "groupMeetup": 90,
+        "weekendPlan": 84
+      },
+      "explainHints": {
+        "soloToday": [
+          "不吃辣也有可选项",
+          "适合预算稍宽松时选择"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_106",
+      "sceneScores": {
+        "soloToday": 82,
+        "groupMeetup": 88,
+        "weekendPlan": 80
+      },
+      "explainHints": {
+        "soloToday": [
+          "预算友好",
+          "模拟排队风险较低",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "菜品画像适合多人分食",
+          "适合边吃边聊",
+          "噪声模拟等级不过高",
+          "人均预算适合作为约饭参考"
+        ],
+        "weekendPlan": [
+          "雨天也适合作为室内节点",
+          "停留聊天适配较好",
+          "可作为大学城片区路线中的餐饮节点"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_107",
+      "sceneScores": {
+        "soloToday": 92,
+        "groupMeetup": 54,
+        "weekendPlan": 58
+      },
+      "explainHints": {
+        "soloToday": [
+          "10元内预算友好",
+          "适合快速早餐",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "更适合单人快取",
+          "多人聊天适配一般"
+        ],
+        "weekendPlan": [
+          "可作为低预算早餐节点",
+          "停留属性较弱"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_108",
+      "sceneScores": {
+        "soloToday": 91,
+        "groupMeetup": 56,
+        "weekendPlan": 60
+      },
+      "explainHints": {
+        "soloToday": [
+          "10元内预算友好",
+          "饭团热粥画像更管饱",
+          "适合一个人随便吃"
+        ],
+        "groupMeetup": [
+          "更适合单人低预算快餐",
+          "多人聊天适配一般"
+        ],
+        "weekendPlan": [
+          "可作为早餐补给节点",
+          "停留属性较弱"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_109",
+      "sceneScores": {
+        "soloToday": 90,
+        "groupMeetup": 55,
+        "weekendPlan": 58
+      },
+      "explainHints": {
+        "soloToday": [
+          "10元内包点候选",
+          "热乎且适合快取",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "更适合单人早餐",
+          "多人停留适配一般"
+        ],
+        "weekendPlan": [
+          "可作为低预算早餐节点",
+          "不适合作为长停留餐饮"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_110",
+      "sceneScores": {
+        "soloToday": 93,
+        "groupMeetup": 57,
+        "weekendPlan": 62
+      },
+      "explainHints": {
+        "soloToday": [
+          "10元内热粥候选",
+          "适合清淡和汤汤水水诉求",
+          "模拟排队风险较低"
+        ],
+        "groupMeetup": [
+          "更适合单人热粥",
+          "多人聊天适配一般"
+        ],
+        "weekendPlan": [
+          "雨天可作为热饮早餐节点",
+          "停留属性较弱"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_111",
+      "sceneScores": {
+        "soloToday": 90,
+        "groupMeetup": 55,
+        "weekendPlan": 60
+      },
+      "explainHints": {
+        "soloToday": [
+          "10元内粉面早餐候选",
+          "适合面条粉类偏好",
+          "不吃辣也有可选项"
+        ],
+        "groupMeetup": [
+          "更适合单人快餐",
+          "多人聊天适配一般"
+        ],
+        "weekendPlan": [
+          "可作为低预算早餐补给",
+          "停留属性较弱"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_112",
+      "sceneScores": {
+        "soloToday": 92,
+        "groupMeetup": 54,
+        "weekendPlan": 58
+      },
+      "explainHints": {
+        "soloToday": [
+          "10元内快取早餐候选",
+          "适合赶时间",
+          "热乎且不辣可选"
+        ],
+        "groupMeetup": [
+          "更适合单人快取",
+          "多人聊天适配一般"
+        ],
+        "weekendPlan": [
+          "可作为低预算早餐节点",
+          "不适合作为长停留餐饮"
+        ]
+      },
+      "riskHints": {
+        "soloToday": [],
+        "groupMeetup": [],
+        "weekendPlan": []
+      },
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
     }
   ]
 }

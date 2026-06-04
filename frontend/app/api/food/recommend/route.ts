@@ -16,6 +16,7 @@ import {
   generateFoodRecommendationsWithOpenClaw,
   sanitizeFoodRecommendRequest
 } from "@/lib/server/openclawFoodRecommendation";
+import { createFoodAiProgressCopy } from "@/lib/server/aiProgressCopy";
 import { ensureUserProfile } from "@/lib/server/userProfileStore";
 
 export const runtime = "nodejs";
@@ -54,13 +55,14 @@ export async function POST(request: Request) {
   const sanitizedRequest = sanitizeFoodRecommendRequest(body);
   markTiming("sanitize_request");
   const bodyRecord = body && typeof body === "object" ? body as Record<string, unknown> : {};
+  const progressCopy = createFoodAiProgressCopy(sanitizedRequest);
   const aiProgress = await startAiProgress("food_recommendation", {
     traceId: normalizeAiProgressTraceId(bodyRecord.aiProgressTraceId),
     userId: auth.user.userId,
-    message: "正在理解你的场景、预算、距离和忌口。"
+    message: progressCopy.start
   });
   await advanceAiProgress(aiProgress.traceId, "retrieve", {
-    message: "正在准备候选店铺、账号画像和本次偏好上下文。"
+    message: progressCopy.retrieve
   });
   markTiming("start_progress");
   const profile = await ensureUserProfile(auth.user.userId);
@@ -73,13 +75,13 @@ export async function POST(request: Request) {
     }
   });
   await advanceAiProgress(aiProgress.traceId, "filter", {
-    message: "正在按预算、距离、忌口和临时偏好筛选。"
+    message: progressCopy.filter
   });
   markTiming("profile_context");
 
   if (bodyRecord.openclawFeedOnly === true) {
     await advanceAiProgress(aiProgress.traceId, "compose", {
-      message: "正在把本次偏好上下文提交给 OpenClaw。",
+      message: progressCopy.feed,
       note: "这次只验证上下文传递，不生成最终推荐。"
     });
     const openclawContextResult = await submitOpenClawDataFeed(openclawContext);
@@ -108,10 +110,10 @@ export async function POST(request: Request) {
 
   try {
     await advanceAiProgress(aiProgress.traceId, "rank", {
-      message: "正在把轻量上下文交给 OpenClaw 计算匹配排序。"
+      message: progressCopy.rank
     });
     await advanceAiProgress(aiProgress.traceId, "compose", {
-      message: "OpenClaw 正在生成推荐卡片和管家提醒。"
+      message: progressCopy.compose
     });
     markTiming("pre_openclaw_progress");
     const result = await generateFoodRecommendationsWithOpenClaw(sanitizedRequest, {
@@ -125,7 +127,7 @@ export async function POST(request: Request) {
     });
     await recordOpenClawDataFeedResult(openclawContext, openclawContextResult);
     const finalProgress = await completeAiProgress(aiProgress.traceId, "done", {
-      message: "AI 管家已生成 2-3 个可执行推荐方案。",
+      message: progressCopy.done,
       note: openclawContextResult.detail
     });
     markTiming("record_progress");
@@ -149,7 +151,7 @@ export async function POST(request: Request) {
     });
     await recordOpenClawDataFeedResult(openclawContext, openclawContextResult);
     const finalProgress = await completeAiProgress(aiProgress.traceId, "error", {
-      message: "OpenClaw 生成中断，本次推荐没有完成。",
+      message: progressCopy.error,
       note: detail
     });
     markTiming("record_progress_failed");

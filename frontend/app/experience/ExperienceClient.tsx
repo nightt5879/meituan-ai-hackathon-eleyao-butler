@@ -315,6 +315,7 @@ type PrefSummaryRow = {
 const identityKey = "meituan_web_demo_identity";
 const judgeDeviceKey = "meituan_web_judge_device_id";
 const judgeInputKey = "meituan_web_judge_input";
+const desktopPreviewTip = "电脑端体验更佳：可同时查看手机复刻、评审状态和主题面板；手机端仍可继续体验核心流程。";
 const defaultFoodConnectionStatus: FoodConnectionStatus = {
   text: "正在检测远端 OpenClaw",
   className: "status-checking",
@@ -862,10 +863,19 @@ function aiProgressSceneTitle(scene: AiProgressScene) {
   return "今天吃什么";
 }
 
-function aiProgressRequestSummary(scene: AiProgressScene) {
-  if (scene === "group_dining") return "4 人 · 有人忌海鲜 · 预算 80/120 不一 · 20:30 前走";
-  if (scene === "weekend_plan") return "周六 14:00-17:00 · 低体力 · <120元 · 咖啡/citywalk";
-  return "晚餐 · 想吃热乎的 · 不要香菜 · 60元内 · 1公里内";
+function compactSummaryParts(parts: Array<string | undefined | null | false>, fallback: string) {
+  const normalized = Array.from(new Set(parts
+    .map((part) => String(part || "").trim())
+    .filter(Boolean)
+  ));
+  return normalized.length ? normalized.slice(0, 6).join(" · ") : fallback;
+}
+
+function aiProgressRequestSummary(scene: AiProgressScene, requestSummary?: string) {
+  if (requestSummary?.trim()) return requestSummary.trim();
+  if (scene === "group_dining") return "当前多人约饭任务";
+  if (scene === "weekend_plan") return "当前周边规划条件";
+  return "当前用餐条件";
 }
 
 function aiProgressDoneText(scene: AiProgressScene) {
@@ -919,7 +929,7 @@ function aiProgressStepVisualStatus(
   return step.status;
 }
 
-function renderAiProgressCard(progress: AiProgressSnapshot | null): ReactNode {
+function renderAiProgressCard(progress: AiProgressSnapshot | null, requestSummary?: string): ReactNode {
   if (!progress) return null;
 
   const steps = progress.steps.length
@@ -946,7 +956,7 @@ function renderAiProgressCard(progress: AiProgressSnapshot | null): ReactNode {
         </div>
       </div>
 
-      <div className="ai-progress-ask">{aiProgressRequestSummary(progress.scene)}</div>
+      <div className="ai-progress-ask">{aiProgressRequestSummary(progress.scene, requestSummary)}</div>
 
       <div className="ai-progress-timeline">
         {steps.map((step, index) => {
@@ -1477,6 +1487,44 @@ export default function ExperienceClient() {
   const [weekendAiProgress, setWeekendAiProgress] = useState<AiProgressSnapshot | null>(null);
 
   const themeClass = activeTheme.className;
+  const foodAiProgressSummary = useMemo(() => compactSummaryParts([
+    foodSlots.mealPurpose,
+    foodSlots.branchPreference,
+    foodPrefs.needTags.join("、"),
+    foodPrefs.tasteTags.join("、"),
+    foodPrefs.temporaryAvoidTags.join("、"),
+    foodPrefs.avoidTags.length ? foodPrefs.avoidTags.join("、") : memory.avoidTags.join("、"),
+    foodSlots.budget || memory.budget,
+    foodSlots.distance || memory.distance,
+    foodSlots.userNotes
+  ], aiProgressRequestSummary("food_recommendation")), [foodSlots, foodPrefs, memory]);
+  const groupAiProgressSummary = useMemo(() => {
+    const task = groupBoard?.task;
+    const timeText = task?.dinnerTime || (groupFill.timeMode === "allDay"
+      ? `${groupFill.days.join("、") || "待商量"} 全天`
+      : `${groupFill.days.join("、") || "待商量"} ${groupFill.startTime}-${groupFill.endTime}`);
+
+    return compactSummaryParts([
+      task?.expectedPeopleCount ? `${task.expectedPeopleCount}人约饭` : `${groupPeople}人约饭`,
+      timeText,
+      task?.locationText,
+      groupBoard?.participants.length ? `${groupBoard.participants.length}人已提交` : "等待成员提交",
+      groupFill.dietaryTags.join("、"),
+      groupFill.cuisineTags.join("、"),
+      groupParticipant.budgetMax ? `${groupParticipant.budgetMax}元内` : groupFill.budgetTag,
+      groupFill.softPreference
+    ], aiProgressRequestSummary("group_dining"));
+  }, [groupBoard, groupPeople, groupFill, groupParticipant]);
+  const weekendAiProgressSummary = useMemo(() => compactSummaryParts([
+    buildWeekendTimeWindow(weekendForm),
+    weekendForm.startArea,
+    weekendForm.budgetMax ? `${weekendForm.budgetMax}元/人` : "",
+    weekendForm.mood,
+    weekendForm.energyLevel,
+    weekendForm.companions,
+    weekendForm.interests.join("、"),
+    weekendForm.rawText
+  ], aiProgressRequestSummary("weekend_plan")), [weekendForm]);
 
   useEffect(() => {
     if (!copyToast) return;
@@ -1654,9 +1702,14 @@ export default function ExperienceClient() {
     }
   }
 
+  function startIdentityLogin() {
+    if (authLoading) return;
+    void login();
+  }
+
   function handleIdentitySubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    void login();
+    startIdentityLogin();
   }
 
   function logout() {
@@ -2513,13 +2566,18 @@ export default function ExperienceClient() {
     const progressPolling = pollAiProgress(aiProgressTraceId, identity.sessionToken, setGroupAiProgress, () => stopProgressPolling);
 
     try {
-      const board = await requestJson<GroupBoard & { aiProgress?: AiProgressSnapshot }>(`/api/group-tasks/${encodeURIComponent(groupTaskId)}/recommend`, {
+      const board = await requestJson<GroupBoard & { aiProgress?: AiProgressSnapshot; recommendationSource?: "openclaw" | "mock"; openclawStatus?: string }>(`/api/group-tasks/${encodeURIComponent(groupTaskId)}/recommend`, {
         method: "POST",
-        body: JSON.stringify({ inviteToken: groupInviteToken, openclawFeed: true, aiProgressTraceId })
+        body: JSON.stringify({ inviteToken: groupInviteToken, useOpenClaw: true, aiProgressTraceId })
       }, identity.sessionToken);
       setGroupBoard(board);
       if (board.aiProgress) {
         setGroupAiProgress(board.aiProgress);
+      }
+      if (board.recommendationSource === "openclaw") {
+        setGroupNotice("本次多人推荐由 OpenClaw AI 在真实餐厅候选中生成。");
+      } else if (board.recommendationSource === "mock") {
+        setGroupNotice("OpenClaw 未生效，本次由服务端规则引擎兜底生成。");
       }
       setGroupAdjustmentRequests([]);
       setAdjustmentTargetCandidate(null);
@@ -2803,6 +2861,7 @@ export default function ExperienceClient() {
           <p className="mono">demoId: {identity?.demoUserId || judgeIdInput || browserJudgeId || "待生成"}</p>
           <p className="mono">userId: {identity?.userId || "等待登录"}</p>
           <a className="panel-outline-button compact" href="/">回到四象限首页</a>
+          <p className="desktop-preview-note">{desktopPreviewTip}</p>
           <form className="identity-form" onSubmit={handleIdentitySubmit}>
             <label className="identity-label" htmlFor="judge-id-panel">评委 ID</label>
             <input
@@ -2815,7 +2874,7 @@ export default function ExperienceClient() {
             />
             <p className="identity-hint">不填会使用当前浏览器生成的本地匿名 ID；手动输入可复现同一评委身份。</p>
             {identityNotice ? <div className="identity-notice">{identityNotice}</div> : null}
-            <button className="panel-outline-button compact" disabled={authLoading} type="submit">{identity ? "切换评委身份" : "进入 demo 身份"}</button>
+            <button className="panel-outline-button compact" disabled={authLoading} onClick={startIdentityLogin} type="button">{authLoading ? "进入中..." : identity ? "切换评委身份" : "进入 demo 身份"}</button>
           </form>
           {identity ? <button className="panel-outline-button muted" onClick={logout} type="button">退出 demo 身份</button> : null}
         </aside>
@@ -2857,6 +2916,7 @@ export default function ExperienceClient() {
           <p className="mono">demoId: {identity?.demoUserId || judgeIdInput || browserJudgeId || "待生成"}</p>
           <p className="mono">userId: {identity?.userId || "等待登录"}</p>
           <a className="panel-outline-button compact" href="/">回到四象限首页</a>
+          <p className="desktop-preview-note">{desktopPreviewTip}</p>
           <h2>当前体验状态</h2>
           <p>最近偏好记录：{records.length} 条 · 收藏店铺：{favorites.length} 家</p>
           <p>多人约饭任务：{groupTaskId || "未创建"} · 周末规划：{weekendPlan?.planId || "未生成"}</p>
@@ -2889,6 +2949,11 @@ export default function ExperienceClient() {
             <div className="note-text">当前为 MVP 演示版本，评委身份只用于隔离 Demo 数据，不采集硬件指纹。</div>
           </div>
 
+          <div className="mvp-note preview-note">
+            <div className="note-icon">桌</div>
+            <div className="note-text">{desktopPreviewTip}</div>
+          </div>
+
           {authError ? <div className="inline-error">{authError}</div> : null}
 
           <form className="login-actions" onSubmit={handleIdentitySubmit}>
@@ -2901,7 +2966,8 @@ export default function ExperienceClient() {
               placeholder={browserJudgeId || "judge-auto"}
               value={judgeIdInput}
             />
-            <button className={`login-button ${authLoading ? "loading" : ""}`} disabled={authLoading} type="submit">{authLoading ? "进入中" : "进入在线体验"}</button>
+            {authLoading ? <div className="login-status" role="status">正在建立 Demo 身份，请稍等...</div> : null}
+            <button aria-busy={authLoading} className={`login-button ${authLoading ? "loading" : ""}`} disabled={authLoading} onClick={startIdentityLogin} type="button">{authLoading ? "正在进入..." : "进入在线体验"}</button>
             <div className="login-tip">同一 ID 会复用同一份后端账号画像，方便评委多次回到同一体验状态。</div>
           </form>
         </div>
@@ -3194,7 +3260,7 @@ export default function ExperienceClient() {
           </div>
         ))}
         {foodNotice ? <div className="recommendation-notice">{foodNotice}</div> : null}
-        {renderAiProgressCard(foodAiProgress)}
+        {renderAiProgressCard(foodAiProgress, foodAiProgressSummary)}
         {foodLoading && !recommendations.length ? (
           <div className="recommendation-loading-card">
             <span className="loading-dot"></span>
@@ -3661,7 +3727,7 @@ export default function ExperienceClient() {
           ) : <EmptyPanel title="暂无冲突" desc="成员偏好相近，或还没有足够数据触发冲突识别。" />}
         </BoardSection>
 
-        {renderAiProgressCard(groupAiProgress)}
+        {renderAiProgressCard(groupAiProgress, groupAiProgressSummary)}
         <BoardSection title="推荐方案" desc="点生成推荐会调用 adapter.generateRecommendation。">
           {groupBoard?.recommendationResult ? renderGroupRecommendationResult(groupBoard) : <EmptyPanel title="还没生成推荐" desc="点下面「生成推荐」会调用后端推荐。" />}
         </BoardSection>
@@ -3912,7 +3978,7 @@ export default function ExperienceClient() {
             {!hasPlan && !weekendLoading && !weekendError ? <div className="planner-state">提交后会展示出门路线、折中路线、雨天或低体力备选。</div> : null}
             {weekendLoading ? <div className="planner-state">正在综合天气、预算、体力和返程时间。</div> : null}
             {weekendNotice && !weekendPlan ? <div className="planner-state success">{weekendNotice}</div> : null}
-            {renderAiProgressCard(weekendAiProgress)}
+            {renderAiProgressCard(weekendAiProgress, weekendAiProgressSummary)}
           </div>
 
           {weekendPlan ? renderWeekendResults(weekendPlan) : null}

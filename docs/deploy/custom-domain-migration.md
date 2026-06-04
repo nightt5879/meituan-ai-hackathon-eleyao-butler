@@ -1,6 +1,6 @@
 # 自有域名全量迁移
 
-对应 issue: https://github.com/nightt5879/meituan_prj/issues/97
+对应 issue: https://github.com/nightt5879/meituan-ai-hackathon-eleyao-butler/issues/97
 
 正式入口统一为：
 

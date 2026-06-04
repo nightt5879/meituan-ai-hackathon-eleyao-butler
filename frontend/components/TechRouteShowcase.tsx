@@ -421,7 +421,7 @@ export function TechRouteShowcase() {
       </div>
 
       <div className="tr-compare-block reveal d2">
-        <div className="sec-eyebrow">普通 AI vs 饿了幺 · Difference</div>
+        <div className="sec-eyebrow">设计与思路 · 差异化对比</div>
         <p className="sec-lead">不是套壳聊天，而是会追问、会协调、会自检、会兜底的本地生活管家工作流。</p>
         <TechRouteCompare />
       </div>

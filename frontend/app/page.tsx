@@ -6,9 +6,11 @@ import { ThemeNavPicker, ThemePipPicker } from "@/components/SiteThemeProvider";
 import { SurveyWordCloud } from "@/components/SurveyWordCloud";
 import { TechRouteSelfCheck, TechRouteShowcase } from "@/components/TechRouteShowcase";
 import { PainEvidenceChain } from "@/components/PainEvidenceChain";
+import { FutureSection } from "@/components/FutureSection";
 import "./ey-design.css";
 import "./tech-route.css";
 import "./pain-chain.css";
+import "./future-section.css";
 
 const demoVideoUrl = process.env.NEXT_PUBLIC_DEMO_VIDEO_URL || "";
 
@@ -24,7 +26,7 @@ const quadrants = [
   {
     id: "q1",
     number: "01",
-    href: "https://github.com/nightt5879/meituan_prj",
+    href: "https://github.com/nightt5879/meituan-ai-hackathon-eleyao-butler",
     eyebrow: "CODE · 看代码",
     title: "GitHub 仓库",
     desc: "完整源码、issue 推进记录与比赛交付分支，工程过程全公开。",
@@ -38,7 +40,7 @@ const quadrants = [
     href: "#design",
     eyebrow: "DESIGN · 读方案",
     title: "设计与思路",
-    desc: "选题推演、用户研究，到自检评测闭环与多人协同的完整设计。",
+    desc: "从调研证据、痛点拆解，到技术路线、系统架构与未来展望。",
     cta: "查看文档",
     icon: "doc"
   },
@@ -48,7 +50,7 @@ const quadrants = [
     href: "#video",
     eyebrow: "VIDEO · 看实机",
     title: "演示视频",
-    desc: "小程序实机录屏：偏好确认、冲突识别、推荐生成全流程。",
+    desc: "小程序实机录屏：偏好权重确认、冲突识别、推荐生成全流程。",
     cta: "播放视频",
     icon: "play"
   },
@@ -63,45 +65,6 @@ const quadrants = [
     icon: "spark",
     primary: true
   }
-];
-
-const innovations = [
-  {
-    tag: "创新点 01",
-    title: "自检评测闭环",
-    desc: "生成方案前，先像审计员一样逐项检查预算、忌口、时间、距离、氛围、公平性、可执行性。不合格就自动修正或追问，再输出。",
-    icon: "shield"
-  },
-  {
-    tag: "创新点 02",
-    title: "多人协同决策",
-    desc: "抽取每个人的硬约束与软偏好，明确指出冲突在哪里，生成几个折中方案；用最低个人满意度而不只是平均分来排序。",
-    icon: "route"
-  }
-];
-
-const flowSteps = [
-  ["1", "发起任务", "明晚三人，人均≤100，适合聊天"],
-  ["2", "成员偏好", "各自补充口味、预算、时间"],
-  ["3", "冲突识别", "拆出硬约束与软偏好"],
-  ["4", "候选 + 自检", "逐项规则检查"],
-  ["5", "最终推荐", "最稳、最公平的一家"],
-  ["6", "群聊文案", "一键复制去推进"]
-];
-
-const members = [
-  { who: "小林（发起人）", say: "想吃辣，但不想吃火锅，太花时间。", soft: ["想吃辣", "不要火锅", "适合聊天"], hard: [] },
-  { who: "阿杰", say: "我完全不吃辣，预算最好别超过 80。", soft: [], hard: ["不吃辣", "预算 ≤ 80"] },
-  { who: "小周", say: "20:30 前要回宿舍，最好别排队，离学校近一点。", soft: ["不想排队"], hard: ["20:30 前离开", "离学校近"] }
-];
-
-const checks = [
-  ["预算检查", "通过 · 82≤100", "pass"],
-  ["忌口检查", "通过 · 有不辣菜", "pass"],
-  ["时间检查", "通过 · 步行 12 分钟", "pass"],
-  ["氛围匹配", "通过 · 安静适合聊天", "pass"],
-  ["排队风险", "低 · 高峰建议确认", "warn"],
-  ["公平性", "通过 · 无人被牺牲", "pass"]
 ];
 
 const architectureLayers = [
@@ -142,6 +105,18 @@ export default function PortfolioHomePage() {
       window.removeEventListener("resize", setPad);
       document.documentElement.style.removeProperty("scroll-padding-top");
     };
+  }, []);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash || hash === "#top") return;
+
+    setSiteOpen(true);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.querySelector(hash)?.scrollIntoView({ behavior: "auto", block: "start" });
+      });
+    });
   }, []);
 
   useEffect(() => {
@@ -256,9 +231,10 @@ export default function PortfolioHomePage() {
         </a>
         <nav aria-label="作品站导航">
           <a href="#design" onClick={(event) => handleInternalLink(event, "#design")}>设计与思路</a>
-          <a href="#route" onClick={(event) => handleInternalLink(event, "#route")}>技术架构</a>
+          <a href="#route" onClick={(event) => handleInternalLink(event, "#route")}>技术路线</a>
+          <a href="#future" onClick={(event) => handleInternalLink(event, "#future")}>未来展望</a>
           <a href="#video" onClick={(event) => handleInternalLink(event, "#video")}>演示视频</a>
-          <a href="https://github.com/nightt5879/meituan_prj" target="_blank" rel="noreferrer">GitHub</a>
+          <a href="https://github.com/nightt5879/meituan-ai-hackathon-eleyao-butler" target="_blank" rel="noreferrer">GitHub</a>
         </nav>
         <div className="nav-right">
           <ThemeNavPicker />
@@ -304,7 +280,7 @@ export default function PortfolioHomePage() {
           <div className="toppill"><span>美团 OpenClaw</span><span className="sep">·</span><span>全天候私人管家赛道</span></div>
           <ThemePipPicker />
         </div>
-        <div className="meta meta-bottom"><span className="pulse" /><span>最终提交作品 · 点任意象限进入</span></div>
+        <div className="meta meta-bottom"><span className="pulse" /><span>最终提交作品 · 点任意象限进入 · 电脑端体验更佳</span></div>
       </div>
 
       <SurveyWordCloud />
@@ -356,94 +332,12 @@ export default function PortfolioHomePage() {
         </div>
       </section>
 
-      <section className="section section--forest" id="core">
-        <div className="container">
-          <div className="sec-head reveal">
-            <div className="sec-eyebrow">差异化 · Why Us</div>
-            <h2 className="sec-title">让它从“会聊天的助手”<br />升级成“会办事的管家”</h2>
-            <p className="sec-lead">两个增强点，把方案从“生成建议”变成“可靠执行”，避开 01 赛道的同质化。</p>
-          </div>
-          <div className="grid2">
-            {innovations.map((item, index) => (
-              <div className={`card card--dark reveal d${index + 1}`} key={item.title}>
-                <div className="ic"><Icon name={item.icon} size={26} /></div>
-                <div className="num-tag">{item.tag}</div>
-                <h2>{item.title}</h2>
-                <p>{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section section--tint" id="demo">
-        <div className="container">
-          <div className="sec-head reveal">
-            <div className="sec-eyebrow">核心 Demo · 三人周五约饭</div>
-            <h2 className="sec-title">从一句需求，<br />到“可以直接发群里的话”</h2>
-            <p className="sec-lead">一条完整链路，体现管家如何理解每个人、识别冲突、自检方案，再推进到可执行动作。</p>
-          </div>
-
-          <div className="flow reveal">
-            {flowSteps.map(([num, title, desc], index) => (
-              <div className={`step ${index === 4 ? "accent" : ""}`} key={num}>
-                <div className="dot">{num}</div>
-                <h3>{title}</h3>
-                <p>{desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="demo-wrap">
-            <div className="reveal d1">
-              <div className="panel panel-spaced">
-                <p className="panel-h">成员偏好</p>
-                {members.map((member) => (
-                  <div className="member" key={member.who}>
-                    <div className="who">{member.who}</div>
-                    <div className="say">“{member.say}”</div>
-                    <div className="tags">
-                      {member.hard.map((tag) => <span className="taglet t-hard" key={tag}>{tag}</span>)}
-                      {member.soft.map((tag) => <span className="taglet t-soft" key={tag}>{tag}</span>)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="panel">
-                <p className="panel-h">冲突识别</p>
-                <div className="conflict"><span className="badge-c">高</span><p>口味冲突：小林想吃辣，阿杰完全不吃辣。不吃辣为硬约束，优先保护。</p></div>
-                <div className="conflict"><span className="badge-c soft">中</span><p>时间冲突：小周 20:30 前要回，排队久 / 太远的店降权。</p></div>
-                <div className="conflict"><span className="badge-c soft">中</span><p>预算冲突：总体人均 100，但阿杰希望不超过 80。</p></div>
-              </div>
-            </div>
-
-            <div className="reveal d2">
-              <div className="rec-card">
-                <div className="rh"><span className="name">青禾小馆</span><span className="pin">★ 最终推荐</span></div>
-                <div className="info">家常融合菜 · 人均 82 元 · 步行 12 分钟 · 评分 4.7</div>
-                <div className="reason">有不辣菜也有可选辣度、不是火锅，照顾阿杰也兼顾小林；步行 12 分钟保证小周准时回去；环境安静，适合坐下来聊天。</div>
-                <div className="scores">
-                  {[["小林", "82"], ["阿杰", "94"], ["小周", "90"]].map(([name, score]) => <div className="s" key={name}><div className="n2">{name}</div><div className="v">{score}</div></div>)}
-                </div>
-              </div>
-              <div className="panel result-panel">
-                <p className="panel-h">方案自检</p>
-                <div className="audit">
-                  {checks.map(([label, value, type]) => <div className="audit-row" key={label}><span className="lbl">{label}</span><span className={`chk ${type}`}>{value}</span></div>)}
-                </div>
-                <div className="group-msg">“今晚 7 点青禾小馆怎么样？人均 70-80，步行 10 分钟，有不辣菜，环境也适合聊天。大家可以的话就定这个。”</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <DataSandboxSection />
 
       <section className="section section--paper" id="route">
         <div className="container">
           <div className="sec-head reveal">
-            <div className="sec-eyebrow">三大功能 · 技术路线</div>
+            <div className="sec-eyebrow">设计与思路 · 技术路线</div>
             <h2 className="sec-title">三个功能，<br />一条会自检的执行链路</h2>
             <p className="sec-lead">把每个功能拆成真实的 输入 → 处理 → 输出：用到哪些接口、抽取哪些字段、怎么自检、怎么兜底，以及和普通 AI 的不同点。三种框架视图可切换看，点任意节点展开细节，或「跑一遍流程」。</p>
           </div>
@@ -454,7 +348,7 @@ export default function PortfolioHomePage() {
       <section className="section section--forest" id="arch">
         <div className="container">
           <div className="sec-head reveal">
-            <div className="sec-eyebrow">技术架构 · Architecture</div>
+            <div className="sec-eyebrow">设计与思路 · 技术架构</div>
             <h2 className="sec-title">四层协作，<br />一个 Next.js 服务承载</h2>
             <p className="sec-lead">Web 作品页是面向评审的可访问镜像：保持产品能力一致，复用现有后端链路，用浏览器友好的身份、路由与存储承载完整体验。</p>
           </div>
@@ -462,19 +356,21 @@ export default function PortfolioHomePage() {
             {architectureLayers.map(([ix, title, desc]) => <div className="layer" key={ix}><div className="ix">{ix}</div><h3>{title}</h3><p>{desc}</p></div>)}
           </div>
           <div className="reveal d1" style={{ marginTop: 40 }}>
-            <div className="sec-eyebrow" style={{ marginBottom: 8 }}>自检评测闭环 · Self-Audit Loop</div>
+            <div className="sec-eyebrow" style={{ marginBottom: 8 }}>设计与思路 · 自检评测闭环</div>
             <p className="sec-lead" style={{ margin: "0 0 24px", maxWidth: "56ch" }}>把命题 02 的评测思想嵌进管家每一次回答：输出前先逐项审计，不合格就修正或追问。七项检查 × 对应动作，构成「计划前—计划中—计划后—下一次」的闭环。</p>
             <TechRouteSelfCheck />
           </div>
         </div>
       </section>
 
+      <FutureSection />
+
       <section className="section section--paper" id="video">
         <div className="container">
           <div className="sec-head reveal">
             <div className="sec-eyebrow">演示视频 · Demo Video</div>
             <h2 className="sec-title">小程序实机录屏</h2>
-            <p className="sec-lead">完整走一遍“偏好确认 → 冲突识别 → 推荐生成”，证明不是纸面方案，而是真的跑起来了。</p>
+            <p className="sec-lead">完整走一遍“偏好权重确认 → 冲突识别 → 推荐生成”，证明不是纸面方案，而是真的跑起来了。</p>
           </div>
           <div className="video-frame reveal">
             <span className="vtag">实机录屏</span>
@@ -489,8 +385,8 @@ export default function PortfolioHomePage() {
           </div>
           <div className="story">
             {[
-              ["镜头 01", "偏好确认", "问答收集场景、预算、距离、口味与忌口，缺信息时主动追问。"],
-              ["镜头 02", "冲突识别", "管家拆出每个人的硬约束与软偏好，明确指出冲突在哪里。"],
+              ["镜头 01", "偏好权重确认", "问答收集场景、预算、距离、口味与忌口，并让用户标记必须满足或希望满足。"],
+              ["镜头 02", "冲突识别", "管家按用户选择分流底线与偏好，明确指出冲突在哪里。"],
               ["镜头 03", "推荐生成", "候选自检 → 最终推荐 → 一键生成可发群里的邀约文案。"]
             ].map(([num, title, desc], index) => <div className={`shot reveal d${index + 1}`} key={num}><div className="sn">{num}</div><h3>{title}</h3><p>{desc}</p></div>)}
           </div>
@@ -505,7 +401,7 @@ export default function PortfolioHomePage() {
             <p className="sec-lead">用一个 demo 身份进入，完整体验今天吃什么、多人约饭、周末规划与管家记忆。</p>
             <div className="btns">
               <a className="btn-lg btn-primary" href="/experience">开始在线体验 →</a>
-              <a className="btn-lg btn-ghost" href="https://github.com/nightt5879/meituan_prj" target="_blank" rel="noreferrer">查看 GitHub 仓库</a>
+              <a className="btn-lg btn-ghost" href="https://github.com/nightt5879/meituan-ai-hackathon-eleyao-butler" target="_blank" rel="noreferrer">查看 GitHub 仓库</a>
             </div>
           </div>
         </div>
@@ -514,7 +410,7 @@ export default function PortfolioHomePage() {
       <footer className="footer">
         <div className="fbrand"><span className="mini"><Seal size={16} /></span>饿了幺 · 全天候私人管家</div>
         <div>美团 OpenClaw 赛道 · 最终提交作品 · 2026</div>
-        <div className="footer-links"><a href="https://github.com/nightt5879/meituan_prj" target="_blank" rel="noreferrer">GitHub</a><a href="#route" onClick={(event) => handleInternalLink(event, "#route")}>架构</a><a href="/experience">在线体验</a></div>
+        <div className="footer-links"><a href="https://github.com/nightt5879/meituan-ai-hackathon-eleyao-butler" target="_blank" rel="noreferrer">GitHub</a><a href="#route" onClick={(event) => handleInternalLink(event, "#route")}>技术路线</a><a href="/experience">在线体验</a></div>
       </footer>
     </main>
   );

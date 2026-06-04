@@ -5842,6 +5842,795 @@
       "sourceId": "synthetic_mvp_2026_05_24",
       "synthetic": true,
       "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_101",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.2,
+      "tasteTags": [
+        "粥粉面",
+        "热乎",
+        "清淡可选",
+        "不辣可选"
+      ],
+      "sceneTags": [
+        "早餐",
+        "午餐",
+        "单人快吃",
+        "工作日简餐",
+        "校内"
+      ],
+      "crowdTags": [
+        "solo_friendly"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "工作日低预算简餐",
+        "早餐或午餐热汤类备选"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粉面",
+        "粥粉面",
+        "热乎",
+        "清淡可选",
+        "不辣可选",
+        "早餐",
+        "午餐",
+        "单人快吃",
+        "工作日简餐",
+        "校内",
+        "solo_friendly",
+        "20-30",
+        "快一点",
+        "低预算",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合校内近距离快吃",
+        "热汤粉面类画像更贴近热乎诉求",
+        "低预算且不辣可选",
+        "以室内点位为主，适合作为雨天备选"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_102",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.1,
+      "tasteTags": [
+        "早餐简餐",
+        "热乎",
+        "清淡可选",
+        "不辣可选"
+      ],
+      "sceneTags": [
+        "早餐",
+        "单人快吃",
+        "工作日简餐",
+        "校内"
+      ],
+      "crowdTags": [
+        "solo_friendly"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "工作日低预算早餐",
+        "赶时间时快速打包"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "快餐",
+        "早餐简餐",
+        "热乎",
+        "清淡可选",
+        "不辣可选",
+        "早餐",
+        "单人快吃",
+        "工作日简餐",
+        "校内",
+        "solo_friendly",
+        "20-30",
+        "快一点",
+        "低预算",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合校内早餐和快餐",
+        "预算友好",
+        "不辣且清淡可选",
+        "模拟排队风险较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_103",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.0,
+      "tasteTags": [
+        "中式简餐",
+        "热乎",
+        "清淡可选",
+        "不辣可选"
+      ],
+      "sceneTags": [
+        "午餐",
+        "晚餐",
+        "单人快吃",
+        "工作日简餐",
+        "校内"
+      ],
+      "crowdTags": [
+        "solo_friendly"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "工作日低预算午餐",
+        "晚餐热汤简餐"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "快餐",
+        "中式简餐",
+        "热乎",
+        "清淡可选",
+        "不辣可选",
+        "午餐",
+        "晚餐",
+        "单人快吃",
+        "工作日简餐",
+        "校内",
+        "solo_friendly",
+        "20-30",
+        "快一点",
+        "低预算",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合校内近距离快餐",
+        "热汤便当类画像更贴近热乎诉求",
+        "低预算且不辣可选",
+        "模拟排队风险较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_104",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.3,
+      "tasteTags": [
+        "云吞粉面",
+        "热乎",
+        "清淡可选",
+        "不辣可选"
+      ],
+      "sceneTags": [
+        "早餐",
+        "午餐",
+        "晚餐",
+        "夜宵",
+        "单人快吃",
+        "工作日简餐",
+        "校内"
+      ],
+      "crowdTags": [
+        "solo_friendly"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "今天一个人快速解决",
+        "早餐或夜宵热汤类备选",
+        "工作日低预算简餐"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粉面",
+        "云吞粉面",
+        "热乎",
+        "清淡可选",
+        "不辣可选",
+        "早餐",
+        "午餐",
+        "晚餐",
+        "夜宵",
+        "单人快吃",
+        "工作日简餐",
+        "校内",
+        "solo_friendly",
+        "20-30",
+        "快一点",
+        "低预算",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合早餐、简餐和夜间热汤",
+        "清汤云吞粉面类画像更贴近清淡诉求",
+        "低预算且不辣可选",
+        "模拟排队风险较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_105",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.5,
+      "tasteTags": [
+        "家常简餐",
+        "热乎",
+        "清淡可选",
+        "不辣可选"
+      ],
+      "sceneTags": [
+        "午餐",
+        "晚餐",
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内",
+        "校内"
+      ],
+      "crowdTags": [
+        "group_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "三到六人约饭",
+        "边吃边聊天",
+        "晚餐热汤小锅"
+      ],
+      "avoidTags": [],
+      "queueRisk": "medium",
+      "noiseLevel": "low",
+      "chatFriendly": true,
+      "groupFriendly": true,
+      "soloFriendly": false,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "家常菜",
+        "家常简餐",
+        "热乎",
+        "清淡可选",
+        "不辣可选",
+        "午餐",
+        "晚餐",
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内",
+        "校内",
+        "group_friendly",
+        "chat_friendly",
+        "20-30",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合朋友一起吃",
+        "热汤小锅类画像更贴近热乎诉求",
+        "空间画像偏适合聊天停留",
+        "不辣且清淡可选"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_106",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.2,
+      "tasteTags": [
+        "夜粥粉面",
+        "热乎",
+        "清淡可选",
+        "不辣可选"
+      ],
+      "sceneTags": [
+        "晚餐",
+        "夜宵",
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内",
+        "校内"
+      ],
+      "crowdTags": [
+        "group_friendly",
+        "chat_friendly"
+      ],
+      "budgetLevel": "20-30",
+      "goodFor": [
+        "夜宵热粥类备选",
+        "三到六人约饭",
+        "边吃边聊天"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": true,
+      "groupFriendly": true,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粉面",
+        "夜粥粉面",
+        "热乎",
+        "清淡可选",
+        "不辣可选",
+        "晚餐",
+        "夜宵",
+        "多人约饭",
+        "朋友聊天",
+        "雨天室内",
+        "校内",
+        "group_friendly",
+        "chat_friendly",
+        "solo_friendly",
+        "20-30",
+        "适合聊天",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像显示适合晚餐或夜宵热汤",
+        "适合朋友一起吃并聊天",
+        "不辣且清淡可选",
+        "模拟排队风险较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_107",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.1,
+      "tasteTags": [
+        "早餐简餐",
+        "热乎",
+        "清淡可选",
+        "不辣可选"
+      ],
+      "sceneTags": [
+        "早餐",
+        "午餐",
+        "工作日快餐",
+        "一人友好",
+        "校内"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "quick_meal"
+      ],
+      "budgetLevel": "10元内",
+      "goodFor": [
+        "10元内早餐兜底",
+        "赶时间快取",
+        "清淡热饮"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "快餐",
+        "早餐简餐",
+        "豆浆包点",
+        "热乎",
+        "清淡可选",
+        "不辣可选",
+        "早餐",
+        "午餐",
+        "工作日快餐",
+        "一人友好",
+        "校内",
+        "solo_friendly",
+        "quick_meal",
+        "10元内",
+        "低预算",
+        "快一点",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像用于覆盖10元内早餐候选",
+        "热豆浆和白粥类画像贴近热乎清淡诉求",
+        "适合作为赶时间的低预算备选"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_108",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4,
+      "tasteTags": [
+        "早餐简餐",
+        "清淡可选",
+        "热乎",
+        "不辣可选"
+      ],
+      "sceneTags": [
+        "早餐",
+        "午餐",
+        "工作日快餐",
+        "一人友好",
+        "校内"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "quick_meal"
+      ],
+      "budgetLevel": "10元内",
+      "goodFor": [
+        "10元内早餐",
+        "低预算饱腹",
+        "一人快速吃"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "快餐",
+        "早餐简餐",
+        "粥饭团",
+        "清淡可选",
+        "热乎",
+        "不辣可选",
+        "早餐",
+        "午餐",
+        "工作日快餐",
+        "一人友好",
+        "校内",
+        "solo_friendly",
+        "quick_meal",
+        "10元内",
+        "低预算",
+        "饱腹感强",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像用于补足低预算早餐",
+        "饭团和热粥画像适合低预算饱腹",
+        "不辣且清淡可选"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_109",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4,
+      "tasteTags": [
+        "早餐点心",
+        "热乎",
+        "清淡可选",
+        "不辣可选"
+      ],
+      "sceneTags": [
+        "早餐",
+        "工作日快餐",
+        "一人友好",
+        "校内"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "quick_meal"
+      ],
+      "budgetLevel": "10元内",
+      "goodFor": [
+        "包子点心偏好",
+        "10元内早餐",
+        "快一点"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "快餐",
+        "早餐点心",
+        "蒸点简餐",
+        "包子点心",
+        "热乎",
+        "清淡可选",
+        "不辣可选",
+        "早餐",
+        "工作日快餐",
+        "一人友好",
+        "校内",
+        "solo_friendly",
+        "quick_meal",
+        "10元内",
+        "低预算",
+        "快一点",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像用于补足包子点心类早餐",
+        "蒸点画像贴近热乎和快一点",
+        "不辣且清淡可选"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_110",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4.2,
+      "tasteTags": [
+        "早餐粥品",
+        "热乎",
+        "汤汤水水",
+        "清淡可选",
+        "不辣可选"
+      ],
+      "sceneTags": [
+        "早餐",
+        "午餐",
+        "工作日快餐",
+        "一人友好",
+        "雨天室内",
+        "校内"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "quick_meal"
+      ],
+      "budgetLevel": "10元内",
+      "goodFor": [
+        "清淡热粥",
+        "汤汤水水",
+        "低预算早餐"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "low",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粉面",
+        "早餐粥品",
+        "粥",
+        "热乎",
+        "汤汤水水",
+        "清淡可选",
+        "不辣可选",
+        "早餐",
+        "午餐",
+        "工作日快餐",
+        "一人友好",
+        "雨天室内",
+        "校内",
+        "solo_friendly",
+        "quick_meal",
+        "10元内",
+        "低预算",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像用于补足低预算热粥",
+        "适合清淡和汤汤水水诉求",
+        "模拟排队风险较低"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_111",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4,
+      "tasteTags": [
+        "早餐粉面",
+        "热乎",
+        "清淡可选",
+        "不辣可选"
+      ],
+      "sceneTags": [
+        "早餐",
+        "午餐",
+        "工作日快餐",
+        "一人友好",
+        "校内"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "quick_meal"
+      ],
+      "budgetLevel": "10元内",
+      "goodFor": [
+        "面条粉类早餐",
+        "低预算粉面",
+        "快一点"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "粉面",
+        "早餐粉面",
+        "肠粉",
+        "热乎",
+        "清淡可选",
+        "不辣可选",
+        "早餐",
+        "午餐",
+        "工作日快餐",
+        "一人友好",
+        "校内",
+        "solo_friendly",
+        "quick_meal",
+        "10元内",
+        "低预算",
+        "快一点",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像用于补足低预算粉面早餐",
+        "肠粉和清汤粉画像适合热乎不辣",
+        "适合工作日快速吃"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
+    },
+    {
+      "shopId": "synthetic_gut_112",
+      "supportsSpicy": false,
+      "supportsNonSpicy": true,
+      "quietScore": 4,
+      "tasteTags": [
+        "早餐包点",
+        "热乎",
+        "清淡可选",
+        "不辣可选"
+      ],
+      "sceneTags": [
+        "早餐",
+        "工作日快餐",
+        "一人友好",
+        "校内"
+      ],
+      "crowdTags": [
+        "solo_friendly",
+        "quick_meal"
+      ],
+      "budgetLevel": "10元内",
+      "goodFor": [
+        "10元内包点",
+        "快取早餐",
+        "一人快速吃"
+      ],
+      "avoidTags": [],
+      "queueRisk": "low",
+      "noiseLevel": "medium",
+      "chatFriendly": false,
+      "groupFriendly": false,
+      "soloFriendly": true,
+      "indoor": true,
+      "rainyDayFriendly": true,
+      "featureTags": [
+        "快餐",
+        "早餐包点",
+        "包子点心",
+        "热乎",
+        "清淡可选",
+        "不辣可选",
+        "早餐",
+        "工作日快餐",
+        "一人友好",
+        "校内",
+        "solo_friendly",
+        "quick_meal",
+        "10元内",
+        "低预算",
+        "快一点",
+        "室内"
+      ],
+      "explainHints": [
+        "合成画像用于补足10元内包点候选",
+        "快取包点画像适合赶时间",
+        "不辣且清淡可选"
+      ],
+      "riskHints": [],
+      "source": "synthetic_mvp",
+      "sourceId": "synthetic_mvp_2026_05_24",
+      "synthetic": true,
+      "confidence": 0.45
     }
   ]
 }
