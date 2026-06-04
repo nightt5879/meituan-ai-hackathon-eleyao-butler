@@ -2842,13 +2842,13 @@ export default function ExperienceClient() {
             <p>最近偏好记录：{records.length} 条</p>
             <p>收藏店铺：{favorites.length} 家</p>
             <p>多人约饭任务：{groupTaskId || "未创建"}</p>
-            <p>周末规划：{weekendPlan?.planId || "未生成"}</p>
+            <p>周边规划：{weekendPlan?.planId || "未生成"}</p>
             <h2>验收覆盖</h2>
             <p>登录/demo 身份初始化</p>
             <p>首页、历史、收藏、主题</p>
             <p>今天吃什么问答与推荐</p>
             <p>多人约饭创建、填写、看板</p>
-            <p>周末规划生成与 fallback</p>
+            <p>周边规划生成与 fallback</p>
             <p>记忆设置与本地持久化</p>
           </aside>
           {renderThemeListPanel()}
@@ -2872,9 +2872,9 @@ export default function ExperienceClient() {
           <p className="desktop-preview-note">{desktopPreviewTip}</p>
           <h2>当前体验状态</h2>
           <p>最近偏好记录：{records.length} 条 · 收藏店铺：{favorites.length} 家</p>
-          <p>多人约饭任务：{groupTaskId || "未创建"} · 周末规划：{weekendPlan?.planId || "未生成"}</p>
+          <p>多人约饭任务：{groupTaskId || "未创建"} · 周边规划：{weekendPlan?.planId || "未生成"}</p>
           <h2>验收覆盖</h2>
-          <p>登录 · 首页/历史/收藏/主题 · 今天吃什么 · 多人约饭 · 周末规划 · 记忆持久化</p>
+          <p>登录 · 首页/历史/收藏/主题 · 今天吃什么 · 多人约饭 · 周边规划 · 记忆持久化</p>
           {identity ? <button className="panel-outline-button" onClick={logout} type="button">退出 demo 身份</button> : null}
           <button className="review-sheet-close" onClick={() => setShowReviewSheet(false)} type="button">收起</button>
         </div>

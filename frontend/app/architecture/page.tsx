@@ -15,7 +15,7 @@ const layers = [
   },
   {
     name: "数据层",
-    detail: "任务、登录 session、周末规划写入服务端 JSON store；浏览器本地保留记忆、收藏和草稿。"
+    detail: "任务、登录 session、周边规划写入服务端 JSON store；浏览器本地保留记忆、收藏和草稿。"
   }
 ];
 
