@@ -207,13 +207,6 @@ const radarMetrics: Array<{
   { key: "queueRisk", label: "排队低风险", note: "风险标签" }
 ];
 
-const stats = [
-  { value: String(layerCounts.manual_sample), label: "个手动样本餐厅" },
-  { value: String(layerCounts.synthetic_mvp), label: "个 synthetic 餐饮点" },
-  { value: String(layerCounts.weekend_poi), label: "个周末 POI" },
-  { value: String(routeTemplateRows.length), label: "条周末路线模板" }
-];
-
 export function DataSandboxSection() {
   const [selectedPointId, setSelectedPointId] = useState(sandboxPoints[0]?.id ?? "");
   const [activeLayers, setActiveLayers] = useState<Record<LayerKey, boolean>>(defaultLayerFilters);
@@ -836,6 +829,9 @@ function MapLegend() {
 }
 
 function SandboxConsole({ point, visibleCount }: { point: SandboxPoint; visibleCount: number }) {
+  const compactTags = point.scenarioTags.slice(0, 5);
+  const boundaryTags = point.scenarioTags.slice(0, 6);
+
   return (
     <section className={styles.controlDeck} aria-labelledby="sandbox-console-title">
       <div className={styles.consoleHeader}>
@@ -844,16 +840,43 @@ function SandboxConsole({ point, visibleCount }: { point: SandboxPoint; visibleC
           <h3 id="sandbox-console-title">当前选中：{point.name}</h3>
           <div className={styles.profileBadgeRow} aria-label="当前候选来源摘要">
             <span>{typeLabel(point.type)}</span>
-            <span>来源：{sourceCompactLabel(point.source)}</span>
             <span>{point.synthetic ? "MVP 合成数据" : "人工样本"}</span>
             <span>{confidenceBadgeLabel(point.confidence)}</span>
-            <span>能力：{point.markerLabel}</span>
+            {compactTags.map((tag) => (
+              <span key={tag}>{tag}</span>
+            ))}
           </div>
         </div>
-        <div className={styles.profileTags} aria-label="当前点位适配场景标签">
-          {point.scenarioTags.map((tag) => (
-            <span key={tag}>{tag}</span>
-          ))}
+        <div className={styles.sourceSummary} aria-label="来源摘要">
+          <span>来源摘要</span>
+          <strong>{sourceCompactLabel(point.source)} · {point.sourceId} · {point.synthetic ? "synthetic" : "sample"} · {point.confidence} confidence</strong>
+          <code>{seedFileShortLabel(point.seedFile)}</code>
+        </div>
+      </div>
+
+      <div className={styles.consoleStats} aria-label="候选规模统计">
+        <div className={styles.visibleStat}>
+          <span>当前可见</span>
+          <strong>
+            {visibleCount}
+            <small> / {totalPointCount}</small>
+          </strong>
+        </div>
+        <div className={styles.statItem}>
+          <strong>{layerCounts.manual_sample}</strong>
+          <span>manual</span>
+        </div>
+        <div className={styles.statItem}>
+          <strong>{layerCounts.synthetic_mvp}</strong>
+          <span>synthetic</span>
+        </div>
+        <div className={styles.statItem}>
+          <strong>{layerCounts.weekend_poi}</strong>
+          <span>POI</span>
+        </div>
+        <div className={styles.statItem}>
+          <strong>{routeTemplateRows.length}</strong>
+          <span>route</span>
         </div>
       </div>
 
@@ -868,83 +891,43 @@ function SandboxConsole({ point, visibleCount }: { point: SandboxPoint; visibleC
 
         <div className={styles.consolePanel} aria-labelledby="console-source-title">
           <div className={styles.panelTitle}>
-            <span>数据来源与用途</span>
-            <h4 id="console-source-title">候选从哪里来，为什么可解释</h4>
+            <span>来源与用途</span>
+            <h4 id="console-source-title">候选不是凭空生成</h4>
           </div>
           <div className={styles.sourceNarrative}>
-            <div className={styles.sourceBlock}>
-              <strong>来源</strong>
-              <p>
-                <span>source</span>
-                {point.source}
-              </p>
-              <p>
-                <span>sourceId</span>
-                {point.sourceId}
-              </p>
-              <p>
-                <span>seed</span>
-                {seedFileShortLabel(point.seedFile)}
-              </p>
-              <p>
-                <span>synthetic</span>
-                {point.synthetic ? "true / MVP 合成或场景数据" : "false / 人工样本"}
-              </p>
-              <p>
-                <span>confidence</span>
-                {confidenceLabel(point.confidence)}
-              </p>
+            <div className={styles.sourceLine}>
+              <span>source</span>
+              <strong>{point.source}</strong>
             </div>
-            <div className={styles.sourceBlock}>
-              <strong>用途</strong>
-              <ul className={styles.whyList}>
-                {point.why.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
+            <div className={styles.sourceLine}>
+              <span>seed</span>
+              <code>{seedFileShortLabel(point.seedFile)}</code>
             </div>
+            <div className={styles.sourceLine}>
+              <span>synthetic / confidence</span>
+              <strong>{point.synthetic ? "true · MVP 合成或场景数据" : "false · 人工样本"} · {confidenceLabel(point.confidence)}</strong>
+            </div>
+            <ul className={styles.whyList}>
+              {point.why.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
 
-      <div className={styles.consoleFooter}>
-        <div className={styles.consoleStats} aria-label="候选规模统计">
-          <div className={styles.visibleStat}>
-            <span>当前可见</span>
-            <strong>
-              {visibleCount}
-              <small> / {totalPointCount}</small>
-            </strong>
-          </div>
-          {stats.map((item) => (
-            <div className={styles.statItem} key={item.label}>
-              <strong>{item.value}</strong>
-              <span>{item.label}</span>
-            </div>
-          ))}
+      <div className={styles.complianceRibbon} aria-labelledby="console-boundary-title">
+        <div className={styles.boundaryLead}>
+          <span className={styles.boundaryPill}>MVP 边界</span>
+          <span className={styles.boundaryPillMuted}>非真实平台数据</span>
         </div>
-
-        <div className={styles.complianceRibbon} aria-labelledby="console-boundary-title">
-          <div className={styles.boundaryLead}>
-            <span className={styles.boundaryPill}>MVP 边界</span>
-            <span className={styles.boundaryPillMuted}>非真实平台数据</span>
-          </div>
-          <div className={styles.boundaryBody}>
-            <div className={styles.panelTitle}>
-              <span>边界说明</span>
-              <h4 id="console-boundary-title">只验证推荐与路线逻辑</h4>
-            </div>
-            <p className={styles.boundaryText}>
-              当前沙盘用于 Hackathon MVP 的推荐与路线逻辑验证，不代表真实美团 / 点评评分、销量、库存、排队时间或平台认证数据。
-            </p>
-          </div>
-          <div className={styles.tagCloud} aria-label="场景标签">
-            {sceneTags.map((tag) => (
-              <span className={point.scenarioTags.includes(tag) ? styles.activeTag : undefined} key={tag}>
-                {tag}
-              </span>
-            ))}
-          </div>
+        <p className={styles.boundaryText} id="console-boundary-title">
+          当前沙盘用于 Hackathon MVP 的推荐与路线逻辑验证，不代表真实美团 / 点评评分、销量、库存、排队时间或平台认证数据。
+        </p>
+        <div className={styles.tagCloud} aria-label="当前候选核心标签">
+          {boundaryTags.map((tag) => (
+            <span className={styles.activeTag} key={tag}>{tag}</span>
+          ))}
         </div>
       </div>
     </section>
