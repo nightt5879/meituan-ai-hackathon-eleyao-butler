@@ -863,10 +863,19 @@ function aiProgressSceneTitle(scene: AiProgressScene) {
   return "今天吃什么";
 }
 
-function aiProgressRequestSummary(scene: AiProgressScene) {
-  if (scene === "group_dining") return "4 人 · 有人忌海鲜 · 预算 80/120 不一 · 20:30 前走";
-  if (scene === "weekend_plan") return "周六 14:00-17:00 · 低体力 · <120元 · 咖啡/citywalk";
-  return "晚餐 · 想吃热乎的 · 不要香菜 · 60元内 · 1公里内";
+function compactSummaryParts(parts: Array<string | undefined | null | false>, fallback: string) {
+  const normalized = Array.from(new Set(parts
+    .map((part) => String(part || "").trim())
+    .filter(Boolean)
+  ));
+  return normalized.length ? normalized.slice(0, 6).join(" · ") : fallback;
+}
+
+function aiProgressRequestSummary(scene: AiProgressScene, requestSummary?: string) {
+  if (requestSummary?.trim()) return requestSummary.trim();
+  if (scene === "group_dining") return "当前多人约饭任务";
+  if (scene === "weekend_plan") return "当前周边规划条件";
+  return "当前用餐条件";
 }
 
 function aiProgressDoneText(scene: AiProgressScene) {
@@ -920,7 +929,7 @@ function aiProgressStepVisualStatus(
   return step.status;
 }
 
-function renderAiProgressCard(progress: AiProgressSnapshot | null): ReactNode {
+function renderAiProgressCard(progress: AiProgressSnapshot | null, requestSummary?: string): ReactNode {
   if (!progress) return null;
 
   const steps = progress.steps.length
@@ -947,7 +956,7 @@ function renderAiProgressCard(progress: AiProgressSnapshot | null): ReactNode {
         </div>
       </div>
 
-      <div className="ai-progress-ask">{aiProgressRequestSummary(progress.scene)}</div>
+      <div className="ai-progress-ask">{aiProgressRequestSummary(progress.scene, requestSummary)}</div>
 
       <div className="ai-progress-timeline">
         {steps.map((step, index) => {
@@ -1478,6 +1487,44 @@ export default function ExperienceClient() {
   const [weekendAiProgress, setWeekendAiProgress] = useState<AiProgressSnapshot | null>(null);
 
   const themeClass = activeTheme.className;
+  const foodAiProgressSummary = useMemo(() => compactSummaryParts([
+    foodSlots.mealPurpose,
+    foodSlots.branchPreference,
+    foodPrefs.needTags.join("、"),
+    foodPrefs.tasteTags.join("、"),
+    foodPrefs.temporaryAvoidTags.join("、"),
+    foodPrefs.avoidTags.length ? foodPrefs.avoidTags.join("、") : memory.avoidTags.join("、"),
+    foodSlots.budget || memory.budget,
+    foodSlots.distance || memory.distance,
+    foodSlots.userNotes
+  ], aiProgressRequestSummary("food_recommendation")), [foodSlots, foodPrefs, memory]);
+  const groupAiProgressSummary = useMemo(() => {
+    const task = groupBoard?.task;
+    const timeText = task?.dinnerTime || (groupFill.timeMode === "allDay"
+      ? `${groupFill.days.join("、") || "待商量"} 全天`
+      : `${groupFill.days.join("、") || "待商量"} ${groupFill.startTime}-${groupFill.endTime}`);
+
+    return compactSummaryParts([
+      task?.expectedPeopleCount ? `${task.expectedPeopleCount}人约饭` : `${groupPeople}人约饭`,
+      timeText,
+      task?.locationText,
+      groupBoard?.participants.length ? `${groupBoard.participants.length}人已提交` : "等待成员提交",
+      groupFill.dietaryTags.join("、"),
+      groupFill.cuisineTags.join("、"),
+      groupParticipant.budgetMax ? `${groupParticipant.budgetMax}元内` : groupFill.budgetTag,
+      groupFill.softPreference
+    ], aiProgressRequestSummary("group_dining"));
+  }, [groupBoard, groupPeople, groupFill, groupParticipant]);
+  const weekendAiProgressSummary = useMemo(() => compactSummaryParts([
+    buildWeekendTimeWindow(weekendForm),
+    weekendForm.startArea,
+    weekendForm.budgetMax ? `${weekendForm.budgetMax}元/人` : "",
+    weekendForm.mood,
+    weekendForm.energyLevel,
+    weekendForm.companions,
+    weekendForm.interests.join("、"),
+    weekendForm.rawText
+  ], aiProgressRequestSummary("weekend_plan")), [weekendForm]);
 
   useEffect(() => {
     if (!copyToast) return;
@@ -3213,7 +3260,7 @@ export default function ExperienceClient() {
           </div>
         ))}
         {foodNotice ? <div className="recommendation-notice">{foodNotice}</div> : null}
-        {renderAiProgressCard(foodAiProgress)}
+        {renderAiProgressCard(foodAiProgress, foodAiProgressSummary)}
         {foodLoading && !recommendations.length ? (
           <div className="recommendation-loading-card">
             <span className="loading-dot"></span>
@@ -3680,7 +3727,7 @@ export default function ExperienceClient() {
           ) : <EmptyPanel title="暂无冲突" desc="成员偏好相近，或还没有足够数据触发冲突识别。" />}
         </BoardSection>
 
-        {renderAiProgressCard(groupAiProgress)}
+        {renderAiProgressCard(groupAiProgress, groupAiProgressSummary)}
         <BoardSection title="推荐方案" desc="点生成推荐会调用 adapter.generateRecommendation。">
           {groupBoard?.recommendationResult ? renderGroupRecommendationResult(groupBoard) : <EmptyPanel title="还没生成推荐" desc="点下面「生成推荐」会调用后端推荐。" />}
         </BoardSection>
@@ -3931,7 +3978,7 @@ export default function ExperienceClient() {
             {!hasPlan && !weekendLoading && !weekendError ? <div className="planner-state">提交后会展示出门路线、折中路线、雨天或低体力备选。</div> : null}
             {weekendLoading ? <div className="planner-state">正在综合天气、预算、体力和返程时间。</div> : null}
             {weekendNotice && !weekendPlan ? <div className="planner-state success">{weekendNotice}</div> : null}
-            {renderAiProgressCard(weekendAiProgress)}
+            {renderAiProgressCard(weekendAiProgress, weekendAiProgressSummary)}
           </div>
 
           {weekendPlan ? renderWeekendResults(weekendPlan) : null}
