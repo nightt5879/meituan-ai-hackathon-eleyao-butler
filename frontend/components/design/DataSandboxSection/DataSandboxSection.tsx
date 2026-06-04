@@ -111,6 +111,13 @@ const DISPLAY_COORD_OFFSET = {
 };
 const FALLBACK_COPY =
   "地图底图暂不可用，已切换为静态 MVP 数据沙盘。推荐与路线逻辑仍基于候选、标签和边界声明展示。";
+const TILE_WARNING_COPY = "部分底图瓦片加载较慢，可缩回大学城范围或点击重试地图。";
+const FIRST_SCREEN_TILE_TIMEOUT_MS = 8000;
+const FIRST_SCREEN_TILE_ERROR_LIMIT = 16;
+const UNIVERSITY_TOWN_MAX_BOUNDS: [[number, number], [number, number]] = [
+  [23.015, 113.335],
+  [23.09, 113.455]
+];
 
 const manualShopRows = (manualShopsSeed as { shops?: SeedRestaurantShop[] }).shops ?? [];
 const syntheticShopRows = (syntheticShopsSeed as { shops?: SeedRestaurantShop[] }).shops ?? [];
@@ -285,14 +292,58 @@ function LeafletSandboxMap({
   const tileLayerRef = useRef<TileLayer | null>(null);
   const markersRef = useRef<Record<string, Marker>>({});
   const leafletRef = useRef<typeof import("leaflet") | null>(null);
+  const mapHasLoadedOnceRef = useRef(false);
+  const tileErrorCountRef = useRef(0);
   const [mapStatus, setMapStatus] = useState<"loading" | "ready" | "fallback">("loading");
   const [fallbackReason, setFallbackReason] = useState(FALLBACK_COPY);
+  const [tileWarning, setTileWarning] = useState("");
+  const [mapHasLoadedOnce, setMapHasLoadedOnce] = useState(false);
+  const [mapRetryToken, setMapRetryToken] = useState(0);
   const [wheelZoomEnabled, setWheelZoomEnabled] = useState(false);
   const [mapZoom, setMapZoom] = useState(14);
   const visiblePointKey = useMemo(
     () => visiblePoints.map((point) => point.id).join("|"),
     [visiblePoints]
   );
+
+  const handleReturnToTown = useCallback(() => {
+    const L = leafletRef.current;
+    const map = mapRef.current;
+    if (!L || !map) return;
+
+    tileErrorCountRef.current = 0;
+    setTileWarning("");
+    if (visiblePoints.length > 1) {
+      const bounds = L.latLngBounds(visiblePoints.map((point) => point.displayLatLng));
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { animate: true, maxZoom: 15, padding: [48, 48] });
+        return;
+      }
+    }
+
+    map.fitBounds(L.latLngBounds(UNIVERSITY_TOWN_MAX_BOUNDS), {
+      animate: true,
+      maxZoom: 14.5,
+      padding: [48, 48]
+    });
+  }, [visiblePointKey, visiblePoints]);
+
+  const handleRetryMap = useCallback(() => {
+    tileErrorCountRef.current = 0;
+    setTileWarning("");
+
+    if (mapStatus === "fallback") {
+      mapHasLoadedOnceRef.current = false;
+      setMapHasLoadedOnce(false);
+      setFallbackReason(FALLBACK_COPY);
+      setMapStatus("loading");
+      setMapRetryToken((token) => token + 1);
+      return;
+    }
+
+    mapRef.current?.invalidateSize({ pan: false });
+    tileLayerRef.current?.redraw();
+  }, [mapStatus]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -309,9 +360,11 @@ function LeafletSandboxMap({
     }
 
     let disposed = false;
-    let tileErrors = 0;
     let tileLoaded = false;
     let tileLoadTimeout: number | undefined;
+    tileErrorCountRef.current = 0;
+    setTileWarning("");
+
     const teardownMap = () => {
       if (tileLoadTimeout) {
         window.clearTimeout(tileLoadTimeout);
@@ -324,10 +377,29 @@ function LeafletSandboxMap({
       mapRef.current = null;
       leafletRef.current = null;
     };
-    const triggerFallback = () => {
+    const triggerFallback = (reason = FALLBACK_COPY) => {
       teardownMap();
-      setFallbackReason(FALLBACK_COPY);
+      mapHasLoadedOnceRef.current = false;
+      setMapHasLoadedOnce(false);
+      setTileWarning("");
+      setFallbackReason(reason);
       setMapStatus("fallback");
+    };
+    const markMapLoaded = () => {
+      tileLoaded = true;
+      tileErrorCountRef.current = 0;
+      mapHasLoadedOnceRef.current = true;
+      if (tileLoadTimeout) {
+        window.clearTimeout(tileLoadTimeout);
+      }
+      if (!disposed) {
+        setMapHasLoadedOnce(true);
+        setTileWarning("");
+        setMapStatus("ready");
+      }
+    };
+    const resetRuntimeTileErrors = () => {
+      tileErrorCountRef.current = 0;
     };
 
     const mountMap = async () => {
@@ -339,8 +411,10 @@ function LeafletSandboxMap({
         const map = L.map(container, {
           center: UNIVERSITY_TOWN_CENTER,
           zoom: 14,
-          minZoom: 12,
+          minZoom: 12.5,
           maxZoom: 18,
+          maxBounds: UNIVERSITY_TOWN_MAX_BOUNDS,
+          maxBoundsViscosity: 0.62,
           zoomSnap: ZOOM_STEP,
           zoomDelta: ZOOM_STEP,
           wheelPxPerZoomLevel: 150,
@@ -368,36 +442,30 @@ function LeafletSandboxMap({
 
         tileLayerRef.current = tileLayer;
         tileLayer.on("tileload", () => {
-          tileErrors = 0;
-          tileLoaded = true;
-          if (tileLoadTimeout) {
-            window.clearTimeout(tileLoadTimeout);
-          }
-          if (!disposed) {
-            setMapStatus("ready");
-          }
+          markMapLoaded();
         });
         tileLayer.on("load", () => {
-          tileLoaded = true;
-          if (tileLoadTimeout) {
-            window.clearTimeout(tileLoadTimeout);
-          }
-          if (!disposed) {
-            setMapStatus("ready");
-          }
+          markMapLoaded();
         });
         tileLayer.on("tileerror", () => {
-          tileErrors += 1;
-          if (tileErrors >= 8 && !disposed) {
+          tileErrorCountRef.current += 1;
+          if (mapHasLoadedOnceRef.current) {
+            if (tileErrorCountRef.current >= 2 && !disposed) {
+              setTileWarning(TILE_WARNING_COPY);
+            }
+            return;
+          }
+
+          if (tileErrorCountRef.current >= FIRST_SCREEN_TILE_ERROR_LIMIT && !disposed) {
             triggerFallback();
           }
         });
         tileLayer.addTo(map);
         tileLoadTimeout = window.setTimeout(() => {
-          if (!disposed && !tileLoaded) {
+          if (!disposed && !tileLoaded && !mapHasLoadedOnceRef.current) {
             triggerFallback();
           }
-        }, 8000);
+        }, FIRST_SCREEN_TILE_TIMEOUT_MS);
 
         map.on("click", () => {
           map.scrollWheelZoom.enable();
@@ -407,7 +475,15 @@ function LeafletSandboxMap({
           map.scrollWheelZoom.disable();
           setWheelZoomEnabled(false);
         });
+        map.on("zoomstart", resetRuntimeTileErrors);
+        map.on("movestart", resetRuntimeTileErrors);
         map.on("zoomend", () => {
+          resetRuntimeTileErrors();
+          map.panInsideBounds(L.latLngBounds(UNIVERSITY_TOWN_MAX_BOUNDS), { animate: true });
+          setMapZoom(map.getZoom());
+        });
+        map.on("moveend", () => {
+          resetRuntimeTileErrors();
           setMapZoom(map.getZoom());
         });
 
@@ -449,7 +525,7 @@ function LeafletSandboxMap({
       window.removeEventListener("keydown", handleEscape);
       teardownMap();
     };
-  }, []);
+  }, [mapRetryToken]);
 
   useEffect(() => {
     const L = leafletRef.current;
@@ -532,6 +608,7 @@ function LeafletSandboxMap({
         layerCounts={layerCounts}
         onToggleLayer={onToggleLayer}
         visiblePoints={visiblePoints}
+        onRetryMap={handleRetryMap}
       />
     );
   }
@@ -558,6 +635,26 @@ function LeafletSandboxMap({
         {mapStatus === "loading" ? (
           <div className={styles.leafletStatus}>正在加载 OpenStreetMap 底图...</div>
         ) : null}
+        {mapHasLoadedOnce ? (
+          <div className={styles.mapQuickActions} aria-label="地图视野操作">
+            <button className={styles.mapActionButton} onClick={handleReturnToTown} type="button">
+              回到大学城
+            </button>
+          </div>
+        ) : null}
+        {mapHasLoadedOnce && tileWarning ? (
+          <div className={styles.tileWarning} role="status">
+            <span>{tileWarning}</span>
+            <div>
+              <button className={styles.mapActionButton} onClick={handleReturnToTown} type="button">
+                回到大学城
+              </button>
+              <button className={styles.mapActionButton} onClick={handleRetryMap} type="button">
+                重试地图
+              </button>
+            </div>
+          </div>
+        ) : null}
         <div className={styles.zoomHint}>
           <strong>{wheelZoomEnabled ? "滚轮缩放已开启" : "点击地图后可滚轮缩放"}</strong>
           <span>也可使用 +/-、双击或触控缩放；离开地图或按 Esc 关闭滚轮缩放</span>
@@ -578,12 +675,14 @@ function StaticSandboxMap({
   fallbackReason,
   layerCounts,
   onToggleLayer,
+  onRetryMap,
   visiblePoints
 }: {
   activeLayers: Record<LayerKey, boolean>;
   fallbackReason?: string;
   layerCounts: Record<LayerKey, number>;
   onToggleLayer: (layer: LayerKey) => void;
+  onRetryMap: () => void;
   visiblePoints: SandboxPoint[];
 }) {
   const staticMapPoints = visiblePoints.slice(0, 34).map((point) => ({
@@ -613,7 +712,14 @@ function StaticSandboxMap({
         visibleCount={visiblePoints.length}
       />
 
-      {fallbackReason ? <div className={styles.fallbackNotice}>{fallbackReason}</div> : null}
+      {fallbackReason ? (
+        <div className={styles.fallbackNotice}>
+          <span>{fallbackReason}</span>
+          <button className={styles.mapActionButton} onClick={onRetryMap} type="button">
+            重试地图
+          </button>
+        </div>
+      ) : null}
 
       <div className={styles.mapCanvas} aria-label="静态大学城本地生活数据沙盘">
         <span className={`${styles.road} ${styles.roadPrimary}`} aria-hidden="true" />
