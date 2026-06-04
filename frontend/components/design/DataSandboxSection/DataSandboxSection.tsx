@@ -127,19 +127,19 @@ const layerDefinitions: Array<{
     key: "manual_sample",
     label: "人工样本餐厅",
     shortLabel: "人工样本",
-    description: "30 个 reviewed sample 候选"
+    description: "manual_sample 餐厅"
   },
   {
     key: "synthetic_mvp",
     label: "MVP 合成餐饮点",
     shortLabel: "合成餐饮",
-    description: "100 个 synthetic_mvp 扩展候选"
+    description: "synthetic_mvp 餐饮点"
   },
   {
     key: "weekend_poi",
     label: "周末 POI",
     shortLabel: "周末 POI",
-    description: "70 个路线节点候选"
+    description: "weekend POI"
   }
 ];
 
@@ -704,7 +704,7 @@ function LayerControls({
             <span className={`${styles.layerDot} ${styles[layer.key]}`} aria-hidden="true" />
             <span>
               <strong>{layer.label}</strong>
-              <small>{layerCounts[layer.key]} 个 / {layer.description}</small>
+              <small>{layerCounts[layer.key]} / {layerCounts[layer.key]} {layer.description}</small>
             </span>
           </button>
         ))}
