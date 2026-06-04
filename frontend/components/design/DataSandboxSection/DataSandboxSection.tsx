@@ -244,10 +244,10 @@ export function DataSandboxSection() {
   return (
     <section className={styles.section} aria-labelledby="data-sandbox-title">
       <div className={styles.header}>
-        <p className={styles.eyebrow}>数据沙盘 / Leaflet v0.6</p>
-        <h2 id="data-sandbox-title">我们为大学城搭了一个可解释的本地生活沙盘</h2>
+        <p className={styles.eyebrow}>设计与思路 · 数据沙盘</p>
+        <h2 id="data-sandbox-title">不是凭空推荐，而是在候选世界里做可解释决策</h2>
         <p className={styles.subtitle}>
-          让 AI 管家的建议落在具体候选、地点、标签和约束上，而不是凭空生成一段“看起来合理”的话。
+          我们把大学城周边餐饮点、周末 POI 与路线模板整理成可筛选的候选世界。AI 的推荐不是凭空生成，而是在有来源、标签、置信度和边界声明的数据上进行筛选、解释和兜底。
         </p>
       </div>
 
@@ -628,10 +628,10 @@ function LeafletSandboxMap({
     <div className={styles.mapStage}>
       <div className={styles.stageHeader}>
         <div>
-          <span className={styles.kicker}>大学城候选世界 / Leaflet + OSM</span>
-          <strong>真实地图底图承载沙盘候选点位，点击点位会联动下方筛选雷达、候选画像和边界说明</strong>
+          <span className={styles.kicker}>大学城候选世界</span>
+          <strong>餐饮点、周末 POI 与路线模板共同构成推荐底座；点击点位查看来源、能力画像和边界说明</strong>
         </div>
-        <span className={styles.sourcePill}>source / synthetic / confidence</span>
+        <span className={styles.sourcePill}>来源 · 合成 · 置信度</span>
       </div>
 
       <LayerControls
@@ -772,7 +772,7 @@ function PointInspectorPanel({
         <button className={styles.mapActionButton} onClick={onFocusPoint} type="button">
           回到该点
         </button>
-        <span>MVP 沙盘点位，不代表真实平台评分 / 销量 / 排队时间。</span>
+        <span>MVP 沙盘点位，坐标为展示坐标，不代表真实商户地址、平台评分 / 销量 / 排队时间。</span>
       </div>
     </aside>
   );
@@ -807,10 +807,10 @@ function StaticSandboxMap({
     <div className={styles.mapStage}>
       <div className={styles.stageHeader}>
         <div>
-          <span className={styles.kicker}>大学城候选世界 / 静态 fallback</span>
+          <span className={styles.kicker}>大学城候选世界 · 静态沙盘</span>
           <strong>地图服务不可用时，仍展示候选、标签、步行圈与 MVP 数据边界</strong>
         </div>
-        <span className={styles.sourcePill}>source / synthetic / confidence</span>
+        <span className={styles.sourcePill}>来源 · 合成 · 置信度</span>
       </div>
 
       <LayerControls
@@ -1037,7 +1037,7 @@ function SandboxConsole({ point, visibleCount }: { point: SandboxPoint; visibleC
           <span className={styles.boundaryPillMuted}>非真实平台数据</span>
         </div>
         <p className={styles.boundaryText} id="console-boundary-title">
-          当前沙盘用于 Hackathon MVP 的推荐与路线逻辑验证，不代表真实美团 / 点评评分、销量、库存、排队时间或平台认证数据。
+          点位坐标为 MVP 沙盘展示坐标，不代表真实商户地址；当前沙盘用于 Hackathon MVP 的推荐与路线逻辑验证，不代表真实美团 / 点评评分、销量、库存、排队时间或平台认证数据。
         </p>
         <div className={styles.tagCloud} aria-label="当前候选核心标签">
           {boundaryTags.map((tag) => (
