@@ -256,6 +256,7 @@ export function DataSandboxSection() {
         layerCounts={layerCounts}
         onSelectPoint={setSelectedPointId}
         onToggleLayer={handleToggleLayer}
+        selectedPoint={selectedPoint}
         selectedPointId={selectedPoint.id}
         visiblePoints={visiblePoints}
       />
@@ -270,6 +271,7 @@ function LeafletSandboxMap({
   layerCounts,
   onSelectPoint,
   onToggleLayer,
+  selectedPoint,
   selectedPointId,
   visiblePoints
 }: {
@@ -277,6 +279,7 @@ function LeafletSandboxMap({
   layerCounts: Record<LayerKey, number>;
   onSelectPoint: (id: string) => void;
   onToggleLayer: (layer: LayerKey) => void;
+  selectedPoint: SandboxPoint;
   selectedPointId: string;
   visiblePoints: SandboxPoint[];
 }) {
@@ -294,6 +297,7 @@ function LeafletSandboxMap({
   const [mapRetryToken, setMapRetryToken] = useState(0);
   const [wheelZoomEnabled, setWheelZoomEnabled] = useState(false);
   const [mapZoom, setMapZoom] = useState(14);
+  const [inspectorOpen, setInspectorOpen] = useState(false);
   const visiblePointKey = useMemo(
     () => visiblePoints.map((point) => point.id).join("|"),
     [visiblePoints]
@@ -337,6 +341,15 @@ function LeafletSandboxMap({
     mapRef.current?.invalidateSize({ pan: false });
     tileLayerRef.current?.redraw();
   }, [mapStatus]);
+
+  const handleFocusSelectedPoint = useCallback(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    tileErrorCountRef.current = 0;
+    setTileWarning("");
+    map.setView(selectedPoint.displayLatLng, 16, { animate: true });
+  }, [selectedPoint]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -463,6 +476,7 @@ function LeafletSandboxMap({
         map.on("click", () => {
           map.scrollWheelZoom.enable();
           setWheelZoomEnabled(true);
+          setInspectorOpen(false);
         });
         map.on("mouseout", () => {
           map.scrollWheelZoom.disable();
@@ -536,7 +550,9 @@ function LeafletSandboxMap({
           riseOnHover: true
         });
 
-        marker.on("click", () => {
+        marker.on("click", (event) => {
+          L.DomEvent.stopPropagation(event.originalEvent);
+          setInspectorOpen(false);
           const bounds = L.latLngBounds(item.cluster.bounds);
           const stableZoom = getStableClusterZoom(map.getZoom());
           const nextZoom = stableZoom <= LARGE_CLUSTER_MAX_ZOOM ? 14.5 : 16;
@@ -564,8 +580,10 @@ function LeafletSandboxMap({
         riseOnHover: true
       });
 
-      marker.on("click", () => {
+      marker.on("click", (event) => {
+        L.DomEvent.stopPropagation(event.originalEvent);
         onSelectPoint(point.id);
+        setInspectorOpen(true);
         map.panTo(point.displayLatLng, { animate: true });
       });
 
@@ -656,10 +674,107 @@ function LeafletSandboxMap({
           <strong>MVP 数据沙盘</strong>
           <span>非真实平台数据</span>
         </div>
+        {inspectorOpen ? (
+          <PointInspectorPanel
+            onClose={() => setInspectorOpen(false)}
+            onFocusPoint={handleFocusSelectedPoint}
+            point={selectedPoint}
+          />
+        ) : null}
       </div>
 
       <MapLegend />
     </div>
+  );
+}
+
+function PointInspectorPanel({
+  onClose,
+  onFocusPoint,
+  point
+}: {
+  onClose: () => void;
+  onFocusPoint: () => void;
+  point: SandboxPoint;
+}) {
+  return (
+    <aside
+      className={styles.pointInspector}
+      aria-label="当前选中点位详情"
+      onClick={(event) => event.stopPropagation()}
+      onPointerDown={(event) => event.stopPropagation()}
+    >
+      <div className={styles.inspectorHeader}>
+        <div>
+          <span className={styles.inspectorKicker}>地点详情</span>
+          <h3>{point.name}</h3>
+        </div>
+        <button className={styles.inspectorClose} onClick={onClose} type="button" aria-label="收起地点详情">
+          ×
+        </button>
+      </div>
+
+      <div className={styles.inspectorBadges} aria-label="点位来源与置信度">
+        <span>{typeLabel(point.type)}</span>
+        <span>{point.synthetic ? "MVP 合成" : "人工样本"}</span>
+        <span>{confidenceBadgeLabel(point.confidence)}</span>
+      </div>
+
+      <div className={styles.inspectorTags} aria-label="点位场景标签">
+        {point.scenarioTags.slice(0, 6).map((tag) => (
+          <span key={tag}>{tag}</span>
+        ))}
+      </div>
+
+      <p className={styles.inspectorReason}>{point.why[0] ?? "该候选用于展示 MVP 沙盘的候选、标签和约束边界。"}</p>
+
+      <div className={styles.inspectorSection}>
+        <div className={styles.inspectorSectionTitle}>
+          <span>能力画像</span>
+          <strong>{point.markerLabel}</strong>
+        </div>
+        <div className={styles.inspectorRadar}>
+          {radarMetrics.map((item) => {
+            const value = point.radar[item.key];
+            return (
+              <div className={styles.inspectorRadarRow} key={item.key}>
+                <span>{item.label}</span>
+                <strong>{value}%</strong>
+                <div className={styles.inspectorBarTrack} aria-label={`${item.label} ${value}%`}>
+                  <i style={{ width: `${value}%` }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className={styles.inspectorSource}>
+        <div>
+          <span>source</span>
+          <strong>{point.source}</strong>
+        </div>
+        <div>
+          <span>sourceId</span>
+          <strong>{point.sourceId}</strong>
+        </div>
+        <div>
+          <span>seed</span>
+          <code>{seedFileShortLabel(point.seedFile)}</code>
+        </div>
+        <div>
+          <span>synthetic / confidence</span>
+          <strong>{point.synthetic ? "true" : "false"} · {confidenceLabel(point.confidence)}</strong>
+        </div>
+      </div>
+
+      <div className={styles.inspectorActions}>
+        <button className={styles.mapActionButton} onClick={onFocusPoint} type="button">
+          回到该点
+        </button>
+        <span>MVP 沙盘点位，不代表真实平台评分 / 销量 / 排队时间。</span>
+      </div>
+    </aside>
   );
 }
 

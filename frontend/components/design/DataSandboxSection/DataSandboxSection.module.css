@@ -283,7 +283,7 @@
   z-index: 6;
   display: flex;
   align-items: center;
-  max-width: min(560px, calc(100% - 190px));
+  max-width: min(520px, calc(100% - 430px));
   gap: 10px;
   padding: 10px 12px;
   border: 1px solid color-mix(in srgb, var(--ey-amber) 46%, var(--ey-line));
@@ -325,6 +325,217 @@
 .mapActionButton:hover {
   border-color: color-mix(in srgb, var(--ey-emerald) 72%, var(--ey-line));
   color: var(--ey-emerald-d);
+}
+
+.pointInspector {
+  position: absolute;
+  top: 124px;
+  right: 18px;
+  bottom: 76px;
+  z-index: 7;
+  display: grid;
+  align-content: start;
+  width: clamp(300px, 30vw, 350px);
+  max-height: calc(100% - 200px);
+  gap: 10px;
+  overflow: auto;
+  padding: 13px;
+  border: 1px solid color-mix(in srgb, var(--ey-line) 86%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 92%, transparent);
+  color: var(--ey-ink);
+  box-shadow:
+    0 18px 50px color-mix(in srgb, var(--ey-forest) 20%, transparent),
+    var(--ey-shadow);
+  backdrop-filter: blur(10px);
+}
+
+.inspectorHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+}
+
+.inspectorHeader h3 {
+  margin: 3px 0 0;
+  overflow-wrap: anywhere;
+  color: var(--ey-ink);
+  font-size: 1.05rem;
+  line-height: 1.26;
+}
+
+.inspectorKicker,
+.inspectorSectionTitle span,
+.inspectorSource span {
+  color: var(--ey-emerald-d);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.inspectorClose {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid var(--ey-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-bg) 64%, var(--ey-card));
+  color: var(--ey-ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.inspectorClose:hover {
+  border-color: color-mix(in srgb, var(--ey-emerald) 54%, var(--ey-line));
+  color: var(--ey-emerald-d);
+}
+
+.inspectorBadges,
+.inspectorTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.inspectorBadges span,
+.inspectorTags span {
+  padding: 5px 7px;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 24%, var(--ey-line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-emerald-50) 60%, var(--ey-card));
+  color: var(--ey-emerald-d);
+  font-size: 0.68rem;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.inspectorTags span {
+  border-color: color-mix(in srgb, var(--ey-line) 74%, var(--ey-emerald));
+  background: color-mix(in srgb, var(--ey-card) 76%, transparent);
+  color: var(--ey-slate);
+}
+
+.inspectorReason {
+  margin: 0;
+  color: var(--ey-ink-2);
+  font-size: 0.75rem;
+  font-weight: 720;
+  line-height: 1.5;
+}
+
+.inspectorSection {
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--ey-line) 78%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-bg) 48%, var(--ey-card));
+}
+
+.inspectorSectionTitle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.inspectorSectionTitle strong {
+  color: var(--ey-ink);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.inspectorRadar {
+  display: grid;
+  gap: 6px;
+}
+
+.inspectorRadarRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.inspectorRadarRow span {
+  color: var(--ey-slate);
+  font-size: 0.7rem;
+  font-weight: 820;
+}
+
+.inspectorRadarRow strong {
+  color: var(--ey-emerald-d);
+  font-family: var(--ey-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 0.68rem;
+  line-height: 1;
+}
+
+.inspectorBarTrack {
+  grid-column: 1 / -1;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-bg-2) 80%, var(--ey-card));
+}
+
+.inspectorBarTrack i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--ey-emerald-300), var(--ey-emerald), var(--ey-amber));
+}
+
+.inspectorSource {
+  display: grid;
+  gap: 6px;
+  padding: 9px;
+  border: 1px solid color-mix(in srgb, var(--ey-line) 70%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-bg) 52%, transparent);
+}
+
+.inspectorSource div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.inspectorSource strong,
+.inspectorSource code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ey-ink);
+  font-family: var(--ey-sans, "Noto Sans SC", -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif);
+  font-size: 0.7rem;
+  font-weight: 760;
+  line-height: 1.32;
+}
+
+.inspectorSource code {
+  color: var(--ey-emerald-d);
+  font-family: var(--ey-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-weight: 900;
+}
+
+.inspectorActions {
+  display: grid;
+  gap: 7px;
+}
+
+.inspectorActions .mapActionButton {
+  width: fit-content;
+}
+
+.inspectorActions span {
+  color: var(--ey-slate-2);
+  font-size: 0.68rem;
+  font-weight: 760;
+  line-height: 1.42;
 }
 
 .section :global(.leaflet-container) {
@@ -1582,6 +1793,18 @@
 :global(body.t-black-pink) .tileWarning,
 :global(body.t-night) .mapActionButton,
 :global(body.t-black-pink) .mapActionButton,
+:global(body.t-night) .pointInspector,
+:global(body.t-black-pink) .pointInspector,
+:global(body.t-night) .inspectorClose,
+:global(body.t-black-pink) .inspectorClose,
+:global(body.t-night) .inspectorSection,
+:global(body.t-black-pink) .inspectorSection,
+:global(body.t-night) .inspectorSource,
+:global(body.t-black-pink) .inspectorSource,
+:global(body.t-night) .inspectorBadges span,
+:global(body.t-black-pink) .inspectorBadges span,
+:global(body.t-night) .inspectorTags span,
+:global(body.t-black-pink) .inspectorTags span,
 :global(body.t-night) .section :global(.leaflet-control-attribution),
 :global(body.t-black-pink) .section :global(.leaflet-control-attribution),
 :global(body.t-night) .section :global(.leaflet-tooltip),
@@ -1815,6 +2038,32 @@
   .tileWarning div {
     width: 100%;
     flex-wrap: wrap;
+  }
+
+  .pointInspector {
+    left: 14px;
+    right: 14px;
+    top: auto;
+    bottom: 86px;
+    width: auto;
+    max-height: min(300px, 48%);
+    padding: 11px;
+  }
+
+  .inspectorHeader h3 {
+    font-size: 0.98rem;
+  }
+
+  .inspectorReason {
+    font-size: 0.72rem;
+  }
+
+  .inspectorRadar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .inspectorSource {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .fallbackNotice {
