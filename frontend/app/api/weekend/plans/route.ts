@@ -12,6 +12,7 @@ import {
   normalizeAiProgressTraceId,
   startAiProgress
 } from "@/lib/server/aiProgress";
+import { createWeekendAiProgressCopy } from "@/lib/server/aiProgressCopy";
 import { requireMiniProgramUser } from "@/lib/server/requestAuth";
 import { ensureUserProfile } from "@/lib/server/userProfileStore";
 import { createWeekendPlan } from "@/lib/server/weekendPlanner";
@@ -59,18 +60,19 @@ export async function POST(request: Request) {
   }
 
   const inputRecord = input && typeof input === "object" ? input as Record<string, unknown> : {};
+  const progressCopy = createWeekendAiProgressCopy(input);
   const aiProgress = await startAiProgress("weekend_plan", {
     traceId: normalizeAiProgressTraceId(inputRecord.aiProgressTraceId),
     userId: auth.user.userId,
-    message: "正在理解出行时间、预算、体力和兴趣。"
+    message: progressCopy.start
   });
   await advanceAiProgress(aiProgress.traceId, "retrieve", {
-    message: "正在准备天气、地点候选和路线素材。"
+    message: progressCopy.retrieve
   });
   const plan = await createWeekendPlan(input, auth.user.userId);
   const shouldFeedOpenClaw = inputRecord.openclawFeed !== false && process.env.OPENCLAW_WEEKEND_FEED_ENABLED !== "0";
   await advanceAiProgress(aiProgress.traceId, "filter", {
-    message: "正在检查天气、步行、预算和返程风险。"
+    message: progressCopy.filter
   });
   const profile = await ensureUserProfile(auth.user.userId);
   const openclawContext = createOpenClawDataContext("weekend_plan", {
@@ -85,10 +87,10 @@ export async function POST(request: Request) {
     }
   });
   await advanceAiProgress(aiProgress.traceId, "rank", {
-    message: "正在对路线候选做优先级排序。"
+    message: progressCopy.rank
   });
   await advanceAiProgress(aiProgress.traceId, "compose", {
-    message: shouldFeedOpenClaw ? "正在把周边规划上下文同步给 OpenClaw。" : "正在整理周边规划结果。",
+    message: shouldFeedOpenClaw ? progressCopy.composeOpenClaw : progressCopy.composeLocal,
     note: shouldFeedOpenClaw ? "OpenClaw 用于接收本次轻量上下文，页面结果由服务端规划器返回。" : undefined
   });
   const openclawContextResult = shouldFeedOpenClaw
@@ -105,8 +107,8 @@ export async function POST(request: Request) {
     openclawContextResult.status === "failed" ? "fallback" : "done",
     {
       message: openclawContextResult.status === "failed"
-        ? "周边规划已用本地规划器完成，OpenClaw 上下文同步失败。"
-        : "周边规划已生成，AI 上下文同步流程已结束。",
+        ? progressCopy.fallback
+        : progressCopy.done,
       note: openclawContextResult.detail
     }
   );
