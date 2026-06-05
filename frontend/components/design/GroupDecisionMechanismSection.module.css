@@ -1,26 +1,27 @@
 .section {
   overflow: hidden;
   background:
+    radial-gradient(820px 520px at 86% 12%, color-mix(in srgb, var(--ey-emerald) 9%, transparent), transparent 64%),
     linear-gradient(180deg, color-mix(in srgb, var(--ey-card) 92%, var(--ey-bg)), var(--ey-card));
 }
 
 .head {
-  max-width: 900px;
+  max-width: 920px;
 }
 
 .title {
-  max-width: 23ch;
+  max-width: 24ch;
 }
 
 .lead {
-  max-width: 76ch;
+  max-width: 74ch;
 }
 
-.note {
+.caseNote {
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  margin: -18px 0 clamp(26px, 4vw, 42px);
+  margin: -18px 0 clamp(28px, 4vw, 44px);
   padding: 14px 16px;
   border: 1px dashed color-mix(in srgb, var(--ey-emerald) 34%, var(--ey-line));
   border-radius: 16px;
@@ -28,8 +29,8 @@
   box-shadow: var(--ey-shadow-sm);
 }
 
-.note span {
-  flex: none;
+.caseNote span {
+  flex: 0 0 auto;
   padding: 5px 10px;
   border-radius: var(--ey-pill);
   background: var(--ey-emerald);
@@ -39,75 +40,110 @@
   white-space: nowrap;
 }
 
-.note p {
+.caseNote p {
   margin: 0;
   color: var(--ey-slate);
   font-size: 13.5px;
   line-height: 1.7;
 }
 
-.stack {
+.storyRail {
+  position: relative;
   display: grid;
-  gap: clamp(20px, 3vw, 32px);
+  gap: 24px;
 }
 
-.chatCard,
-.labCard,
-.verdictCard,
-.auditCard,
-.lineageCard,
-.chaosInsight {
+.storyRail::before {
+  content: "";
+  position: absolute;
+  top: 24px;
+  bottom: 24px;
+  left: 26px;
+  width: 2px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--ey-emerald-200), color-mix(in srgb, var(--ey-emerald) 12%, transparent));
+}
+
+.storyBlock {
+  position: relative;
+  z-index: 1;
+  margin-left: 58px;
+  padding: clamp(20px, 3vw, 30px);
   border: 1px solid var(--ey-line);
-  border-radius: 20px;
-  background: var(--ey-card);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--ey-card) 96%, var(--ey-bg));
   box-shadow: var(--ey-shadow-sm);
 }
 
-.chatCard,
-.labCard,
-.verdictCard,
-.auditCard,
-.lineageCard {
-  padding: clamp(20px, 3vw, 28px);
+.storyBlock::before {
+  content: "";
+  position: absolute;
+  top: 28px;
+  left: -42px;
+  width: 16px;
+  height: 16px;
+  border: 3px solid var(--ey-card);
+  border-radius: 50%;
+  background: var(--ey-emerald);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ey-emerald) 16%, transparent);
 }
 
-.kicker {
-  display: flex;
-  align-items: flex-start;
-  gap: 13px;
-  min-width: 0;
-  margin-bottom: 18px;
-}
-
-.kickerIcon {
+.storyHeader {
   display: grid;
-  width: 42px;
-  height: 42px;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 13px;
-  background: color-mix(in srgb, var(--ey-emerald) 10%, var(--ey-card));
-  color: var(--ey-emerald-d);
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 22px;
 }
 
-.kicker span:not(.kickerIcon) {
-  display: block;
+.stepBadge {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(145deg, var(--ey-emerald), var(--ey-emerald-dd));
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--ey-emerald) 24%, transparent);
+  color: #ffffff;
+}
+
+.stepBadge span {
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.stepBadge svg {
+  margin-top: -5px;
+  opacity: 0.72;
+}
+
+.storyKicker {
   color: var(--ey-emerald);
   font-size: 12px;
   font-weight: 900;
+  letter-spacing: 0.12em;
 }
 
-.kicker h3 {
-  margin: 5px 0 0;
+.storyHeader h3 {
+  margin: 6px 0 0;
   color: var(--ey-ink);
-  font-size: 20px;
+  font-size: clamp(20px, 2.1vw, 28px);
   font-weight: 900;
-  line-height: 1.28;
+  line-height: 1.22;
 }
 
-.chaosGrid {
+.storyHeader p {
+  max-width: 78ch;
+  margin: 9px 0 0;
+  color: var(--ey-slate);
+  font-size: 14.5px;
+  line-height: 1.75;
+}
+
+.chatScene {
   display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.72fr);
+  grid-template-columns: minmax(0, 1.02fr) minmax(280px, 0.8fr);
   gap: 18px;
   align-items: stretch;
 }
@@ -115,19 +151,43 @@
 .chatWindow {
   display: grid;
   gap: 10px;
-  padding: 18px;
+  min-width: 0;
+  padding: 16px;
   border: 1px solid var(--ey-line);
   border-radius: 18px;
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--ey-bg) 72%, var(--ey-card)), color-mix(in srgb, var(--ey-bg-2) 62%, var(--ey-card)));
+    linear-gradient(180deg, color-mix(in srgb, var(--ey-bg) 76%, var(--ey-card)), color-mix(in srgb, var(--ey-bg-2) 62%, var(--ey-card)));
+}
+
+.chatTopbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+  padding: 9px 12px;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--ey-card) 82%, var(--ey-bg));
+  color: var(--ey-ink);
+}
+
+.chatTopbar span,
+.chatTopbar b {
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.chatTopbar b {
+  color: var(--ey-emerald);
+  white-space: nowrap;
 }
 
 .chatBubble {
-  max-width: min(84%, 420px);
+  max-width: min(86%, 430px);
   min-width: 0;
-  padding: 10px 12px 11px;
+  padding: 10px 13px 11px;
   border: 1px solid var(--ey-line);
-  border-radius: 15px;
+  border-radius: 16px;
   background: var(--ey-card);
   overflow-wrap: anywhere;
 }
@@ -143,21 +203,21 @@
   margin: 4px 0 0;
   color: var(--ey-ink);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 750;
   line-height: 1.55;
 }
 
-.tonehard {
+.toneSoft {
+  justify-self: start;
+}
+
+.toneHard {
   justify-self: end;
   border-color: color-mix(in srgb, var(--ey-rose) 28%, var(--ey-line));
   background: color-mix(in srgb, var(--ey-rose-50) 72%, var(--ey-card));
 }
 
-.tonesoft {
-  justify-self: start;
-}
-
-.tonestuck {
+.toneStuck {
   max-width: 100%;
   justify-self: stretch;
   border-color: color-mix(in srgb, var(--ey-emerald) 36%, var(--ey-line));
@@ -165,193 +225,168 @@
   box-shadow: 0 14px 30px color-mix(in srgb, var(--ey-emerald) 22%, transparent);
 }
 
-.tonestuck span,
-.tonestuck p {
+.toneStuck span,
+.toneStuck p {
   color: #ffffff;
 }
 
-.chaosInsight {
-  position: relative;
+.peopleSummary {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   justify-content: center;
-  min-height: 100%;
-  overflow: hidden;
-  padding: clamp(22px, 3vw, 30px);
+  padding: clamp(18px, 2.6vw, 28px);
+  border: 1px solid var(--ey-line);
+  border-radius: 18px;
   background:
-    linear-gradient(145deg, color-mix(in srgb, var(--ey-emerald) 12%, var(--ey-card)), var(--ey-card));
+    linear-gradient(145deg, color-mix(in srgb, var(--ey-emerald) 10%, var(--ey-card)), var(--ey-card));
 }
 
-.insightNumber {
-  color: color-mix(in srgb, var(--ey-emerald) 18%, transparent);
-  font-size: 76px;
+.summaryEyebrow,
+.panelLabel,
+.messageLabel,
+.sourceTitle {
+  color: var(--ey-emerald);
+  font-size: 12px;
   font-weight: 900;
-  line-height: 0.9;
+  letter-spacing: 0.1em;
 }
 
-.chaosInsight h3 {
-  margin: 14px 0 0;
+.peopleSummary h4 {
+  margin: 8px 0 16px;
   color: var(--ey-ink);
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 900;
-  line-height: 1.3;
+  line-height: 1.26;
 }
 
-.chaosInsight p {
-  margin: 13px 0 0;
-  color: var(--ey-slate);
-  font-size: 14.5px;
-  line-height: 1.75;
+.summaryGrid {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 11px 12px;
+  align-items: baseline;
 }
 
-.insightTags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 18px;
-}
-
-.insightTags span,
-.chipGrid span,
-.constraintGrid span {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  max-width: 100%;
-  padding: 5px 10px;
-  border: 1px solid color-mix(in srgb, var(--ey-emerald) 20%, transparent);
+.summaryGrid span {
+  padding: 4px 9px;
   border-radius: var(--ey-pill);
-  background: color-mix(in srgb, var(--ey-emerald) 8%, var(--ey-card));
+  background: color-mix(in srgb, var(--ey-emerald) 10%, var(--ey-card));
   color: var(--ey-emerald-d);
   font-size: 12px;
   font-weight: 900;
-  overflow-wrap: anywhere;
 }
 
-.flowTrack {
+.summaryGrid p {
+  margin: 0;
+  color: var(--ey-slate);
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+
+.translationGrid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: minmax(190px, 0.66fr) minmax(190px, 0.66fr) minmax(0, 1.34fr);
+  gap: 16px;
 }
 
-.flowStep {
+.conditionPanel,
+.candidatePanel {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--ey-line);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--ey-bg) 54%, var(--ey-card));
+}
+
+.mustPanel {
+  border-color: color-mix(in srgb, var(--ey-rose) 24%, var(--ey-line));
+  background: color-mix(in srgb, var(--ey-rose-50) 54%, var(--ey-card));
+}
+
+.preferPanel {
+  background: color-mix(in srgb, var(--ey-emerald) 6%, var(--ey-card));
+}
+
+.conditionPanel ul,
+.reasonPanel ul {
+  display: grid;
+  gap: 10px;
+  margin: 13px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.conditionPanel li,
+.reasonPanel li {
   position: relative;
   min-width: 0;
-  padding: 16px;
-  border: 1px solid var(--ey-line);
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--ey-bg) 62%, var(--ey-card));
+  padding-left: 18px;
+  color: var(--ey-ink);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.55;
 }
 
-.flowStep:not(:last-child)::after {
+.conditionPanel li::before,
+.reasonPanel li::before {
   content: "";
   position: absolute;
-  top: 34px;
-  right: -15px;
-  z-index: 1;
-  width: 15px;
-  height: 2px;
-  background: var(--ey-emerald-200);
+  top: 9px;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--ey-emerald-300);
 }
 
-.stepNo {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  place-items: center;
-  border-radius: 11px;
-  background: var(--ey-emerald);
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 900;
+.mustPanel li::before {
+  background: var(--ey-rose);
 }
 
-.flowStep h4 {
-  margin: 12px 0 0;
-  color: var(--ey-ink);
-  font-size: 15px;
-  font-weight: 900;
-}
-
-.flowStep p {
-  margin: 7px 0 0;
-  color: var(--ey-slate);
-  font-size: 12.5px;
-  line-height: 1.6;
-}
-
-.chipGrid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin-top: 10px;
-}
-
-.constraintGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-  margin-top: 11px;
-}
-
-.constraintGrid div {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  min-width: 0;
-  padding-top: 10px;
-  border-top: 1px solid var(--ey-line-2);
-}
-
-.constraintGrid strong,
-.conflictList span,
-.candidate strong {
-  color: var(--ey-ink);
-  font-size: 13px;
-  font-weight: 900;
-}
-
-.conflictList,
 .candidateList {
   display: grid;
   gap: 10px;
-  margin-top: 11px;
+  margin-top: 13px;
 }
 
-.conflictList div {
-  padding-top: 10px;
-  border-top: 1px solid var(--ey-line-2);
-}
-
-.conflictList div:first-child {
-  padding-top: 0;
-  border-top: 0;
-}
-
-.conflictList p {
-  margin-top: 4px;
-}
-
-.candidate {
+.candidateRow {
   display: grid;
-  gap: 6px;
+  grid-template-columns: auto minmax(96px, 0.42fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
   min-width: 0;
-  padding-top: 10px;
-  border-top: 1px solid var(--ey-line-2);
+  padding: 12px;
+  border: 1px solid var(--ey-line);
+  border-radius: 14px;
+  background: var(--ey-card);
 }
 
-.candidate:first-child {
-  padding-top: 0;
-  border-top: 0;
+.candidatePicked {
+  border-color: color-mix(in srgb, var(--ey-emerald) 34%, var(--ey-line));
+  background: color-mix(in srgb, var(--ey-emerald) 7%, var(--ey-card));
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--ey-emerald) 10%, transparent);
 }
 
-.status {
+.candidateRow strong {
+  color: var(--ey-ink);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.candidateRow p {
+  margin: 0;
+  color: var(--ey-slate);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.candidateBadge,
+.auditBadge {
   display: inline-flex;
   align-items: center;
   width: fit-content;
   max-width: 100%;
   gap: 6px;
-  padding: 4px 9px;
   border: 1px solid transparent;
   border-radius: var(--ey-pill);
   font-size: 11px;
@@ -360,7 +395,12 @@
   white-space: nowrap;
 }
 
-.statusMark {
+.candidateBadge {
+  padding: 5px 9px;
+}
+
+.candidateBadge span,
+.auditBadge span {
   display: grid;
   width: 16px;
   height: 16px;
@@ -373,291 +413,173 @@
   line-height: 1;
 }
 
-.statusPass,
-.statusPick {
+.badgePick {
   border-color: color-mix(in srgb, var(--ey-emerald) 24%, transparent);
   background: color-mix(in srgb, var(--ey-emerald) 12%, var(--ey-card));
   color: var(--ey-emerald-d);
 }
 
-.statusRisk,
-.statusNotice {
+.badgeRisk {
   border-color: color-mix(in srgb, var(--ey-amber) 26%, transparent);
   background: color-mix(in srgb, var(--ey-amber) 12%, var(--ey-card));
   color: var(--ey-amber-900);
 }
 
-.statusReject {
+.badgeReject {
   border-color: color-mix(in srgb, var(--ey-rose) 28%, transparent);
   background: color-mix(in srgb, var(--ey-rose) 12%, var(--ey-card));
   color: var(--ey-rose);
 }
 
-.verdictGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
-  gap: 18px;
-  align-items: stretch;
+.decisionCard {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 28%, var(--ey-line));
+  border-radius: 20px;
+  background: var(--ey-card);
+  box-shadow: 0 18px 42px color-mix(in srgb, var(--ey-emerald) 13%, transparent);
 }
 
-.restaurantPick {
-  padding: 18px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, var(--ey-emerald), var(--ey-emerald-dd));
-  box-shadow: 0 18px 38px color-mix(in srgb, var(--ey-emerald) 24%, transparent);
+.pickHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: clamp(18px, 3vw, 26px);
+  background:
+    radial-gradient(520px 240px at 84% 20%, color-mix(in srgb, #ffffff 18%, transparent), transparent 64%),
+    linear-gradient(135deg, var(--ey-emerald), var(--ey-emerald-dd));
   color: #ffffff;
 }
 
-.restaurantPick span,
-.copyBox span,
-.lineageCenter span {
+.pickHeader span {
   display: block;
   font-size: 12px;
   font-weight: 900;
+  letter-spacing: 0.12em;
 }
 
-.restaurantPick strong {
+.pickHeader strong {
   display: block;
-  margin-top: 6px;
-  font-size: 30px;
+  margin-top: 7px;
+  font-size: clamp(30px, 4vw, 46px);
   font-weight: 900;
-  line-height: 1.12;
+  line-height: 1.05;
 }
 
-.restaurantPick p {
-  margin: 8px 0 0;
-  color: rgba(255, 255, 255, 0.86);
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.verdictBlocks {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-top: 18px;
-}
-
-.verdictBlocks h4 {
-  margin: 0 0 10px;
-  color: var(--ey-ink);
-  font-size: 15px;
+.pickHeader b {
+  flex: 0 0 auto;
+  padding: 7px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: var(--ey-pill);
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 12px;
   font-weight: 900;
+  white-space: nowrap;
 }
 
-.verdictBlocks ul {
+.decisionBody {
   display: grid;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.verdictBlocks li {
-  position: relative;
-  padding-left: 16px;
-  color: var(--ey-slate);
-  font-size: 13.5px;
-  line-height: 1.6;
-}
-
-.verdictBlocks li::before {
-  content: "";
-  position: absolute;
-  top: 9px;
-  left: 0;
-  width: 7px;
-  height: 7px;
-  border-radius: 2px;
-  background: var(--ey-emerald-300);
-}
-
-.copyBox {
-  margin-top: 18px;
-  padding: 16px;
-  border: 1px dashed color-mix(in srgb, var(--ey-emerald) 34%, var(--ey-line));
-  border-radius: 15px;
-  background: color-mix(in srgb, var(--ey-emerald) 5%, var(--ey-card));
-}
-
-.copyBox span {
-  color: var(--ey-emerald);
-}
-
-.copyBox p {
-  margin: 8px 0 0;
-  color: var(--ey-ink-2);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.75;
-}
-
-.auditCard {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--ey-bg) 32%, var(--ey-card)), var(--ey-card));
-}
-
-.auditGrid {
-  display: grid;
-  gap: 10px;
-}
-
-.auditItem {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--ey-line-2);
-}
-
-.auditItem:first-child {
-  padding-top: 0;
-}
-
-.auditItem:last-child {
-  border-bottom: 0;
-}
-
-.auditItem strong {
-  color: var(--ey-ink);
-  font-size: 14px;
-  font-weight: 900;
-}
-
-.auditItem p {
-  margin: 4px 0 0;
-  color: var(--ey-slate);
-  font-size: 12.8px;
-  line-height: 1.55;
-}
-
-.auditFootnote {
-  margin: 16px 0 0;
-  padding-top: 14px;
-  border-top: 1px dashed var(--ey-line);
-  color: var(--ey-slate-2);
-  font-size: 12.5px;
-  line-height: 1.65;
-}
-
-.lineageHead {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  grid-template-columns: minmax(260px, 0.82fr) minmax(0, 1.18fr);
   gap: 18px;
-  margin-bottom: 22px;
+  padding: clamp(18px, 3vw, 26px);
 }
 
-.lineageHead .kicker {
-  margin-bottom: 0;
+.reasonPanel {
+  min-width: 0;
 }
 
-.lineageHead p {
-  max-width: 34ch;
+.reasonPanel h4 {
   margin: 0;
-  color: var(--ey-slate);
-  font-size: 14px;
+  color: var(--ey-ink);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.messagePanel {
+  min-width: 0;
+  padding: clamp(18px, 2.4vw, 24px);
+  border: 1px dashed color-mix(in srgb, var(--ey-emerald) 42%, var(--ey-line));
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--ey-emerald) 8%, var(--ey-card)), color-mix(in srgb, var(--ey-bg) 46%, var(--ey-card)));
+}
+
+.messageLabel {
+  display: inline-flex;
+  padding: 5px 10px;
+  border-radius: var(--ey-pill);
+  background: var(--ey-emerald);
+  color: #ffffff;
+  letter-spacing: 0;
+}
+
+.messagePanel p {
+  margin: 13px 0 0;
+  color: var(--ey-ink);
+  font-size: clamp(16px, 1.7vw, 20px);
+  font-weight: 900;
   line-height: 1.7;
 }
 
-.lineageGraph {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px minmax(0, 1fr);
-  gap: 22px;
+.auditStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 clamp(18px, 3vw, 26px) clamp(16px, 2vw, 22px);
+}
+
+.auditBadge {
+  padding: 5px 10px;
+}
+
+.auditPass {
+  border-color: color-mix(in srgb, var(--ey-emerald) 24%, transparent);
+  background: color-mix(in srgb, var(--ey-emerald) 11%, var(--ey-card));
+  color: var(--ey-emerald-d);
+}
+
+.auditNotice {
+  border-color: color-mix(in srgb, var(--ey-amber) 28%, transparent);
+  background: color-mix(in srgb, var(--ey-amber) 13%, var(--ey-card));
+  color: var(--ey-amber-900);
+}
+
+.sourceBlock {
+  padding: 16px clamp(18px, 3vw, 26px) clamp(18px, 3vw, 26px);
+  border-top: 1px solid var(--ey-line-2);
+}
+
+.sourceList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 11px;
+}
+
+.sourceChip {
+  display: inline-flex;
   align-items: center;
-}
-
-.lineageSide {
-  display: grid;
-  gap: 14px;
-  min-width: 0;
-}
-
-.lineageItem {
-  position: relative;
-  min-width: 0;
-  padding: 13px 15px;
+  max-width: 100%;
+  gap: 7px;
+  padding: 7px 10px;
   border: 1px solid var(--ey-line);
-  border-radius: 15px;
-  background: color-mix(in srgb, var(--ey-bg) 64%, var(--ey-card));
-}
-
-.lineageItem::before,
-.lineageItem::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  width: 22px;
-  height: 1px;
-  background: color-mix(in srgb, var(--ey-emerald) 42%, transparent);
-}
-
-.lineageLeft .lineageItem::after {
-  right: -23px;
-}
-
-.lineageLeft .lineageItem::before {
-  display: none;
-}
-
-.lineageRight .lineageItem::before {
-  left: -23px;
-}
-
-.lineageRight .lineageItem::after {
-  display: none;
-}
-
-.lineageItem span {
-  display: block;
-  color: var(--ey-slate-2);
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 1.45;
-  overflow-wrap: anywhere;
-}
-
-.lineageItem strong {
-  display: block;
-  margin-top: 5px;
-  color: var(--ey-ink);
-  font-size: 15px;
-  font-weight: 900;
-  line-height: 1.35;
-  overflow-wrap: anywhere;
-}
-
-.lineageCenter {
-  display: grid;
-  min-height: 184px;
-  place-items: center;
-  padding: 20px;
-  border: 1px solid color-mix(in srgb, var(--ey-emerald) 36%, var(--ey-line));
-  border-radius: 18px;
-  background:
-    linear-gradient(160deg, color-mix(in srgb, var(--ey-emerald) 14%, var(--ey-card)), var(--ey-card));
-  box-shadow: 0 18px 42px color-mix(in srgb, var(--ey-emerald) 14%, transparent);
-  text-align: center;
-}
-
-.lineageCenter span {
-  color: var(--ey-emerald);
-}
-
-.lineageCenter strong {
-  display: block;
-  margin-top: 7px;
-  color: var(--ey-ink);
-  font-size: 28px;
-  font-weight: 900;
-  line-height: 1.16;
-}
-
-.lineageCenter p {
-  margin: 7px 0 0;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--ey-bg) 58%, var(--ey-card));
   color: var(--ey-slate);
-  font-size: 13px;
+  font-size: 12.5px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.sourceChip strong {
+  color: var(--ey-ink);
+  font-weight: 900;
+}
+
+.sourceChip i {
+  color: var(--ey-emerald);
+  font-style: normal;
+  font-weight: 900;
 }
 
 :global(body.t-night) .section,
@@ -665,152 +587,155 @@
   background: var(--ey-bg);
 }
 
-:global(body.t-night) .chatCard,
-:global(body.t-night) .labCard,
-:global(body.t-night) .verdictCard,
-:global(body.t-night) .auditCard,
-:global(body.t-night) .lineageCard,
-:global(body.t-night) .chaosInsight,
-:global(body.t-black-pink) .chatCard,
-:global(body.t-black-pink) .labCard,
-:global(body.t-black-pink) .verdictCard,
-:global(body.t-black-pink) .auditCard,
-:global(body.t-black-pink) .lineageCard,
-:global(body.t-black-pink) .chaosInsight {
-  border-color: var(--ey-line);
-  background: color-mix(in srgb, var(--ey-card) 94%, var(--ey-bg));
-}
-
+:global(body.t-night) .storyBlock,
 :global(body.t-night) .chatWindow,
-:global(body.t-night) .flowStep,
-:global(body.t-night) .lineageItem,
+:global(body.t-night) .peopleSummary,
+:global(body.t-night) .conditionPanel,
+:global(body.t-night) .candidatePanel,
+:global(body.t-night) .candidateRow,
+:global(body.t-night) .decisionCard,
+:global(body.t-night) .messagePanel,
+:global(body.t-night) .sourceChip,
+:global(body.t-black-pink) .storyBlock,
 :global(body.t-black-pink) .chatWindow,
-:global(body.t-black-pink) .flowStep,
-:global(body.t-black-pink) .lineageItem {
-  background: color-mix(in srgb, var(--ey-card) 72%, var(--ey-bg));
+:global(body.t-black-pink) .peopleSummary,
+:global(body.t-black-pink) .conditionPanel,
+:global(body.t-black-pink) .candidatePanel,
+:global(body.t-black-pink) .candidateRow,
+:global(body.t-black-pink) .decisionCard,
+:global(body.t-black-pink) .messagePanel,
+:global(body.t-black-pink) .sourceChip {
+  border-color: var(--ey-line);
+  background: color-mix(in srgb, var(--ey-card) 88%, var(--ey-bg));
 }
 
 :global(body.t-night) .chatBubble,
 :global(body.t-black-pink) .chatBubble {
-  background: color-mix(in srgb, var(--ey-card) 88%, var(--ey-bg));
+  background: color-mix(in srgb, var(--ey-card) 92%, var(--ey-bg));
 }
 
-:global(body.t-night) .tonehard,
-:global(body.t-black-pink) .tonehard {
-  background: color-mix(in srgb, var(--ey-rose) 12%, var(--ey-card));
+:global(body.t-night) .toneHard,
+:global(body.t-black-pink) .toneHard {
+  background: color-mix(in srgb, var(--ey-rose) 13%, var(--ey-card));
 }
 
-:global(body.t-night) .lineageCenter,
-:global(body.t-black-pink) .lineageCenter {
-  background: color-mix(in srgb, var(--ey-card) 78%, var(--ey-bg));
+:global(body.t-night) .mustPanel,
+:global(body.t-black-pink) .mustPanel {
+  background: color-mix(in srgb, var(--ey-rose) 10%, var(--ey-card));
+}
+
+:global(body.t-night) .caseNote,
+:global(body.t-black-pink) .caseNote {
+  background: color-mix(in srgb, var(--ey-card) 82%, var(--ey-bg));
+}
+
+:global(body.t-night) .storyBlock::before,
+:global(body.t-black-pink) .storyBlock::before {
+  border-color: var(--ey-bg);
 }
 
 @media (max-width: 1040px) {
-  .chaosGrid,
-  .verdictGrid {
+  .chatScene,
+  .translationGrid,
+  .decisionBody {
     grid-template-columns: 1fr;
   }
 
-  .flowTrack {
-    grid-template-columns: 1fr;
-  }
-
-  .flowStep:not(:last-child)::after {
-    top: auto;
-    right: auto;
-    bottom: -15px;
-    left: 32px;
-    width: 2px;
-    height: 15px;
-  }
-}
-
-@media (max-width: 860px) {
-  .lineageHead {
-    flex-direction: column;
-  }
-
-  .lineageHead p {
-    max-width: 100%;
-  }
-
-  .lineageGraph {
-    grid-template-columns: 1fr;
-  }
-
-  .lineageCenter {
-    order: -1;
-    min-height: 140px;
-  }
-
-  .lineageItem::before,
-  .lineageItem::after {
-    display: none;
+  .candidateRow {
+    grid-template-columns: auto minmax(100px, 0.38fr) minmax(0, 1fr);
   }
 }
 
 @media (max-width: 760px) {
-  .note {
+  .caseNote {
     flex-direction: column;
     margin-top: -8px;
   }
 
-  .chatCard,
-  .labCard,
-  .verdictCard,
-  .auditCard,
-  .lineageCard,
-  .chaosInsight {
+  .storyRail {
+    gap: 18px;
+  }
+
+  .storyRail::before {
+    display: none;
+  }
+
+  .storyBlock {
+    margin-left: 0;
     border-radius: 18px;
+  }
+
+  .storyBlock::before {
+    display: none;
+  }
+
+  .storyHeader {
+    grid-template-columns: 1fr;
+  }
+
+  .stepBadge {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
   }
 
   .chatWindow {
     padding: 14px;
   }
 
+  .chatTopbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
   .chatBubble {
     max-width: 94%;
   }
 
-  .tonestuck {
+  .toneStuck {
     max-width: 100%;
   }
 
-  .chaosInsight h3 {
-    font-size: 21px;
-  }
-
-  .verdictBlocks {
+  .summaryGrid {
     grid-template-columns: 1fr;
   }
 
-  .auditItem {
+  .candidateRow {
     grid-template-columns: 1fr;
     align-items: flex-start;
+  }
+
+  .pickHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .sourceChip {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 
 @media (max-width: 520px) {
-  .kicker {
-    gap: 11px;
+  .storyBlock {
+    padding: 18px;
   }
 
-  .kickerIcon {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
+  .storyHeader h3 {
+    font-size: 20px;
   }
 
-  .kicker h3 {
-    font-size: 18px;
+  .peopleSummary h4 {
+    font-size: 19px;
   }
 
-  .restaurantPick strong,
-  .lineageCenter strong {
-    font-size: 24px;
+  .messagePanel p {
+    font-size: 16px;
   }
 
-  .status {
+  .candidateBadge,
+  .auditBadge {
     white-space: normal;
   }
 }
