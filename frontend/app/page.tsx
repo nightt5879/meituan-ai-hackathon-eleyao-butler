@@ -6,6 +6,7 @@ import { SurveyWordCloud } from "@/components/SurveyWordCloud";
 import { TechRouteSelfCheck, TechRouteShowcase } from "@/components/TechRouteShowcase";
 import { PainEvidenceChain } from "@/components/PainEvidenceChain";
 import { FutureSection } from "@/components/FutureSection";
+import { GroupDecisionMechanismSection } from "@/components/design/GroupDecisionMechanismSection";
 import "./ey-design.css";
 import "./tech-route.css";
 import "./pain-chain.css";
@@ -322,6 +323,8 @@ export default function PortfolioHomePage() {
           <PainEvidenceChain />
         </div>
       </section>
+
+      <GroupDecisionMechanismSection />
 
       <section className="section section--paper" id="route">
         <div className="container">
