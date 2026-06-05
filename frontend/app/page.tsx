@@ -62,7 +62,7 @@ const architectureLayers = [
   ["L1", "体验层", "微信小程序与 Web 体验并行。Web 版复刻小程序流程，用 demo session 替代 wx.login。"],
   ["L2", "服务层", "Next.js App Router 同时承载作品页、在线体验页面与 API routes。"],
   ["L3", "AI 管家层", "OpenClaw 负责单人推荐与动态追问；不可用时降级到本地推荐，保证评审流程不断。"],
-  ["L4", "数据层", "任务、登录 session、周末规划写入服务端 JSON store；浏览器本地保留记忆、收藏与草稿。"]
+  ["L4", "数据层", "任务、登录 session、周边规划写入服务端 JSON store；浏览器本地保留记忆、收藏与草稿。"]
 ];
 
 function Icon({ name, size = 28 }: { name: string; size?: number }) {
@@ -387,7 +387,7 @@ export default function PortfolioHomePage() {
           <div className="reveal">
             <div className="sec-eyebrow">在线体验 · Try It Live</div>
             <h2 className="sec-title">不用装微信，<br />浏览器里直接上手</h2>
-            <p className="sec-lead">用一个 demo 身份进入，完整体验今天吃什么、多人约饭、周末规划与管家记忆。</p>
+            <p className="sec-lead">用一个 demo 身份进入，完整体验今天吃什么、多人约饭、周边规划与管家记忆。</p>
             <div className="btns">
               <a className="btn-lg btn-primary" href="/experience">开始在线体验 →</a>
               <a className="btn-lg btn-ghost" href="https://github.com/nightt5879/meituan-ai-hackathon-eleyao-butler" target="_blank" rel="noreferrer">查看 GitHub 仓库</a>
