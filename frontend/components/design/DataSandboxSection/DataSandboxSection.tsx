@@ -640,8 +640,8 @@ function LeafletSandboxMap({
     <div className={styles.mapStage}>
       <div className={styles.stageHeader}>
         <div>
-          <span className={styles.kicker}>大学城候选世界 · 本地地图底图</span>
-          <strong>本地大学城地图底图承载沙盘候选点位；点击点位查看来源、能力画像和边界说明</strong>
+          <span className={styles.kicker}>大学城候选世界 · 本地地图沙盘</span>
+          <strong>本地瓦片底图承载 212 个沙盘候选点位；点击点位查看来源、能力画像与边界说明。</strong>
         </div>
         <span className={styles.sourcePill}>来源 · 合成 · 置信度</span>
       </div>
