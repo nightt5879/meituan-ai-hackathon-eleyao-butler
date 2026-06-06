@@ -750,113 +750,6 @@
   color: var(--ey-rose);
 }
 
-.trustBar {
-  display: grid;
-  grid-template-columns: minmax(210px, 0.86fr) minmax(260px, 1fr) minmax(300px, 1.16fr);
-  gap: 12px;
-  align-items: start;
-  min-width: 0;
-  margin-top: 14px;
-  padding: 14px;
-  border: 1px solid var(--ey-line);
-  border-radius: 22px;
-  background: color-mix(in srgb, var(--ey-card) 96%, var(--ey-bg));
-  box-shadow: var(--ey-shadow-sm);
-}
-
-.trustIntro {
-  min-width: 0;
-}
-
-.trustIntro span {
-  display: block;
-  color: var(--ey-emerald);
-  font-size: 12px;
-  font-weight: 950;
-}
-
-.trustIntro p {
-  margin: 5px 0 0;
-  color: var(--ey-slate);
-  font-size: 12.8px;
-  font-weight: 760;
-  line-height: 1.58;
-}
-
-.auditStrip,
-.sourceList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  min-width: 0;
-}
-
-.auditBadge {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  max-width: 100%;
-  gap: 6px;
-  padding: 6px 9px;
-  border: 1px solid transparent;
-  border-radius: var(--ey-pill);
-  font-size: 11px;
-  font-weight: 950;
-  line-height: 1.15;
-  white-space: nowrap;
-}
-
-.auditBadge span {
-  display: grid;
-  width: 16px;
-  height: 16px;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 50%;
-  background: currentColor;
-  color: var(--ey-card);
-  font-size: 10px;
-}
-
-.auditPass {
-  border-color: color-mix(in srgb, var(--ey-emerald) 24%, transparent);
-  background: color-mix(in srgb, var(--ey-emerald) 11%, var(--ey-card));
-  color: var(--ey-emerald-d);
-}
-
-.auditNotice {
-  border-color: color-mix(in srgb, var(--ey-amber) 28%, transparent);
-  background: color-mix(in srgb, var(--ey-amber) 13%, var(--ey-card));
-  color: var(--ey-amber-900);
-}
-
-.sourceChip {
-  display: inline-flex;
-  align-items: center;
-  max-width: 100%;
-  gap: 7px;
-  padding: 7px 10px;
-  border: 1px solid var(--ey-line);
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--ey-bg) 58%, var(--ey-card));
-  color: var(--ey-slate);
-  font-size: 12px;
-  font-weight: 820;
-  line-height: 1.3;
-  overflow-wrap: anywhere;
-}
-
-.sourceChip strong {
-  color: var(--ey-ink);
-  font-weight: 950;
-}
-
-.sourceChip i {
-  color: var(--ey-emerald);
-  font-style: normal;
-  font-weight: 950;
-}
-
 :global(body.t-night) .section,
 :global(body.t-black-pink) .section {
   background: var(--ey-bg);
@@ -864,10 +757,8 @@
 
 :global(body.t-night) .flowShell,
 :global(body.t-night) .workbench,
-:global(body.t-night) .trustBar,
 :global(body.t-black-pink) .flowShell,
-:global(body.t-black-pink) .workbench,
-:global(body.t-black-pink) .trustBar {
+:global(body.t-black-pink) .workbench {
   border-color: var(--ey-line);
   background: color-mix(in srgb, var(--ey-card) 90%, var(--ey-bg));
 }
@@ -882,7 +773,6 @@
 :global(body.t-night) .panelFooter,
 :global(body.t-night) .resultCard,
 :global(body.t-night) .groupMessage,
-:global(body.t-night) .sourceChip,
 :global(body.t-black-pink) .flowMeta,
 :global(body.t-black-pink) .flowStep,
 :global(body.t-black-pink) .panelCard,
@@ -892,8 +782,7 @@
 :global(body.t-black-pink) .markerStrip span,
 :global(body.t-black-pink) .panelFooter,
 :global(body.t-black-pink) .resultCard,
-:global(body.t-black-pink) .groupMessage,
-:global(body.t-black-pink) .sourceChip {
+:global(body.t-black-pink) .groupMessage {
   border-color: var(--ey-line);
   background: color-mix(in srgb, var(--ey-card) 88%, var(--ey-bg));
 }
@@ -951,14 +840,6 @@
   .panelCard {
     min-height: 0;
   }
-
-  .trustBar {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .sourceList {
-    grid-column: 1 / -1;
-  }
 }
 
 @media (max-width: 1040px) {
@@ -991,18 +872,15 @@
     flex-basis: 142px;
   }
 
-  .workbench,
-  .trustBar {
+  .workbench {
     border-radius: 20px;
   }
 
-  .workbenchGrid,
-  .trustBar {
+  .workbenchGrid {
     grid-template-columns: 1fr;
   }
 
-  .outputColumn,
-  .sourceList {
+  .outputColumn {
     grid-column: auto;
   }
 
@@ -1015,8 +893,7 @@
 
 @media (max-width: 520px) {
   .flowShell,
-  .workbench,
-  .trustBar {
+  .workbench {
     padding: 12px;
   }
 
@@ -1043,12 +920,4 @@
     font-size: 25px;
   }
 
-  .sourceChip {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .auditBadge {
-    white-space: normal;
-  }
 }

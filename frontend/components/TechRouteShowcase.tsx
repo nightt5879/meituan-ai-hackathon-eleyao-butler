@@ -459,11 +459,16 @@ export function TechRouteShowcase() {
         </div>
       </div>
 
-      <div className="tr-compare-block reveal d2">
-        <div className="sec-eyebrow">设计与思路 · 差异化对比</div>
-        <p className="sec-lead">不是套壳聊天，而是会追问、会协调、会自检、会兜底的本地生活管家工作流。</p>
+      <section className="tr-compare-section reveal d2" aria-labelledby="tr-compare-title">
+        <div className="tr-compare-head">
+          <div className="sec-eyebrow">设计与思路 · 差异化对比</div>
+          <h2 className="sec-title tr-compare-title" id="tr-compare-title">为什么这不是一个普通 AI 助手？</h2>
+          <p className="sec-lead tr-compare-lead">
+            普通 AI 助手往往停在“问一句、答一句”；饿了幺把预算、忌口、距离、时间和群体偏好纳入流程，先收敛条件，再输出可执行方案。
+          </p>
+        </div>
         <TechRouteCompare />
-      </div>
+      </section>
     </div>
   );
 }

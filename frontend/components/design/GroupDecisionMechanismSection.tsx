@@ -68,8 +68,6 @@ type WorkflowStep = {
   right: PanelContent;
 };
 
-type AuditTone = "pass" | "notice";
-
 const toneClassMap: Record<StatusTone, string> = {
   idle: styles.toneIdle,
   safe: styles.toneSafe,
@@ -380,6 +378,11 @@ const workflowSteps: WorkflowStep[] = [
           title: "保留不变",
           items: ["避开海鲜", "不吃辣", "预算 ≤100", "学校附近"],
           kind: "chips"
+        },
+        {
+          title: "轻量自检",
+          items: ["预算 PASS", "忌口 PASS", "时间 PASS", "距离 PASS", "公平性 PASS", "排队风险 NOTICE"],
+          kind: "chips"
         }
       ],
       footer: "下一步：带着反馈重排候选。"
@@ -479,8 +482,8 @@ const workflowSteps: WorkflowStep[] = [
       sections: [
         {
           title: "来源链路",
-          items: ["B 不吃海鲜 → 可避海鲜", "C 不吃辣 → 不辣可选", "换一批反馈 → 更有特色", "管家记忆 → 可复用"],
-          kind: "checks"
+          items: ["可避海鲜 ← B 不吃海鲜", "不辣可选 ← C 不吃辣", "人均可控 ← 预算 ≤100", "更有特色 ← 换一批反馈", "可复用 ← 管家记忆"],
+          kind: "chips"
         }
       ],
       footer: "解释视图用于展示机制，不声称实时算法可视化。"
@@ -504,23 +507,6 @@ const workflowSteps: WorkflowStep[] = [
   }
 ];
 
-const auditItems: Array<{ label: string; status: "PASS" | "NOTICE"; tone: AuditTone }> = [
-  { label: "预算", status: "PASS", tone: "pass" },
-  { label: "忌口", status: "PASS", tone: "pass" },
-  { label: "时间", status: "PASS", tone: "pass" },
-  { label: "距离", status: "PASS", tone: "pass" },
-  { label: "公平性", status: "PASS", tone: "pass" },
-  { label: "排队风险", status: "NOTICE", tone: "notice" }
-];
-
-const reasonSources = [
-  { reason: "可避海鲜", source: "B 不吃海鲜" },
-  { reason: "不辣可选", source: "C 不吃辣" },
-  { reason: "人均可控", source: "预算 ≤100" },
-  { reason: "更有特色", source: "换一批反馈" },
-  { reason: "可复用", source: "管家记忆" }
-];
-
 function WorkflowIcon({ name, size = 20 }: { name: IconName; size?: number }) {
   const common = {
     width: size,
@@ -541,15 +527,6 @@ function WorkflowIcon({ name, size = 20 }: { name: IconName; size?: number }) {
   if (name === "refresh") return <svg {...common}><path d="M21 12a9 9 0 0 1-15.5 6.2" /><path d="M3 12A9 9 0 0 1 18.5 5.8" /><path d="M18 3v4h-4" /><path d="M6 21v-4h4" /></svg>;
   if (name === "send") return <svg {...common}><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4Z" /></svg>;
   return <svg {...common}><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" /></svg>;
-}
-
-function AuditBadge({ item }: { item: (typeof auditItems)[number] }) {
-  return (
-    <span className={`${styles.auditBadge} ${item.tone === "notice" ? styles.auditNotice : styles.auditPass}`}>
-      <span aria-hidden="true">{item.tone === "notice" ? "!" : "✓"}</span>
-      {item.label} {item.status}
-    </span>
-  );
 }
 
 function renderSections(sections?: PanelSection[]) {
@@ -736,24 +713,6 @@ export function GroupDecisionMechanismSection() {
           </div>
         </div>
 
-        <div className={`${styles.trustBar} reveal d3`}>
-          <div className={styles.trustIntro}>
-            <span>可信解释压缩条</span>
-            <p>推荐理由不是事后包装，而是来自成员偏好、候选标签、反馈调整和自检结果。</p>
-          </div>
-          <div className={styles.auditStrip} aria-label="轻量自检结果">
-            {auditItems.map((item) => <AuditBadge item={item} key={item.label} />)}
-          </div>
-          <div className={styles.sourceList} aria-label="推荐理由来源">
-            {reasonSources.map((item) => (
-              <span className={styles.sourceChip} key={`${item.reason}-${item.source}`}>
-                <strong>{item.reason}</strong>
-                <i>←</i>
-                {item.source}
-              </span>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );
