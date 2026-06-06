@@ -2337,12 +2337,27 @@ body.t-night .cloud-word.c-warn {
   position: relative;
   display: grid;
   overflow: hidden;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 9 / 16;
   place-items: center;
   border: 1px solid var(--ey-line);
-  border-radius: 24px;
+  border-radius: 22px;
   background: linear-gradient(160deg, #0f2a22, #022c22);
-  box-shadow: var(--ey-shadow-lg);
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.15);
+}
+
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.video-card {
+  padding: 14px;
+  border: 1px solid var(--ey-line);
+  border-radius: 28px;
+  background: color-mix(in srgb, var(--ey-card) 88%, white 12%);
+  box-shadow: var(--ey-shadow-sm);
 }
 
 .video-frame .play {
@@ -2382,6 +2397,33 @@ body.t-night .cloud-word.c-warn {
   width: 100%;
   height: 100%;
   border: 0;
+  background: #06281f;
+  object-fit: cover;
+}
+
+.video-copy {
+  padding: 16px 4px 4px;
+}
+
+.video-copy .sn {
+  color: var(--ey-emerald);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.video-copy h3 {
+  margin-top: 8px;
+  color: var(--ey-ink);
+  font-size: 20px;
+  font-weight: 950;
+}
+
+.video-copy p {
+  margin-top: 8px;
+  color: var(--ey-slate);
+  font-size: 14px;
+  line-height: 1.65;
 }
 
 .story {
@@ -2676,6 +2718,7 @@ body.t-night .cloud-word.c-warn {
   .grid3,
   .grid2,
   .layers,
+  .video-grid,
   .story,
   .demo-wrap {
     grid-template-columns: 1fr 1fr;
@@ -3003,9 +3046,15 @@ body.t-night .cloud-word.c-warn {
   .grid3,
   .grid2,
   .layers,
+  .video-grid,
   .story,
   .demo-wrap {
     grid-template-columns: 1fr;
+  }
+
+  .video-card {
+    max-width: 430px;
+    margin: 0 auto;
   }
 
   .card {

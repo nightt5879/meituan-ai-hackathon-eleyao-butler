@@ -96,6 +96,27 @@ const architectureLayers = [
   ["L4", "数据层", "任务、登录 session、周边规划写入服务端 JSON store；浏览器本地保留记忆、收藏与草稿。"]
 ];
 
+const realDeviceVideos = [
+  {
+    label: "实机 01",
+    title: "今天吃什么",
+    src: "/videos/food-real-device.mp4",
+    desc: "从场景、预算、距离和口味偏好出发，展示 AI 管家生成 2-3 个餐厅推荐，并在 OpenClaw 不稳定时保留本地兜底。"
+  },
+  {
+    label: "实机 02",
+    title: "多人约饭",
+    src: "/videos/group-real-device.mp4",
+    desc: "展示发起约饭、成员填写偏好、后端同步状态、冲突识别和生成推荐方案的完整小程序链路。"
+  },
+  {
+    label: "实机 03",
+    title: "周边规划",
+    src: "/videos/nearby-real-device.mp4",
+    desc: "输入出行时间、预算、起点和兴趣后，结合真实天气与周边 mock POI 生成路线、自检项和风险提示。"
+  }
+];
+
 function Icon({ name, size = 28 }: { name: string; size?: number }) {
   const common = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round" } as const;
   if (name === "code") return <svg {...common}><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /><line x1="13.5" y1="4" x2="10.5" y2="20" /></svg>;
