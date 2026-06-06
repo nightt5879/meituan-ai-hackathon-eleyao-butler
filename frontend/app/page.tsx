@@ -12,7 +12,29 @@ import "./tech-route.css";
 import "./pain-chain.css";
 import "./future-section.css";
 
-const demoVideoUrl = process.env.NEXT_PUBLIC_DEMO_VIDEO_URL || "";
+const demoVideos = [
+  {
+    no: "功能一",
+    title: "今天吃什么",
+    subtitle: "一个人不知道吃什么时，直接给出可执行推荐。",
+    desc: "根据场景、预算、距离、口味与忌口，生成 2-3 个餐厅方案，并支持换一批、调整条件与偏好记忆。",
+    url: process.env.NEXT_PUBLIC_DEMO_VIDEO_FOOD_URL || ""
+  },
+  {
+    no: "功能二",
+    title: "多人约饭",
+    subtitle: "把“随便”变成真正能定下来的方案。",
+    desc: "收集多人预算、口味、距离等偏好，识别冲突点，生成折中推荐和可复制到群聊的邀请文案。",
+    url: process.env.NEXT_PUBLIC_DEMO_VIDEO_GROUP_URL || ""
+  },
+  {
+    no: "功能三",
+    title: "周边规划",
+    subtitle: "不想做攻略时，生成半日/一日轻路线。",
+    desc: "结合天气、预算、距离、兴趣和同行需求，生成适合拍照、吃饭或 citywalk 的可执行路线。",
+    url: process.env.NEXT_PUBLIC_DEMO_VIDEO_PLAN_URL || ""
+  }
+];
 
 const DataSandboxSection = dynamic(
   () =>
@@ -367,28 +389,33 @@ export default function PortfolioHomePage() {
 
       <section className="section section--paper" id="video">
         <div className="container">
-          <div className="sec-head reveal">
+          <div className="sec-head demo-head reveal">
             <div className="sec-eyebrow">演示视频 · Demo Video</div>
-            <h2 className="sec-title">小程序实机录屏</h2>
-            <p className="sec-lead">完整走一遍“偏好权重确认 → 冲突识别 → 推荐生成”，证明不是纸面方案，而是真的跑起来了。</p>
+            <h2 className="sec-title">三大核心功能<wbr />实机演示</h2>
+            <p className="sec-lead">今天吃什么、多人约饭、周边规划，三段独立录屏展示完整产品闭环。</p>
           </div>
-          <div className="video-frame reveal">
-            <span className="vtag">实机录屏</span>
-            {demoVideoUrl ? (
-              <iframe className="video-embed" src={demoVideoUrl} title="饿了幺 AI 管家演示视频" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />
-            ) : (
-              <>
-                <div className="play"><svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><polygon points="7 4 20 12 7 20" /></svg></div>
-                <span className="vhint">部署时配置 NEXT_PUBLIC_DEMO_VIDEO_URL 后，这里会嵌入演示视频。</span>
-              </>
-            )}
-          </div>
-          <div className="story">
-            {[
-              ["镜头 01", "偏好权重确认", "问答收集场景、预算、距离、口味与忌口，并让用户标记必须满足或希望满足。"],
-              ["镜头 02", "冲突识别", "管家按用户选择分流底线与偏好，明确指出冲突在哪里。"],
-              ["镜头 03", "推荐生成", "候选自检 → 最终推荐 → 一键生成可发群里的邀约文案。"]
-            ].map(([num, title, desc], index) => <div className={`shot reveal d${index + 1}`} key={num}><div className="sn">{num}</div><h3>{title}</h3><p>{desc}</p></div>)}
+          <div className="demo-videos">
+            {demoVideos.map((item, index) => (
+              <div className={`demo-card reveal d${index + 1}`} key={item.no}>
+                <div className="demo-card-video">
+                  <span className="vtag">实机操作</span>
+                  {item.url ? (
+                    <video className="demo-card-media" src={item.url} controls playsInline preload="metadata" />
+                  ) : (
+                    <div className="demo-card-placeholder">
+                      <div className="play"><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><polygon points="7 4 20 12 7 20" /></svg></div>
+                      <span className="vhint">部署时配置视频地址后，这里会嵌入对应演示视频。</span>
+                    </div>
+                  )}
+                </div>
+                <div className="demo-card-body">
+                  <div className="demo-card-no">{item.no}</div>
+                  <h3 className="demo-card-title">{item.title}</h3>
+                  <p className="demo-card-sub">{item.subtitle}</p>
+                  <p className="demo-card-desc">{item.desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
