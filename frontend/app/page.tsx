@@ -154,7 +154,22 @@ export default function PortfolioHomePage() {
       });
     }, { rootMargin: "0px 0px -8% 0px", threshold: 0.14 });
     revealed.forEach((item) => observer.observe(item));
-    return () => observer.disconnect();
+
+    const revealHashTarget = () => {
+      const hash = window.location.hash;
+      if (!hash) return;
+      const target = document.querySelector<HTMLElement>(hash);
+      if (!target) return;
+      if (target.classList.contains("reveal")) target.classList.add("in");
+      target.querySelectorAll<HTMLElement>(".reveal").forEach((item) => item.classList.add("in"));
+    };
+
+    revealHashTarget();
+    window.addEventListener("hashchange", revealHashTarget);
+    return () => {
+      window.removeEventListener("hashchange", revealHashTarget);
+      observer.disconnect();
+    };
   }, [siteOpen]);
 
   useEffect(() => {
