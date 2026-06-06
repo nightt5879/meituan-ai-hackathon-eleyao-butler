@@ -753,6 +753,23 @@ async function requestJson<T>(url: string, options: RequestInit = {}, token?: st
   return data as T;
 }
 
+function buildGroupAiProgressSteps(
+  submittedCount: number,
+  expectedPeople: number
+): Array<Omit<AiProgressStep, "status" | "updatedAt">> {
+  const understandDetail = submittedCount > 0
+    ? `合并 ${submittedCount}/${expectedPeople} 人填写`
+    : "等待成员填写偏好";
+
+  return [
+    { key: "understand", label: "汇总大家的偏好", detail: understandDetail },
+    { key: "retrieve", label: "找大家都方便的店", detail: "按公共区域召回" },
+    { key: "filter", label: "识别并化解冲突", detail: "忌口冲突、预算冲突、时间冲突" },
+    { key: "rank", label: "折中打分", detail: "尽量让每人都不难受" },
+    { key: "compose", label: "写群发说明", detail: "主推、备选和文案" }
+  ];
+}
+
 const aiProgressSteps: Record<AiProgressScene, Array<Omit<AiProgressStep, "status" | "updatedAt">>> = {
   food_recommendation: [
     { key: "understand", label: "读懂你的需求", detail: "整理场景、口味和忌口" },
@@ -761,13 +778,7 @@ const aiProgressSteps: Record<AiProgressScene, Array<Omit<AiProgressStep, "statu
     { key: "rank", label: "算匹配度排序", detail: "结合口味和记忆打分" },
     { key: "compose", label: "写推荐理由", detail: "生成理由和风险提示" }
   ],
-  group_dining: [
-    { key: "understand", label: "汇总大家的偏好", detail: "合并 4 人填写" },
-    { key: "retrieve", label: "找大家都方便的店", detail: "按公共区域召回" },
-    { key: "filter", label: "识别并化解冲突", detail: "忌口冲突、预算冲突、时间冲突" },
-    { key: "rank", label: "折中打分", detail: "尽量让每人都不难受" },
-    { key: "compose", label: "写群发说明", detail: "主推、备选和文案" }
-  ],
+  group_dining: buildGroupAiProgressSteps(0, 0),
   weekend_plan: [
     { key: "understand", label: "读懂你的周末", detail: "时间、预算、体力、兴趣" },
     { key: "retrieve", label: "查天气、找周边", detail: "天气和 POI 召回" },
@@ -784,9 +795,13 @@ function createClientAiTraceId(scene: AiProgressScene) {
   return `aip_${scene}_${Date.now().toString(36)}_${randomPart}`.slice(0, 96);
 }
 
-function createClientAiProgress(scene: AiProgressScene, traceId: string): AiProgressSnapshot {
+function createClientAiProgress(
+  scene: AiProgressScene,
+  traceId: string,
+  stepsOverride?: Array<Omit<AiProgressStep, "status" | "updatedAt">>
+): AiProgressSnapshot {
   const timestamp = new Date().toISOString();
-  const steps = aiProgressSteps[scene].map((step, index) => ({
+  const steps = (stepsOverride ?? aiProgressSteps[scene]).map((step, index) => ({
     ...step,
     status: index === 0 ? "running" as const : "pending" as const,
     updatedAt: index === 0 ? timestamp : undefined
@@ -1500,15 +1515,17 @@ export default function ExperienceClient() {
   ], aiProgressRequestSummary("food_recommendation")), [foodSlots, foodPrefs, memory]);
   const groupAiProgressSummary = useMemo(() => {
     const task = groupBoard?.task;
+    const expectedPeople = groupBoard?.task.expectedPeopleCount || groupPeople;
+    const submittedCount = groupBoard?.participants.length || 0;
     const timeText = task?.dinnerTime || (groupFill.timeMode === "allDay"
       ? `${groupFill.days.join("、") || "待商量"} 全天`
       : `${groupFill.days.join("、") || "待商量"} ${groupFill.startTime}-${groupFill.endTime}`);
 
     return compactSummaryParts([
-      task?.expectedPeopleCount ? `${task.expectedPeopleCount}人约饭` : `${groupPeople}人约饭`,
+      `${expectedPeople}人约饭`,
       timeText,
       task?.locationText,
-      groupBoard?.participants.length ? `${groupBoard.participants.length}人已提交` : "等待成员提交",
+      submittedCount > 0 ? `${submittedCount}人已提交` : "等待成员提交",
       groupFill.dietaryTags.join("、"),
       groupFill.cuisineTags.join("、"),
       groupParticipant.budgetMax ? `${groupParticipant.budgetMax}元内` : groupFill.budgetTag,
@@ -2560,8 +2577,14 @@ export default function ExperienceClient() {
     setGroupLoading(true);
     setGroupNotice("");
     setGroupAiProgress(null);
+    const expectedPeople = groupBoard?.task.expectedPeopleCount || groupPeople;
+    const submittedCount = groupBoard?.participants.length || 0;
     const aiProgressTraceId = createClientAiTraceId("group_dining");
-    setGroupAiProgress(createClientAiProgress("group_dining", aiProgressTraceId));
+    setGroupAiProgress(createClientAiProgress(
+      "group_dining",
+      aiProgressTraceId,
+      buildGroupAiProgressSteps(submittedCount, expectedPeople)
+    ));
     let stopProgressPolling = false;
     const progressPolling = pollAiProgress(aiProgressTraceId, identity.sessionToken, setGroupAiProgress, () => stopProgressPolling);
 
@@ -2889,13 +2912,13 @@ export default function ExperienceClient() {
             <p>最近偏好记录：{records.length} 条</p>
             <p>收藏店铺：{favorites.length} 家</p>
             <p>多人约饭任务：{groupTaskId || "未创建"}</p>
-            <p>周末规划：{weekendPlan?.planId || "未生成"}</p>
+            <p>周边规划：{weekendPlan?.planId || "未生成"}</p>
             <h2>验收覆盖</h2>
             <p>登录/demo 身份初始化</p>
             <p>首页、历史、收藏、主题</p>
             <p>今天吃什么问答与推荐</p>
             <p>多人约饭创建、填写、看板</p>
-            <p>周末规划生成与 fallback</p>
+            <p>周边规划生成与 fallback</p>
             <p>记忆设置与本地持久化</p>
           </aside>
           {renderThemeListPanel()}
@@ -2919,9 +2942,9 @@ export default function ExperienceClient() {
           <p className="desktop-preview-note">{desktopPreviewTip}</p>
           <h2>当前体验状态</h2>
           <p>最近偏好记录：{records.length} 条 · 收藏店铺：{favorites.length} 家</p>
-          <p>多人约饭任务：{groupTaskId || "未创建"} · 周末规划：{weekendPlan?.planId || "未生成"}</p>
+          <p>多人约饭任务：{groupTaskId || "未创建"} · 周边规划：{weekendPlan?.planId || "未生成"}</p>
           <h2>验收覆盖</h2>
-          <p>登录 · 首页/历史/收藏/主题 · 今天吃什么 · 多人约饭 · 周末规划 · 记忆持久化</p>
+          <p>登录 · 首页/历史/收藏/主题 · 今天吃什么 · 多人约饭 · 周边规划 · 记忆持久化</p>
           {identity ? <button className="panel-outline-button" onClick={logout} type="button">退出 demo 身份</button> : null}
           <button className="review-sheet-close" onClick={() => setShowReviewSheet(false)} type="button">收起</button>
         </div>

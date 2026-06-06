@@ -60,6 +60,13 @@ if [[ "$SKIP_GIT_PULL" != "1" ]]; then
   log "updating branch $DEPLOY_BRANCH"
   git -C "$REPO_ROOT" fetch origin "$DEPLOY_BRANCH" --prune
   git -C "$REPO_ROOT" pull --ff-only origin "$DEPLOY_BRANCH"
+
+  if git -C "$REPO_ROOT" lfs version >/dev/null 2>&1; then
+    log "pulling Git LFS video assets"
+    git -C "$REPO_ROOT" lfs pull --include "frontend/public/videos/*.mp4"
+  else
+    fail "git-lfs is required for frontend video assets. Install git-lfs, then rerun this script."
+  fi
 else
   log "skip git pull"
 fi
