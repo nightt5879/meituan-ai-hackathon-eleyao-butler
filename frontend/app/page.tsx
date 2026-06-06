@@ -375,7 +375,7 @@ export default function PortfolioHomePage() {
           <div className="sec-head reveal">
             <div className="sec-eyebrow">设计与思路 · 技术路线</div>
             <h2 className="sec-title">三个功能，<br />一条会自检的执行链路</h2>
-            <p className="sec-lead">把每个功能拆成真实的 输入 → 处理 → 输出：用到哪些接口、抽取哪些字段、怎么自检、怎么兜底，以及和普通 AI 的不同点。三种框架视图可切换看，点任意节点展开细节，或「跑一遍流程」。</p>
+            <p className="sec-lead">把每个功能拆成稳定的 输入 → 处理 → 输出：先收集约束，再结合本地候选池、OpenClaw 理解与规则自检，最后给出可执行方案和兜底边界。三种框架视图可切换看，点任意节点展开细节。</p>
           </div>
           <TechRouteShowcase />
         </div>
