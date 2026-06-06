@@ -1,0 +1,2121 @@
+.section {
+  --sandbox-manual: var(--ey-emerald);
+  --sandbox-synthetic: var(--ey-amber);
+  --sandbox-poi: var(--ey-rose);
+  --sandbox-grid: color-mix(in srgb, var(--ey-line) 54%, transparent);
+  --sandbox-panel: color-mix(in srgb, var(--ey-card) 92%, var(--ey-bg));
+  --sandbox-stage: color-mix(in srgb, var(--ey-bg) 72%, var(--ey-card));
+  --sandbox-muted-fill: color-mix(in srgb, var(--ey-card) 70%, var(--ey-bg-2));
+  --sandbox-on-accent: color-mix(in srgb, var(--ey-card) 94%, var(--ey-ink));
+  width: 100%;
+  padding: 72px clamp(20px, 5vw, 56px);
+  color: var(--ey-ink);
+  font-family: var(--ey-sans, "Noto Sans SC", -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--ey-bg) 86%, var(--ey-card)) 0%, var(--ey-bg) 100%);
+}
+
+.section,
+.section * {
+  box-sizing: border-box;
+}
+
+.section h2,
+.section h3,
+.section p {
+  margin: 0;
+}
+
+.header {
+  display: grid;
+  width: min(1180px, 100%);
+  gap: 16px;
+  margin: 0 auto 34px;
+  text-align: left;
+}
+
+.eyebrow {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ey-emerald-d);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.header h2 {
+  max-width: 20ch;
+  margin: 0;
+  color: var(--ey-ink);
+  font-size: clamp(28px, 3.6vw, 46px);
+  font-weight: 900;
+  line-height: 1.14;
+  letter-spacing: 0;
+}
+
+.subtitle {
+  max-width: 64ch;
+  margin: 0;
+  color: var(--ey-slate);
+  font-size: clamp(15px, 1.3vw, 18px);
+  line-height: 1.75;
+}
+
+.mapStage {
+  position: relative;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid var(--ey-line);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--ey-card) 88%, var(--ey-bg)), var(--sandbox-stage));
+  box-shadow: var(--ey-shadow-lg);
+}
+
+.stageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--ey-line);
+  background: color-mix(in srgb, var(--ey-card) 82%, var(--ey-bg));
+}
+
+.stageHeader > div {
+  display: grid;
+  gap: 5px;
+}
+
+.stageHeader strong {
+  color: var(--ey-ink);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.kicker,
+.sourcePill,
+.panelTitle span {
+  color: var(--ey-emerald-d);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.sourcePill {
+  flex: 0 0 auto;
+  padding: 8px 11px;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 38%, var(--ey-line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-emerald-50) 70%, var(--ey-card));
+  font-weight: 900;
+}
+
+.mapTools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--ey-line);
+  background: color-mix(in srgb, var(--ey-card) 72%, var(--ey-bg));
+}
+
+.layerControls {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 9px;
+  min-width: 0;
+}
+
+.layerButton {
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  gap: 9px;
+  padding: 8px 10px;
+  border: 1px solid var(--ey-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 76%, transparent);
+  color: var(--ey-ink);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  box-shadow: var(--ey-shadow-sm);
+}
+
+.layerButton:hover {
+  border-color: color-mix(in srgb, var(--ey-emerald) 34%, var(--ey-line));
+  transform: translateY(-1px);
+}
+
+.layerButtonActive {
+  border-color: color-mix(in srgb, var(--ey-emerald) 52%, var(--ey-line));
+  background: color-mix(in srgb, var(--ey-emerald-50) 56%, var(--ey-card));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ey-card) 58%, transparent), var(--ey-shadow-sm);
+}
+
+.layerButton > span:last-child {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.layerButton strong {
+  color: var(--ey-ink);
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+.layerButton small {
+  max-width: 184px;
+  overflow-wrap: anywhere;
+  color: var(--ey-slate-2);
+  font-size: 0.68rem;
+  line-height: 1.25;
+}
+
+.layerDot {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  border: 2px solid color-mix(in srgb, var(--ey-card) 82%, var(--ey-ink));
+  border-radius: 999px;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ey-card) 66%, transparent);
+}
+
+.layerDot.manual_sample {
+  background: var(--sandbox-manual);
+}
+
+.layerDot.synthetic_mvp {
+  background: var(--sandbox-synthetic);
+}
+
+.layerDot.weekend_poi {
+  background: var(--sandbox-poi);
+}
+
+.visibleCount {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  border: 1px solid var(--ey-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 82%, transparent);
+  color: var(--ey-slate);
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.visibleCount strong {
+  color: var(--ey-emerald-d);
+}
+
+.leafletCanvas {
+  position: relative;
+  min-height: 430px;
+  height: clamp(430px, 54vw, 610px);
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--ey-bg-2);
+}
+
+.leafletMap {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  min-height: 100%;
+}
+
+.leafletStatus {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  z-index: 5;
+  padding: 10px 12px;
+  border: 1px solid var(--ey-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 90%, transparent);
+  color: var(--ey-ink);
+  font-size: 0.82rem;
+  font-weight: 800;
+  box-shadow: var(--ey-shadow-sm);
+}
+
+.fallbackNotice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 20px 0;
+  padding: 12px 14px;
+  border: 1px dashed color-mix(in srgb, var(--ey-amber) 48%, var(--ey-line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-amber-50) 48%, var(--ey-card));
+  color: var(--ey-amber-900);
+  font-size: 0.88rem;
+  font-weight: 800;
+  line-height: 1.65;
+}
+
+.fallbackNotice span {
+  min-width: 0;
+}
+
+.mapQuickActions {
+  position: absolute;
+  right: 22px;
+  top: 84px;
+  z-index: 6;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.tileWarning {
+  position: absolute;
+  left: 18px;
+  bottom: 54px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  max-width: min(520px, calc(100% - 430px));
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--ey-amber) 46%, var(--ey-line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-amber-50) 54%, var(--ey-card));
+  color: var(--ey-amber-900);
+  box-shadow: var(--ey-shadow-sm);
+}
+
+.tileWarning span {
+  min-width: 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.tileWarning div {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 7px;
+}
+
+.mapActionButton {
+  flex: 0 0 auto;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 42%, var(--ey-line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 90%, transparent);
+  color: var(--ey-ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: var(--ey-shadow-sm);
+}
+
+.mapActionButton:hover {
+  border-color: color-mix(in srgb, var(--ey-emerald) 72%, var(--ey-line));
+  color: var(--ey-emerald-d);
+}
+
+.pointInspector {
+  position: absolute;
+  top: 124px;
+  right: 18px;
+  bottom: 76px;
+  z-index: 7;
+  display: grid;
+  align-content: start;
+  width: clamp(300px, 30vw, 350px);
+  max-height: calc(100% - 200px);
+  gap: 10px;
+  overflow: auto;
+  padding: 13px;
+  border: 1px solid color-mix(in srgb, var(--ey-line) 86%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 92%, transparent);
+  color: var(--ey-ink);
+  box-shadow:
+    0 18px 50px color-mix(in srgb, var(--ey-forest) 20%, transparent),
+    var(--ey-shadow);
+  backdrop-filter: blur(10px);
+}
+
+.inspectorHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+}
+
+.inspectorHeader h3 {
+  margin: 3px 0 0;
+  overflow-wrap: anywhere;
+  color: var(--ey-ink);
+  font-size: 1.05rem;
+  line-height: 1.26;
+}
+
+.inspectorKicker,
+.inspectorSectionTitle span,
+.inspectorSource span {
+  color: var(--ey-emerald-d);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.inspectorClose {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid var(--ey-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-bg) 64%, var(--ey-card));
+  color: var(--ey-ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.inspectorClose:hover {
+  border-color: color-mix(in srgb, var(--ey-emerald) 54%, var(--ey-line));
+  color: var(--ey-emerald-d);
+}
+
+.inspectorBadges,
+.inspectorTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.inspectorBadges span,
+.inspectorTags span {
+  padding: 5px 7px;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 24%, var(--ey-line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-emerald-50) 60%, var(--ey-card));
+  color: var(--ey-emerald-d);
+  font-size: 0.68rem;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.inspectorTags span {
+  border-color: color-mix(in srgb, var(--ey-line) 74%, var(--ey-emerald));
+  background: color-mix(in srgb, var(--ey-card) 76%, transparent);
+  color: var(--ey-slate);
+}
+
+.inspectorReason {
+  margin: 0;
+  color: var(--ey-ink-2);
+  font-size: 0.75rem;
+  font-weight: 720;
+  line-height: 1.5;
+}
+
+.inspectorSection {
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--ey-line) 78%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-bg) 48%, var(--ey-card));
+}
+
+.inspectorSectionTitle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.inspectorSectionTitle strong {
+  color: var(--ey-ink);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.inspectorRadar {
+  display: grid;
+  gap: 6px;
+}
+
+.inspectorRadarRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.inspectorRadarRow span {
+  color: var(--ey-slate);
+  font-size: 0.7rem;
+  font-weight: 820;
+}
+
+.inspectorRadarRow strong {
+  color: var(--ey-emerald-d);
+  font-family: var(--ey-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 0.68rem;
+  line-height: 1;
+}
+
+.inspectorBarTrack {
+  grid-column: 1 / -1;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-bg-2) 80%, var(--ey-card));
+}
+
+.inspectorBarTrack i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--ey-emerald-300), var(--ey-emerald), var(--ey-amber));
+}
+
+.inspectorSource {
+  display: grid;
+  gap: 6px;
+  padding: 9px;
+  border: 1px solid color-mix(in srgb, var(--ey-line) 70%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-bg) 52%, transparent);
+}
+
+.inspectorSource div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.inspectorSource strong,
+.inspectorSource code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ey-ink);
+  font-family: var(--ey-sans, "Noto Sans SC", -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif);
+  font-size: 0.7rem;
+  font-weight: 760;
+  line-height: 1.32;
+}
+
+.inspectorSource code {
+  color: var(--ey-emerald-d);
+  font-family: var(--ey-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-weight: 900;
+}
+
+.inspectorActions {
+  display: grid;
+  gap: 7px;
+}
+
+.inspectorActions .mapActionButton {
+  width: fit-content;
+}
+
+.inspectorActions span {
+  color: var(--ey-slate-2);
+  font-size: 0.68rem;
+  font-weight: 760;
+  line-height: 1.42;
+}
+
+.section :global(.leaflet-container) {
+  width: 100%;
+  height: 100%;
+  background: var(--ey-bg-2);
+  color: var(--ey-ink);
+  font-family: var(--ey-sans, "Noto Sans SC", -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif);
+  outline: none;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.section :global(.leaflet-pane),
+.section :global(.leaflet-tile),
+.section :global(.leaflet-marker-icon),
+.section :global(.leaflet-marker-shadow),
+.section :global(.leaflet-tile-container),
+.section :global(.leaflet-pane > svg),
+.section :global(.leaflet-pane > canvas),
+.section :global(.leaflet-zoom-box),
+.section :global(.leaflet-image-layer),
+.section :global(.leaflet-layer) {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.section :global(.leaflet-pane) {
+  z-index: 1;
+}
+
+.section :global(.leaflet-tile-pane) {
+  z-index: 2;
+}
+
+.section :global(.leaflet-overlay-pane) {
+  z-index: 4;
+}
+
+.section :global(.leaflet-shadow-pane) {
+  z-index: 5;
+}
+
+.section :global(.leaflet-marker-pane) {
+  z-index: 6;
+}
+
+.section :global(.leaflet-tooltip-pane) {
+  z-index: 7;
+}
+
+.section :global(.leaflet-control-container) {
+  position: relative;
+  z-index: 8;
+}
+
+.section :global(.leaflet-interactive) {
+  cursor: pointer;
+}
+
+.section :global(.leaflet-container.leaflet-touch-zoom) {
+  touch-action: pan-x pan-y;
+}
+
+.section :global(.leaflet-container.leaflet-touch-drag) {
+  touch-action: pinch-zoom;
+}
+
+.section :global(.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom) {
+  touch-action: none;
+}
+
+.section :global(.leaflet-tile),
+.section :global(.leaflet-marker-icon),
+.section :global(.leaflet-marker-shadow) {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.section :global(.leaflet-marker-icon),
+.section :global(.leaflet-marker-shadow) {
+  display: block;
+}
+
+.section :global(.leaflet-container .leaflet-overlay-pane svg) {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+.section :global(.leaflet-container .leaflet-marker-pane img),
+.section :global(.leaflet-container .leaflet-shadow-pane img),
+.section :global(.leaflet-container .leaflet-tile-pane img),
+.section :global(.leaflet-container img.leaflet-image-layer),
+.section :global(.leaflet-container .leaflet-tile) {
+  width: auto;
+  max-width: none !important;
+  max-height: none !important;
+  padding: 0;
+}
+
+.section :global(.leaflet-tile) {
+  border: 0;
+  filter: saturate(0.95) contrast(0.98);
+  visibility: hidden;
+}
+
+.section :global(.leaflet-tile-loaded) {
+  visibility: inherit;
+}
+
+.section :global(.leaflet-container img.leaflet-tile) {
+  mix-blend-mode: normal;
+}
+
+.section :global(.leaflet-control-container .leaflet-top),
+.section :global(.leaflet-control-container .leaflet-bottom) {
+  position: absolute;
+  z-index: 7;
+  pointer-events: none;
+}
+
+.section :global(.leaflet-top) {
+  top: 0;
+}
+
+.section :global(.leaflet-right) {
+  right: 0;
+}
+
+.section :global(.leaflet-bottom) {
+  bottom: 0;
+}
+
+.section :global(.leaflet-control) {
+  position: relative;
+  z-index: 7;
+  clear: both;
+  pointer-events: auto;
+}
+
+.section :global(.leaflet-bottom .leaflet-control) {
+  margin-bottom: 14px;
+}
+
+.section :global(.leaflet-right .leaflet-control) {
+  margin-right: 14px;
+}
+
+.section :global(.leaflet-control-zoom) {
+  overflow: hidden;
+  border: 1px solid var(--ey-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 94%, transparent);
+  box-shadow: var(--ey-shadow-sm);
+}
+
+.section :global(.leaflet-control-zoom a) {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-bottom: 1px solid var(--ey-line);
+  color: var(--ey-ink);
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.section :global(.leaflet-control-zoom a:last-child) {
+  border-bottom: 0;
+}
+
+.section :global(.leaflet-control-attribution) {
+  margin: 0 0 8px 8px;
+  padding: 4px 7px;
+  border: 1px solid var(--ey-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-card) 88%, transparent);
+  color: var(--ey-slate);
+  font-size: 0.68rem;
+  line-height: 1.2;
+}
+
+.section :global(.leaflet-control-attribution a) {
+  color: var(--ey-emerald-d);
+  font-weight: 800;
+}
+
+.section :global(.leaflet-tooltip) {
+  position: absolute;
+  padding: 7px 9px;
+  border: 1px solid var(--ey-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 94%, transparent);
+  color: var(--ey-ink);
+  box-shadow: var(--ey-shadow-sm);
+  font-size: 0.76rem;
+  line-height: 1.35;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.section :global(.leaflet-tooltip span) {
+  color: var(--ey-slate-2);
+  font-size: 0.68rem;
+}
+
+.leafletClusterIcon {
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+}
+
+.clusterBubble {
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  align-content: center;
+  gap: 1px;
+  overflow: visible;
+  border: 2px solid color-mix(in srgb, var(--ey-card) 78%, var(--ey-ink));
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 34% 24%, color-mix(in srgb, var(--ey-card) 82%, transparent), transparent 36%),
+    linear-gradient(145deg, var(--ey-emerald), color-mix(in srgb, var(--ey-emerald) 62%, var(--ey-forest)));
+  color: var(--sandbox-on-accent);
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--ey-card) 62%, transparent),
+    0 12px 28px color-mix(in srgb, var(--ey-forest) 22%, transparent),
+    var(--ey-shadow-sm);
+  isolation: isolate;
+}
+
+.clusterGlow {
+  position: absolute;
+  inset: -9px;
+  z-index: -1;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--ey-emerald) 24%, transparent);
+  filter: blur(1px);
+  opacity: 0.85;
+}
+
+.clusterBubble strong {
+  position: relative;
+  z-index: 1;
+  color: currentColor;
+  font-size: 1.08rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.clusterBubble small {
+  position: relative;
+  z-index: 1;
+  color: currentColor;
+  font-size: 0.58rem;
+  font-weight: 900;
+  line-height: 1;
+  opacity: 0.88;
+  white-space: nowrap;
+}
+
+.clusterBubble.clusterSmall strong {
+  font-size: 1.08rem;
+}
+
+.clusterBubble.clusterMedium strong {
+  font-size: 1.24rem;
+}
+
+.clusterBubble.clusterLarge strong {
+  font-size: 1.42rem;
+}
+
+.clusterBubble.manual_sample {
+  background:
+    radial-gradient(circle at 34% 24%, color-mix(in srgb, var(--ey-card) 80%, transparent), transparent 36%),
+    linear-gradient(145deg, var(--sandbox-manual), color-mix(in srgb, var(--sandbox-manual) 68%, var(--ey-forest)));
+}
+
+.clusterBubble.synthetic_mvp {
+  background:
+    radial-gradient(circle at 34% 24%, color-mix(in srgb, var(--ey-card) 78%, transparent), transparent 36%),
+    linear-gradient(145deg, color-mix(in srgb, var(--ey-emerald-300) 72%, var(--ey-card)), color-mix(in srgb, var(--ey-emerald) 72%, var(--ey-bg-2)));
+}
+
+.clusterBubble.weekend_poi {
+  background:
+    radial-gradient(circle at 34% 24%, color-mix(in srgb, var(--ey-card) 76%, transparent), transparent 36%),
+    linear-gradient(145deg, color-mix(in srgb, var(--ey-emerald-300) 46%, var(--ey-slate)), color-mix(in srgb, var(--ey-emerald) 52%, var(--ey-slate)));
+}
+
+.clusterBubble.mixed {
+  background:
+    radial-gradient(circle at 34% 24%, color-mix(in srgb, var(--ey-card) 78%, transparent), transparent 36%),
+    conic-gradient(from 220deg, var(--sandbox-manual), color-mix(in srgb, var(--ey-emerald) 64%, var(--ey-bg-2)), var(--sandbox-poi), var(--sandbox-manual));
+}
+
+.leafletPointIcon {
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+}
+
+.leafletPointPin {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+  width: fit-content;
+  min-width: 58px;
+  max-width: 92px;
+  height: 30px;
+  padding: 0 9px 0 8px;
+  border: 2px solid color-mix(in srgb, var(--ey-card) 88%, var(--ey-ink));
+  border-radius: 999px;
+  background: var(--ey-emerald);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ey-card) 70%, transparent), var(--ey-shadow-sm);
+}
+
+.leafletPointCore {
+  position: relative;
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-card) 88%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ey-ink) 12%, transparent);
+}
+
+.leafletPointText {
+  position: relative;
+  z-index: 1;
+  display: block;
+  max-width: 62px;
+  overflow: hidden;
+  color: var(--ey-forest);
+  font-size: 0.66rem;
+  font-weight: 900;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leafletPointPin.manual_sample {
+  background: var(--sandbox-manual);
+}
+
+.leafletPointPin.synthetic_mvp {
+  background: var(--sandbox-synthetic);
+}
+
+.leafletPointPin.weekend_poi {
+  background: var(--sandbox-poi);
+}
+
+.activePin {
+  transform: scale(1.12);
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--ey-card) 76%, transparent),
+    0 0 0 9px color-mix(in srgb, var(--ey-emerald) 24%, transparent),
+    var(--ey-shadow);
+}
+
+.zoomHint {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  z-index: 6;
+  display: grid;
+  max-width: min(360px, calc(100% - 190px));
+  gap: 3px;
+  padding: 9px 11px;
+  border: 1px solid var(--ey-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 88%, transparent);
+  color: var(--ey-ink);
+  box-shadow: var(--ey-shadow-sm);
+  pointer-events: none;
+}
+
+.zoomHint strong {
+  font-size: 0.76rem;
+  line-height: 1.2;
+}
+
+.zoomHint span {
+  color: var(--ey-slate-2);
+  font-size: 0.68rem;
+  line-height: 1.35;
+}
+
+.mapCanvas {
+  position: relative;
+  min-height: 430px;
+  height: clamp(430px, 54vw, 610px);
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 54px, var(--sandbox-grid) 55px 56px),
+    repeating-linear-gradient(90deg, transparent 0 54px, var(--sandbox-grid) 55px 56px),
+    linear-gradient(135deg, color-mix(in srgb, var(--ey-bg) 84%, var(--ey-card)), color-mix(in srgb, var(--ey-bg-2) 74%, var(--ey-card)));
+}
+
+.mapCanvas::before {
+  position: absolute;
+  inset: 16px;
+  z-index: 0;
+  border: 1px dashed color-mix(in srgb, var(--ey-emerald) 34%, var(--ey-line));
+  border-radius: 8px;
+  content: "";
+  pointer-events: none;
+}
+
+.road,
+.routeLine {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: 50%;
+  height: 13px;
+  border-radius: 999px;
+  transform-origin: center;
+  pointer-events: none;
+}
+
+.road {
+  background: color-mix(in srgb, var(--ey-card) 74%, var(--ey-line));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ey-line) 70%, transparent);
+}
+
+.roadPrimary {
+  width: 86%;
+  transform: translate(-50%, -50%) rotate(-12deg);
+}
+
+.roadSecond {
+  width: 64%;
+  transform: translate(-48%, -35%) rotate(38deg);
+}
+
+.roadThird {
+  width: 52%;
+  transform: translate(-50%, 195%) rotate(4deg);
+}
+
+.routeLine {
+  height: 0;
+  border-top: 2px dashed color-mix(in srgb, var(--ey-emerald) 70%, var(--ey-amber));
+}
+
+.routeOne {
+  width: 42%;
+  transform: translate(-46%, -390%) rotate(18deg);
+}
+
+.routeTwo {
+  width: 36%;
+  transform: translate(3%, 530%) rotate(-28deg);
+}
+
+.district,
+.specialZone,
+.lakeZone,
+.walkCircle {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.district,
+.specialZone {
+  padding: 13px;
+  border: 1px solid var(--ey-line);
+  background: color-mix(in srgb, var(--sandbox-muted-fill) 82%, transparent);
+  color: var(--ey-ink-2);
+  box-shadow: var(--ey-shadow-sm);
+}
+
+.district span,
+.specialZone span,
+.lakeZone span,
+.walkCircle span {
+  color: var(--ey-ink);
+  font-size: 0.85rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.district small,
+.specialZone small {
+  color: var(--ey-slate-2);
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.campusZone {
+  top: 11%;
+  left: 8%;
+  width: 26%;
+  height: 22%;
+}
+
+.dormZone {
+  right: 17%;
+  bottom: 9%;
+  width: 25%;
+  height: 21%;
+}
+
+.marketZone {
+  left: 10%;
+  bottom: 15%;
+  width: 27%;
+  height: 24%;
+}
+
+.specialZone {
+  border-style: dashed;
+}
+
+.rainZone {
+  top: 12%;
+  right: 9%;
+  width: 25%;
+  height: 25%;
+  border-color: color-mix(in srgb, var(--ey-rose) 54%, var(--ey-line));
+  background: color-mix(in srgb, var(--ey-rose-50) 62%, var(--ey-card));
+}
+
+.budgetZone {
+  right: 7%;
+  bottom: 11%;
+  width: 27%;
+  height: 25%;
+  border-color: color-mix(in srgb, var(--ey-amber) 54%, var(--ey-line));
+  background: color-mix(in srgb, var(--ey-amber-50) 58%, var(--ey-card));
+}
+
+.lakeZone {
+  left: 43%;
+  top: 36%;
+  width: 18%;
+  height: 18%;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald-300) 62%, var(--ey-line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-emerald-100) 44%, transparent);
+}
+
+.walkCircle {
+  place-items: start center;
+  border: 2px dashed color-mix(in srgb, var(--ey-emerald) 62%, var(--ey-line));
+  background: color-mix(in srgb, var(--ey-emerald-50) 26%, transparent);
+}
+
+.walkCircle span {
+  margin-top: 10px;
+  padding: 5px 9px;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 34%, var(--ey-line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-card) 84%, transparent);
+  color: var(--ey-emerald-d);
+  font-size: 0.72rem;
+}
+
+.walkNorth {
+  top: 18%;
+  left: 34%;
+  width: 31%;
+  height: 35%;
+}
+
+.walkSouth {
+  right: 20%;
+  bottom: 16%;
+  width: 34%;
+  height: 38%;
+}
+
+.point {
+  position: absolute;
+  z-index: 5;
+  transform: translate(-9px, -9px);
+}
+
+.pointDot {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border: 3px solid var(--sandbox-on-accent);
+  border-radius: 999px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ey-card) 70%, transparent), var(--ey-shadow-sm);
+}
+
+.point.manual .pointDot {
+  background: var(--sandbox-manual);
+}
+
+.point.synthetic .pointDot {
+  background: var(--sandbox-synthetic);
+}
+
+.point.poi .pointDot {
+  background: var(--sandbox-poi);
+}
+
+.pointLabel {
+  position: absolute;
+  left: 16px;
+  top: 12px;
+  display: grid;
+  min-width: 132px;
+  max-width: 176px;
+  gap: 3px;
+  padding: 7px 9px;
+  border: 1px solid var(--ey-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 92%, transparent);
+  color: var(--ey-ink);
+  box-shadow: var(--ey-shadow-sm);
+  opacity: 0.92;
+}
+
+.pointLabel strong {
+  overflow-wrap: anywhere;
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+.pointLabel small {
+  overflow-wrap: anywhere;
+  color: var(--ey-slate-2);
+  font-size: 0.68rem;
+  line-height: 1.35;
+}
+
+.point:hover .pointLabel {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+.boundaryBadge {
+  position: absolute;
+  right: 22px;
+  top: 22px;
+  z-index: 6;
+  display: grid;
+  gap: 3px;
+  padding: 10px 13px;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 42%, var(--ey-line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-forest) 88%, var(--ey-emerald));
+  color: var(--sandbox-on-accent);
+  box-shadow: var(--ey-shadow-sm);
+}
+
+.boundaryBadge strong {
+  font-size: 0.82rem;
+  line-height: 1.2;
+}
+
+.boundaryBadge span {
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 16px 20px 18px;
+  border-top: 1px solid var(--ey-line);
+  background: color-mix(in srgb, var(--ey-card) 70%, var(--ey-bg));
+  list-style: none;
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 28px;
+  padding: 5px 9px;
+  border: 1px solid var(--ey-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-card) 72%, transparent);
+  color: var(--ey-slate);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.legendMarker {
+  flex: 0 0 auto;
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ey-card) 80%, transparent);
+}
+
+.legendMarker.manual,
+.legendMarker.manual_sample {
+  background: var(--sandbox-manual);
+}
+
+.legendMarker.synthetic,
+.legendMarker.synthetic_mvp {
+  background: var(--sandbox-synthetic);
+}
+
+.legendMarker.poi,
+.legendMarker.weekend_poi {
+  background: var(--sandbox-poi);
+}
+
+.legendMarker.selected {
+  border: 2px solid var(--ey-emerald);
+  background: color-mix(in srgb, var(--ey-card) 68%, var(--ey-emerald));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ey-emerald) 22%, transparent);
+}
+
+.legendMarker.walk {
+  border: 2px dashed var(--ey-emerald);
+  background: transparent;
+}
+
+.legendMarker.rain {
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ey-rose) 54%, var(--ey-card));
+}
+
+.legendMarker.lowBudget {
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ey-amber) 58%, var(--ey-card));
+}
+
+.controlDeck {
+  display: grid;
+  gap: 8px;
+  width: min(1180px, 100%);
+  margin: 12px auto 0;
+  padding: 10px;
+  border: 1px solid var(--ey-line);
+  border-radius: 8px;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--sandbox-panel) 94%, var(--ey-card)),
+      color-mix(in srgb, var(--sandbox-stage) 84%, var(--ey-bg))
+    );
+  box-shadow: var(--ey-shadow);
+}
+
+.consoleHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--ey-line) 82%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 66%, transparent);
+}
+
+.selectedSummary {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.consoleEyebrow,
+.panelTitle span {
+  color: var(--ey-emerald-d);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.selectedSummary h3 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--ey-ink);
+  font-size: clamp(1.05rem, 1.55vw, 1.28rem);
+  line-height: 1.22;
+}
+
+.sourceSummary {
+  display: grid;
+  flex: 0 1 330px;
+  min-width: 230px;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 22%, var(--ey-line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-bg) 54%, var(--ey-card));
+}
+
+.sourceSummary span {
+  color: var(--ey-slate-3);
+  font-size: 0.66rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.sourceSummary strong {
+  overflow-wrap: anywhere;
+  color: var(--ey-ink);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.sourceSummary code,
+.sourceLine code {
+  width: fit-content;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  border-radius: 6px;
+  color: var(--ey-emerald-d);
+  font-family: var(--ey-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.consoleMain {
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+  align-items: start;
+  gap: 10px;
+}
+
+.consolePanel {
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid color-mix(in srgb, var(--ey-line) 88%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-card) 72%, var(--ey-bg));
+}
+
+.panelTitle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+
+.panelTitle h3 {
+  color: var(--ey-ink);
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.panelTitle h4 {
+  margin: 0;
+  color: var(--ey-ink);
+  font-size: 0.88rem;
+  line-height: 1.25;
+}
+
+.radarList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.radarItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 7px;
+  min-width: 0;
+  padding: 7px;
+  border: 1px solid color-mix(in srgb, var(--ey-line) 70%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-bg) 52%, transparent);
+}
+
+.radarMeta {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.radarMeta span {
+  color: var(--ey-ink);
+  font-size: 0.77rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.radarMeta small {
+  color: var(--ey-slate-2);
+  font-size: 0.64rem;
+  line-height: 1.2;
+}
+
+.radarValue {
+  color: var(--ey-emerald-d);
+  font-family: var(--ey-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+.barTrack {
+  grid-column: 1 / -1;
+  height: 6px;
+  overflow: hidden;
+  border: 1px solid var(--ey-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-bg-2) 82%, var(--ey-card));
+}
+
+.barFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--ey-emerald-300), var(--ey-emerald), var(--ey-amber));
+}
+
+.profileBadgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.profileBadgeRow span {
+  padding: 5px 8px;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 24%, var(--ey-line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-emerald-50) 64%, var(--ey-card));
+  color: var(--ey-emerald-d);
+  font-size: 0.7rem;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.profileTags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.profileTags span {
+  padding: 5px 8px;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 28%, var(--ey-line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-emerald-50) 66%, var(--ey-card));
+  color: var(--ey-emerald-d);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.sourceNarrative {
+  display: grid;
+  gap: 6px;
+}
+
+.sourceLine {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+  gap: 7px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ey-line) 62%, transparent);
+}
+
+.sourceLine span {
+  flex: 0 0 auto;
+  color: var(--ey-slate-3);
+  font-family: var(--ey-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 0.64rem;
+  font-weight: 900;
+}
+
+.sourceLine strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ey-ink);
+  font-size: 0.72rem;
+  font-weight: 780;
+  line-height: 1.3;
+}
+
+.sourceBlock {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--ey-line) 82%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-bg) 58%, var(--ey-card));
+}
+
+.sourceBlock > strong {
+  color: var(--ey-ink);
+  font-size: 0.86rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.sourceBlock p {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding-bottom: 7px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ey-line) 68%, transparent);
+  color: var(--ey-ink);
+  font-size: 0.76rem;
+  font-weight: 750;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.sourceBlock p:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.sourceBlock p span {
+  color: var(--ey-slate-3);
+  font-family: var(--ey-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 0.66rem;
+  font-weight: 900;
+}
+
+.whyList {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.whyList li {
+  position: relative;
+  padding-left: 13px;
+  color: var(--ey-slate);
+  font-size: 0.7rem;
+  line-height: 1.4;
+}
+
+.whyList li::before {
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--ey-emerald);
+  content: "";
+}
+
+.consoleStats {
+  display: grid;
+  grid-template-columns: minmax(160px, 1.18fr) repeat(4, minmax(96px, 1fr));
+  align-items: stretch;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 28%, var(--ey-line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-emerald-50) 58%, var(--ey-card));
+}
+
+.visibleStat,
+.statItem {
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 7px 10px;
+  border-right: 1px solid color-mix(in srgb, var(--ey-line) 72%, transparent);
+}
+
+.statItem:last-child {
+  border-right: 0;
+}
+
+.visibleStat span,
+.statItem span {
+  color: var(--ey-slate);
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.visibleStat strong {
+  color: var(--ey-emerald-d);
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.visibleStat small {
+  color: var(--ey-slate-2);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.statItem strong {
+  color: var(--ey-emerald-d);
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.complianceRibbon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--ey-rose) 26%, var(--ey-line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ey-rose-50) 34%, var(--ey-card));
+}
+
+.complianceRibbon .panelTitle {
+  margin-bottom: 6px;
+}
+
+.boundaryLead {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.boundaryPill,
+.boundaryPillMuted {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.boundaryPill {
+  border: 1px solid color-mix(in srgb, var(--ey-rose) 40%, var(--ey-line));
+  background: color-mix(in srgb, var(--ey-rose-50) 58%, var(--ey-card));
+  color: var(--ey-rose);
+}
+
+.boundaryPillMuted {
+  border: 1px solid color-mix(in srgb, var(--ey-amber) 34%, var(--ey-line));
+  background: color-mix(in srgb, var(--ey-amber-50) 56%, var(--ey-card));
+  color: var(--ey-amber-900);
+}
+
+.boundaryBody {
+  min-width: 0;
+}
+
+.tagCloud {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 0 1 auto;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.tagCloud span {
+  padding: 4px 7px;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 24%, var(--ey-line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ey-emerald-50) 62%, var(--ey-card));
+  color: var(--ey-emerald-d);
+  font-size: 0.66rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.tagCloud span.activeTag {
+  border-color: color-mix(in srgb, var(--ey-emerald) 58%, var(--ey-line));
+  background: color-mix(in srgb, var(--ey-emerald) 16%, var(--ey-card));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ey-card) 60%, transparent);
+}
+
+.boundaryText {
+  flex: 1 1 auto;
+  min-width: 180px;
+  margin: 0;
+  color: var(--ey-ink-2);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.42;
+}
+
+:global(body.t-night) .section,
+:global(body.t-black-pink) .section {
+  --sandbox-muted-fill: color-mix(in srgb, var(--ey-card) 68%, var(--ey-bg));
+  --sandbox-panel: color-mix(in srgb, var(--ey-card) 86%, var(--ey-bg));
+  --sandbox-stage: color-mix(in srgb, var(--ey-card) 74%, var(--ey-bg));
+  --sandbox-on-accent: color-mix(in srgb, var(--ey-ink) 94%, var(--ey-card));
+}
+
+:global(body.t-night) .mapCanvas,
+:global(body.t-black-pink) .mapCanvas {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 54px, var(--sandbox-grid) 55px 56px),
+    repeating-linear-gradient(90deg, transparent 0 54px, var(--sandbox-grid) 55px 56px),
+    linear-gradient(135deg, color-mix(in srgb, var(--ey-card) 74%, var(--ey-bg)), var(--ey-bg-2));
+}
+
+:global(body.t-night) .boundaryBadge,
+:global(body.t-black-pink) .boundaryBadge {
+  background: color-mix(in srgb, var(--ey-card) 74%, var(--ey-forest));
+  color: var(--ey-ink);
+}
+
+:global(body.t-night) .leafletStatus,
+:global(body.t-black-pink) .leafletStatus,
+:global(body.t-night) .mapTools,
+:global(body.t-black-pink) .mapTools,
+:global(body.t-night) .layerButton,
+:global(body.t-black-pink) .layerButton,
+:global(body.t-night) .visibleCount,
+:global(body.t-black-pink) .visibleCount,
+:global(body.t-night) .consoleHeader,
+:global(body.t-black-pink) .consoleHeader,
+:global(body.t-night) .consolePanel,
+:global(body.t-black-pink) .consolePanel,
+:global(body.t-night) .sourceSummary,
+:global(body.t-black-pink) .sourceSummary,
+:global(body.t-night) .radarItem,
+:global(body.t-black-pink) .radarItem,
+:global(body.t-night) .sourceBlock,
+:global(body.t-black-pink) .sourceBlock,
+:global(body.t-night) .consoleStats,
+:global(body.t-black-pink) .consoleStats,
+:global(body.t-night) .complianceRibbon,
+:global(body.t-black-pink) .complianceRibbon,
+:global(body.t-night) .profileBadgeRow span,
+:global(body.t-black-pink) .profileBadgeRow span,
+:global(body.t-night) .tagCloud span,
+:global(body.t-black-pink) .tagCloud span,
+:global(body.t-night) .zoomHint,
+:global(body.t-black-pink) .zoomHint,
+:global(body.t-night) .tileWarning,
+:global(body.t-black-pink) .tileWarning,
+:global(body.t-night) .mapActionButton,
+:global(body.t-black-pink) .mapActionButton,
+:global(body.t-night) .pointInspector,
+:global(body.t-black-pink) .pointInspector,
+:global(body.t-night) .inspectorClose,
+:global(body.t-black-pink) .inspectorClose,
+:global(body.t-night) .inspectorSection,
+:global(body.t-black-pink) .inspectorSection,
+:global(body.t-night) .inspectorSource,
+:global(body.t-black-pink) .inspectorSource,
+:global(body.t-night) .inspectorBadges span,
+:global(body.t-black-pink) .inspectorBadges span,
+:global(body.t-night) .inspectorTags span,
+:global(body.t-black-pink) .inspectorTags span,
+:global(body.t-night) .section :global(.leaflet-control-attribution),
+:global(body.t-black-pink) .section :global(.leaflet-control-attribution),
+:global(body.t-night) .section :global(.leaflet-tooltip),
+:global(body.t-black-pink) .section :global(.leaflet-tooltip),
+:global(body.t-night) .section :global(.leaflet-control-zoom),
+:global(body.t-black-pink) .section :global(.leaflet-control-zoom) {
+  background: color-mix(in srgb, var(--ey-card) 88%, transparent);
+  color: var(--ey-ink);
+}
+
+:global(body.t-night) .boundaryPill,
+:global(body.t-black-pink) .boundaryPill {
+  background: color-mix(in srgb, var(--ey-rose) 16%, var(--ey-card));
+  color: var(--ey-rose);
+}
+
+:global(body.t-night) .boundaryPillMuted,
+:global(body.t-black-pink) .boundaryPillMuted {
+  background: color-mix(in srgb, var(--ey-amber) 14%, var(--ey-card));
+  color: var(--ey-amber);
+}
+
+:global(body.t-night) .fallbackNotice,
+:global(body.t-black-pink) .fallbackNotice {
+  background: color-mix(in srgb, var(--ey-amber-50) 58%, var(--ey-card));
+  color: var(--ey-amber-900);
+}
+
+:global(body.t-night) .leafletPointText,
+:global(body.t-black-pink) .leafletPointText {
+  color: var(--ey-ink);
+}
+
+:global(body.t-night) .leafletPointCore,
+:global(body.t-black-pink) .leafletPointCore {
+  background: color-mix(in srgb, var(--ey-ink) 88%, transparent);
+}
+
+:global(body.t-night) .clusterBubble,
+:global(body.t-black-pink) .clusterBubble {
+  border-color: color-mix(in srgb, var(--ey-ink) 42%, var(--ey-card));
+  color: var(--ey-ink);
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--ey-bg) 54%, transparent),
+    0 14px 30px color-mix(in srgb, var(--ey-forest) 30%, transparent),
+    var(--ey-shadow-sm);
+}
+
+:global(body.t-night) .clusterGlow,
+:global(body.t-black-pink) .clusterGlow {
+  opacity: 0.72;
+}
+
+:global(body.t-night) .pointDot,
+:global(body.t-black-pink) .pointDot {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ey-bg) 72%, transparent), var(--ey-shadow-sm);
+}
+
+@media (max-width: 980px) {
+  .header h2 {
+    font-size: 1.9rem;
+  }
+
+  .controlDeck {
+    padding: 12px;
+  }
+
+  .consoleHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .sourceSummary {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .consoleMain {
+    grid-template-columns: 1fr;
+  }
+
+  .complianceRibbon {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .tagCloud {
+    justify-content: flex-start;
+  }
+
+  .consoleStats {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .visibleStat {
+    grid-column: auto;
+  }
+
+  .mapCanvas {
+    min-height: 560px;
+    height: 560px;
+  }
+
+  .leafletCanvas {
+    min-height: 500px;
+    height: 500px;
+  }
+
+  .pointLabel {
+    min-width: 118px;
+    max-width: 150px;
+  }
+}
+
+@media (max-width: 680px) {
+  .section {
+    padding: 48px 16px;
+  }
+
+  .header {
+    text-align: left;
+  }
+
+  .eyebrow {
+    justify-self: start;
+  }
+
+  .header h2 {
+    font-size: 1.55rem;
+  }
+
+  .subtitle {
+    font-size: 0.94rem;
+  }
+
+  .stageHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mapTools {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .layerControls {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .layerButton {
+    width: 100%;
+  }
+
+  .layerButton small {
+    max-width: none;
+  }
+
+  .visibleCount {
+    width: 100%;
+    white-space: normal;
+  }
+
+  .mapCanvas {
+    min-height: 650px;
+    height: 650px;
+  }
+
+  .leafletCanvas {
+    min-height: 420px;
+    height: 420px;
+  }
+
+  .campusZone,
+  .marketZone {
+    left: 6%;
+    width: 34%;
+  }
+
+  .dormZone,
+  .rainZone,
+  .budgetZone {
+    right: 6%;
+    width: 36%;
+  }
+
+  .walkNorth {
+    left: 25%;
+    width: 47%;
+  }
+
+  .walkSouth {
+    right: 11%;
+    width: 52%;
+  }
+
+  .pointLabel {
+    left: 14px;
+    min-width: 104px;
+    max-width: 132px;
+    padding: 6px 7px;
+  }
+
+  .boundaryBadge {
+    left: 18px;
+    right: auto;
+    top: 18px;
+  }
+
+  .zoomHint {
+    left: 18px;
+    top: auto;
+    bottom: 46px;
+    max-width: calc(100% - 36px);
+  }
+
+  .mapQuickActions {
+    right: 18px;
+    top: 18px;
+  }
+
+  .tileWarning {
+    left: 18px;
+    right: 18px;
+    bottom: 112px;
+    align-items: flex-start;
+    flex-direction: column;
+    max-width: none;
+  }
+
+  .tileWarning div {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .pointInspector {
+    left: 14px;
+    right: 14px;
+    top: auto;
+    bottom: 86px;
+    width: auto;
+    max-height: min(300px, 48%);
+    padding: 11px;
+  }
+
+  .inspectorHeader h3 {
+    font-size: 0.98rem;
+  }
+
+  .inspectorReason {
+    font-size: 0.72rem;
+  }
+
+  .inspectorRadar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .inspectorSource {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fallbackNotice {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .clusterBubble {
+    box-shadow:
+      0 0 0 4px color-mix(in srgb, var(--ey-card) 58%, transparent),
+      0 8px 18px color-mix(in srgb, var(--ey-forest) 18%, transparent),
+      var(--ey-shadow-sm);
+  }
+
+  .clusterBubble small {
+    font-size: 0.52rem;
+  }
+
+  .leafletPointPin {
+    min-width: 52px;
+    max-width: 82px;
+    height: 28px;
+    padding: 0 8px 0 7px;
+  }
+
+  .leafletPointText {
+    max-width: 50px;
+    font-size: 0.62rem;
+  }
+
+  .consoleStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .visibleStat {
+    grid-column: 1 / -1;
+  }
+
+  .visibleStat,
+  .statItem {
+    border-right: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--ey-line) 72%, transparent);
+  }
+
+  .statItem:last-child {
+    border-bottom: 0;
+  }
+
+  .section :global(.leaflet-control-attribution) {
+    max-width: calc(100vw - 74px);
+    white-space: normal;
+  }
+}

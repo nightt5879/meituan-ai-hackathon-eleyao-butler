@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { ThemeNavPicker, ThemePipPicker } from "@/components/SiteThemeProvider";
 import { SurveyWordCloud } from "@/components/SurveyWordCloud";
@@ -12,6 +13,14 @@ import "./pain-chain.css";
 import "./future-section.css";
 
 const demoVideoUrl = process.env.NEXT_PUBLIC_DEMO_VIDEO_URL || "";
+
+const DataSandboxSection = dynamic(
+  () =>
+    import("@/components/design/DataSandboxSection/DataSandboxSection").then(
+      (mod) => mod.DataSandboxSection
+    ),
+  { ssr: false }
+);
 
 const quadrants = [
   {
@@ -322,6 +331,8 @@ export default function PortfolioHomePage() {
           <PainEvidenceChain />
         </div>
       </section>
+
+      <DataSandboxSection />
 
       <section className="section section--paper" id="route">
         <div className="container">
