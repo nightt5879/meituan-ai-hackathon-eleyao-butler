@@ -340,7 +340,7 @@ function LeafletSandboxMap({
     const map = mapRef.current;
     if (!map) return;
 
-    map.setView(selectedPoint.displayLatLng, 16, { animate: true });
+    map.setView(selectedPoint.displayLatLng, 16.5, { animate: true });
   }, [selectedPoint]);
 
   useEffect(() => {
@@ -414,7 +414,7 @@ function LeafletSandboxMap({
           center: UNIVERSITY_TOWN_CENTER,
           zoom: 14,
           minZoom: 12.5,
-          maxZoom: 16,
+          maxZoom: 17,
           maxBounds: UNIVERSITY_TOWN_MAX_BOUNDS,
           maxBoundsViscosity: 0.62,
           zoomSnap: ZOOM_STEP,
@@ -465,8 +465,8 @@ function LeafletSandboxMap({
           bounds: UNIVERSITY_TOWN_MAX_BOUNDS,
           detectRetina: false,
           keepBuffer: 2,
-          maxNativeZoom: 16,
-          maxZoom: 16,
+          maxNativeZoom: 17,
+          maxZoom: 17,
           minNativeZoom: 12,
           minZoom: 12,
           noWrap: true,
