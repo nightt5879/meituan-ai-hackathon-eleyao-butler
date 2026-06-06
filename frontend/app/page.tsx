@@ -12,8 +12,6 @@ import "./tech-route.css";
 import "./pain-chain.css";
 import "./future-section.css";
 
-const demoVideoUrl = process.env.NEXT_PUBLIC_DEMO_VIDEO_URL || "";
-
 const DataSandboxSection = dynamic(
   () =>
     import("@/components/design/DataSandboxSection/DataSandboxSection").then(
@@ -72,6 +70,27 @@ const architectureLayers = [
   ["L2", "服务层", "Next.js App Router 同时承载作品页、在线体验页面与 API routes。"],
   ["L3", "AI 管家层", "OpenClaw 负责单人推荐与动态追问；不可用时降级到本地推荐，保证评审流程不断。"],
   ["L4", "数据层", "任务、登录 session、周边规划写入服务端 JSON store；浏览器本地保留记忆、收藏与草稿。"]
+];
+
+const realDeviceVideos = [
+  {
+    label: "实机 01",
+    title: "今天吃什么",
+    src: "/videos/food-real-device.mp4",
+    desc: "从场景、预算、距离和口味偏好出发，展示 AI 管家生成 2-3 个餐厅推荐，并在 OpenClaw 不稳定时保留本地兜底。"
+  },
+  {
+    label: "实机 02",
+    title: "多人约饭",
+    src: "/videos/group-real-device.mp4",
+    desc: "展示发起约饭、成员填写偏好、后端同步状态、冲突识别和生成推荐方案的完整小程序链路。"
+  },
+  {
+    label: "实机 03",
+    title: "周边规划",
+    src: "/videos/nearby-real-device.mp4",
+    desc: "输入出行时间、预算、起点和兴趣后，结合真实天气与周边 mock POI 生成路线、自检项和风险提示。"
+  }
 ];
 
 function Icon({ name, size = 28 }: { name: string; size?: number }) {
@@ -370,24 +389,30 @@ export default function PortfolioHomePage() {
           <div className="sec-head reveal">
             <div className="sec-eyebrow">演示视频 · Demo Video</div>
             <h2 className="sec-title">小程序实机录屏</h2>
-            <p className="sec-lead">完整走一遍“偏好权重确认 → 冲突识别 → 推荐生成”，证明不是纸面方案，而是真的跑起来了。</p>
+            <p className="sec-lead">三段真机录屏分别覆盖单人吃饭、多人约饭和周边规划，证明核心场景不是纸面方案，而是真的能在小程序里跑起来。</p>
           </div>
-          <div className="video-frame reveal">
-            <span className="vtag">实机录屏</span>
-            {demoVideoUrl ? (
-              <iframe className="video-embed" src={demoVideoUrl} title="饿了幺 AI 管家演示视频" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />
-            ) : (
-              <>
-                <div className="play"><svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><polygon points="7 4 20 12 7 20" /></svg></div>
-                <span className="vhint">部署时配置 NEXT_PUBLIC_DEMO_VIDEO_URL 后，这里会嵌入演示视频。</span>
-              </>
-            )}
+          <div className="video-grid reveal">
+            {realDeviceVideos.map((video, index) => (
+              <article className={`video-card reveal d${index + 1}`} key={video.src}>
+                <div className="video-frame">
+                  <span className="vtag">{video.label}</span>
+                  <video className="video-embed" controls playsInline preload="metadata" src={video.src}>
+                    你的浏览器不支持直接播放该实机录屏。
+                  </video>
+                </div>
+                <div className="video-copy">
+                  <div className="sn">{video.label}</div>
+                  <h3>{video.title}</h3>
+                  <p>{video.desc}</p>
+                </div>
+              </article>
+            ))}
           </div>
           <div className="story">
             {[
-              ["镜头 01", "偏好权重确认", "问答收集场景、预算、距离、口味与忌口，并让用户标记必须满足或希望满足。"],
-              ["镜头 02", "冲突识别", "管家按用户选择分流底线与偏好，明确指出冲突在哪里。"],
-              ["镜头 03", "推荐生成", "候选自检 → 最终推荐 → 一键生成可发群里的邀约文案。"]
+              ["能力 01", "单人偏好收敛", "把“想吃什么”拆成场景、预算、距离、口味和忌口，给出可执行餐厅方案。"],
+              ["能力 02", "多人状态同步", "成员通过同一任务链接提交偏好，后端保存共享状态并识别约束冲突。"],
+              ["能力 03", "天气与路线自检", "周边规划会结合天气、预算、时间窗口和步行强度，给出风险提示与备选路线。"]
             ].map(([num, title, desc], index) => <div className={`shot reveal d${index + 1}`} key={num}><div className="sn">{num}</div><h3>{title}</h3><p>{desc}</p></div>)}
           </div>
         </div>
