@@ -1,48 +1,420 @@
 "use client";
 
+import { useState } from "react";
 import styles from "./GroupDecisionMechanismSection.module.css";
 
-type CandidateTone = "reject" | "risk" | "pick";
+type IconName = "launch" | "form" | "memory" | "search" | "check" | "refresh" | "send" | "spark";
+type StatusTone = "idle" | "safe" | "picked" | "notice" | "reject" | "pass" | "keep";
+type SectionKind = "chips" | "rows" | "checks";
+type ColumnAccent = "user" | "butler" | "output";
+
+type ChatLine = {
+  speaker: string;
+  text: string;
+  tone?: "normal" | "pause" | "system";
+};
+
+type PanelSection = {
+  title: string;
+  items: string[];
+  kind?: SectionKind;
+};
+
+type DecisionItem = {
+  name: string;
+  verdict: string;
+  reason: string;
+  tone: StatusTone;
+};
+
+type ResultBlock = {
+  version: string;
+  name: string;
+  status: string;
+  tone: StatusTone;
+  summary: string;
+  reasons: string[];
+  messageLabel?: string;
+  message?: string;
+};
+
+type PanelContent = {
+  eyebrow: string;
+  title: string;
+  body?: string;
+  status?: string;
+  statusTone?: StatusTone;
+  chat?: ChatLine[];
+  sections?: PanelSection[];
+  decisions?: DecisionItem[];
+  result?: ResultBlock;
+  message?: {
+    label: string;
+    text: string;
+  };
+  action?: string;
+  footer?: string;
+  empty?: boolean;
+};
+
+type WorkflowStep = {
+  label: string;
+  short: string;
+  icon: IconName;
+  summary: string;
+  left: PanelContent;
+  middle: PanelContent;
+  right: PanelContent;
+};
+
 type AuditTone = "pass" | "notice";
-type ChatTone = "soft" | "hard" | "stuck";
-type IconName = "chat" | "shield" | "send";
 
-const chatMessages: Array<{ speaker: string; text: string; tone: ChatTone }> = [
-  { speaker: "小林", text: "吃啥都行，但别火锅。", tone: "soft" },
-  { speaker: "阿杰", text: "我不吃辣。", tone: "hard" },
-  { speaker: "小周", text: "我 20:30 前要回宿舍。", tone: "hard" },
-  { speaker: "小林", text: "人均 100 内吧。", tone: "hard" },
-  { speaker: "阿杰", text: "别太远。", tone: "soft" },
-  { speaker: "小周", text: "排队太久就算了。", tone: "soft" },
-  { speaker: "群聊停顿", text: "所以到底吃啥？", tone: "stuck" }
-];
+const toneClassMap: Record<StatusTone, string> = {
+  idle: styles.toneIdle,
+  safe: styles.toneSafe,
+  picked: styles.tonePicked,
+  notice: styles.toneNotice,
+  reject: styles.toneReject,
+  pass: styles.tonePass,
+  keep: styles.toneKeep
+};
 
-const hardConstraints = [
-  "阿杰不吃辣",
-  "小周 20:30 前要回宿舍",
-  "人均不超过 100"
-];
+const columnClassMap: Record<ColumnAccent, string> = {
+  user: styles.userColumn,
+  butler: styles.butlerColumn,
+  output: styles.outputColumn
+};
 
-const softPreferences = [
-  "小林不想火锅",
-  "想坐下聊天",
-  "别太远",
-  "排队别太久"
-];
-
-const candidateChecks: Array<{ name: string; result: string; reason: string; tone: CandidateTone }> = [
-  { name: "重辣湘菜", result: "驳回", reason: "踩中“阿杰不吃辣”", tone: "reject" },
-  { name: "火锅", result: "降权", reason: "小林明确不想火锅", tone: "risk" },
-  { name: "远距离餐厅", result: "驳回", reason: "回宿舍时间风险高", tone: "reject" },
-  { name: "青禾小馆", result: "采纳", reason: "不辣可选、预算内、距离近、适合聊天", tone: "pick" }
-];
-
-const decisionReasons = [
-  "有不辣菜，照顾阿杰",
-  "不是火锅，避开小林偏好冲突",
-  "离学校近，小周 20:30 前能回",
-  "人均约 80 多，没有超预算",
-  "适合坐下聊天"
+const workflowSteps: WorkflowStep[] = [
+  {
+    label: "发起约饭",
+    short: "把群聊入口接住",
+    icon: "launch",
+    summary: "先把“都可以 / 随便”的口头争论，变成一张能收集偏好的约饭卡。",
+    left: {
+      eyebrow: "群聊入口",
+      title: "今晚三人晚饭偏好收集中",
+      status: "已填写 0/3",
+      statusTone: "idle",
+      chat: [
+        { speaker: "A", text: "今晚吃啥都可以，别太折腾。" },
+        { speaker: "B", text: "我都行，但不吃海鲜。" },
+        { speaker: "C", text: "别辣，20:30 前要回宿舍。" },
+        { speaker: "群聊停顿", text: "所以到底去哪？", tone: "pause" }
+      ],
+      sections: [
+        {
+          title: "小程序卡片",
+          items: ["今晚三人晚饭偏好收集中", "已填写 0/3", "成员点开各自填写"],
+          kind: "checks"
+        }
+      ],
+      action: "填写我的偏好"
+    },
+    middle: {
+      eyebrow: "管家状态",
+      title: "等待成员填写",
+      status: "收集中",
+      statusTone: "idle",
+      body: "先不急着推荐餐厅，而是把散在群里的忌口、时间、距离和预算收回来。",
+      sections: [
+        {
+          title: "这一步解决",
+          items: ["不让一个人替全群拍脑袋", "把口头争论转成结构化偏好", "后续每次判断都有来源"],
+          kind: "rows"
+        }
+      ]
+    },
+    right: {
+      eyebrow: "输出结果",
+      title: "方案还未生成",
+      status: "等待输入",
+      statusTone: "idle",
+      body: "偏好没有收齐前，右侧只显示占位态，避免 AI 先编一个看似合理的答案。",
+      empty: true
+    }
+  },
+  {
+    label: "3/3 填写偏好",
+    short: "把条件收齐",
+    icon: "form",
+    summary: "成员各自填完后，系统开始把人话翻译成可判断的输入。",
+    left: {
+      eyebrow: "成员偏好",
+      title: "3/3 已填写",
+      status: "完成",
+      statusTone: "pass",
+      sections: [
+        {
+          title: "本次成员输入",
+          items: ["A：附近、快点决定", "B：不吃海鲜", "C：不吃辣"],
+          kind: "checks"
+        },
+        {
+          title: "共同条件",
+          items: ["人均不超过 100", "20:30 前回宿舍", "学校附近优先"],
+          kind: "chips"
+        }
+      ]
+    },
+    middle: {
+      eyebrow: "输入整理",
+      title: "从聊天里抽出能判断的条件",
+      status: "已整理",
+      statusTone: "pass",
+      sections: [
+        {
+          title: "结构化输入",
+          items: ["人数：3 人", "预算：≤100", "时间：20:30 前回宿舍", "距离：学校附近"],
+          kind: "checks"
+        }
+      ],
+      footer: "这里是示例化工作流，不展示真实算法分数。"
+    },
+    right: {
+      eyebrow: "下一步",
+      title: "偏好已收集，准备召回候选",
+      status: "可召回",
+      statusTone: "safe",
+      body: "现在可以开始找店，但必须先保护忌口、预算和时间这些不能牺牲的条件。"
+    }
+  },
+  {
+    label: "记忆确认",
+    short: "少问一点",
+    icon: "memory",
+    summary: "常用饭搭子可以复用低敏偏好，但本次仍然允许成员修改。",
+    left: {
+      eyebrow: "管家记忆",
+      title: "检测到常用饭搭子 A、B、C",
+      status: "待确认",
+      statusTone: "notice",
+      sections: [
+        {
+          title: "可复用",
+          items: ["B 不吃海鲜", "C 不吃辣", "学校附近更方便"],
+          kind: "chips"
+        },
+        {
+          title: "本次控制",
+          items: ["记住这个小队", "本次可修改", "不想沿用时可以关闭"],
+          kind: "checks"
+        }
+      ],
+      action: "使用管家记忆"
+    },
+    middle: {
+      eyebrow: "记忆合并",
+      title: "沿用旧条件，也接住新反馈",
+      status: "已确认",
+      statusTone: "pass",
+      sections: [
+        {
+          title: "这次沿用",
+          items: ["B 不吃海鲜", "C 不吃辣"],
+          kind: "checks"
+        },
+        {
+          title: "本次新增",
+          items: ["更有特色一点", "别太远"],
+          kind: "chips"
+        }
+      ]
+    },
+    right: {
+      eyebrow: "输出状态",
+      title: "记忆已确认",
+      status: "低敏偏好",
+      statusTone: "safe",
+      body: "用户授权后记住低敏偏好，下次约同一个小队时少问一点，但本次仍以成员确认后的条件为准。"
+    }
+  },
+  {
+    label: "候选召回",
+    short: "先找可吃的",
+    icon: "search",
+    summary: "先按硬约束圈出可吃范围，再让软偏好参与排序。",
+    left: {
+      eyebrow: "召回条件",
+      title: "不是直接问 AI 猜一家",
+      status: "候选池",
+      statusTone: "safe",
+      sections: [
+        {
+          title: "本次召回 chips",
+          items: ["三人晚饭", "学校附近", "预算 ≤100", "避开海鲜", "不吃辣"],
+          kind: "chips"
+        }
+      ]
+    },
+    middle: {
+      eyebrow: "候选池处理",
+      title: "先保护硬约束，再按偏好排序",
+      status: "筛选中",
+      statusTone: "safe",
+      sections: [
+        {
+          title: "处理顺序",
+          items: ["先保护硬约束", "再按软偏好排序", "过滤明显冲突候选", "保留可调整候选"],
+          kind: "checks"
+        }
+      ],
+      footer: "这是一张机制展示，不是实时算法可视化。"
+    },
+    right: {
+      eyebrow: "第一版推荐",
+      title: "先给一个安全方案",
+      result: {
+        version: "第一版",
+        name: "港式茶餐厅",
+        status: "安全但普通",
+        tone: "safe",
+        summary: "不辣、可避海鲜、预算内，能吃，但不一定让大家有兴趣立刻出发。",
+        reasons: ["不辣选择比较稳", "海鲜不是主打", "人均在预算内"]
+      }
+    }
+  },
+  {
+    label: "冲突自检",
+    short: "看有没有踩雷",
+    icon: "check",
+    summary: "候选不是越多越好，关键是把不能踩的雷先排掉。",
+    left: {
+      eyebrow: "候选判定",
+      title: "每个候选都要过一遍雷区",
+      decisions: [
+        { name: "重辣湘菜", verdict: "驳回", reason: "踩中 C 不吃辣", tone: "reject" },
+        { name: "海鲜寿司", verdict: "驳回", reason: "踩中 B 不吃海鲜", tone: "reject" },
+        { name: "远距离餐厅", verdict: "驳回", reason: "回宿舍时间风险高", tone: "reject" },
+        { name: "港式茶餐厅", verdict: "保留", reason: "安全，但记忆点一般", tone: "keep" }
+      ]
+    },
+    middle: {
+      eyebrow: "条件分层",
+      title: "不能踩的雷优先级最高",
+      sections: [
+        {
+          title: "不能踩的雷",
+          items: ["B 不吃海鲜", "C 不吃辣", "不要超预算"],
+          kind: "checks"
+        },
+        {
+          title: "尽量满足",
+          items: ["更有特色一点", "适合聊天", "别太远", "少排队"],
+          kind: "chips"
+        }
+      ]
+    },
+    right: {
+      eyebrow: "自检结论",
+      title: "第一版能吃，但不够有记忆点",
+      status: "可继续调整",
+      statusTone: "notice",
+      body: "硬约束都保住了，但 B 觉得普通。管家不需要重新问一遍所有条件，可以在保留雷区的前提下继续换一批。",
+      sections: [
+        {
+          title: "保留不变",
+          items: ["避开海鲜", "不吃辣", "预算 ≤100", "学校附近"],
+          kind: "chips"
+        }
+      ]
+    }
+  },
+  {
+    label: "换一批",
+    short: "带着反馈再跑",
+    icon: "refresh",
+    summary: "“换一批”不是清空重来，而是在保留硬约束的基础上调整软偏好。",
+    left: {
+      eyebrow: "用户反馈",
+      title: "这家可以，但想更有特色一点",
+      status: "换一批",
+      statusTone: "notice",
+      sections: [
+        {
+          title: "本次反馈",
+          items: ["更有特色一点", "更近一点", "继续避开海鲜和辣味"],
+          kind: "chips"
+        }
+      ]
+    },
+    middle: {
+      eyebrow: "管家动作",
+      title: "保留雷区，只调整偏好排序",
+      status: "重新排序",
+      statusTone: "safe",
+      sections: [
+        {
+          title: "动作链路",
+          items: ["保留硬约束", "用反馈调整软偏好", "重新排序候选", "不重新问一遍所有条件"],
+          kind: "checks"
+        }
+      ]
+    },
+    right: {
+      eyebrow: "第二版推荐",
+      title: "换一批后更像能定下来的答案",
+      result: {
+        version: "换一批后",
+        name: "椰子鸡小馆",
+        status: "采纳",
+        tone: "picked",
+        summary: "清淡不辣、可避海鲜、更有特色、预算内，距离也可控。",
+        reasons: ["清淡不辣，照顾 C", "可以避开海鲜，照顾 B", "比第一版更有特色", "人均约 45，预算内", "学校附近，出发和返回都稳"]
+      }
+    }
+  },
+  {
+    label: "群聊文案",
+    short: "直接发回群里",
+    icon: "send",
+    summary: "最后不是丢一堆选择，而是生成一条能发回群里的约饭方案。",
+    left: {
+      eyebrow: "消息预览",
+      title: "生成群聊消息",
+      status: "可发送",
+      statusTone: "picked",
+      message: {
+        label: "群聊预览",
+        text: "椰子鸡小馆看起来更合适：避开海鲜、不辣，预算和距离也稳。"
+      },
+      sections: [
+        {
+          title: "消息包含",
+          items: ["定哪家", "为什么适合", "几点出发", "谁的条件被照顾到"],
+          kind: "chips"
+        }
+      ]
+    },
+    middle: {
+      eyebrow: "解释来源",
+      title: "推荐理由不是事后包装",
+      status: "有来源",
+      statusTone: "pass",
+      body: "文案里的每一句理由，都来自成员偏好、候选标签、反馈调整和自检结果。",
+      sections: [
+        {
+          title: "来源链路",
+          items: ["B 不吃海鲜 → 可避海鲜", "C 不吃辣 → 不辣可选", "换一批反馈 → 更有特色", "管家记忆 → 可复用"],
+          kind: "checks"
+        }
+      ]
+    },
+    right: {
+      eyebrow: "可直接发群",
+      title: "这家就行",
+      result: {
+        version: "最终方案",
+        name: "椰子鸡小馆",
+        status: "采纳",
+        tone: "picked",
+        summary: "把推荐结果、关键理由和出发时间压成一条群聊消息。",
+        reasons: ["可避开海鲜", "有不辣选择", "人均约 45", "18:30 出发，20:30 前更稳"],
+        messageLabel: "可直接发群文案",
+        message: "要不今晚就定椰子鸡小馆？人均大概 45，可以避开海鲜，也有不辣选择。我们 18:30 出发，C 不吃辣也没问题。"
+      }
+    }
+  }
 ];
 
 const auditItems: Array<{ label: string; status: "PASS" | "NOTICE"; tone: AuditTone }> = [
@@ -55,14 +427,14 @@ const auditItems: Array<{ label: string; status: "PASS" | "NOTICE"; tone: AuditT
 ];
 
 const reasonSources = [
-  { reason: "有不辣菜", source: "阿杰“不吃辣”" },
-  { reason: "不是火锅", source: "小林“不想火锅”" },
-  { reason: "步行近", source: "小周“20:30 前回宿舍”" },
+  { reason: "可避海鲜", source: "B 不吃海鲜" },
+  { reason: "不辣可选", source: "C 不吃辣" },
   { reason: "人均可控", source: "预算 ≤100" },
-  { reason: "适合聊天", source: "发起需求" }
+  { reason: "更有特色", source: "换一批反馈" },
+  { reason: "可复用", source: "管家记忆" }
 ];
 
-function TrustIcon({ name, size = 22 }: { name: IconName; size?: number }) {
+function WorkflowIcon({ name, size = 20 }: { name: IconName; size?: number }) {
   const common = {
     width: size,
     height: size,
@@ -74,201 +446,213 @@ function TrustIcon({ name, size = 22 }: { name: IconName; size?: number }) {
     strokeLinejoin: "round"
   } as const;
 
-  if (name === "chat") {
-    return <svg {...common}><path d="M4 5.5A3.5 3.5 0 0 1 7.5 2h9A3.5 3.5 0 0 1 20 5.5v5A3.5 3.5 0 0 1 16.5 14H11l-4.5 4v-4A3.5 3.5 0 0 1 4 10.5z" /><path d="M8 7h8" /><path d="M8 10h5" /></svg>;
-  }
-
-  if (name === "shield") {
-    return <svg {...common}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" /><path d="m9 12 2 2 4-4" /></svg>;
-  }
-
-  return <svg {...common}><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4Z" /></svg>;
-}
-
-function StoryHeader({ icon, step, kicker, title, body }: { icon: IconName; step: string; kicker: string; title: string; body: string }) {
-  return (
-    <div className={styles.storyHeader}>
-      <div className={styles.stepBadge}>
-        <span>{step}</span>
-        <TrustIcon name={icon} size={20} />
-      </div>
-      <div>
-        <div className={styles.storyKicker}>{kicker}</div>
-        <h3>{title}</h3>
-        <p>{body}</p>
-      </div>
-    </div>
-  );
-}
-
-function CandidateBadge({ tone, label }: { tone: CandidateTone; label: string }) {
-  const toneClass = tone === "pick" ? styles.badgePick : tone === "risk" ? styles.badgeRisk : styles.badgeReject;
-
-  return (
-    <span className={`${styles.candidateBadge} ${toneClass}`}>
-      <span>{tone === "pick" ? "✓" : tone === "risk" ? "!" : "×"}</span>
-      {label}
-    </span>
-  );
+  if (name === "launch") return <svg {...common}><path d="M5 12h10" /><path d="m11 6 6 6-6 6" /><path d="M4 4h6" /><path d="M4 20h6" /></svg>;
+  if (name === "form") return <svg {...common}><path d="M8 6h10" /><path d="M8 12h10" /><path d="M8 18h7" /><path d="m3 6 1 1 2-2" /><path d="m3 12 1 1 2-2" /><path d="m3 18 1 1 2-2" /></svg>;
+  if (name === "memory") return <svg {...common}><path d="M12 3a5 5 0 0 0-5 5v1.2A4.6 4.6 0 0 0 8.2 18H10" /><path d="M12 3a5 5 0 0 1 5 5v1.2A4.6 4.6 0 0 1 15.8 18H14" /><path d="M9 9h6" /><path d="M8 13h8" /><path d="M12 18v3" /></svg>;
+  if (name === "search") return <svg {...common}><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4 4" /><path d="M8 10h5" /></svg>;
+  if (name === "check") return <svg {...common}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" /><path d="m9 12 2 2 4-4" /></svg>;
+  if (name === "refresh") return <svg {...common}><path d="M21 12a9 9 0 0 1-15.5 6.2" /><path d="M3 12A9 9 0 0 1 18.5 5.8" /><path d="M18 3v4h-4" /><path d="M6 21v-4h4" /></svg>;
+  if (name === "send") return <svg {...common}><path d="M22 2 11 13" /><path d="m22 2-7 20-4-9-9-4Z" /></svg>;
+  return <svg {...common}><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" /></svg>;
 }
 
 function AuditBadge({ item }: { item: (typeof auditItems)[number] }) {
   return (
     <span className={`${styles.auditBadge} ${item.tone === "notice" ? styles.auditNotice : styles.auditPass}`}>
-      <span>{item.tone === "notice" ? "!" : "✓"}</span>
+      <span aria-hidden="true">{item.tone === "notice" ? "!" : "✓"}</span>
       {item.label} {item.status}
     </span>
   );
 }
 
-export function GroupDecisionMechanismSection() {
+function renderSections(sections?: PanelSection[]) {
+  if (!sections?.length) return null;
+
   return (
-    <section className={`section section--paper ${styles.section}`} id="mechanism-trust" data-screen-label="机制可信与推荐可信">
+    <div className={styles.panelSections}>
+      {sections.map((section) => (
+        <div className={styles.panelSection} key={section.title}>
+          <h5>{section.title}</h5>
+          {section.kind === "chips" ? (
+            <div className={styles.chipGrid}>
+              {section.items.map((item) => <span key={item}>{item}</span>)}
+            </div>
+          ) : (
+            <ul className={section.kind === "checks" ? styles.checkList : styles.infoList}>
+              {section.items.map((item) => <li key={item}>{item}</li>)}
+            </ul>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function WorkbenchColumn({ panel, role, accent }: { panel: PanelContent; role: string; accent: ColumnAccent }) {
+  return (
+    <section className={`${styles.workColumn} ${columnClassMap[accent]}`} aria-label={role}>
+      <div className={styles.columnLabel}>{role}</div>
+      <article className={`${styles.panelCard} ${panel.empty ? styles.panelEmpty : ""}`}>
+        <div className={styles.panelTop}>
+          <span>{panel.eyebrow}</span>
+          {panel.status ? <b className={panel.statusTone ? toneClassMap[panel.statusTone] : ""}>{panel.status}</b> : null}
+        </div>
+        <h4>{panel.title}</h4>
+        {panel.body ? <p className={styles.panelBody}>{panel.body}</p> : null}
+
+        {panel.chat ? (
+          <div className={styles.chatStack}>
+            {panel.chat.map((line) => (
+              <p className={`${styles.chatBubble} ${line.tone === "pause" ? styles.chatPause : ""} ${line.tone === "system" ? styles.chatSystem : ""}`} key={`${line.speaker}-${line.text}`}>
+                <span>{line.speaker}</span>
+                {line.text}
+              </p>
+            ))}
+          </div>
+        ) : null}
+
+        {renderSections(panel.sections)}
+
+        {panel.decisions ? (
+          <div className={styles.decisionList}>
+            {panel.decisions.map((item) => (
+              <div className={styles.decisionItem} key={item.name}>
+                <span className={`${styles.verdict} ${toneClassMap[item.tone]}`}>{item.verdict}</span>
+                <div>
+                  <strong>{item.name}</strong>
+                  <p>{item.reason}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        {panel.message ? (
+          <div className={styles.messagePreview}>
+            <span>{panel.message.label}</span>
+            <p>{panel.message.text}</p>
+          </div>
+        ) : null}
+
+        {panel.result ? <ResultCard result={panel.result} /> : null}
+
+        {panel.action ? <span className={styles.mockButton}>{panel.action}</span> : null}
+        {panel.footer ? <p className={styles.panelFooter}>{panel.footer}</p> : null}
+      </article>
+    </section>
+  );
+}
+
+function ResultCard({ result }: { result: ResultBlock }) {
+  return (
+    <div className={`${styles.resultCard} ${toneClassMap[result.tone]}`}>
+      <div className={styles.resultTop}>
+        <span>{result.version}</span>
+        <b>{result.status}</b>
+      </div>
+      <h5>{result.name}</h5>
+      <p>{result.summary}</p>
+      <ul>
+        {result.reasons.map((reason) => <li key={reason}>{reason}</li>)}
+      </ul>
+      {result.message ? (
+        <div className={styles.groupMessage}>
+          <span>{result.messageLabel}</span>
+          <p>{result.message}</p>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export function GroupDecisionMechanismSection() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activeStep = workflowSteps[activeIndex] ?? workflowSteps[0];
+  const isFirst = activeIndex === 0;
+  const isLast = activeIndex === workflowSteps.length - 1;
+
+  const goToStep = (index: number) => {
+    setActiveIndex(Math.max(0, Math.min(index, workflowSteps.length - 1)));
+  };
+
+  return (
+    <section className={`section section--paper ${styles.section}`} id="mechanism-trust" data-screen-label="多人约饭流程工作台">
       <div className="container">
         <div className={`sec-head reveal ${styles.head}`}>
           <div className="sec-eyebrow">设计与思路 · 机制可信</div>
-          <h2 className={`sec-title ${styles.title}`}>把“随便”和“都可以”，翻译成一份能发群里的决定</h2>
+          <h2 className={`sec-title ${styles.title}`}>不是只给推荐，而是把一次多人约饭真正跑完</h2>
           <p className={`sec-lead ${styles.lead}`}>
-            多人约饭最难的不是找店，而是每个人都有条件，却没人愿意拍板。饿了幺先保护不能牺牲的条件，再比较候选、做自检，最后输出一条可以直接发到群里的方案。
+            多人约饭不是缺餐厅，而是缺一个能收集偏好、保护硬约束、根据反馈继续调整，并把方案发回群聊的管家流程。
           </p>
         </div>
 
-        <div className={`${styles.caseNote} reveal d1`}>
-          <span>示例化解释视图</span>
-          <p>这是用于展示机制的静态案例：OpenClaw 负责理解与生成增强，规则和数据层负责约束、自检与 fallback，不代表真实算法实时可视化。</p>
+        <div className={`${styles.flowShell} reveal d1`}>
+          <div className={styles.flowMeta}>
+            <span>示例化工作流</span>
+            <strong>{String(activeIndex + 1).padStart(2, "0")} / 07</strong>
+          </div>
+          <div className={styles.flowRail} role="tablist" aria-label="多人约饭流程步骤">
+            {workflowSteps.map((step, index) => {
+              const isActive = activeIndex === index;
+              const isDone = activeIndex > index;
+
+              return (
+                <button
+                  aria-current={isActive ? "step" : undefined}
+                  aria-controls="group-decision-workbench"
+                  className={`${styles.flowStep} ${isActive ? styles.flowStepActive : ""} ${isDone ? styles.flowStepDone : ""}`}
+                  key={step.label}
+                  onClick={() => goToStep(index)}
+                  type="button"
+                >
+                  <span className={styles.flowStepIcon}><WorkflowIcon name={step.icon} size={17} /></span>
+                  <span className={styles.flowStepText}>
+                    <b>{index + 1}</b>
+                    <strong>{step.label}</strong>
+                    <small>{step.short}</small>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <div className={styles.flowControls}>
+            <button disabled={isFirst} onClick={() => goToStep(activeIndex - 1)} type="button">上一步</button>
+            <button disabled={isLast} onClick={() => goToStep(activeIndex + 1)} type="button">下一步</button>
+          </div>
         </div>
 
-        <div className={styles.storyRail} aria-label="从群聊混乱到可执行方案的三段故事">
-          <article className={`${styles.storyBlock} ${styles.chatStory} reveal d1`}>
-            <StoryHeader
-              icon="chat"
-              step="1"
-              kicker="第一段 · 生活里的卡点"
-              title="大家都说随便，但每个人都有不能踩的雷"
-              body="这不是没有需求，而是需求散在群聊里：有人有忌口，有人有时间限制，有人担心预算、距离和排队。"
-            />
-
-            <div className={styles.chatScene}>
-              <div className={styles.chatWindow} aria-label="多人约饭群聊示例">
-                <div className={styles.chatTopbar}>
-                  <span>明晚吃饭小群</span>
-                  <b>7 条新消息</b>
-                </div>
-                {chatMessages.map((message, index) => (
-                  <div
-                    className={`${styles.chatBubble} ${message.tone === "hard" ? styles.toneHard : message.tone === "stuck" ? styles.toneStuck : styles.toneSoft}`}
-                    key={`${message.speaker}-${index}`}
-                  >
-                    <span>{message.speaker}</span>
-                    <p>{message.text}</p>
-                  </div>
-                ))}
-              </div>
-
-              <aside className={styles.peopleSummary} aria-label="群聊里隐藏的条件">
-                <div className={styles.summaryEyebrow}>群聊翻译成人话</div>
-                <h4>“随便”背后其实有 3 类条件</h4>
-                <div className={styles.summaryGrid}>
-                  <span>忌口</span>
-                  <p>阿杰不吃辣，不能被牺牲。</p>
-                  <span>时间</span>
-                  <p>小周要在 20:30 前回宿舍。</p>
-                  <span>体验</span>
-                  <p>预算、距离、排队和聊天氛围都要兼顾。</p>
-                </div>
-              </aside>
+        <div className={`${styles.workbench} reveal d2`} id="group-decision-workbench">
+          <div className={styles.workbenchTop}>
+            <div>
+              <span>当前步骤 {activeIndex + 1}</span>
+              <h3>{activeStep.label}</h3>
             </div>
-          </article>
+            <p>{activeStep.summary}</p>
+          </div>
+          <div className={styles.workbenchGrid}>
+            <WorkbenchColumn accent="user" panel={activeStep.left} role="用户侧 / 小程序侧" />
+            <WorkbenchColumn accent="butler" panel={activeStep.middle} role="管家处理流" />
+            <WorkbenchColumn accent="output" panel={activeStep.right} role="输出结果" />
+          </div>
+        </div>
 
-          <article className={`${styles.storyBlock} ${styles.translateStory} reveal d2`}>
-            <StoryHeader
-              icon="shield"
-              step="2"
-              kicker="第二段 · 先分清轻重"
-              title="先保护不能牺牲的条件，再尽量照顾偏好"
-              body="饿了幺不急着给店名，而是先把聊天翻译成“不能踩”和“尽量满足”，再拿候选餐厅逐个判定。"
-            />
-
-            <div className={styles.translationGrid}>
-              <section className={`${styles.conditionPanel} ${styles.mustPanel}`}>
-                <div className={styles.panelLabel}>不能踩的雷</div>
-                <ul>
-                  {hardConstraints.map((item) => <li key={item}>{item}</li>)}
-                </ul>
-              </section>
-
-              <section className={`${styles.conditionPanel} ${styles.preferPanel}`}>
-                <div className={styles.panelLabel}>尽量满足的偏好</div>
-                <ul>
-                  {softPreferences.map((item) => <li key={item}>{item}</li>)}
-                </ul>
-              </section>
-
-              <section className={styles.candidatePanel}>
-                <div className={styles.panelLabel}>候选判定</div>
-                <div className={styles.candidateList}>
-                  {candidateChecks.map((item) => (
-                    <div className={`${styles.candidateRow} ${item.tone === "pick" ? styles.candidatePicked : ""}`} key={item.name}>
-                      <CandidateBadge tone={item.tone} label={item.result} />
-                      <strong>{item.name}</strong>
-                      <p>{item.reason}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            </div>
-          </article>
-
-          <article className={`${styles.storyBlock} ${styles.finalStory} reveal d3`}>
-            <StoryHeader
-              icon="send"
-              step="3"
-              kicker="第三段 · 变成可执行决定"
-              title="最后不是给一堆选择，而是给一条能发出去的方案"
-              body="推荐不是事后包装：理由来自用户约束、候选标签和自检结果，最后汇成一条群里能直接确认的消息。"
-            />
-
-            <div className={styles.decisionCard}>
-              <div className={styles.pickHeader}>
-                <div>
-                  <span>推荐结果</span>
-                  <strong>青禾小馆</strong>
-                </div>
-                <b>可执行方案</b>
-              </div>
-
-              <div className={styles.decisionBody}>
-                <section className={styles.reasonPanel}>
-                  <h4>为什么定它</h4>
-                  <ul>
-                    {decisionReasons.map((reason) => <li key={reason}>{reason}</li>)}
-                  </ul>
-                </section>
-
-                <section className={styles.messagePanel}>
-                  <div className={styles.messageLabel}>可直接发群</div>
-                  <p>要不明晚就定青禾小馆？人均大概 80 多，有不辣菜，离学校近，也比较适合聊天。我们 18:30 出发，小周 20:30 前回宿舍也来得及。</p>
-                </section>
-              </div>
-
-              <div className={styles.auditStrip} aria-label="轻量自检结果">
-                {auditItems.map((item) => <AuditBadge item={item} key={item.label} />)}
-              </div>
-
-              <div className={styles.sourceBlock}>
-                <div className={styles.sourceTitle}>理由来源</div>
-                <div className={styles.sourceList}>
-                  {reasonSources.map((item) => (
-                    <span className={styles.sourceChip} key={`${item.reason}-${item.source}`}>
-                      <strong>{item.reason}</strong>
-                      <i>←</i>
-                      {item.source}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </article>
+        <div className={`${styles.trustBar} reveal d3`}>
+          <div className={styles.trustIntro}>
+            <span>可信解释压缩条</span>
+            <p>推荐理由不是事后包装，而是来自成员偏好、候选标签、反馈调整和自检结果。</p>
+          </div>
+          <div className={styles.auditStrip} aria-label="轻量自检结果">
+            {auditItems.map((item) => <AuditBadge item={item} key={item.label} />)}
+          </div>
+          <div className={styles.sourceList} aria-label="推荐理由来源">
+            {reasonSources.map((item) => (
+              <span className={styles.sourceChip} key={`${item.reason}-${item.source}`}>
+                <strong>{item.reason}</strong>
+                <i>←</i>
+                {item.source}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </section>
