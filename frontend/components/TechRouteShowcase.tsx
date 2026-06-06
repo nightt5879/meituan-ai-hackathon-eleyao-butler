@@ -7,10 +7,10 @@ type TechRouteDirection = "A" | "B" | "C";
 type TechRouteFuncId = (typeof techRouteData.funcs)[number]["id"];
 type OpenNode = { stageIndex: number; nodeIndex: number } | null;
 
-const directions: Array<{ d: TechRouteDirection; k: string; t: string }> = [
-  { d: "A", k: "A", t: "链路泳道" },
-  { d: "B", k: "B", t: "能力矩阵" },
-  { d: "C", k: "C", t: "节点图" }
+const directions: Array<{ d: TechRouteDirection; t: string }> = [
+  { d: "A", t: "链路泳道" },
+  { d: "B", t: "能力矩阵" },
+  { d: "C", t: "节点图" }
 ];
 
 function SmallIcon({ name }: { name: TechRouteFunction["icon"] | "arrow" | "diff" | "safe" | "tech" | "go" }) {
@@ -71,8 +71,10 @@ function FuncHead({ func }: { func: TechRouteFunction }) {
         <div className="no">{func.no}</div>
         <div className="ft">
           <h3>{func.name} <span className="tag">· {func.tagline}</span></h3>
-          <div className="api">
-            {func.api.map((api) => <code key={api}>{api}</code>)}
+          <div className="tr-flow-tags" aria-label="链路能力标签">
+            <span>Web demo session</span>
+            <span>本地候选池</span>
+            <span>规则自检</span>
           </div>
         </div>
       </div>
@@ -215,62 +217,29 @@ function NodeDetail({ func, openNode }: { func: TechRouteFunction; openNode: Ope
   );
 }
 
-function FieldCards({ func }: { func: TechRouteFunction }) {
+function RouteSupportStrip({ func }: { func: TechRouteFunction }) {
+  const promptFeature = func.features.find((feature) => feature.kind === "diff");
   return (
-    <div className="tr-feats tr-fields">
-      {func.fields.map((field) => (
-        <div className="tr-feat field" key={field.name}>
-          <div className="kk">{field.name}{field.note ? ` · ${field.note}` : ""}</div>
-          <ul className="tr-cell-list">
-            {field.items.map((item) => <li key={item}>{item}</li>)}
-          </ul>
-        </div>
-      ))}
+    <div className="tr-support-strip" aria-label={`${func.name} 追问与兜底说明`}>
+      <div className="tr-support-card">
+        <span className="tr-support-label">产品能力</span>
+        <strong>{promptFeature?.title ?? "信息不足先追问"}</strong>
+        <p>{promptFeature?.body ?? "信息不足时先追问，再推荐；不是硬生成一个看似合理的答案。"}</p>
+      </div>
+      <div className="tr-support-card">
+        <span className="tr-support-label">工程兜底</span>
+        <strong>密钥留在服务端，前端只接收结构化结果</strong>
+        <p>OpenClaw 或外部能力不可用时，降级到本地候选池，保证 demo 不断流。</p>
+      </div>
+      <div className="tr-fallback-strip">
+        <span>OpenClaw / 外部能力不可用</span>
+        <SmallIcon name="arrow" />
+        <span>本地候选池兜底</span>
+        <SmallIcon name="arrow" />
+        <span>保留可执行方案和风险提示</span>
+      </div>
+      <div className="tr-support-current">当前场景：{func.fallback.trigger} → {func.fallback.action}</div>
     </div>
-  );
-}
-
-function FeatureCards({ func }: { func: TechRouteFunction }) {
-  return (
-    <>
-      <div className="tr-feats">
-        {func.features.map((feature) => {
-          const label = feature.kind === "diff" ? "不同点" : feature.kind === "tech" ? "技术" : "安全";
-          return (
-            <div className={`tr-feat k-${feature.kind}`} key={feature.title}>
-              <div className="ico"><SmallIcon name={feature.kind} /></div>
-              <div className="kk">{label}</div>
-              <div className="ft">{feature.title}</div>
-              <div className="fb">{feature.body}</div>
-            </div>
-          );
-        })}
-      </div>
-      <div className="tr-extras">
-        <div className="tr-diffline">
-          <span className="ql">“</span>
-          <span className="qt"><span className="qk">一句话讲清不同</span>{func.differentiator}</span>
-        </div>
-        {func.formula ? (
-          <div className="tr-formula">
-            <div className="fbox">
-              <div className="fl">公平性评分</div>
-              <div className="fv">{func.formula.main}</div>
-            </div>
-            <div className="fbox rule">
-              <div className="fl">硬约束规则</div>
-              <div className="fv">{func.formula.rule}</div>
-            </div>
-          </div>
-        ) : null}
-        <div className="tr-fbk">
-          <span className="lab">兜底</span>
-          <span className="trg">{func.fallback.trigger}</span>
-          <span className="arr">→</span>
-          <span className="act">{func.fallback.action}</span>
-        </div>
-      </div>
-    </>
   );
 }
 
@@ -290,7 +259,7 @@ function Matrix({ onSelect }: { onSelect: (id: TechRouteFuncId) => void }) {
         <thead>
           <tr>
             <th>功能</th>
-            <th>入口链路</th>
+            <th>场景入口</th>
             <th>输入</th>
             <th>核心处理</th>
             <th>输出</th>
@@ -305,14 +274,10 @@ function Matrix({ onSelect }: { onSelect: (id: TechRouteFuncId) => void }) {
                 <button type="button" onClick={() => onSelect(func.id)}>
                   <div className="mn"><span className="mno">{func.no}</span>{func.name}</div>
                   <div className="mt">{func.tagline}</div>
-                  <code>{func.api[0]}</code>
+                  <span className="tr-mx-pill">Web demo</span>
                 </button>
               </td>
-              <td>
-                <ul className="tr-cell-list">
-                  {func.api.map((api) => <li className="mono" key={api}>{api}</li>)}
-                </ul>
-              </td>
+              <td className="tr-mx-entry">{func.oneLiner}</td>
               <td>{cell(func, "in")}</td>
               <td>{cell(func, "proc")}</td>
               <td>{cell(func, "out")}</td>
@@ -413,24 +378,28 @@ export function TechRouteShowcase() {
       </div>
 
       <div className="reveal d1">
-        <div className="tr-toolbar">
-          <span className="tr-tl-label">排版方向</span>
-          <div className="tr-seg tr-dirs">
-            {directions.map((item) => (
-              <button className={direction === item.d ? "on" : ""} key={item.d} type="button" onClick={() => changeDirection(item.d)}>
-                <span className="k">{item.k}</span>{item.t}
-              </button>
-            ))}
+        <div className="tr-toolbar" aria-label="技术路线控制区">
+          <div className="tr-control-group tr-control-view">
+            <span className="tr-control-label">展示方式</span>
+            <div className="tr-seg tr-dirs">
+              {directions.map((item) => (
+                <button className={direction === item.d ? "on" : ""} key={item.d} type="button" onClick={() => changeDirection(item.d)}>
+                  {item.t}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="tr-seg tr-funcs" hidden={direction === "B"}>
-            {techRouteData.funcs.map((func) => (
-              <button className={func.id === funcId ? "on" : ""} key={func.id} type="button" onClick={() => selectFunc(func.id)}>
-                <span className="k">{func.no}</span>{func.name}
-              </button>
-            ))}
+          <div className="tr-control-group tr-control-scenario">
+            <span className="tr-control-label">业务场景</span>
+            <div className="tr-seg tr-funcs">
+              {techRouteData.funcs.map((func) => (
+                <button className={func.id === funcId ? "on" : ""} key={func.id} type="button" onClick={() => selectFunc(func.id)}>
+                  {func.name}
+                </button>
+              ))}
+            </div>
           </div>
-          <span className="tr-spacer" />
-          <span className="tr-toolbar-note">{direction === "B" ? "点击功能名回到对应泳道" : "点击节点查看输入、输出与可信作用"}</span>
+          <span className="tr-toolbar-note">{direction === "B" ? "矩阵横向对比三条链路，点业务场景回到泳道细节" : "点击节点查看输入、输出与可信作用"}</span>
         </div>
 
         <div id="trStageWrap">
@@ -451,8 +420,7 @@ export function TechRouteShowcase() {
                     <NodeDetail func={activeFunc} openNode={openNode} />
                   </>
                 )}
-                <FieldCards func={activeFunc} />
-                <FeatureCards func={activeFunc} />
+                <RouteSupportStrip func={activeFunc} />
               </>
             )}
           </div>
