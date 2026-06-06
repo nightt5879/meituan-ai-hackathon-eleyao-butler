@@ -562,6 +562,16 @@
   background: color-mix(in srgb, var(--ey-emerald) 4%, transparent);
 }
 
+.tr-matrix tbody tr.tr-mx-row--active {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--ey-emerald) 10%, transparent), transparent 72%),
+    color-mix(in srgb, var(--ey-emerald) 4%, var(--ey-card));
+}
+
+.tr-matrix tbody tr.tr-mx-row--active .tr-mx-fn button {
+  color: var(--ey-emerald-d);
+}
+
 .tr-mx-fn {
   width: 150px;
 }
@@ -1092,6 +1102,55 @@
   right: -8px;
   color: var(--ey-emerald-300);
   font-weight: 900;
+}
+
+.arch-section .tr-check {
+  border-color: var(--ey-line);
+  background: color-mix(in srgb, var(--ey-card) 96%, var(--ey-bg));
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--ey-ink) 5%, transparent);
+}
+
+.arch-section .tr-check .ck {
+  color: var(--ey-ink);
+}
+
+.arch-section .tr-check .ck .lk {
+  color: var(--ey-slate-2);
+}
+
+.arch-section .tr-check .act .arr,
+.arch-section .tr-check .act .at {
+  color: var(--ey-emerald-d);
+}
+
+.arch-section .tr-loop {
+  gap: 12px;
+}
+
+.arch-section .tr-loop .lp {
+  padding: 14px;
+  border: 1px solid var(--ey-line);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--ey-card) 94%, var(--ey-bg));
+}
+
+.arch-section .tr-loop .lp .lph {
+  color: var(--ey-emerald-d);
+}
+
+.arch-section .tr-loop .lp .lpt {
+  color: var(--ey-ink);
+}
+
+.arch-section .tr-loop .lp .lpd {
+  color: var(--ey-slate);
+}
+
+.arch-section .tr-loop .lp:not(:last-child)::after {
+  top: 50%;
+  right: -12px;
+  color: var(--ey-emerald);
+  transform: translateY(-50%);
 }
 
 .tr-compare-section {

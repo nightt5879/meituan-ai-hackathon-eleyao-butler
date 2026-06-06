@@ -2295,6 +2295,70 @@ body.t-night .cloud-word.c-warn {
   line-height: 1.7;
 }
 
+.arch-section {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--ey-emerald) 3%, var(--ey-card)), color-mix(in srgb, var(--ey-card) 94%, var(--ey-bg)));
+}
+
+.arch-section .sec-head {
+  margin-bottom: clamp(30px, 4vh, 44px);
+}
+
+.arch-section .layers {
+  gap: 16px;
+}
+
+.arch-section .layer {
+  min-height: 198px;
+  padding: 22px;
+  border: 1px solid var(--ey-line);
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--ey-emerald) 6%, transparent), transparent 56%),
+    color-mix(in srgb, var(--ey-card) 96%, var(--ey-bg));
+  box-shadow: var(--ey-shadow-sm);
+}
+
+.arch-section .layer .ix {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 22%, var(--ey-line));
+  border-radius: var(--ey-pill);
+  background: var(--ey-emerald-50);
+  color: var(--ey-emerald-d);
+  font-size: 11px;
+}
+
+.arch-section .layer h3 {
+  color: var(--ey-ink);
+}
+
+.arch-section .layer p {
+  color: var(--ey-slate);
+}
+
+.arch-selfcheck {
+  margin-top: clamp(26px, 4vw, 40px);
+  padding: clamp(18px, 3vw, 26px);
+  border: 1px solid var(--ey-line);
+  border-radius: 22px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--ey-emerald) 7%, transparent), transparent 48%),
+    color-mix(in srgb, var(--ey-card) 94%, var(--ey-bg));
+  box-shadow: var(--ey-shadow-sm);
+}
+
+.arch-selfcheck .sec-eyebrow {
+  margin-bottom: 8px;
+}
+
+.arch-selfcheck .sec-lead {
+  max-width: 58ch;
+  margin: 0 0 22px;
+}
+
 .flows {
   overflow: hidden;
   margin-top: 34px;

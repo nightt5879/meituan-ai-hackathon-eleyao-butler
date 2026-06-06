@@ -114,7 +114,7 @@ function GatePill({ type }: { type: GateType }) {
 
 export function FutureSection() {
   return (
-    <section className="section section--forest sec-future" id="future" data-screen-label="未来功能开发">
+    <section className="section section--paper sec-future" id="future" data-screen-label="未来功能开发">
       <div className="container">
         <div className="future-top">
           <div className="future-head reveal">
@@ -140,7 +140,7 @@ export function FutureSection() {
 
         <div className="grid3 future-grid">
           {futureDirections.map((item, index) => (
-            <article className={`card card--dark future-card ${item.featured ? "future-card--featured" : ""} reveal d${(index % 3) + 1}`} key={item.num}>
+            <article className={`card future-card ${item.featured ? "future-card--featured" : ""} reveal d${(index % 3) + 1}`} key={item.num}>
               <div className="ic"><FutureIcon name={item.icon} size={24} /></div>
               <div className="num-tag">{item.num}</div>
               <h3>{item.title}</h3>

@@ -381,7 +381,7 @@ export default function PortfolioHomePage() {
         </div>
       </section>
 
-      <section className="section section--forest" id="arch">
+      <section className="section section--paper arch-section" id="arch">
         <div className="container">
           <div className="sec-head reveal">
             <div className="sec-eyebrow">设计与思路 · 技术架构</div>
@@ -391,7 +391,7 @@ export default function PortfolioHomePage() {
           <div className="layers reveal">
             {architectureLayers.map(([ix, title, desc]) => <div className="layer" key={ix}><div className="ix">{ix}</div><h3>{title}</h3><p>{desc}</p></div>)}
           </div>
-          <div className="reveal d1" style={{ marginTop: 40 }}>
+          <div className="arch-selfcheck reveal d1">
             <div className="sec-eyebrow" style={{ marginBottom: 8 }}>设计与思路 · 自检评测闭环</div>
             <p className="sec-lead" style={{ margin: "0 0 24px", maxWidth: "56ch" }}>把命题 02 的评测思想嵌进管家每一次回答：输出前先逐项审计，不合格就修正或追问。七项检查 × 对应动作，构成「计划前—计划中—计划后—下一次」的闭环。</p>
             <TechRouteSelfCheck />

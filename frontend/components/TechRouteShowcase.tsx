@@ -243,7 +243,7 @@ function RouteSupportStrip({ func }: { func: TechRouteFunction }) {
   );
 }
 
-function Matrix({ onSelect }: { onSelect: (id: TechRouteFuncId) => void }) {
+function Matrix({ activeId, onSelect }: { activeId: TechRouteFuncId; onSelect: (id: TechRouteFuncId) => void }) {
   const cell = (func: TechRouteFunction, key: "in" | "proc" | "out") => {
     const stage = func.stages.find((item) => item.key === key);
     return (
@@ -269,7 +269,7 @@ function Matrix({ onSelect }: { onSelect: (id: TechRouteFuncId) => void }) {
         </thead>
         <tbody>
           {techRouteData.funcs.map((func) => (
-            <tr key={func.id}>
+            <tr className={func.id === activeId ? "tr-mx-row--active" : ""} key={func.id}>
               <td className="tr-mx-fn">
                 <button type="button" onClick={() => onSelect(func.id)}>
                   <div className="mn"><span className="mno">{func.no}</span>{func.name}</div>
@@ -348,7 +348,6 @@ export function TechRouteShowcase() {
     const nextFunc = techRouteData.funcs.find((func) => func.id === next) ?? techRouteData.funcs[0];
     setFuncId(next);
     setOpenNode(defaultOpenNode(nextFunc));
-    if (direction === "B") setDirection("A");
   }
 
   function changeDirection(next: TechRouteDirection) {
@@ -399,13 +398,13 @@ export function TechRouteShowcase() {
               ))}
             </div>
           </div>
-          <span className="tr-toolbar-note">{direction === "B" ? "矩阵横向对比三条链路，点业务场景回到泳道细节" : "点击节点查看输入、输出与可信作用"}</span>
+          <span className="tr-toolbar-note">{direction === "B" ? "矩阵横向对比三条链路，业务场景用于聚焦当前行" : "点击节点查看输入、输出与可信作用"}</span>
         </div>
 
         <div id="trStageWrap">
           <div className="tr-stage">
             {direction === "B" ? (
-              <Matrix onSelect={selectFunc} />
+              <Matrix activeId={funcId} onSelect={selectFunc} />
             ) : (
               <>
                 <FuncHead func={activeFunc} />
