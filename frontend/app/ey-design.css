@@ -2337,7 +2337,7 @@ body.t-night .cloud-word.c-warn {
   position: relative;
   display: grid;
   overflow: hidden;
-  aspect-ratio: 9 / 16;
+  aspect-ratio: 16 / 9;
   place-items: center;
   border: 1px solid var(--ey-line);
   border-radius: 22px;
@@ -2347,9 +2347,11 @@ body.t-night .cloud-word.c-warn {
 
 .video-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 30px;
   align-items: start;
+  max-width: 1120px;
+  margin: 0 auto;
 }
 
 .video-card {
@@ -2398,7 +2400,7 @@ body.t-night .cloud-word.c-warn {
   height: 100%;
   border: 0;
   background: #06281f;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .video-copy {
@@ -2563,6 +2565,12 @@ body.t-night .cloud-word.c-warn {
   transform: none;
 }
 
+section:target .reveal,
+section:target.reveal {
+  opacity: 1;
+  transform: none;
+}
+
 .reveal.d1 { transition-delay: 0.08s; }
 .reveal.d2 { transition-delay: 0.16s; }
 .reveal.d3 { transition-delay: 0.24s; }
@@ -2572,10 +2580,13 @@ body.t-night .cloud-word.c-warn {
   .grid3,
   .grid2,
   .layers,
-  .video-grid,
   .story,
   .demo-wrap {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .video-grid {
+    grid-template-columns: 1fr;
   }
 
   .demo-wrap {
@@ -2900,14 +2911,14 @@ body.t-night .cloud-word.c-warn {
   .grid3,
   .grid2,
   .layers,
-  .video-grid,
   .story,
   .demo-wrap {
     grid-template-columns: 1fr;
   }
 
   .video-card {
-    max-width: 430px;
+    width: 100%;
+    max-width: none;
     margin: 0 auto;
   }
 
