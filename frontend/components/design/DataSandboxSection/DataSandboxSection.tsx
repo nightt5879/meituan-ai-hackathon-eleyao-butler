@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { DivIcon, ImageOverlay, Map as LeafletMap, Marker } from "leaflet";
+import type { DivIcon, ImageOverlay, Map as LeafletMap, Marker, TileLayer } from "leaflet";
 import manualShopsSeed from "@/data/restaurant/shops.gut.seed.json";
 import syntheticShopsSeed from "@/data/restaurant/shops.synthetic.seed.json";
 import weekendPoisSeed from "@/data/weekend/weekend-pois.seed.json";
@@ -100,6 +100,7 @@ type SeedWeekendPoi = {
 };
 
 const UNIVERSITY_TOWN_CENTER: [number, number] = [23.05, 113.39];
+const LOCAL_TILE_URL = "/data-sandbox/gut-tiles/{z}/{x}/{y}.png";
 const LOCAL_MAP_IMAGE_URL = "/data-sandbox/gut-map.png";
 const LOCAL_MAP_ATTRIBUTION = "&copy; OpenStreetMap contributors";
 const SINGLE_POINT_ZOOM = 16;
@@ -112,6 +113,7 @@ const DISPLAY_COORD_OFFSET = {
 const FALLBACK_COPY =
   "本地地图底图暂不可用，已切换为静态 MVP 数据沙盘。推荐与路线逻辑仍基于候选、标签和边界声明展示。";
 const LOCAL_MAP_LOAD_TIMEOUT_MS = 5000;
+const LOCAL_TILE_ERROR_LIMIT = 4;
 const UNIVERSITY_TOWN_MAX_BOUNDS: [[number, number], [number, number]] = [
   [23.015, 113.335],
   [23.09, 113.455]
@@ -284,6 +286,7 @@ function LeafletSandboxMap({
 }) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<LeafletMap | null>(null);
+  const mapTileLayerRef = useRef<TileLayer | null>(null);
   const mapImageOverlayRef = useRef<ImageOverlay | null>(null);
   const markersRef = useRef<Record<string, Marker>>({});
   const leafletRef = useRef<typeof import("leaflet") | null>(null);
@@ -364,6 +367,8 @@ function LeafletSandboxMap({
       }
       Object.values(markersRef.current).forEach((marker) => marker.remove());
       markersRef.current = {};
+      mapTileLayerRef.current?.remove();
+      mapTileLayerRef.current = null;
       mapImageOverlayRef.current?.remove();
       mapImageOverlayRef.current = null;
       mapRef.current?.remove();
@@ -387,6 +392,16 @@ function LeafletSandboxMap({
         setMapHasLoadedOnce(true);
         setMapStatus("ready");
       }
+    };
+    const armBaseMapTimeout = (onTimeout: () => void) => {
+      if (baseMapLoadTimeout) {
+        window.clearTimeout(baseMapLoadTimeout);
+      }
+      baseMapLoadTimeout = window.setTimeout(() => {
+        if (!disposed && !baseMapLoaded && !mapHasLoadedOnceRef.current) {
+          onTimeout();
+        }
+      }, LOCAL_MAP_LOAD_TIMEOUT_MS);
     };
 
     const mountMap = async () => {
@@ -420,24 +435,61 @@ function LeafletSandboxMap({
         setMapZoom(map.getZoom());
         L.control.zoom({ position: "bottomright" }).addTo(map);
 
-        const mapImageOverlay = L.imageOverlay(LOCAL_MAP_IMAGE_URL, UNIVERSITY_TOWN_IMAGE_BOUNDS, {
+        const mountImageOverlayFallback = () => {
+          if (disposed || mapImageOverlayRef.current) return;
+          mapTileLayerRef.current?.remove();
+          mapTileLayerRef.current = null;
+          setMapStatus("loading");
+
+          const mapImageOverlay = L.imageOverlay(LOCAL_MAP_IMAGE_URL, UNIVERSITY_TOWN_IMAGE_BOUNDS, {
+            attribution: LOCAL_MAP_ATTRIBUTION,
+            opacity: 1
+          });
+
+          mapImageOverlayRef.current = mapImageOverlay;
+          mapImageOverlay.on("load", () => {
+            markMapLoaded();
+          });
+          mapImageOverlay.on("error", () => {
+            triggerFallback("本地瓦片与备用地图 PNG 都无法加载，已切换为静态 MVP 数据沙盘。请确认 /data-sandbox/gut-tiles 与 /data-sandbox/gut-map.png 是否存在。");
+          });
+          mapImageOverlay.addTo(map);
+          armBaseMapTimeout(() => {
+            triggerFallback("本地瓦片与备用地图 PNG 加载超时，已切换为静态 MVP 数据沙盘。");
+          });
+        };
+
+        let localTileErrorCount = 0;
+        const mapTileLayer = L.tileLayer(LOCAL_TILE_URL, {
           attribution: LOCAL_MAP_ATTRIBUTION,
-          opacity: 1
+          bounds: UNIVERSITY_TOWN_MAX_BOUNDS,
+          detectRetina: false,
+          keepBuffer: 2,
+          maxNativeZoom: 16,
+          maxZoom: 16,
+          minNativeZoom: 12,
+          minZoom: 12,
+          noWrap: true,
+          updateWhenIdle: false,
+          updateWhenZooming: false
         });
 
-        mapImageOverlayRef.current = mapImageOverlay;
-        mapImageOverlay.on("load", () => {
+        mapTileLayerRef.current = mapTileLayer;
+        mapTileLayer.on("tileload", () => {
+          localTileErrorCount = 0;
           markMapLoaded();
         });
-        mapImageOverlay.on("error", () => {
-          triggerFallback("本地大学城地图底图加载失败，已切换为静态 MVP 数据沙盘。请确认 /data-sandbox/gut-map.png 是否存在。");
+        mapTileLayer.on("load", () => {
+          markMapLoaded();
         });
-        mapImageOverlay.addTo(map);
-        baseMapLoadTimeout = window.setTimeout(() => {
-          if (!disposed && !baseMapLoaded && !mapHasLoadedOnceRef.current) {
-            triggerFallback();
+        mapTileLayer.on("tileerror", () => {
+          localTileErrorCount += 1;
+          if (localTileErrorCount >= LOCAL_TILE_ERROR_LIMIT) {
+            mountImageOverlayFallback();
           }
-        }, LOCAL_MAP_LOAD_TIMEOUT_MS);
+        });
+        mapTileLayer.addTo(map);
+        armBaseMapTimeout(mountImageOverlayFallback);
 
         map.on("click", () => {
           map.scrollWheelZoom.enable();
