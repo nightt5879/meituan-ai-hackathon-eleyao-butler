@@ -166,7 +166,7 @@ flowchart TD
 ```bash
 cd frontend
 npm install
-# 接入 OpenClaw（单人"今天吃什么"必需，多人/周末可先用 mock）
+# 接入 OpenClaw（单人"今天吃什么"必需，多人/周末可先用 mock，本作品实现的是openclaw接入）
 export OPENCLAW_CLI_PATH="/path/to/openclaw"
 export OPENCLAW_PROFILE="meituan01"
 export OPENCLAW_GATEWAY_URL="ws://127.0.0.1:19789"
