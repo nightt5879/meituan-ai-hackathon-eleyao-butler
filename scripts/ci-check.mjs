@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Repo pre-flight checks that run WITHOUT consuming GitHub Actions minutes.
+ * Repo pre-flight checks used by GitHub Actions and local pre-flight runs.
  *
- *   Run locally (free):   node scripts/ci-check.mjs
- *   Run on CI (manual):   triggered only via .github/workflows/ci-checks.yml
- *                         (workflow_dispatch — never auto-runs on push/PR).
+ *   Run locally:          node scripts/ci-check.mjs
+ *   Run on CI:            .github/workflows/ci-checks.yml triggers it for
+ *                         workflow_dispatch and PRs targeting main.
  *
  * Checks:
  *   1. Syntax-guards every hand-written .js / .mjs / .cjs outside node_modules

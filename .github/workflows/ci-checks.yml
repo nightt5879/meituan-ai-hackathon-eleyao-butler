@@ -1,15 +1,15 @@
-name: CI checks (manual)
+name: CI checks
 
-# MANUAL ONLY. This workflow never runs automatically on push or pull_request,
-# so it does not consume GitHub Actions minutes unless you explicitly trigger it
-# from the Actions tab ("Run workflow"). With no Actions quota, run the exact
-# same checks locally for free:
+# Runs automatically for PRs targeting main and can still be started manually
+# from the Actions tab ("Run workflow"). The same checks can be run locally:
 #
-#     node scripts/ci-check.mjs        # repo-wide JS syntax guard + frontend typecheck
+#     node scripts/ci-check.mjs        # JS syntax guard + typecheck + unit tests
 #     cd frontend && npm run build     # production build
 #
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
