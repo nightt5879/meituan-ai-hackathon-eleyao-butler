@@ -1,6 +1,14 @@
-# Meituan H5 MVP Frontend
+# Meituan Next.js API and Web Frontend
 
-这是多人约饭 H5 MVP 的 Next.js 前端。当前阶段使用 Next.js API routes 和服务端 JSON 文件保存共享状态，仍然只使用 mock 餐厅数据和规则版 mock Agent。
+这是「饿了幺」的 Next.js API 与 Web 作品站工作区。它同时承载作品展示页、在线体验页、小程序后端接口、OpenClaw 服务端代理、自建结构化本地生活数据层和 fallback 兜底逻辑。
+
+当前三个核心模块都已经接入 AI / OpenClaw / AI 上下文链路：
+
+- `今天吃什么`：通过 `/api/food/recommend` 调用服务端 OpenClaw 推荐链路，结合自建餐厅数据层和用户偏好输出 2-3 个候选。
+- `多人约饭`：通过 `/api/group-tasks` 系列接口同步多人状态，支持 AI 辅助偏好理解、冲突识别、推荐生成和服务端自检。
+- `周边规划`：通过 `/api/weekend/plans` 结合 Open-Meteo 真实天气、自建 POI/活动数据集和 AI 上下文链路生成路线。
+
+项目不声称使用美团 / 点评 / 地图官方商户库；当前使用的是自建 seed dataset。远端 OpenClaw、天气或后端链路不可用时，会切换到本地 fallback dataset + 规则兜底，保证演示流程不中断。
 
 ## 本地安装
 
@@ -37,7 +45,7 @@ $env:MEITUAN_STATE_FILE="D:\tmp\meituan-h5\dinner-tasks.json"
 npm.cmd run dev
 ```
 
-如果数据文件不存在，API 会自动用 `frontend/lib/mockData.ts` 初始化 `demo-dinner-001`。
+如果数据文件不存在，API 会自动初始化一份 `demo-dinner-001` seed 任务，便于本地验证共享状态。
 
 ## 初始化 Demo
 
@@ -47,7 +55,7 @@ npm.cmd run dev
 POST /api/tasks/:taskId/reset
 ```
 
-并恢复默认小林 / 阿杰 / 小周三人 mock 数据。
+并恢复默认小林 / 阿杰 / 小周三人 seed 数据。
 
 ## 双浏览器共享验证
 
@@ -69,12 +77,12 @@ JSON 文件方案适合本地开发、单进程 demo、普通单实例 Node 服�
 
 Vercel serverless 不适合用本地 JSON 文件做长期持久化。函数文件系统不是跨实例共享的持久存储，`/tmp` 也只能临时使用。若部署到 Vercel 并需要跨设备长期共享状态，应改用 Vercel KV / Postgres / Blob 或其他外部持久化。
 
-## 当前边界
+## 数据与 AI 边界
 
-- 多人约饭 H5 仍不接真实 OpenClaw；小程序单人约饭通过 `/api/food/recommend` 接云端 OpenClaw Gateway。
-- 不接美团 / 大众点评 / 地图等外部 API。
+- 三个小程序核心模块都通过后端 AI / OpenClaw / AI 上下文链路工作；Web 在线体验复用同一套 API 能力展示评审流程。
+- 不接美团 / 大众点评 / 地图等外部商户 API，也不声称当前数据代表真实平台评分、销量、排队或库存。
 - 不注册或配置云数据库。
-- 多人 H5 推荐仍复用 `frontend/lib/mockFunctions.ts` 的规则版 mock Agent。
+- 自建餐厅/POI 数据层用于 Hackathon MVP 的可执行性验证；远端不可用时，fallback 会基于这份数据和简单规则给出保守结果。
 
 ## 小程序多人约饭后端 API
 
@@ -122,7 +130,7 @@ groupDiningApiBaseUrl: 'https://meituan-ai-hackathon.cn'
 
 ## 小程序单人约饭 OpenClaw 配置
 
-`POST /api/food/recommend` 是微信小程序「今天吃什么」接 OpenClaw 的后端代理接口。这个接口不提供后端 mock provider；正常路径必须调用云端 OpenClaw Gateway。
+`POST /api/food/recommend` 是微信小程序「今天吃什么」接 OpenClaw 的后端代理接口。正常路径会调用云端 OpenClaw Gateway；若远端超时或响应不可用，接口会返回清晰的降级状态，前端可切换到本地 fallback 结果。
 
 本地启动前配置：
 
@@ -151,7 +159,7 @@ OpenClaw Gateway token 只放后端环境变量，不能写进小程序。
 
 ## 小程序周末轻规划 API
 
-后端提供小程序周末轻规划第一版接口，不走 H5 页面，不接真实地图/点评 POI。天气使用 Open-Meteo 广州番禺坐标，POI 和活动为学校周边 mock 数据。
+后端提供小程序周末轻规划接口，不走 H5 页面，不接真实地图/点评商户库。天气使用 Open-Meteo 广州番禺坐标，地点和活动来自学校周边自建结构化 POI/活动数据集，并会把用户条件、天气和路线候选写入 AI 上下文链路。
 
 ```text
 POST /api/weekend/plans

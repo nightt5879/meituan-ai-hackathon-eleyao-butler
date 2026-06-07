@@ -50,7 +50,7 @@ In one sentence: Eleyao turns a chat-style recommender into a local-life agent t
 The system follows a **client -> API layer -> agent core -> capability layer** pipeline. A key security decision is that **all OpenClaw CLI / Gateway calls happen on the server side**. The mini program never stores tokens or model keys.
 
 ```text
-WeChat Mini Program  --HTTPS-->  Next.js API Routes  --server-side-->  OpenClaw CLI / Gateway / LLM / Mock POI / Open-Meteo
+WeChat Mini Program  --HTTPS-->  Next.js API Routes  --server-side-->  OpenClaw CLI / Gateway / LLM / self-built restaurant and POI dataset / Open-Meteo
       Food / Group Dining / Weekend Plan                         Self-audit + Memory
 ```
 
@@ -89,7 +89,7 @@ flowchart TD
 <td width="25%" valign="top">
 <img src="docs/readme/shot-food.png" alt="What to eat today" />
 <h3 align="center">2. What to Eat Today</h3>
-<p>Preference Q&A -> OpenClaw cloud recommendation -> local preference memory. If the remote gateway is unavailable, the flow automatically falls back to local mock recommendations.</p>
+<p>Preference Q&A -> OpenClaw cloud recommendation -> local preference memory. If the remote gateway is unavailable, the flow automatically falls back to the local fallback dataset and rule-based safeguards.</p>
 </td>
 <td width="25%" valign="top">
 <img src="docs/readme/shot-group.png" alt="Group dining" />
@@ -99,7 +99,7 @@ flowchart TD
 <td width="25%" valign="top">
 <img src="docs/readme/shot-weekend.png" alt="Weekend planning" />
 <h3 align="center">4. Nearby Planning</h3>
-<p>Combines Open-Meteo weather and mock POI data to generate three routes with timelines, budgets, self-checks, risk notes, and conservative fallback when weather fails.</p>
+<p>Combines Open-Meteo weather, a self-built POI/activity dataset, and the AI context pipeline to generate three routes with timelines, budgets, self-checks, risk notes, and conservative fallback when weather fails.</p>
 </td>
 </tr>
 </table>
@@ -150,7 +150,7 @@ This prevents a fake "best" answer where two people are satisfied and one person
 | Client | Native WeChat Mini Program |
 | API / Backend | Next.js App Router, API Routes, TypeScript |
 | Agent Capability | OpenClaw CLI / Gateway, LLM, LLM-as-a-Judge |
-| External Data | Open-Meteo weather, structured mock POI |
+| External Data | Open-Meteo weather, self-built structured restaurant/POI dataset |
 | Storage | Runtime JSON files, replaceable with SQLite / KV / Postgres |
 | Data Analysis | Python survey processing and visualization in `analysis/` |
 
@@ -165,7 +165,7 @@ This prevents a fake "best" answer where two people are satisfied and one person
 ```bash
 cd frontend
 npm install
-# OpenClaw integration. Required for "what to eat today"; group/weekend can start with mock flows.
+# OpenClaw integration. All three core modules use backend AI / OpenClaw / AI-context pipelines.
 export OPENCLAW_CLI_PATH="/path/to/openclaw"
 export OPENCLAW_PROFILE="meituan01"
 export OPENCLAW_GATEWAY_URL="ws://127.0.0.1:19789"
@@ -184,9 +184,9 @@ npm run dev   # http://localhost:3000
 
 ```text
 meituan-ai-hackathon-eleyao-butler/
-├─ frontend/                 # Next.js backend + H5: API routes, agent proxy, mock flows
+├─ frontend/                 # Next.js backend + H5: API routes, agent proxy, self-built data layer, fallback
 │  ├─ app/api/               # food / group-tasks / weekend / user ...
-│  └─ lib/                   # mock data and rule-based mock agent functions
+│  └─ lib/                   # self-built data, recommendation rules, OpenClaw proxy, and fallback logic
 ├─ mini-program/             # WeChat Mini Program MVP frontend
 │  └─ wechat-miniprogram/    # pages and services for food/group/weekend/memory
 ├─ analysis/                 # Survey data analysis: Python, charts, metrics

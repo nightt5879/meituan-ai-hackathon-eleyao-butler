@@ -50,7 +50,7 @@
 整体是一条 **客户端 → 接口层 → Agent 核心 → 能力层** 的链路。关键设计：**所有 OpenClaw CLI / Gateway 调用只发生在服务端**，小程序永远不持有任何 token 或模型 key。
 
 ```text
-微信小程序  ──HTTPS──▶  Next.js API Routes  ──server-side──▶  OpenClaw CLI / Gateway / LLM / Mock POI / Open-Meteo
+微信小程序  ──HTTPS──▶  Next.js API Routes  ──server-side──▶  OpenClaw CLI / Gateway / LLM / 自建餐厅与 POI 数据集 / Open-Meteo
    今天吃什么 / 多人约饭 / 周末规划            自检评测 + 记忆
 ```
 
@@ -89,7 +89,7 @@ flowchart TD
 <td width="25%" valign="top">
 <img src="docs/readme/shot-food.png" alt="今天吃什么" />
 <h3 align="center">② 今天吃什么</h3>
-<p>问答收集偏好 → OpenClaw 云端推荐 → 本地偏好记忆。远端不可用时<b>自动降级</b>到本地 mock 推荐，流程不中断。</p>
+<p>问答收集偏好 → OpenClaw 云端推荐 → 本地偏好记忆。远端不可用时<b>自动降级</b>到本地 fallback dataset + 规则兜底，流程不中断。</p>
 </td>
 <td width="25%" valign="top">
 <img src="docs/readme/shot-group.png" alt="多人约饭" />
@@ -99,7 +99,7 @@ flowchart TD
 <td width="25%" valign="top">
 <img src="docs/readme/shot-weekend.png" alt="周末轻规划" />
 <h3 align="center">④ 周边规划</h3>
-<p>结合 Open-Meteo 实时天气 + Mock POI，生成 3 条带时间线 / 预算 / 自检 / 风险提示的路线，天气失败也有保守兜底。</p>
+<p>结合 Open-Meteo 实时天气 + 自建 POI/活动数据集 + AI 上下文链路，生成 3 条带时间线 / 预算 / 自检 / 风险提示的路线，天气失败也有保守兜底。</p>
 </td>
 </tr>
 </table>
@@ -151,7 +151,7 @@ flowchart TD
 | 客户端 | 微信小程序（原生） |
 | 接口 / 后端 | Next.js（App Router · API Routes · TypeScript） |
 | Agent 能力 | OpenClaw CLI / Gateway · LLM · LLM-as-a-Judge |
-| 外部数据 | Open-Meteo 天气 · 结构化 Mock POI |
+| 外部数据 | Open-Meteo 天气 · 自建结构化餐厅/POI 数据集 |
 | 存储 | 运行时 JSON 文件（可平滑替换 SQLite / KV / Postgres） |
 | 数据分析 | Python（问卷处理与可视化，见 `analysis/`） |
 
@@ -166,7 +166,7 @@ flowchart TD
 ```bash
 cd frontend
 npm install
-# 接入 OpenClaw（单人"今天吃什么"必需，多人/周末可先用 mock，本作品实现的是openclaw接入）
+# 接入 OpenClaw（三个核心模块均已通过后端 AI / OpenClaw / AI 上下文链路工作）
 export OPENCLAW_CLI_PATH="/path/to/openclaw"
 export OPENCLAW_PROFILE="meituan01"
 export OPENCLAW_GATEWAY_URL="ws://127.0.0.1:19789"
@@ -185,9 +185,9 @@ npm run dev   # http://localhost:3000
 
 ```text
 meituan-ai-hackathon-eleyao-butler/
-├─ frontend/                 # Next.js 后端 + H5（API routes / Agent 代理 / mock）
+├─ frontend/                 # Next.js 后端 + H5（API routes / Agent 代理 / 自建数据层 / fallback）
 │  ├─ app/api/               # food / group-tasks / weekend / user ...
-│  └─ lib/                   # mockData · mockFunctions（规则版 mock Agent）
+│  └─ lib/                   # 自建数据、推荐规则、OpenClaw 代理和 fallback 逻辑
 ├─ mini-program/             # 微信小程序前端 MVP
 │  └─ wechat-miniprogram/    # pages（food/group/weekend/memory）· services（各场景 adapter）
 ├─ analysis/                 # 问卷数据分析（Python · 图表 · 指标）
