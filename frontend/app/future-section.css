@@ -1,28 +1,16 @@
 .sec-future {
   position: relative;
-  display: flex;
-  min-height: 100vh;
-  min-height: 100svh;
-  flex-direction: column;
-  justify-content: center;
+  display: block;
+  min-height: auto;
   overflow: hidden;
-  padding-top: clamp(30px, 3.6vh, 50px);
-  padding-bottom: clamp(30px, 3.6vh, 50px);
+  padding-top: clamp(70px, 8vw, 112px);
+  padding-bottom: clamp(70px, 8vw, 112px);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--ey-card) 96%, var(--ey-bg)), color-mix(in srgb, var(--ey-emerald) 3%, var(--ey-card)));
 }
 
 .sec-future::after {
-  content: "";
-  position: absolute;
-  right: -8%;
-  bottom: -18%;
-  z-index: 0;
-  width: min(720px, 70vw);
-  height: min(520px, 54vw);
-  border-radius: 999px;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--ey-amber) 28%, transparent), transparent 72%);
-  filter: blur(4px);
-  opacity: 0.9;
-  pointer-events: none;
+  display: none;
 }
 
 .sec-future > .container {
@@ -45,8 +33,8 @@
 .sec-future .sec-title {
   max-width: 16ch;
   margin-top: 12px;
-  font-size: clamp(38px, 4.8vw, 62px);
-  line-height: 1.06;
+  font-size: clamp(30px, 3.6vw, 46px);
+  line-height: 1.14;
 }
 
 .sec-future .sec-lead {
@@ -58,16 +46,16 @@
   width: min(284px, 30vw);
   flex: none;
   padding: 18px 20px;
-  border: 1px solid rgba(110, 231, 183, 0.16);
+  border: 1px solid var(--ey-line);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.055);
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.16);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--ey-emerald) 7%, transparent), transparent 58%),
+    color-mix(in srgb, var(--ey-card) 94%, var(--ey-bg));
+  box-shadow: var(--ey-shadow-sm);
 }
 
 .future-legend-title {
-  color: rgba(234, 255, 244, 0.92);
+  color: var(--ey-emerald-d);
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.08em;
@@ -85,7 +73,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: rgba(209, 250, 229, 0.82);
+  color: var(--ey-slate);
   font-size: 12.5px;
   font-weight: 800;
 }
@@ -100,14 +88,14 @@
 }
 
 .future-legend-icon--api {
-  background: color-mix(in srgb, var(--ey-amber) 18%, transparent);
-  color: color-mix(in srgb, var(--ey-amber) 62%, #ffffff);
+  background: var(--ey-amber-50);
+  color: var(--ey-amber);
 }
 
 .future-legend-icon--proof,
 .future-legend-icon--time {
-  background: rgba(110, 231, 183, 0.14);
-  color: var(--ey-emerald-300);
+  background: var(--ey-emerald-50);
+  color: var(--ey-emerald-d);
 }
 
 .future-grid {
@@ -120,11 +108,15 @@
   min-height: 214px;
   flex-direction: column;
   padding: 16px 18px;
+  border-color: var(--ey-line);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--ey-emerald) 5%, transparent), transparent 56%),
+    color-mix(in srgb, var(--ey-card) 96%, var(--ey-bg));
 }
 
 .future-card:hover .ic {
-  background: var(--ey-emerald-300);
-  color: var(--ey-forest);
+  background: var(--ey-emerald);
+  color: #ffffff;
   transform: translateY(-2px) rotate(-4deg);
 }
 
@@ -132,6 +124,8 @@
   width: 38px;
   height: 38px;
   margin-bottom: 9px;
+  background: var(--ey-emerald-50);
+  color: var(--ey-emerald-d);
   transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), background 0.35s ease, color 0.35s ease;
 }
 
@@ -148,10 +142,10 @@
 }
 
 .future-card--featured {
-  border-color: rgba(110, 231, 183, 0.34);
+  border-color: color-mix(in srgb, var(--ey-emerald) 34%, var(--ey-line));
   background:
-    linear-gradient(155deg, color-mix(in srgb, var(--ey-emerald-400) 12%, transparent), rgba(255, 255, 255, 0.02)),
-    linear-gradient(155deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+    linear-gradient(155deg, color-mix(in srgb, var(--ey-emerald) 10%, transparent), transparent 62%),
+    color-mix(in srgb, var(--ey-card) 95%, var(--ey-bg));
 }
 
 .future-card-foot {
@@ -162,14 +156,14 @@
   flex-wrap: wrap;
   margin-top: 10px;
   padding-top: 9px;
-  border-top: 1px solid rgba(110, 231, 183, 0.14);
+  border-top: 1px solid var(--ey-line-2);
 }
 
 .future-card-foot code {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: var(--ey-emerald-300);
+  color: var(--ey-emerald-d);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   font-size: 11.5px;
   font-weight: 700;
@@ -179,7 +173,7 @@
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--ey-emerald-400);
+  background: var(--ey-emerald);
 }
 
 .future-gate {
@@ -187,10 +181,10 @@
   align-items: center;
   gap: 5px;
   padding: 4px 9px 4px 7px;
-  border: 1px solid rgba(110, 231, 183, 0.2);
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 22%, var(--ey-line));
   border-radius: var(--ey-pill);
-  background: rgba(255, 255, 255, 0.045);
-  color: rgba(209, 250, 229, 0.68);
+  background: var(--ey-emerald-50);
+  color: var(--ey-emerald-d);
   font-size: 11px;
   font-weight: 900;
   white-space: nowrap;
@@ -201,14 +195,14 @@
 }
 
 .future-gate--api {
-  border-color: color-mix(in srgb, var(--ey-amber) 32%, transparent);
-  background: color-mix(in srgb, var(--ey-amber) 12%, transparent);
-  color: color-mix(in srgb, var(--ey-amber) 60%, #ffffff);
+  border-color: color-mix(in srgb, var(--ey-amber) 32%, var(--ey-line));
+  background: var(--ey-amber-50);
+  color: var(--ey-amber);
 }
 
 .future-gate--proof svg,
 .future-gate--time svg {
-  color: var(--ey-emerald-300);
+  color: var(--ey-emerald-d);
 }
 
 @media (max-width: 960px) {
@@ -236,7 +230,7 @@
   }
 
   .sec-future .sec-title {
-    font-size: clamp(31px, 9vw, 42px);
+    font-size: clamp(29px, 8vw, 40px);
   }
 
   .future-grid {
