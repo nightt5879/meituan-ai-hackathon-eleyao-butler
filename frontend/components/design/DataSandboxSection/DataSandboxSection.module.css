@@ -278,36 +278,6 @@
   gap: 8px;
 }
 
-.tileWarning {
-  position: absolute;
-  left: 18px;
-  bottom: 54px;
-  z-index: 6;
-  display: flex;
-  align-items: center;
-  max-width: min(520px, calc(100% - 430px));
-  gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid color-mix(in srgb, var(--ey-amber) 46%, var(--ey-line));
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--ey-amber-50) 54%, var(--ey-card));
-  color: var(--ey-amber-900);
-  box-shadow: var(--ey-shadow-sm);
-}
-
-.tileWarning span {
-  min-width: 0;
-  font-size: 0.78rem;
-  font-weight: 800;
-  line-height: 1.45;
-}
-
-.tileWarning div {
-  display: inline-flex;
-  flex: 0 0 auto;
-  gap: 7px;
-}
-
 .mapActionButton {
   flex: 0 0 auto;
   min-height: 30px;
@@ -651,6 +621,10 @@
 
 .section :global(.leaflet-container img.leaflet-tile) {
   mix-blend-mode: normal;
+}
+
+.section :global(.leaflet-image-layer) {
+  filter: saturate(0.96) contrast(0.99);
 }
 
 .section :global(.leaflet-control-container .leaflet-top),
@@ -1791,8 +1765,6 @@
 :global(body.t-black-pink) .tagCloud span,
 :global(body.t-night) .zoomHint,
 :global(body.t-black-pink) .zoomHint,
-:global(body.t-night) .tileWarning,
-:global(body.t-black-pink) .tileWarning,
 :global(body.t-night) .mapActionButton,
 :global(body.t-black-pink) .mapActionButton,
 :global(body.t-night) .pointInspector,
@@ -2026,20 +1998,6 @@
   .mapQuickActions {
     right: 18px;
     top: 18px;
-  }
-
-  .tileWarning {
-    left: 18px;
-    right: 18px;
-    bottom: 112px;
-    align-items: flex-start;
-    flex-direction: column;
-    max-width: none;
-  }
-
-  .tileWarning div {
-    width: 100%;
-    flex-wrap: wrap;
   }
 
   .pointInspector {
