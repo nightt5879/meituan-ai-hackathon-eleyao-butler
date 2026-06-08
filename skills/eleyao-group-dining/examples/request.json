@@ -1,0 +1,53 @@
+{
+  "task": {
+    "taskId": "task_demo_group",
+    "creatorName": "小幺",
+    "rawRequest": "周六晚上 4 人聚餐，人均 80 内，适合聊天",
+    "locationText": "学校东门",
+    "expectedPeopleCount": 4,
+    "dinnerTime": "周六 18:30"
+  },
+  "participants": [
+    {
+      "clientId": "device-a",
+      "nickname": "阿杰",
+      "rawPreference": "完全不吃辣，预算 80 内，20:30 前要走",
+      "manualFields": {
+        "budgetMax": 80,
+        "spicyPreference": "no_spicy",
+        "leaveBefore": "20:30"
+      }
+    },
+    {
+      "clientId": "device-b",
+      "nickname": "小林",
+      "rawPreference": "想吃中式餐，别太远，能聊天"
+    },
+    {
+      "clientId": "device-c",
+      "nickname": "小陈",
+      "rawPreference": "预算 60 左右，不想排队，清淡也可以"
+    }
+  ],
+  "conflicts": [
+    {
+      "type": "taste",
+      "severity": "high",
+      "description": "有人完全不吃辣，但有人想吃中式餐。"
+    }
+  ],
+  "candidateRestaurants": [
+    {
+      "name": "首尔拌饭小馆",
+      "averagePrice": 42,
+      "distanceMeters": 1200,
+      "tags": ["不辣可选", "适合聊天", "出餐稳定"]
+    },
+    {
+      "name": "清汤牛肉粉面",
+      "averagePrice": 36,
+      "distanceMeters": 850,
+      "tags": ["清淡", "不辣", "快一点"]
+    }
+  ]
+}

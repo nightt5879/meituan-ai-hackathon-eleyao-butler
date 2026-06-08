@@ -1,0 +1,61 @@
+{
+  "packageName": "eleyao-openclaw-skills",
+  "displayName": "饿了幺 OpenClaw 本地生活 Skill 包",
+  "version": "2026.06.08",
+  "description": "面向美团 AI Hackathon 命题 01 的三类本地生活 Agent Skill：今天吃什么、多人约饭、周边规划。",
+  "openclaw": {
+    "verifiedVersion": "2026.5.27 (27ae826)",
+    "loadModel": "OpenClaw scans skill root directories for child folders containing SKILL.md.",
+    "recommendedTarget": "~/.openclaw/skills"
+  },
+  "requiredFiles": [
+    "SKILL.md",
+    "skill.json",
+    "prompt.md",
+    "input.schema.json",
+    "output.schema.json",
+    "examples/request.json",
+    "examples/response.json"
+  ],
+  "skills": [
+    {
+      "id": "eleyao-food-butler",
+      "name": "今天吃什么",
+      "directory": "eleyao-food-butler",
+      "entry": "SKILL.md",
+      "backendApi": "POST /api/food/recommend",
+      "capabilities": [
+        "单人吃饭追问",
+        "餐厅候选筛选",
+        "偏好记忆",
+        "预算/距离/忌口自检"
+      ]
+    },
+    {
+      "id": "eleyao-group-dining",
+      "name": "多人约饭",
+      "directory": "eleyao-group-dining",
+      "entry": "SKILL.md",
+      "backendApi": "POST /api/group-tasks/:taskId/recommend",
+      "capabilities": [
+        "多人偏好汇总",
+        "冲突识别",
+        "公平性推荐",
+        "群聊文案生成"
+      ]
+    },
+    {
+      "id": "eleyao-weekend-planner",
+      "name": "周边规划",
+      "directory": "eleyao-weekend-planner",
+      "entry": "SKILL.md",
+      "backendApi": "POST /api/weekend/plans",
+      "capabilities": [
+        "真实天气上下文",
+        "周边 POI 路线生成",
+        "时间窗/预算/体力自检",
+        "雨天低体力备选"
+      ]
+    }
+  ]
+}

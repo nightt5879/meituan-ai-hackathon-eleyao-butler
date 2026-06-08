@@ -58,6 +58,12 @@
 - 多人约饭：[`../../skills/eleyao-group-dining/SKILL.md`](../../skills/eleyao-group-dining/SKILL.md)
 - 周边规划：[`../../skills/eleyao-weekend-planner/SKILL.md`](../../skills/eleyao-weekend-planner/SKILL.md)
 
+这些 Skill 不是只放 `SKILL.md`，还包含 manifest、prompt、输入/输出 schema 和示例；已 clone 本仓库时可用下面命令安装到 OpenClaw skills root：
+
+```bash
+node ../../skills/install-eleyao-skills.mjs --target ~/.openclaw/skills --force
+```
+
 
 
 \## 3. 如何运行项目

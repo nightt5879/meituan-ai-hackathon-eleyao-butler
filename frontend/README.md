@@ -29,6 +29,12 @@
 | `eleyao-group-dining` | `POST /api/group-tasks/:taskId/recommend` | `lib/server/openclawRecommendation.ts` |
 | `eleyao-weekend-planner` | `POST /api/weekend/plans` | `lib/server/weekendPlanner.ts` |
 
+Skill 包已经补齐 manifest、prompt、schema 和示例。已 clone 本仓库时可以执行：
+
+```bash
+node ../skills/install-eleyao-skills.mjs --target ~/.openclaw/skills --force
+```
+
 OpenClaw CLI 路径、Gateway URL/token、AppSecret 和模型密钥只允许存在于服务端环境变量或 systemd drop-in 中，不能进入前端、小程序或仓库文档。
 
 ## 本地安装

@@ -1,3 +1,8 @@
+---
+name: eleyao-food-butler
+description: Use when a user needs single-person food recommendations from local-life constraints such as scene, budget, distance, taste, dietary restrictions, and memory.
+---
+
 # Eleyao Food Butler Skill
 
 ## Purpose
@@ -56,3 +61,11 @@
 - Server adapter: `frontend/lib/server/openclawFoodRecommendation.ts`
 - Candidate data: `frontend/data/restaurant/`
 - Mini Program adapter: `mini-program/wechat-miniprogram/services/foodAiAdapter.js`
+
+## Companion Files
+
+- Metadata: `skill.json`
+- Prompt template: `prompt.md`
+- Input schema: `input.schema.json`
+- Output schema: `output.schema.json`
+- Examples: `examples/request.json`, `examples/response.json`

@@ -1,0 +1,11 @@
+{
+  "name": "eleyao-openclaw-skills",
+  "private": true,
+  "version": "2026.6.8",
+  "description": "Installable OpenClaw skill package for Eleyao local-life butler.",
+  "type": "module",
+  "scripts": {
+    "validate": "node install-eleyao-skills.mjs --dry-run",
+    "install:skills": "node install-eleyao-skills.mjs --force"
+  }
+}

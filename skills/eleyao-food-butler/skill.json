@@ -1,0 +1,26 @@
+{
+  "id": "eleyao-food-butler",
+  "name": "今天吃什么",
+  "description": "把用户的场景、预算、距离、口味、忌口和记忆收敛成 2-3 个可执行餐厅推荐。",
+  "version": "2026.06.08",
+  "entry": "SKILL.md",
+  "prompt": "prompt.md",
+  "inputSchema": "input.schema.json",
+  "outputSchema": "output.schema.json",
+  "examples": {
+    "request": "examples/request.json",
+    "response": "examples/response.json"
+  },
+  "backend": {
+    "api": "POST /api/food/recommend",
+    "adapter": "frontend/lib/server/openclawFoodRecommendation.ts",
+    "candidateData": "frontend/data/restaurant/",
+    "miniProgramAdapter": "mini-program/wechat-miniprogram/services/foodAiAdapter.js"
+  },
+  "safety": {
+    "requiresServerSideSecrets": true,
+    "forbidsClientSecrets": true,
+    "usesSelfBuiltDataset": true,
+    "fallbackWhenUnavailable": true
+  }
+}

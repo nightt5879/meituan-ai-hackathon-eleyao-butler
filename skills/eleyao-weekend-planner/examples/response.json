@@ -1,0 +1,55 @@
+{
+  "routes": [
+    {
+      "routeType": "balanced",
+      "title": "折中路线：东门咖啡小馆 → 番禺小展厅 → 甜品收尾小店",
+      "estimatedBudget": 91,
+      "estimatedDurationMinutes": 186,
+      "walkingIntensity": "low",
+      "timeline": [
+        {
+          "time": "14:00",
+          "placeName": "东门咖啡小馆",
+          "activity": "先坐下确认状态和预算。"
+        }
+      ],
+      "selfChecks": [
+        {
+          "key": "weather",
+          "status": "pass",
+          "detail": "雨天和高温风险下以室内为主。"
+        }
+      ],
+      "risks": ["时间窗口偏紧，建议把最后一站作为可选。"],
+      "inviteText": "周六下午从学校东门出发，走咖啡和小展厅这条低体力路线，人均约 91 元，要不要一起？"
+    },
+    {
+      "routeType": "outdoor",
+      "title": "出门路线：书店咖啡自习角 → 番禺小展厅 → 甜品收尾小店",
+      "estimatedBudget": 85,
+      "estimatedDurationMinutes": 192,
+      "walkingIntensity": "low",
+      "timeline": [],
+      "selfChecks": [],
+      "risks": ["如果降雨明显，户外停留直接跳过。"],
+      "inviteText": "天气允许就走书店咖啡和展厅，人均约 85 元。"
+    },
+    {
+      "routeType": "indoor_backup",
+      "title": "雨天/低体力备选：书店咖啡自习角 → 番禺小展厅",
+      "estimatedBudget": 57,
+      "estimatedDurationMinutes": 140,
+      "walkingIntensity": "low",
+      "timeline": [],
+      "selfChecks": [],
+      "risks": ["座位可能不连续。"],
+      "inviteText": "如果下雨，就走室内备选：书店咖啡加小展厅，轻松一点。"
+    }
+  ],
+  "weatherSummary": "广州番禺当前多云，体感偏热且有降雨风险。",
+  "source": {
+    "weather": "open-meteo-real",
+    "poi": "self-built-school-area",
+    "planner": "rules-v1-with-openclaw-context"
+  }
+}

@@ -68,6 +68,12 @@ The three core strategies are packaged as project-level OpenClaw Skill deliverab
 | [`eleyao-group-dining`](skills/eleyao-group-dining/SKILL.md) | Group preference aggregation, conflict detection, fairness-aware recommendation | `POST /api/group-tasks/:taskId/recommend` |
 | [`eleyao-weekend-planner`](skills/eleyao-weekend-planner/SKILL.md) | Weather, budget, time-window, and POI route planning | `POST /api/weekend/plans` |
 
+Each skill includes `SKILL.md`, metadata, a prompt template, input/output schemas, and request/response examples. After cloning this repository, install the package into an OpenClaw skills root with:
+
+```bash
+node skills/install-eleyao-skills.mjs --target ~/.openclaw/skills --force
+```
+
 ### Agent Decision Pipeline
 
 This Mermaid diagram renders natively on GitHub and shows the core generate-audit-revise-execute loop:

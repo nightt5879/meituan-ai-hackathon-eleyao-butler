@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EleyaoWeekendPlannerInput",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["timeWindow", "budgetMax", "startArea", "weather", "poiCandidates"],
+  "properties": {
+    "timeWindow": { "type": "string" },
+    "budgetMax": {
+      "type": "number",
+      "minimum": 0
+    },
+    "startArea": { "type": "string" },
+    "mood": { "type": "string" },
+    "energyLevel": { "type": "string" },
+    "companions": { "type": "string" },
+    "interests": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "rawText": { "type": "string" },
+    "weather": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "status": { "type": "string" },
+        "provider": { "type": "string" },
+        "summary": { "type": "string" },
+        "isRainy": { "type": "boolean" },
+        "isHot": { "type": "boolean" },
+        "isAbnormal": { "type": "boolean" }
+      }
+    },
+    "poiCandidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "category": { "type": "string" },
+          "indoor": { "type": "boolean" },
+          "estimatedCost": { "type": "number" },
+          "walkMinutes": { "type": "number" }
+        }
+      }
+    }
+  }
+}

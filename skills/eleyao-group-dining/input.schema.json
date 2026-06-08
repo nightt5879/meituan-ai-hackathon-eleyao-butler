@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EleyaoGroupDiningInput",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["task", "participants", "candidateRestaurants"],
+  "properties": {
+    "task": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["taskId"],
+      "properties": {
+        "taskId": { "type": "string" },
+        "creatorName": { "type": "string" },
+        "rawRequest": { "type": "string" },
+        "locationText": { "type": "string" },
+        "expectedPeopleCount": { "type": "number" },
+        "dinnerTime": { "type": "string" }
+      }
+    },
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["nickname"],
+        "properties": {
+          "clientId": { "type": "string" },
+          "nickname": { "type": "string" },
+          "rawPreference": { "type": "string" },
+          "manualFields": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "extractedConstraints": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "candidateRestaurants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "averagePrice": { "type": "number" },
+          "distanceMeters": { "type": "number" },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

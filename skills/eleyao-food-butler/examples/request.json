@@ -1,0 +1,28 @@
+{
+  "scene": "晚餐",
+  "budgetText": "60 元内",
+  "budgetMax": 60,
+  "distanceText": "1 公里内",
+  "tasteText": "想吃热乎的，不要香菜",
+  "rawText": "晚上想吃粉面或者简餐，别排太久",
+  "memory": {
+    "avoid": ["香菜"],
+    "recentLiked": ["粉面", "简餐"]
+  },
+  "candidateRestaurants": [
+    {
+      "name": "云味简餐社",
+      "category": "简餐",
+      "averagePrice": 42,
+      "distanceMeters": 780,
+      "tags": ["热乎", "不放香菜", "出餐快"]
+    },
+    {
+      "name": "岛田粉面铺",
+      "category": "粉面",
+      "averagePrice": 38,
+      "distanceMeters": 620,
+      "tags": ["粉面", "热汤", "可备注忌口"]
+    }
+  ]
+}

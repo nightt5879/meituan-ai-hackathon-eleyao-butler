@@ -80,6 +80,8 @@ const openClawFacts = [
   ["Agent / Model", "main · deepseek-v4-flash · 128k context"]
 ];
 
+const skillInstallCommand = "node skills/install-eleyao-skills.mjs --target ~/.openclaw/skills --force";
+
 const packagedSkills = [
   {
     name: "今天吃什么",
@@ -436,7 +438,7 @@ export default function PortfolioHomePage() {
           <div className="sec-head reveal">
             <div className="sec-eyebrow">OpenClaw 版本 · Skill Package</div>
             <h2 className="sec-title">不是只接一个接口，<br />而是把三种本地生活策略打成 Skill</h2>
-            <p className="sec-lead">服务器实查 OpenClaw CLI / Gateway 为 2026.5.27。三大能力都沉淀成独立 `SKILL.md`，评审可以直接看到 Agent 触发条件、输入契约、自检规则、输出结构和代码落点。</p>
+            <p className="sec-lead">服务器实查 OpenClaw CLI / Gateway 为 2026.5.27。三大能力都沉淀成可安装 Skill 包，评审可以直接看到 Agent 触发条件、输入契约、自检规则、输出结构、prompt 模板、示例和代码落点。</p>
           </div>
           <div className="oc-runtime reveal">
             <div>
@@ -453,6 +455,14 @@ export default function PortfolioHomePage() {
               ))}
             </div>
           </div>
+          <div className="skill-install-card reveal d1">
+            <div>
+              <div className="oc-kicker">一键安装</div>
+              <h3>clone 后一条命令装进 OpenClaw skills root</h3>
+              <p>安装器会校验 manifest、SKILL.md、prompt、schema 和示例，再把三份 skill 复制到目标目录；token、AppSecret 和模型密钥不会进入包内。</p>
+            </div>
+            <code>{skillInstallCommand}</code>
+          </div>
           <div className="skill-pack-grid reveal d1">
             {packagedSkills.map((skill, index) => (
               <article className="skill-pack-card" key={skill.slug}>
@@ -461,7 +471,7 @@ export default function PortfolioHomePage() {
                 <code>{skill.slug}</code>
                 <p>{skill.desc}</p>
                 <div className="skill-pack-api">{skill.api}</div>
-                <a className="skill-link" href={skill.href} target="_blank" rel="noreferrer">查看 SKILL.md →</a>
+                <a className="skill-link" href={skill.href} target="_blank" rel="noreferrer">查看可安装 Skill →</a>
               </article>
             ))}
           </div>

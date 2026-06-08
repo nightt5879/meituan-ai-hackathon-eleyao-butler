@@ -1,0 +1,24 @@
+{
+  "recommendations": [
+    {
+      "name": "岛田粉面铺",
+      "category": "粉面",
+      "budgetText": "人均约 38 元",
+      "distanceText": "约 620 米",
+      "matchedTagsText": "粉面、热汤、60 元内、可备注忌口",
+      "reason": "匹配了想吃粉面和热乎的偏好，预算低于 60 元，距离也在 1 公里内。",
+      "riskTip": "晚餐高峰可能排队，建议备注不要香菜。"
+    },
+    {
+      "name": "云味简餐社",
+      "category": "简餐",
+      "budgetText": "人均约 42 元",
+      "distanceText": "约 780 米",
+      "matchedTagsText": "热乎、不放香菜、出餐快",
+      "reason": "适合不想等太久的晚餐，能满足预算、距离和忌口约束。",
+      "riskTip": "主食选择比粉面少，如果特别想喝汤优先第一家。"
+    }
+  ],
+  "finalChoice": "岛田粉面铺",
+  "normalAiMessage": "我会优先推荐岛田粉面铺：热汤粉面、预算和距离都合适，也能备注不要香菜。"
+}
