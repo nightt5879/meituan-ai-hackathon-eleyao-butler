@@ -1,0 +1,27 @@
+{
+  "id": "eleyao-weekend-planner",
+  "name": "周边规划",
+  "description": "结合真实天气、自建周边 POI、预算、时间窗和体力状态，生成 3 条轻量可执行路线。",
+  "version": "2026.06.08",
+  "entry": "SKILL.md",
+  "prompt": "prompt.md",
+  "inputSchema": "input.schema.json",
+  "outputSchema": "output.schema.json",
+  "examples": {
+    "request": "examples/request.json",
+    "response": "examples/response.json"
+  },
+  "backend": {
+    "api": "POST /api/weekend/plans",
+    "planner": "frontend/lib/server/weekendPlanner.ts",
+    "routeApi": "frontend/app/api/weekend/plans/route.ts",
+    "miniProgramAdapter": "mini-program/wechat-miniprogram/services/weekendPlannerAdapter.js"
+  },
+  "safety": {
+    "usesRealWeather": true,
+    "usesSelfBuiltPoiDataset": true,
+    "requiresRouteSelfCheck": true,
+    "fallbackWhenWeatherUnavailable": true,
+    "doesNotClaimMapOrReviewApi": true
+  }
+}

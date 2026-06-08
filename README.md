@@ -68,6 +68,12 @@
 | [`eleyao-group-dining`](skills/eleyao-group-dining/SKILL.md) | 多人偏好汇总、冲突识别、公平性推荐 | `POST /api/group-tasks/:taskId/recommend` |
 | [`eleyao-weekend-planner`](skills/eleyao-weekend-planner/SKILL.md) | 天气、预算、时间窗和 POI 路线规划 | `POST /api/weekend/plans` |
 
+每个 Skill 都包含 `SKILL.md`、元数据、prompt 模板、输入/输出 schema 和示例。已 clone 本仓库时可以一键安装到 OpenClaw skills root：
+
+```bash
+node skills/install-eleyao-skills.mjs --target ~/.openclaw/skills --force
+```
+
 ### Agent 决策管线
 
 下面这张图在 GitHub 上会原生渲染（mermaid），是我们"生成—自检—修正—执行"闭环的核心：

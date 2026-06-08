@@ -97,7 +97,7 @@ export default function ArchitecturePage() {
         <div className="mt-10 rounded-md border border-emerald-100 bg-white p-6 shadow-sm">
           <h2 className="text-2xl font-black text-emerald-950">OpenClaw 版本与 Skill 包</h2>
           <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-600">
-            当前线上评审环境使用 OpenClaw CLI / Gateway 2026.5.27，三个核心策略已经整理为仓库内 `skills/` 目录下的 `SKILL.md`：今天吃什么、多人约饭、周边规划。服务端保存 OpenClaw 配置，小程序和 Web 不持有 token 或模型密钥。
+            当前线上评审环境使用 OpenClaw CLI / Gateway 2026.5.27，三个核心策略已经整理为仓库内 `skills/` 目录下的可安装 Skill 包：今天吃什么、多人约饭、周边规划。每个包包含 `SKILL.md`、prompt、schema 和示例；服务端保存 OpenClaw 配置，小程序和 Web 不持有 token 或模型密钥。
           </p>
           <div className="mt-5 grid gap-3 md:grid-cols-4">
             {openClawFacts.map(([label, value]) => (
@@ -108,7 +108,7 @@ export default function ArchitecturePage() {
             ))}
           </div>
           <a className="mt-5 inline-flex text-sm font-black text-emerald-700" href="https://github.com/nightt5879/meituan-ai-hackathon-eleyao-butler/tree/main/skills" rel="noreferrer" target="_blank">
-            查看仓库 Skill 包 →
+            查看可安装 Skill 包 →
           </a>
         </div>
       </section>

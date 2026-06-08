@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EleyaoWeekendPlannerOutput",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["routes", "weatherSummary", "source"],
+  "properties": {
+    "routes": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["routeType", "title", "estimatedBudget", "estimatedDurationMinutes", "walkingIntensity", "timeline", "selfChecks", "risks", "inviteText"],
+        "properties": {
+          "routeType": { "type": "string" },
+          "title": { "type": "string" },
+          "estimatedBudget": { "type": "number" },
+          "estimatedDurationMinutes": { "type": "number" },
+          "walkingIntensity": { "type": "string" },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "selfChecks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "risks": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "inviteText": { "type": "string" }
+        }
+      }
+    },
+    "weatherSummary": { "type": "string" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["weather", "poi"],
+      "properties": {
+        "weather": { "type": "string" },
+        "poi": { "type": "string" },
+        "planner": { "type": "string" }
+      }
+    }
+  }
+}

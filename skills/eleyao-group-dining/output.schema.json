@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EleyaoGroupDiningOutput",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["candidates", "finalChoice", "groupMessage", "normalAiMessage"],
+  "properties": {
+    "candidates": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "averageBudget", "distanceText", "matchedParticipants", "tradeoff", "riskTip"],
+        "properties": {
+          "name": { "type": "string" },
+          "averageBudget": { "type": "number" },
+          "distanceText": { "type": "string" },
+          "matchedParticipants": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "tradeoff": { "type": "string" },
+          "riskTip": { "type": "string" }
+        }
+      }
+    },
+    "finalChoice": { "type": "string" },
+    "groupMessage": { "type": "string" },
+    "normalAiMessage": { "type": "string" }
+  }
+}

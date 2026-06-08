@@ -1,0 +1,41 @@
+{
+  "timeWindow": "周六下午 3 小时",
+  "budgetMax": 120,
+  "startArea": "学校东门",
+  "mood": "想轻松一点",
+  "energyLevel": "中等",
+  "companions": "朋友",
+  "interests": ["咖啡", "citywalk", "拍照"],
+  "rawText": "想在学校附近走走，不要太赶",
+  "weather": {
+    "status": "available",
+    "provider": "Open-Meteo",
+    "summary": "广州番禺当前多云，30°C，体感 35°C，未来三天最高降水概率 95%",
+    "isRainy": true,
+    "isHot": true,
+    "isAbnormal": true
+  },
+  "poiCandidates": [
+    {
+      "name": "东门咖啡小馆",
+      "category": "咖啡",
+      "indoor": true,
+      "estimatedCost": 38,
+      "walkMinutes": 8
+    },
+    {
+      "name": "番禺小展厅",
+      "category": "展览",
+      "indoor": true,
+      "estimatedCost": 25,
+      "walkMinutes": 12
+    },
+    {
+      "name": "湖边步道",
+      "category": "citywalk",
+      "indoor": false,
+      "estimatedCost": 0,
+      "walkMinutes": 18
+    }
+  ]
+}

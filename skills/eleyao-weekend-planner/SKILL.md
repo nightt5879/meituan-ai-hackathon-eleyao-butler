@@ -1,3 +1,8 @@
+---
+name: eleyao-weekend-planner
+description: Use when planning lightweight nearby outings from a time window, budget, start area, weather context, interests, companions, and energy level.
+---
+
 # Eleyao Weekend Planner Skill
 
 ## Purpose
@@ -62,3 +67,11 @@
 - Planner: `frontend/lib/server/weekendPlanner.ts`
 - Route API: `frontend/app/api/weekend/plans/route.ts`
 - Mini Program adapter: `mini-program/wechat-miniprogram/services/weekendPlannerAdapter.js`
+
+## Companion Files
+
+- Metadata: `skill.json`
+- Prompt template: `prompt.md`
+- Input schema: `input.schema.json`
+- Output schema: `output.schema.json`
+- Examples: `examples/request.json`, `examples/response.json`

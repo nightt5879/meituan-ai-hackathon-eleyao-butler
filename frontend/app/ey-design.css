@@ -2435,6 +2435,52 @@ body.t-night .cloud-word.c-warn {
   line-height: 1.35;
 }
 
+.skill-install-card {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: 18px;
+  align-items: center;
+  margin-top: 18px;
+  padding: clamp(18px, 3vw, 26px);
+  border: 1px solid color-mix(in srgb, var(--ey-blue) 18%, var(--ey-line));
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--ey-blue) 9%, transparent), transparent 48%),
+    color-mix(in srgb, var(--ey-card) 94%, var(--ey-bg));
+  box-shadow: var(--ey-shadow-sm);
+}
+
+.skill-install-card h3 {
+  max-width: 22ch;
+  margin-top: 10px;
+  color: var(--ey-ink);
+  font-size: clamp(22px, 2.4vw, 34px);
+  font-weight: 1000;
+  line-height: 1.1;
+}
+
+.skill-install-card p {
+  max-width: 58ch;
+  margin-top: 12px;
+  color: var(--ey-slate);
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.skill-install-card code {
+  display: block;
+  overflow-x: auto;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 18%, var(--ey-line));
+  border-radius: 18px;
+  color: var(--ey-ink);
+  background: color-mix(in srgb, var(--ey-emerald-50) 68%, var(--ey-card));
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: clamp(12px, 1.4vw, 14px);
+  font-weight: 900;
+  line-height: 1.6;
+}
+
 .skill-pack-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2804,7 +2850,8 @@ section:target.reveal {
     grid-template-columns: 1fr 1fr;
   }
 
-  .oc-runtime {
+  .oc-runtime,
+  .skill-install-card {
     grid-template-columns: 1fr;
   }
 
@@ -3140,7 +3187,8 @@ section:target.reveal {
     grid-template-columns: 1fr;
   }
 
-  .oc-fact-grid {
+  .oc-fact-grid,
+  .skill-install-card {
     grid-template-columns: 1fr;
   }
 

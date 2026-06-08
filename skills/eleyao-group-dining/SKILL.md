@@ -1,3 +1,8 @@
+---
+name: eleyao-group-dining
+description: Use when coordinating group dining preferences, detecting conflicts, ranking shared restaurant candidates, and producing group-chat-ready recommendation copy.
+---
+
 # Eleyao Group Dining Skill
 
 ## Purpose
@@ -52,5 +57,13 @@
 
 - API: `POST /api/group-tasks/:taskId/recommend`
 - Server adapter: `frontend/lib/server/openclawRecommendation.ts`
-- Task store and conflict logic: `frontend/lib/server/taskStore.ts`、`frontend/lib/mockFunctions.ts`
+- Task store and conflict logic: `frontend/lib/server/taskStore.ts` and shared group-dining rule helpers
 - Mini Program adapter: `mini-program/wechat-miniprogram/services/groupDiningAdapter.js`
+
+## Companion Files
+
+- Metadata: `skill.json`
+- Prompt template: `prompt.md`
+- Input schema: `input.schema.json`
+- Output schema: `output.schema.json`
+- Examples: `examples/request.json`, `examples/response.json`

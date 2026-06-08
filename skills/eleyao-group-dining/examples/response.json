@@ -1,0 +1,23 @@
+{
+  "candidates": [
+    {
+      "name": "清汤牛肉粉面",
+      "averageBudget": 36,
+      "distanceText": "约 850 米",
+      "matchedParticipants": ["阿杰", "小林", "小陈"],
+      "tradeoff": "不辣和预算优先，牺牲一点聚餐仪式感，但最稳妥。",
+      "riskTip": "高峰期座位可能不连续，建议提前 10 分钟过去。"
+    },
+    {
+      "name": "首尔拌饭小馆",
+      "averageBudget": 42,
+      "distanceText": "约 1.2 公里",
+      "matchedParticipants": ["阿杰", "小林"],
+      "tradeoff": "能聊天且有不辣选项，但距离略远，小陈如果赶时间要注意。",
+      "riskTip": "点单时需要明确不加辣酱。"
+    }
+  ],
+  "finalChoice": "清汤牛肉粉面",
+  "groupMessage": "我看了一下大家偏好，首推清汤牛肉粉面：人均 36 左右、约 850 米、不辣和清淡都能满足，也比较快。备选首尔拌饭小馆，适合聊天但稍远。",
+  "normalAiMessage": "这次优先照顾不吃辣、预算和离开时间，清汤牛肉粉面是风险最低的首推。"
+}

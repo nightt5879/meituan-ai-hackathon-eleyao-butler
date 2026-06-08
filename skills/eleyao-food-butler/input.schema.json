@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EleyaoFoodButlerInput",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "scene": {
+      "type": "string",
+      "description": "用餐场景，例如早餐、午餐、晚餐、夜宵、工作日快餐。"
+    },
+    "budgetText": {
+      "type": "string"
+    },
+    "budgetMax": {
+      "type": "number",
+      "minimum": 0
+    },
+    "distanceText": {
+      "type": "string"
+    },
+    "distanceMeters": {
+      "type": "number",
+      "minimum": 0
+    },
+    "tasteText": {
+      "type": "string"
+    },
+    "rawText": {
+      "type": "string"
+    },
+    "memory": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "candidateRestaurants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "category": { "type": "string" },
+          "averagePrice": { "type": "number" },
+          "distanceMeters": { "type": "number" },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  },
+  "required": ["candidateRestaurants"]
+}
