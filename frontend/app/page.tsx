@@ -73,6 +73,37 @@ const architectureLayers = [
   ["L4", "数据层", "任务、登录 session、周边规划写入服务端 JSON store；浏览器本地保留记忆、收藏与草稿。"]
 ];
 
+const openClawFacts = [
+  ["OpenClaw", "2026.5.27 (27ae826)"],
+  ["Profile", "meituan01"],
+  ["Gateway", "server-side loopback · 127.0.0.1:19789"],
+  ["Agent / Model", "main · deepseek-v4-flash · 128k context"]
+];
+
+const packagedSkills = [
+  {
+    name: "今天吃什么",
+    slug: "eleyao-food-butler",
+    desc: "把场景、预算、距离、忌口和最近记忆收敛成 2-3 个可执行餐厅推荐。",
+    api: "POST /api/food/recommend",
+    href: "https://github.com/nightt5879/meituan-ai-hackathon-eleyao-butler/tree/main/skills/eleyao-food-butler"
+  },
+  {
+    name: "多人约饭",
+    slug: "eleyao-group-dining",
+    desc: "汇总成员偏好、识别冲突，用硬约束和公平性评分生成群体可接受方案。",
+    api: "POST /api/group-tasks/:taskId/recommend",
+    href: "https://github.com/nightt5879/meituan-ai-hackathon-eleyao-butler/tree/main/skills/eleyao-group-dining"
+  },
+  {
+    name: "周边规划",
+    slug: "eleyao-weekend-planner",
+    desc: "结合真实天气、自建 POI、时间窗和预算，生成带自检项的轻量路线。",
+    api: "POST /api/weekend/plans",
+    href: "https://github.com/nightt5879/meituan-ai-hackathon-eleyao-butler/tree/main/skills/eleyao-weekend-planner"
+  }
+];
+
 const realDeviceVideos = [
   {
     label: "实机 01",
@@ -90,7 +121,7 @@ const realDeviceVideos = [
     label: "实机 03",
     title: "周边规划",
     src: "/videos/nearby-real-device.mp4",
-    desc: "输入出行时间、预算、起点和兴趣后，结合真实天气与周边 mock POI 生成路线、自检项和风险提示。"
+    desc: "输入出行时间、预算、起点和兴趣后，结合真实天气与自建周边 POI 生成路线、自检项和风险提示。"
   }
 ];
 
@@ -267,6 +298,7 @@ export default function PortfolioHomePage() {
         <nav aria-label="作品站导航">
           <a href="#design" onClick={(event) => handleInternalLink(event, "#design")}>设计与思路</a>
           <a href="#route" onClick={(event) => handleInternalLink(event, "#route")}>技术路线</a>
+          <a href="#skills" onClick={(event) => handleInternalLink(event, "#skills")}>Skill 包</a>
           <a href="#future" onClick={(event) => handleInternalLink(event, "#future")}>未来展望</a>
           <a href="#video" onClick={(event) => handleInternalLink(event, "#video")}>演示视频</a>
           <a href="https://github.com/nightt5879/meituan-ai-hackathon-eleyao-butler" target="_blank" rel="noreferrer">GitHub</a>
@@ -395,6 +427,43 @@ export default function PortfolioHomePage() {
             <div className="sec-eyebrow" style={{ marginBottom: 8 }}>设计与思路 · 自检评测闭环</div>
             <p className="sec-lead" style={{ margin: "0 0 24px", maxWidth: "56ch" }}>把命题 02 的评测思想嵌进管家每一次回答：输出前先逐项审计，不合格就修正或追问。七项检查 × 对应动作，构成「计划前—计划中—计划后—下一次」的闭环。</p>
             <TechRouteSelfCheck />
+          </div>
+        </div>
+      </section>
+
+      <section className="section section--paper skills-section" id="skills">
+        <div className="container">
+          <div className="sec-head reveal">
+            <div className="sec-eyebrow">OpenClaw 版本 · Skill Package</div>
+            <h2 className="sec-title">不是只接一个接口，<br />而是把三种本地生活策略打成 Skill</h2>
+            <p className="sec-lead">服务器实查 OpenClaw CLI / Gateway 为 2026.5.27。三大能力都沉淀成独立 `SKILL.md`，评审可以直接看到 Agent 触发条件、输入契约、自检规则、输出结构和代码落点。</p>
+          </div>
+          <div className="oc-runtime reveal">
+            <div>
+              <div className="oc-kicker">当前线上 OpenClaw</div>
+              <h3>OpenClaw 2026.5.27 · profile meituan01</h3>
+              <p>OpenClaw CLI / Gateway 只在服务端运行，Gateway 仅 loopback 监听；小程序和 Web 不持有 token、AppSecret 或模型密钥。</p>
+            </div>
+            <div className="oc-fact-grid">
+              {openClawFacts.map(([label, value]) => (
+                <div className="oc-fact" key={label}>
+                  <span>{label}</span>
+                  <strong>{value}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="skill-pack-grid reveal d1">
+            {packagedSkills.map((skill, index) => (
+              <article className="skill-pack-card" key={skill.slug}>
+                <div className="skill-pack-index">{String(index + 1).padStart(2, "0")}</div>
+                <h3>{skill.name}</h3>
+                <code>{skill.slug}</code>
+                <p>{skill.desc}</p>
+                <div className="skill-pack-api">{skill.api}</div>
+                <a className="skill-link" href={skill.href} target="_blank" rel="noreferrer">查看 SKILL.md →</a>
+              </article>
+            ))}
           </div>
         </div>
       </section>

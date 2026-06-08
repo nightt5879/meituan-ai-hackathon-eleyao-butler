@@ -2359,6 +2359,160 @@ body.t-night .cloud-word.c-warn {
   margin: 0 0 22px;
 }
 
+.skills-section {
+  background:
+    radial-gradient(circle at 18% 14%, color-mix(in srgb, var(--ey-emerald) 13%, transparent), transparent 30%),
+    radial-gradient(circle at 86% 4%, color-mix(in srgb, var(--ey-blue) 10%, transparent), transparent 28%),
+    linear-gradient(180deg, color-mix(in srgb, var(--ey-card) 96%, var(--ey-bg)), var(--ey-bg));
+}
+
+.oc-runtime {
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+  gap: clamp(18px, 3vw, 30px);
+  align-items: stretch;
+  padding: clamp(20px, 3vw, 30px);
+  border: 1px solid var(--ey-line);
+  border-radius: 28px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--ey-emerald) 9%, transparent), transparent 52%),
+    color-mix(in srgb, var(--ey-card) 94%, var(--ey-bg));
+  box-shadow: var(--ey-shadow-sm);
+}
+
+.oc-kicker {
+  color: var(--ey-blue);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.oc-runtime h3 {
+  max-width: 14ch;
+  margin-top: 12px;
+  color: var(--ey-ink);
+  font-size: clamp(28px, 4vw, 46px);
+  font-weight: 1000;
+  line-height: 0.98;
+}
+
+.oc-runtime p {
+  max-width: 52ch;
+  margin-top: 18px;
+  color: var(--ey-slate);
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.oc-fact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.oc-fact {
+  min-height: 122px;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 18%, var(--ey-line));
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--ey-card) 86%, var(--ey-emerald-50));
+}
+
+.oc-fact span {
+  display: block;
+  color: var(--ey-slate);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.oc-fact strong {
+  display: block;
+  margin-top: 12px;
+  color: var(--ey-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: clamp(15px, 1.8vw, 22px);
+  line-height: 1.35;
+}
+
+.skill-pack-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.skill-pack-card {
+  position: relative;
+  min-height: 300px;
+  padding: 24px;
+  border: 1px solid var(--ey-line);
+  border-radius: 26px;
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--ey-emerald) 8%, transparent), transparent 45%),
+    color-mix(in srgb, var(--ey-card) 92%, var(--ey-bg));
+  box-shadow: var(--ey-shadow-sm);
+}
+
+.skill-pack-index {
+  display: inline-grid;
+  min-width: 46px;
+  height: 30px;
+  place-items: center;
+  border-radius: var(--ey-pill);
+  background: var(--ey-emerald-50);
+  color: var(--ey-emerald-d);
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 0.12em;
+}
+
+.skill-pack-card h3 {
+  margin-top: 18px;
+  color: var(--ey-ink);
+  font-size: clamp(24px, 3vw, 34px);
+  font-weight: 1000;
+}
+
+.skill-pack-card code {
+  display: inline-flex;
+  margin-top: 8px;
+  color: var(--ey-blue);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.skill-pack-card p {
+  margin-top: 16px;
+  color: var(--ey-slate);
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.skill-pack-api {
+  margin-top: 18px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--ey-emerald) 18%, var(--ey-line));
+  border-radius: 14px;
+  color: var(--ey-ink);
+  background: color-mix(in srgb, var(--ey-emerald-50) 72%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.skill-link {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 18px;
+  color: var(--ey-emerald-d);
+  font-size: 14px;
+  font-weight: 1000;
+  text-decoration: none;
+}
+
 .flows {
   overflow: hidden;
   margin-top: 34px;
@@ -2645,8 +2799,13 @@ section:target.reveal {
   .grid2,
   .layers,
   .story,
+  .skill-pack-grid,
   .demo-wrap {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .oc-runtime {
+    grid-template-columns: 1fr;
   }
 
   .video-grid {
@@ -2976,7 +3135,12 @@ section:target.reveal {
   .grid2,
   .layers,
   .story,
+  .skill-pack-grid,
   .demo-wrap {
+    grid-template-columns: 1fr;
+  }
+
+  .oc-fact-grid {
     grid-template-columns: 1fr;
   }
 

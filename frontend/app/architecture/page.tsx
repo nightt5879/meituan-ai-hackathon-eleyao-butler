@@ -27,6 +27,13 @@ const flows = [
   ["记忆设置", "localStorage + profile 预留", "Web 端即时生效，后续可接入服务端画像"]
 ];
 
+const openClawFacts = [
+  ["OpenClaw", "2026.5.27 (27ae826)"],
+  ["Profile", "meituan01"],
+  ["Gateway", "server-side loopback only"],
+  ["Skills", "food / group / weekend"]
+];
+
 export default function ArchitecturePage() {
   return (
     <main className="theme-arch-page min-h-screen">
@@ -85,6 +92,24 @@ export default function ArchitecturePage() {
           <p className="mt-3 max-w-4xl text-sm leading-7 text-emerald-50">
             服务器只需要运行一个 Next.js Node 服务。Nginx 反代到 `127.0.0.1:3001`，OpenClaw 与 JSON store 路径通过服务端环境变量配置。评审访问的公开链接指向 `/`，在线体验入口为 `/experience`。
           </p>
+        </div>
+
+        <div className="mt-10 rounded-md border border-emerald-100 bg-white p-6 shadow-sm">
+          <h2 className="text-2xl font-black text-emerald-950">OpenClaw 版本与 Skill 包</h2>
+          <p className="mt-3 max-w-4xl text-sm leading-7 text-slate-600">
+            当前线上评审环境使用 OpenClaw CLI / Gateway 2026.5.27，三个核心策略已经整理为仓库内 `skills/` 目录下的 `SKILL.md`：今天吃什么、多人约饭、周边规划。服务端保存 OpenClaw 配置，小程序和 Web 不持有 token 或模型密钥。
+          </p>
+          <div className="mt-5 grid gap-3 md:grid-cols-4">
+            {openClawFacts.map(([label, value]) => (
+              <div className="rounded-md border border-emerald-100 bg-emerald-50 p-4" key={label}>
+                <div className="text-xs font-black uppercase tracking-[0.18em] text-emerald-700">{label}</div>
+                <div className="mt-2 text-sm font-black text-emerald-950">{value}</div>
+              </div>
+            ))}
+          </div>
+          <a className="mt-5 inline-flex text-sm font-black text-emerald-700" href="https://github.com/nightt5879/meituan-ai-hackathon-eleyao-butler/tree/main/skills" rel="noreferrer" target="_blank">
+            查看仓库 Skill 包 →
+          </a>
         </div>
       </section>
     </main>

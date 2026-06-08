@@ -18,6 +18,8 @@
   <img src="https://img.shields.io/badge/WeChat_Mini_Program-Native-07C160?logo=wechat&logoColor=white" alt="wechat" />
   <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="ts" />
   <img src="https://img.shields.io/badge/OpenClaw-CLI_%2F_Gateway-6f42c1" alt="openclaw gateway" />
+  <img src="https://img.shields.io/badge/OpenClaw-v2026.5.27-6f42c1" alt="openclaw version" />
+  <a href="skills/README.md"><img src="https://img.shields.io/badge/Skills-3_local--life_skills-0a7" alt="skills" /></a>
   <img src="https://img.shields.io/badge/Open--Meteo-Weather-0a7" alt="meteo" />
   <img src="https://img.shields.io/badge/Python-Data_Analysis-3776AB?logo=python&logoColor=white" alt="python" />
 </p>
@@ -53,6 +55,18 @@ The system follows a **client -> API layer -> agent core -> capability layer** p
 WeChat Mini Program  --HTTPS-->  Next.js API Routes  --server-side-->  OpenClaw CLI / Gateway / LLM / self-built restaurant and POI dataset / Open-Meteo
       Food / Group Dining / Weekend Plan                         Self-audit + Memory
 ```
+
+### OpenClaw Version and Skill Package
+
+The online review environment uses **OpenClaw CLI / Gateway `2026.5.27 (27ae826)`** with the server-side profile `meituan01`, default agent `main`, default model `deepseek-v4-flash`, and a `128000` context window. The Gateway is loopback-only on the server: `127.0.0.1:19789 / [::1]:19789`. Tokens, AppSecret values, and model keys are never stored in this repository or in the mini program.
+
+The three core strategies are packaged as project-level OpenClaw Skill deliverables under [`skills/README.md`](skills/README.md). See [`docs/openclaw-version-and-skills.md`](docs/openclaw-version-and-skills.md) for the full version note:
+
+| Skill | Capability | Backend Flow |
+| --- | --- | --- |
+| [`eleyao-food-butler`](skills/eleyao-food-butler/SKILL.md) | Single-person food follow-up, restaurant recommendation, preference memory | `POST /api/food/recommend` |
+| [`eleyao-group-dining`](skills/eleyao-group-dining/SKILL.md) | Group preference aggregation, conflict detection, fairness-aware recommendation | `POST /api/group-tasks/:taskId/recommend` |
+| [`eleyao-weekend-planner`](skills/eleyao-weekend-planner/SKILL.md) | Weather, budget, time-window, and POI route planning | `POST /api/weekend/plans` |
 
 ### Agent Decision Pipeline
 
@@ -191,6 +205,7 @@ meituan-ai-hackathon-eleyao-butler/
 │  └─ wechat-miniprogram/    # pages and services for food/group/weekend/memory
 ├─ analysis/                 # Survey data analysis: Python, charts, metrics
 ├─ data/                     # Raw survey data
+├─ skills/                   # OpenClaw Skill package: food / group dining / nearby planning
 └─ docs/                     # Requirements, design discussions, deployment runbooks
 ```
 

@@ -10,6 +10,27 @@
 
 项目不声称使用美团 / 点评 / 地图官方商户库；当前使用的是自建 seed dataset。远端 OpenClaw、天气或后端链路不可用时，会切换到本地 fallback dataset + 规则兜底，保证演示流程不中断。
 
+## OpenClaw 版本与 Skill 对应
+
+线上评审环境实查版本：
+
+- OpenClaw CLI / Gateway: `2026.5.27 (27ae826)`
+- profile: `meituan01`
+- Gateway: server-side loopback only, `127.0.0.1:19789 / [::1]:19789`
+- default agent: `main`
+- default model: `deepseek-v4-flash`
+- context window: `128000`
+
+仓库内 Skill 包见 [`../skills/README.md`](../skills/README.md)。三个 Skill 与本工作区 API 的对应关系：
+
+| Skill | API | 后端实现入口 |
+| --- | --- | --- |
+| `eleyao-food-butler` | `POST /api/food/recommend` | `lib/server/openclawFoodRecommendation.ts` |
+| `eleyao-group-dining` | `POST /api/group-tasks/:taskId/recommend` | `lib/server/openclawRecommendation.ts` |
+| `eleyao-weekend-planner` | `POST /api/weekend/plans` | `lib/server/weekendPlanner.ts` |
+
+OpenClaw CLI 路径、Gateway URL/token、AppSecret 和模型密钥只允许存在于服务端环境变量或 systemd drop-in 中，不能进入前端、小程序或仓库文档。
+
 ## 本地安装
 
 ```powershell
