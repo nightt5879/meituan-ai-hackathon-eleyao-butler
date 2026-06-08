@@ -18,6 +18,8 @@
   <img src="https://img.shields.io/badge/微信小程序-原生-07C160?logo=wechat&logoColor=white" alt="wechat" />
   <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" alt="ts" />
   <img src="https://img.shields.io/badge/OpenClaw-CLI_%2F_Gateway-6f42c1" alt="openclaw gateway" />
+  <img src="https://img.shields.io/badge/OpenClaw-v2026.5.27-6f42c1" alt="openclaw version" />
+  <a href="skills/README.md"><img src="https://img.shields.io/badge/Skills-3_local--life_skills-0a7" alt="skills" /></a>
   <img src="https://img.shields.io/badge/Open--Meteo-天气-0a7" alt="meteo" />
   <img src="https://img.shields.io/badge/Python-数据分析-3776AB?logo=python&logoColor=white" alt="python" />
 </p>
@@ -53,6 +55,18 @@
 微信小程序  ──HTTPS──▶  Next.js API Routes  ──server-side──▶  OpenClaw CLI / Gateway / LLM / 自建餐厅与 POI 数据集 / Open-Meteo
    今天吃什么 / 多人约饭 / 周末规划            自检评测 + 记忆
 ```
+
+### OpenClaw 版本与 Skill 包
+
+线上评审环境使用 **OpenClaw CLI / Gateway `2026.5.27 (27ae826)`**，服务端 profile 为 `meituan01`，默认 agent 为 `main`，默认模型配置为 `deepseek-v4-flash`，上下文窗口为 `128000`。Gateway 只在服务器 loopback 监听 `127.0.0.1:19789 / [::1]:19789`，token、AppSecret 和模型密钥不进入仓库或小程序端。
+
+我们把三个核心策略打包成了项目级 OpenClaw Skill 交付件，见 [`skills/README.md`](skills/README.md)；完整版本说明见 [`docs/openclaw-version-and-skills.md`](docs/openclaw-version-and-skills.md)：
+
+| Skill | 能力 | 对应链路 |
+| --- | --- | --- |
+| [`eleyao-food-butler`](skills/eleyao-food-butler/SKILL.md) | 单人吃饭追问、餐厅推荐、偏好记忆 | `POST /api/food/recommend` |
+| [`eleyao-group-dining`](skills/eleyao-group-dining/SKILL.md) | 多人偏好汇总、冲突识别、公平性推荐 | `POST /api/group-tasks/:taskId/recommend` |
+| [`eleyao-weekend-planner`](skills/eleyao-weekend-planner/SKILL.md) | 天气、预算、时间窗和 POI 路线规划 | `POST /api/weekend/plans` |
 
 ### Agent 决策管线
 
@@ -192,6 +206,7 @@ meituan-ai-hackathon-eleyao-butler/
 │  └─ wechat-miniprogram/    # pages（food/group/weekend/memory）· services（各场景 adapter）
 ├─ analysis/                 # 问卷数据分析（Python · 图表 · 指标）
 ├─ data/                     # 原始问卷数据
+├─ skills/                   # OpenClaw Skill 包（今天吃什么 / 多人约饭 / 周边规划）
 └─ docs/                     # 需求文档 · 选题讨论 · 部署 runbook
 ```
 

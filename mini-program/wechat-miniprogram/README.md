@@ -48,6 +48,16 @@
 
 当前不声称使用美团 / 点评 / 地图官方商户库；演示数据来自自建结构化本地生活数据集。远端 OpenClaw、后端服务或外部链路不可用时，会切换到本地 fallback dataset + 简单规则兜底，保证流程可跑通、状态可追踪。
 
+## 1.1 OpenClaw 版本与 Skill 包
+
+线上评审环境使用 OpenClaw CLI / Gateway `2026.5.27 (27ae826)`，服务端 profile 为 `meituan01`，Gateway 只在服务器本机 loopback 监听。小程序端只配置统一 HTTPS 后端 origin，不保存 OpenClaw token、AppSecret 或模型密钥。
+
+三个小程序入口对应仓库内三个 OpenClaw Skill：
+
+- 今天吃什么：[`../../skills/eleyao-food-butler/SKILL.md`](../../skills/eleyao-food-butler/SKILL.md)
+- 多人约饭：[`../../skills/eleyao-group-dining/SKILL.md`](../../skills/eleyao-group-dining/SKILL.md)
+- 周边规划：[`../../skills/eleyao-weekend-planner/SKILL.md`](../../skills/eleyao-weekend-planner/SKILL.md)
+
 
 
 \## 3. 如何运行项目
